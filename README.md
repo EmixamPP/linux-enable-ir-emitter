@@ -18,8 +18,8 @@ When you have found the path corresponding to the ir camera, write it down later
 10. Open the Setup Data section, and note the wValue, the wIndex and the Data fragment for later (step 9).
 11. Open the `enable-ir-emitter.c` file and modify my information with yours.
 12. Run `gcc enable-ir-emitter.c -o enable-ir-emitter` followed by `./enable-ir-emitter`
-(12b. For howdy, set thedark_threshold to 100 in `sudo howdy config`)
-13. Try if it work with `ffplay /dev/videoX` ! An error message don't mean that didn't work.
+13. For howdy, set thedark_threshold to 100 in `sudo howdy config`)
+14. Try if it work with `ffplay /dev/videoX` ! An error message don't mean that didn't work.
 
 ## Launch the script at each startup
 1. Download `enable-ir-emitter.service`
