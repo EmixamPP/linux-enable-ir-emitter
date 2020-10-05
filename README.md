@@ -1,6 +1,9 @@
 # linux-enable-ir-emitter
 Provides support for infrared cameras that are not directly supported.
 
+This program was originally designed by PetePriority (https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it.
+I also provide in the readme a complete tutorial to help you adapt it to your camera.
+
 This script was created to use Howdy, a Windows Hello for linux.
 See <https://github.com/boltgolt/howdy/issues/269> if you want to read the reason why this script was created.
 
@@ -19,7 +22,7 @@ When you have found the path corresponding to the ir camera, write it down later
 13. Open the Setup Data section, and note the wValue, the wIndex, the wLength and the Data fragment for later (step 14).
 14. Open the `enable-ir-emitter.c` file and modify my information with yours (the file is commented to help you).
 15. Run `gcc enable-ir-emitter.c -o enable-ir-emitter` followed by `./enable-ir-emitter`
-16. Try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`)
+16. If you don't have an error code, try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`)
 16b. If not go back to step 13 to test the next entry.
 
 For howdy, set thedark_threshold to 100 in `sudo howdy config`
