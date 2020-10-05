@@ -24,7 +24,7 @@ When you have found the path corresponding to the ir camera, write it down later
 
 For howdy, set thedark_threshold to 100 in `sudo howdy config`
 
-## Launch the script at each startup
+## Launch the script at each startup (with systemd)
 1. Download `enable-ir-emitter.service`
 2. Copy enable-ir-emitter to /usr/local/bin : `sudo cp enable-ir-emitter /usr/local/bin`
 3. Copy `enable-ir-emitter.service` to /etc/systemd/system/ : `sudo cp enable-ir-emitter.service /etc/systemd/system/`
