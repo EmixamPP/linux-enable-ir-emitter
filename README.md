@@ -16,7 +16,7 @@ When you have found the path corresponding to the ir camera, write it down later
 9. Go in the security options tab of the Windows settings and click on launch an improvement of the recognition of Windows Hello. A pop up is displayed and asks if we want to start the test, you can leave without having to go any further.
 10. Back to Wireshark and stop the recording (you can stop recording at the start of the Windows Hello test to reduce the number of logs in wireshark).
 12. You can stop the reccording in Wireshark. Now you will have to find the right wValue and wIndex associated with the emitter in Wireshark. For this you will have to test each different proposal of the Wireshark logs.
-13. Open the Setup Data section, and note the wValue, the wIndex and the Data fragment for later (step 14).
+13. Open the Setup Data section, and note the wValue, the wIndex, the wLength and the Data fragment for later (step 14).
 14. Open the `enable-ir-emitter.c` file and modify my information with yours (the file is commented to help you).
 15. Run `gcc enable-ir-emitter.c -o enable-ir-emitter` followed by `./enable-ir-emitter`
 16. Try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`)
