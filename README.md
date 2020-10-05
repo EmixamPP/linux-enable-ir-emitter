@@ -4,8 +4,7 @@ Provides support for infrared cameras that are not directly supported.
 This program was originally designed by PetePriority (https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it.
 I also provide in the readme a complete tutorial to help you adapt it to your camera.
 
-This script was created to use Howdy, a Windows Hello for linux.
-See <https://github.com/boltgolt/howdy/issues/269> if you want to read the reason why this script was created.
+This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Setting up the script
 1. Download enable-ir-emitter.c
