@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <linux/uvcvideo.h>
 #include <linux/usb/video.h>
 #include <sys/ioctl.h>
@@ -13,25 +14,25 @@ int main() {
 
 	const char* device = "/dev/video2"; //your camera path
     if((fd = open(device, O_WRONLY)) < 0){
-        fprintf (stderr, "Unable to open a fd for %s\n", device);
+        fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
         return EXIT_FAILURE;
     }
 
     //Data Fragment
-    __u8 buffer[9] = {0x01,0x03,0x02,0x00,0x00,0x00,0x00,0x00,0x00};
+    __u8 data[9] = {0x01,0x03,0x02,0x00,0x00,0x00,0x00,0x00,0x00};
     //You can use my python data-seq-to-hex script for format the data fragment directly in the buffer format.
     //You just have to pass the data fragment in parameter
     //Don't forget to change the buffer size with the value of wLength
 
-    struct uvc_xu_control_query set_query = {
+    struct uvc_xu_control_query query = {
         .unit = 14, //2 first bits of wIndex
         .selector = 6, //2 first bits of wValue
         .query = UVC_SET_CUR,
         .size = 9, //wLength
-        .data = (__u8*)&buffer,
+        .data = (__u8*)&data,
     };
 
-    result = ioctl(fd, UVCIOC_CTRL_QUERY, &set_query);
+    result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
     if (result || errno) {
         fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
         switch(errno) {
