@@ -24,7 +24,7 @@ When you have found the path corresponding to the ir camera, write it down later
 14. If you don't have an error code, try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`)
 15b. If not go back to step 11 to test the next entry.
 
-For howdy, set thedark_threshold to 100 in `sudo howdy config`
+For howdy, set the dark_threshold to 100 in `sudo howdy config`
 
 ## Launch the script at each startup (with systemd)
 1. Download `enable-ir-emitter.service`
