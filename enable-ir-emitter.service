@@ -5,4 +5,4 @@ Description=enable ir emitter
 ExecStart=/usr/local/bin/enable-ir-emitter
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
