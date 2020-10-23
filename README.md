@@ -31,6 +31,11 @@ For howdy, set the dark_threshold to 100 in `sudo howdy config`
 3. Copy `enable-ir-emitter.service` to /etc/systemd/system/ : `sudo cp enable-ir-emitter.service /etc/systemd/system/`
 4. Run `sudo systemctl enable enable-ir-emitter && sudo systemctl start enable-ir-emitter` to launch the script each time the system is opened
 
+## Note
+However, at the step 9, to find the packet that activates the emitter may be sent at another time. For example, it may be sent at the beginning of the test, so you have to launch it. Or at the moment when Windows start because with my camera Windows turns off the transmitter every time it is no longer needed but maybe not with your camera.
+
+I can therefore only advise you to test as many cases as possible where the emitter could receive a packet asking it to prepare to emit when the camera is turned on. I remain available if you need more details !
+
 ## Documentation
 * <https://www.kernel.org/doc/html/v5.4/media/v4l-drivers/uvcvideo.html>
 * <https://wiki.wireshark.org/CaptureSetup/USB>
