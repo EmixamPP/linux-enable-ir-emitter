@@ -10,7 +10,7 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 1. Download enable-ir-emitter.c
 2. Run the command `lsusb` to find your camera bus and write it down for later (step 7).
 3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera with `ffplay /dev/videoX` (ffmpeg package).
-When you have found the path corresponding to the ir camera, write it down later (step 12).
+When you have found the path corresponding to the ir camera, write it down later (step 11).
 4. Install Windows in a VM and allow Windows access to the camera.
 5. Install Wireshark on your distro
 6. Run the command `sudo modprob usbmon` to allow Wireshark to observe the bus and start it with sudo.
