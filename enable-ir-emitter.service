@@ -1,5 +1,6 @@
 [Unit]
 Description=enable ir emitter
+After=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
 
 [Service]
 ExecStart=/usr/local/bin/enable-ir-emitter
