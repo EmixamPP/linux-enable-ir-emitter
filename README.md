@@ -7,6 +7,8 @@ I also provide in the readme a complete tutorial to help you adapt it to your ca
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Setting up the script
+(For information, the values used in the script are the one that works for my Lenovo T15.)
+
 1. Download enable-ir-emitter.c
 2. Run the command `lsusb` to find your camera bus and write it down for later (step 7).
 3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera with `ffplay /dev/videoX` (ffmpeg package).
