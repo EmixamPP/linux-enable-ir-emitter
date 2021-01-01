@@ -1,0 +1,19 @@
+# Lenovo Thinkpad T15
+You can directly use my script. 
+
+# Dell : XPS 13 9310 DE + XPS 15 9500
+.unit = 0x04,
+
+# Lenovo Yoga Slim 7
+__u8 data[9] = {0x01,0x03,0x02,0x00,0x00,0x00,0x00,0x00,0x00};
+.unit = 0x0e, 
+.selector = 0x06, 
+.size = 9,
+
+# Razer : Blade 15" Advanced 2019 
+# Lenovo : Yoga S740 + X395 + L590 + X1 Extreme Gen2 + T490 + T490S + T495S + X1 Yoga Gen4
+=> @PetePriority https://github.com/PetePriority/chicony-ir-toggle
+__u8 data[2] = {0x02, 0x19};
+.unit = 0x0e,
+.selector = 0x0e,
+.size = 2,
