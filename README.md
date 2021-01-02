@@ -16,9 +16,9 @@ Before starting all these steps; some users have shared their script settings. T
 When you have found the path corresponding to the ir camera, write it down later (step 11).
 4. Install Windows in a VM and allow Windows access to the camera.
 5. Install Wireshark on your distro
-6. Run the command `sudo modprob usbmon` to allow Wireshark to observe the bus and start it with sudo.
-8. In Wireshark and go to the usbmon corresponding to the number of the bus and use the filter `usb.transfer_type == 0x02 && usb.bmRequestType == 0x21` (to only display camera control packets)
-9. Go in the security options tab of the Windows settings and click on launch an improvement of the recognition of Windows Hello. A pop up is displayed and asks if we want to start the test, you can go back to Wireshark without having to go any further.
+6. Run the command `sudo modprob usbmon` to allow Wireshark to observe the bus and start it with sudo : `sudo wireshark`.
+8. In Wireshark, go to the usbmon corresponding to the number of the bus. After that, use the filter `usb.transfer_type == 0x02 && usb.bmRequestType == 0x21` (to only display camera control packets)
+9. In the VM, go in the security options tab of the Windows settings and click on launch an improvement of the recognition of Windows Hello. A pop up is displayed and asks if we want to start the test, you can go back to Wireshark without having to go any further.
 10. You can stop the reccording in Wireshark. Now you will have to find the right wValue and wIndex associated with the emitter in Wireshark. For this you will have to test each different proposal of the Wireshark logs.
 11. Open the Setup Data section, and note the wValue, the wIndex, the wLength and the Data fragment for the next step.
 12. Open the enable-ir-emitter.c file and modify my information with yours (the file is commented to help you).
