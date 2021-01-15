@@ -1,7 +1,7 @@
 # Lenovo : Thinkpad T15 + Yoga Slim 7
 You can directly use my script. 
 
-# Dell : XPS 13 9310 DE + XPS 15 9500
+# Dell : XPS 13 9310 DevEdition + XPS 15 9500 + XPS 9310 2in1
 .unit = 0x04,
 
 # Razer : Blade 15" Advanced 2019 
