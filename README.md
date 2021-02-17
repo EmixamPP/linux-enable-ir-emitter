@@ -40,5 +40,5 @@ However, at the step 8-9, to find the packet that activates the emitter may be s
 I can therefore only advise you to test as many cases as possible where the emitter could receive a packet asking it to prepare to emit when the camera is turned on. I remain available if you need more details !
 
 ## Documentation
-* <https://www.kernel.org/doc/html/v5.10/userspace-api/media/drivers/uvcvideo.html>
+* <https://www.kernel.org/doc/html/v5.11/userspace-api/media/drivers/uvcvideo.html>
 * <https://wiki.wireshark.org/CaptureSetup/USB>
