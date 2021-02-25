@@ -10,3 +10,9 @@ You can directly use my script.
 __u8 data[2] = {0x02, 0x19};
 .selector = 0x0e,
 .size = 2,
+
+# Clevo NS50MU (System76 Darter Pro (darp7), PCSPECIALIST 15,6" LAFITÉ PRO and TUXEDO InfinityBook S 15 Gen6)
+__u8 data[9] = {0x01,0x00,0x00,0x00};
+.unit = 0x0a, //2 first symbols of wIndex
+.selector = 0x09, //2 first symbols of wValue
+.size = 4, //wLength

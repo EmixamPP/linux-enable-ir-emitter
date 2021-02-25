@@ -19,16 +19,16 @@ int main() {
     }
 
     //Data Fragment
-    __u8 data[9] = {0x01,0x03,0x02,0x00,0x00,0x00,0x00,0x00,0x00};
+    __u8 data[9] = {0x01,0x00,0x00,0x00};
     //You can use my python data-seq-to-hex script for format the data fragment directly in the buffer format.
     //You just have to pass the data fragment in parameter
     //Don't forget to change the buffer size with the value of wLength
 
     struct uvc_xu_control_query query = {
-        .unit = 0x0e, //2 first symbols of wIndex
-        .selector = 0x06, //2 first symbols of wValue
+        .unit = 0x0a, //2 first symbols of wIndex
+        .selector = 0x09, //2 first symbols of wValue
         .query = UVC_SET_CUR,
-        .size = 9, //wLength
+        .size = 4, //wLength
         .data = (__u8*)&data,
     };
 
