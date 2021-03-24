@@ -8,7 +8,7 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 
 ## Setting up the script
 (For information, the values used in the script are the one that works for my Lenovo T15.)
-Before starting all these steps; some users have shared their script settings. Take a look in `config.txt`, if you find your computer, you can go directly to step 11 and modify the lines referenced by `config.txt`.
+Before starting all these steps; some users have shared their script settings. Take a look in `config.txt`, if you find your computer (or perhaps a similar reference), you can go directly to step 11 and modify the lines referenced by `config.txt`.
 
 1. Download enable-ir-emitter.c
 2. Run the command `lsusb` to find your camera bus and write it down for later (step 7).
