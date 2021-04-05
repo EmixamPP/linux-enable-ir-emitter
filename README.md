@@ -1,5 +1,5 @@
 # linux-enable-ir-emitter
-Provides support for infrared cameras that are not directly supported.
+Provides support for infrared cameras that are not directly supported (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called. 
 
 This program was originally designed by [@PetePriority](https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it.
 I also provide in the readme a complete tutorial to help you adapt it to your camera.
