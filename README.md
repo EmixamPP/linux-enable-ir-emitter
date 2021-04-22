@@ -5,13 +5,23 @@ This program was originally designed by [@PetePriority](https://github.com/PeteP
 
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
+## !new! Automatic configuration
+When the community uses my git and follows the steps explained below, it happens that some share the script configuration that works with their camera. 
+In order to help those who are less comfortable with this kind of manipulation, I have set up an automatic script that tests on your camera the different configurations that users have shared. 
+So before you start reading my whole tutorial below, try the automatic configuration first, if it works you just saved at least an hour! 
+
+1. Run the python script `cd auto && python auto-config.py`
+2. The script will ask you to test your infrared camera, you just have to answer with yes/no if the infrared emitter works
+3. If no configuration works, go to the Setting up the script section bellow.
+4. If a configuration works, it will propose you to create a systemd service to automatically activate the transmitter at system startup. 
+
 ## Setting up the script
 (For information, the values used in the script are the one that works for my Lenovo T15.)
 Before starting all these steps; some users have shared their script settings. Take a look in `config.txt`, if you find your computer (or perhaps a similar reference), you can go directly to step 11 and modify the lines referenced by `config.txt`.
 
 1. Download enable-ir-emitter.c
 2. Run the command `lsusb` to find your camera bus and write it down for later (step 7).
-3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera with `ffplay /dev/videoX` (ffmpeg package).
+3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera, e.g. with `ffplay /dev/videoX` (ffmpeg package).
 When you have found the path corresponding to the ir camera, write it down later (step 11).
 4. Install Windows in a VM and allow Windows access to the camera.
 5. Install Wireshark on your distro
