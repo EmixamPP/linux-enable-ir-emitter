@@ -5,10 +5,10 @@ This program was originally designed by [@PetePriority](https://github.com/PeteP
 
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
-## !new! Automatic configuration
+## !new! Automatic setup
 When the community uses my git and follows the steps explained below, it happens that some share the script configuration that works with their camera. 
 In order to help those who are less comfortable with this kind of manipulation, I have set up an automatic script that tests on your camera the different configurations that users have shared. 
-So before you start reading my whole tutorial below, try the automatic configuration first, if it works you just saved at least an hour! 
+So before you start reading my whole tutorial below, try the automatic setup first, if it works you just saved at least an hour! 
 
 1. Run the python script `cd auto && python auto-config.py`
 2. The script will ask you to test your infrared camera, you just have to answer with yes/no if the infrared emitter works
@@ -51,5 +51,5 @@ However, at the step 8-9, to find the packet that activates the emitter may be s
 I can therefore only advise you to test as many cases as possible where the emitter could receive a packet asking it to prepare to emit when the camera is turned on. I remain available if you need more details !
 
 ## Documentation
-* <https://www.kernel.org/doc/html/v5.11/userspace-api/media/drivers/uvcvideo.html>
+* <https://www.kernel.org/doc/html/v5.12/userspace-api/media/drivers/uvcvideo.html>
 * <https://wiki.wireshark.org/CaptureSetup/USB>
