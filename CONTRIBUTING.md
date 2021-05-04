@@ -17,4 +17,6 @@ If you want to contribute to this project, here is what to do:
     
 Fork the git and send me a pull request. Or if you prefer, because it is easier, open an issue. 
 
+By the way, my English is not the best, if some sentences in the readme disturb you, don't hesitate to correct them! 
+
 Thank you for your help ! 
