@@ -1,0 +1,85 @@
+#!/bin/bash
+BASE_PATH=$(realpath $0)
+BASE_PATH="${BASE_PATH%linux-enable-ir-emitter}"
+
+PYTHON_FIND_CONFIG_PATH="${BASE_PATH}find-config-ir-emitter.py"
+CONFIG_FILE="${BASE_PATH}config.json"
+
+BIN_ENABLE_IR_PATH="${BASE_PATH}enable-ir-emitter"
+
+SERVICE_ENABLE_IR="enable-ir-emitter@.service"
+SERVICE_ENABLE_IR_NO_EXT="${SERVICE_ENABLE_IR%.service}"
+SERVICE_ENABLE_IR_PATH="${BASE_PATH}${SERVICE_ENABLE_IR}"
+
+
+function find_configuration() {
+    echo $(python $PYTHON_FIND_CONFIG_PATH $CONFIG_FILE)
+}
+
+# take in argument the config 
+function run_configuration() {
+    $BIN_ENABLE_IR_PATH $@
+    [ $? -eq 0 ] && echo "Success"
+}
+
+function find_and_run() {
+    local config=$(find_configuration)
+    ([[ "$config" == *"-"* ]] && run_configuration "$config") || echo "$config"
+}
+
+# take in argument the enable or disable 
+function systemd() {
+    [[ "$1" != "enable" ]] && [[ "$1" != "disable" ]] && echo "Bad use, -h to diplay help." >&2 && exit 1
+
+    local config=$(find_configuration)
+    [[ "$config" != *"-"* ]] && echo "$config" && exit 1
+
+    if [[ "$1" == "disable" ]]; then
+        sudo systemctl disable "$SERVICE_ENABLE_IR"
+    elif [[ "$1" == "enable" ]]; then
+        sudo systemctl enable $SERVICE_ENABLE_IR_PATH
+        sudo systemctl start ${SERVICE_ENABLE_IR_NO_EXT}@"$CONFIG".service
+    fi 
+
+}
+
+function show_help() {
+    columnPrint="%-20s%-s\n"
+    printf "usage: linux-enable-ir-emitter [-f | -r <config> | -rf | -s <enable|disable> | -h]\n\n"
+
+    printf "Parameters:\n"
+    printf "$columnPrint" "-f, --find" "search a configuration for the ir emitter, return <config> if success"
+    printf "$columnPrint" "-r, --run" "takes as argument <config> returned by 'linux-enable-ir-emitter -f'"
+    printf "$columnPrint" "-rf" "redirects output from -f to -r"
+    printf "$columnPrint" "-s, --systemd" "create a systemd service to to run -rf every time the system is opened, require administrator privilege"
+    printf "$columnPrint" "-h, --help" "shows this help"
+
+    printf "\n"
+    printf "Arguments:\n"
+    printf "$columnPrint" "<config>" "-dataSize ... -data ... -unit ... -selector ..."
+    printf "$columnPrint" "<enable|disable>" "enable or disable the systemd service"
+}
+
+case "$1" in
+-f | --find)
+    find_configuration
+    ;;
+-r | --run)
+    shift 1
+    run_configuration $@
+    ;;
+-rf)
+    find_and_run
+    ;;
+-s | --systemd)
+    shift 1
+    systemd $1
+    ;;
+-h | --help)
+    show_help
+    ;;
+*)
+    echo "Bad use, -h to diplay help." >&2
+    exit 1
+    ;;
+esac
