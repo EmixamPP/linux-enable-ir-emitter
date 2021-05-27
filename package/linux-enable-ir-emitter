@@ -7,8 +7,7 @@ CONFIG_FILE="${BASE_PATH}config.json"
 
 BIN_ENABLE_IR_PATH="${BASE_PATH}enable-ir-emitter"
 
-SERVICE_ENABLE_IR="enable-ir-emitter@.service"
-SERVICE_ENABLE_IR_NO_EXT="${SERVICE_ENABLE_IR%.service}"
+SERVICE_ENABLE_IR="enable-ir-emitter.service"
 SERVICE_ENABLE_IR_PATH="${BASE_PATH}${SERVICE_ENABLE_IR}"
 
 
@@ -38,7 +37,7 @@ function systemd() {
         sudo systemctl disable "$SERVICE_ENABLE_IR"
     elif [[ "$1" == "enable" ]]; then
         sudo systemctl enable $SERVICE_ENABLE_IR_PATH
-        sudo systemctl start ${SERVICE_ENABLE_IR_NO_EXT}@"$CONFIG".service
+        sudo systemctl start $SERVICE_ENABLE_IR
     fi 
 
 }
