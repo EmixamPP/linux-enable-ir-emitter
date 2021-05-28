@@ -55,7 +55,7 @@ function show_help() {
 
     printf "\n"
     printf "Arguments:\n"
-    printf "$columnPrint" "<config>" "-dataSize ... -data ... -unit ... -selector ..."
+    printf "$columnPrint" "<config>" "-dataSize <integer> -data <integer integer ...(dataSize elements)> -unit <integer> -selector <integer>"
     printf "$columnPrint" "<enable|disable>" "enable or disable the systemd service"
 }
 
