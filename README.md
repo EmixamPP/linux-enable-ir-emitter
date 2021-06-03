@@ -5,7 +5,7 @@ This program was originally designed by [@PetePriority](https://github.com/PeteP
 
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
-## !new! Automatic setup
+## Automatic setup
 When the community uses my git and follows the steps explained below, it happens that some share the script configuration that works with their camera. 
 In order to help those who are less comfortable with this kind of manipulation, I have set up an automatic script that tests on your camera the different configurations that users have shared. 
 So before you start reading my whole tutorial below, try the automatic setup first, if it works you just saved at least an hour! 
