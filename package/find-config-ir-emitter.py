@@ -1,10 +1,16 @@
+#!/usr/bin/env python
+
+import os
 from json import load
 from os import system
 from sys import argv
 
+
 if __name__ == "__main__":
     with open(argv[1]) as config_file:
         config_list = load(config_file)
+
+    script_path = os.path.dirname(os.path.abspath(__file__))
 
     for config in config_list:
         data = config["data"]
@@ -13,7 +19,7 @@ if __name__ == "__main__":
         selector = config["selector"]
 
         params = "-dataSize {} -data {} -unit {} -selector {}".format(data_size, data, unit, selector)
-        command = "enable-ir-emitter " + params
+        command = f"{script_path}/enable-ir-emitter {params}"
         res = system(command)
 
         if not res:
