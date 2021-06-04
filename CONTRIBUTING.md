@@ -10,7 +10,7 @@ If you want to contribute to this project, here is what to do:
 * Case 2 : you have found a configuration yourself by following the steps described because no configuration of `config.txt` works for you.
   * You can add at the end of the `config.txt` file, the parameters that are different from those already present in the file.
     And indicate above the reference of your computer
-  * You can add in the `auto/config.json` file each parameter of the script 
+  * You can add in the `auto/config.yaml` file each parameter of the script 
     (except the camera path, as I always saw /dev/video2, but I can make it modifiable if needed).
     Use the json structure of the other configurations already present in the file. 
     This file is used for automatic setup. 

@@ -1,4 +1,4 @@
-from json import load
+from yaml import load, FullLoader
 from os import system
 
 
@@ -20,8 +20,8 @@ if __name__ == "__main__":
     system("gcc auto-enable-ir-emitter.c -o enable-ir-emitter")
 
     print("Trying all know infrared camera configuration ...")
-    with open("config.json") as config_file:
-        config_list = load(config_file)
+    with open("config.yaml") as config_file:
+        config_list = load(config_file, Loader=FullLoader)
 
     i = 0
     for config in config_list:
