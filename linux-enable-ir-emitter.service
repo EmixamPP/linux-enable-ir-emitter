@@ -3,7 +3,8 @@ Description=enable ir emitter
 After=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
 
 [Service]
-ExecStart=/usr/local/bin/enable-ir-emitter
+Type=one-shot
+ExecStart=/usr/bin/linux-enable-ir-emitter -f
 
 [Install]
 WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target

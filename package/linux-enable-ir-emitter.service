@@ -1,9 +1,0 @@
-[Unit]
-Description=enable ir emitter
-
-[Service]
-Type=one-shot
-ExecStart=/usr/bin/enable-ir-emitter -f
-
-[Install]
-WantedBy=multi-user.target
