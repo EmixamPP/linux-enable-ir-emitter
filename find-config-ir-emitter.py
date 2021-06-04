@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from json import load
+from yaml import load
 from os import system
 from sys import argv
 
@@ -17,7 +17,6 @@ if __name__ == "__main__":
         data_size = data.count(" ") + 1
         unit = config["unit"]
         selector = config["selector"]
-
         params = "-dataSize {} -data {} -unit {} -selector {}".format(data_size, data, unit, selector)
         command = f"{script_path}/enable-ir-emitter {params}"
         res = system(command)
