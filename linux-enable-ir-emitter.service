@@ -4,7 +4,7 @@ After=multi-user.target suspend.target hibernate.target hybrid-sleep.target susp
 
 [Service]
 Type=one-shot
-ExecStart=/usr/bin/linux-enable-ir-emitter -f
+ExecStart=/usr/bin/linux-enable-ir-emitter -rf
 
 [Install]
 WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target

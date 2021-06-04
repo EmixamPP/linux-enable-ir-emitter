@@ -2,7 +2,7 @@
 
 BASE_PATH=/usr/lib/linux-enable-ir-emitter/
 PYTHON_FIND_CONFIG_PATH="${BASE_PATH}find-config-ir-emitter.py"
-CONFIG_FILE="${BASE_PATH}config.json"
+CONFIG_FILE="${BASE_PATH}config.yaml"
 BIN_ENABLE_IR_PATH="${BASE_PATH}enable-ir-emitter"
 
 
