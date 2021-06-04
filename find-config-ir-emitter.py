@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import os
-from yaml import load
+from yaml import load, FullLoader
 from os import system
 from sys import argv
 
 
 if __name__ == "__main__":
     with open(argv[1]) as config_file:
-        config_list = load(config_file)
+        config_list = load(config_file, Loader=FullLoader)
 
     script_path = os.path.dirname(os.path.abspath(__file__))
 
