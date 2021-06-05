@@ -34,6 +34,11 @@ function show_help() {
     printf "Arguments:\n"
     printf "$columnPrint" "<config>" "-dataSize <integer> -data <integer integer ...(dataSize elements)> -unit <integer> -selector <integer>"
     printf "$columnPrint" "<enable|disable>" "enable or disable the systemd service"
+    
+    printf "\n"
+    printf "Systemd:\n"
+    printf "A systemd service is also available, which runs -rf every time the system is opened."
+    printf "Command to run: systemctl enable --now linux-enable-ir-emitter.service"
 }
 
 case "$1" in
