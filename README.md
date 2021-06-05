@@ -41,7 +41,7 @@ For howdy, set the dark_threshold to 100 in `sudo howdy config`
 1. Download enable-ir-emitter.service.
 2. Copy enable-ir-emitter to /usr/local/bin : `sudo cp enable-ir-emitter /usr/local/bin`.
 3. Copy `enable-ir-emitter.service` to /etc/systemd/system/ : `sudo cp enable-ir-emitter.service /etc/systemd/system/`.
-4. Run `sudo systemctl enable enable-ir-emitter && sudo systemctl start enable-ir-emitter` to launch the script each time the system is opened.
+4. Run `sudo systemctl enable --now enable-ir-emitter` to launch the script each time the system is opened.
 
 At startup, if you have the error `Unable to open a file descriptor for /dev/videoX` [@m4rtins](https://github.com/m4rtins) found a solution for this problem. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
 
