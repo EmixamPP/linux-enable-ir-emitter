@@ -17,3 +17,6 @@ __u8 data[4] = {0x01,0x00,0x00,0x00};
 .unit = 0x0a,
 .selector = 0x09,
 .size = 4,
+
+# Lenovo : ideapad s540(XiaoxinPro13)
+.unit = 0x0a
