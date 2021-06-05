@@ -4,7 +4,7 @@ from os import system
 
 def create_systemd(command):
     print("Creation of the service ...")
-    file_content = "[Unit]\nDescription=enable ir emitter\nAfter=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n\n[Service]\nType=one-shot\nExecStart=/usr/local/bin/{}\n\n[Install]\nWantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target".format(command[2:])
+    file_content = "[Unit]\nDescription=enable ir emitter\nAfter=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n\n[Service]\nType=one-shot\nExecStart=/usr/local/bin/{}\n\n[Install]\nWantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n".format(command[2:])
 
     file = open("enable-ir-emitter.service", "w")
     file.write(file_content)
