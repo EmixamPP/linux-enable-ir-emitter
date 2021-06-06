@@ -16,6 +16,14 @@ Usage:
 
 # uninstall enable-ir-emitter
 uninstall() {
+  # check if chicony-ir-toggle was installed
+  if [ -f /usr/local/bin/chicony-ir-toggle ]
+  then
+    sudo rm -rf /usr/local/bin/chicony-ir-toggle
+    sudo rm -rf /lib/udev/rules.d/99-ir-led.rules
+    sudo rm -rf /lib/systemd/system-sleep/ir-led.sh
+  fi
+  
   # disable service enable-ir-emitter
   sudo systemctl stop enable-ir-emitter
   sudo systemctl disable enable-ir-emitter
