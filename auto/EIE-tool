@@ -9,9 +9,9 @@ usage() {
 Usage:
   bash EIE-tool [option]
   OPTS:
-  help    -> print usage of this script
-  remove  -> uninstall enable-ir-emitter
-  repair  -> reinstall enable-ir-emitter"
+    help    -> print usage of this script
+    remove  -> uninstall enable-ir-emitter
+    repair  -> reinstall enable-ir-emitter"
 }
 
 # uninstall enable-ir-emitter
