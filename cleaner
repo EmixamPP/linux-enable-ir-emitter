@@ -5,12 +5,13 @@
 usage() {
   echo "Description:
   This is a simple tool to help repair some problems cased by previous config.
+
 Usage:
   bash cleaner [option]
-  OPTS:
-    help    -> print usage of this script
-    remove  -> uninstall enable-ir-emitter
-    repair  -> reinstall enable-ir-emitter"
+  option:
+    help           print usage of this script
+    uninstall      uninstall enable-ir-emitter
+    reinstall      reinstall enable-ir-emitter"
 }
 
 uninstall() {
@@ -34,17 +35,18 @@ uninstall() {
 
 reinstall() {
   uninstall
-  sudo python ./auto/auto-config.py
+  cd auto
+  sudo python auto-config.py
 }
 
 case $1 in
   help)
     usage
   ;;
-  remove)
+  "uninstall")
     uninstall
   ;;
-  repair)
+  "reinstall")
     reinstall
   ;;
   *)
