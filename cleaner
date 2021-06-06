@@ -36,7 +36,7 @@ uninstall() {
 reinstall() {
   uninstall
   cd auto
-  sudo python auto-config.py
+  sudo python3 auto-config.py
 }
 
 case $1 in
