@@ -15,7 +15,7 @@ So before you start reading my whole tutorial below, try the automatic setup fir
 3. If no configuration works, go to the Setting up the script section bellow.
 4. If a configuration works, it will propose you to create a systemd service to automatically activate the transmitter at system startup. 
 
-You can easily uninstall what the script did with: `bash cleaner uninstall`
+You can easily uninstall what the script did with: `bash cleaner uninstall` (thanks to [@supdrewin](https://github.com/supdrewin))
 
 ## Setting up the script
 (For information, the values used in the script are the one that works for my Lenovo T15.)
