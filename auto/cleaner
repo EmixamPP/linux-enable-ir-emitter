@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# this is a simple tool to help repair some problems cased by previous config
+
+usage() {
+  echo "Description:
+  This is a simple tool to help repair some problems cased by previous config.
+Usage:
+  bash cleaner [option]
+  OPTS:
+    help    -> print usage of this script
+    remove  -> uninstall enable-ir-emitter
+    repair  -> reinstall enable-ir-emitter"
+}
+
+uninstall() {
+  # uninstall chicony-ir-toggle if it exist
+  sudo rm -rf /usr/local/bin/chicony-ir-toggle
+  sudo rm -rf /lib/udev/rules.d/99-ir-led.rules
+  sudo rm -rf /lib/systemd/system-sleep/ir-led.sh
+
+  
+  # disable systemd service enable-ir-emitter if it exist
+  if [ -f /etc/systemd/system/enable-ir-emitter.service ]
+  then
+    sudo systemctl stop enable-ir-emitter
+    sudo systemctl disable enable-ir-emitter
+  fi
+
+  # uninstall all enable-ir-emitter if it exist
+  sudo rm -rf /etc/systemd/system/enable-ir-emitter.service
+  sudo rm -rf /usr/local/bin/enable-ir-emitter
+}
+
+reinstall() {
+  uninstall
+  sudo python ./auto/auto-config.py
+}
+
+case $1 in
+  help)
+    usage
+  ;;
+  remove)
+    uninstall
+  ;;
+  repair)
+    reinstall
+  ;;
+  *)
+    echo "use 'bash cleaner help' for help"
+    exit 1
+  ;;
+esac
+
+exit 0
