@@ -15,7 +15,7 @@ So before you start reading my whole tutorial below, try the automatic setup fir
 3. If no configuration works, go to the Setting up the script section bellow.
 4. If a configuration works, it will propose you to create a systemd service to automatically activate the transmitter at system startup. 
 
-You can easily uninstall what the script did with: `bash cleaner uninstall`
+You can easily uninstall what the script did with: `bash cleaner remove`
 
 ## Setting up the script
 (For information, the values used in the script are the one that works for my Lenovo T15.)
@@ -46,7 +46,7 @@ For howdy, set the dark_threshold to 100 in `sudo howdy config`
 4. Run `sudo systemctl enable --now enable-ir-emitter` to launch the script each time the system is opened.
 
 ## Issues
-- If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the [@supdrewin](https://github.com/supdrewin) script to clean the installation: `bash cleaner reinstall`. Which will uninstall `chicony-ir-toggle` and run my automatic installation script. 
+- If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the [@supdrewin](https://github.com/supdrewin) script to clean the installation: `bash cleaner repair`. Which will uninstall `chicony-ir-toggle` and run my automatic installation script. 
 - At startup, if you have the error `Unable to open a file descriptor for /dev/videoX` [@m4rtins](https://github.com/m4rtins) found a solution for this problem. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
 
 ## Note
