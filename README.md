@@ -43,7 +43,11 @@ For howdy, set the dark_threshold to 100 in `sudo howdy config`
 3. Copy `enable-ir-emitter.service` to /etc/systemd/system/ : `sudo cp enable-ir-emitter.service /etc/systemd/system/`.
 4. Run `sudo systemctl enable --now enable-ir-emitter` to launch the script each time the system is opened.
 
-At startup, if you have the error `Unable to open a file descriptor for /dev/videoX` [@m4rtins](https://github.com/m4rtins) found a solution for this problem. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
+You can easily uninstall all these manipulations with: `bash cleaner uninstall`
+
+## Issues
+- If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the [@supdrewin](https://github.com/supdrewin) script to clean the installation: `bash cleaner reinstall`. Which will uninstall `chicony-ir-toggle` and run my automatic installation script. 
+- At startup, if you have the error `Unable to open a file descriptor for /dev/videoX` [@m4rtins](https://github.com/m4rtins) found a solution for this problem. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
 
 ## Note
 However, at the step 8-9, to find the packet that activates the emitter may be sent at another time. For example, it may be sent at the beginning of the test, so you have to launch it. Or at the moment when Windows start because with my camera Windows turns off the transmitter every time it is no longer needed but maybe not with your camera.
