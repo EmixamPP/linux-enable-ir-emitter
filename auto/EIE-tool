@@ -17,6 +17,7 @@ Usage:
 # uninstall enable-ir-emitter
 uninstall() {
   # check if chicony-ir-toggle was installed
+  # try to rule out possible conflicts
   if [ -f /usr/local/bin/chicony-ir-toggle ]
   then
     sudo rm -rf /usr/local/bin/chicony-ir-toggle
