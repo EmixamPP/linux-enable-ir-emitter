@@ -15,6 +15,8 @@ So before you start reading my whole tutorial below, try the automatic setup fir
 3. If no configuration works, go to the Setting up the script section bellow.
 4. If a configuration works, it will propose you to create a systemd service to automatically activate the transmitter at system startup. 
 
+You can easily uninstall what the script did with: `bash cleaner uninstall`
+
 ## Setting up the script
 (For information, the values used in the script are the one that works for my Lenovo T15.)
 Before starting all these steps; some users have shared their script settings. Take a look in `config.txt`, if you find your computer (or perhaps a similar reference), you can go directly to step 11 and modify the lines referenced by `config.txt`.
@@ -42,8 +44,6 @@ For howdy, set the dark_threshold to 100 in `sudo howdy config`
 2. Copy enable-ir-emitter to /usr/local/bin : `sudo cp enable-ir-emitter /usr/local/bin`.
 3. Copy `enable-ir-emitter.service` to /etc/systemd/system/ : `sudo cp enable-ir-emitter.service /etc/systemd/system/`.
 4. Run `sudo systemctl enable --now enable-ir-emitter` to launch the script each time the system is opened.
-
-You can easily uninstall all these manipulations with: `bash cleaner uninstall`
 
 ## Issues
 - If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the [@supdrewin](https://github.com/supdrewin) script to clean the installation: `bash cleaner reinstall`. Which will uninstall `chicony-ir-toggle` and run my automatic installation script. 
