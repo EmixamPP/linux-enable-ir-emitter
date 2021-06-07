@@ -1,5 +1,5 @@
 from yaml import load, FullLoader
-from os import system
+from os import system, path
 
 
 def create_systemd(command):
@@ -38,7 +38,13 @@ if __name__ == "__main__":
         check = ""
         if not res:
             while check not in ("yes", "no", "y", "n"):
-                check = input("A configuration has been found, please test if the emitter of your infrared camera works.\nDoes it work? Yes/No ? ").lower()
+                print("A configuration has been found,", end="")
+                if path.exists("/usr/bin/ffplay"):
+                    print("now test the emitter of your infrared camera by ffplay.")
+                    system("bash -c \"ffplay /dev/video2 &> /dev/null &\necho 'Wait for 5 seconds...'\nsleep 5\nkillall ffplay\"")
+                else:
+                    print("please test if the emitter of your infrared camera works by yourself.")
+                check = input("Does it work? Yes/No ? ").lower()
 
             if check in ("yes", "y"):
                 check = ""
