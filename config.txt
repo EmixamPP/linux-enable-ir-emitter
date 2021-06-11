@@ -1,4 +1,4 @@
-# Lenovo : Thinkpad T15 + Yoga Slim 7 + ThinkPad T14 + Yoga 14s
+# Lenovo : T15 Gen1 + Yoga Slim 7 + T14 Gen1 + Yoga 14s + X1 Carbon Gen9
 # Razer : Book 13
 You can directly use my script. 
 
