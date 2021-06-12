@@ -17,7 +17,7 @@ def create_systemd(command):
 
 if __name__ == "__main__":
     print("Compilation of the C script ...")
-    system("gcc auto-enable-ir-emitter.c -o enable-ir-emitter")
+    system("gcc enable-ir-emitter-template.c -o enable-ir-emitter")
 
     print("Trying all know infrared camera configuration ...")
     with open("config.yaml") as config_file:

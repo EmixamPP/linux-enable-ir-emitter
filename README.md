@@ -21,7 +21,7 @@ You can easily uninstall what the script did with: `bash cleaner uninstall` (tha
 (For information, the values used in the script are the one that works for my Lenovo T15.)
 Before starting all these steps; some users have shared their script settings. Take a look in `config.txt`, if you find your computer (or perhaps a similar reference), you can go directly to step 11 and modify the lines referenced by `config.txt`.
 
-1. Download enable-ir-emitter.c
+1. Open the `manual` directory and open `enable-ir-emitter.c` in your text editor.
 2. Run the command `lsusb` to find your camera bus and write it down for later (step 7).
 3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera, e.g. with `ffplay /dev/videoX` (ffmpeg package).
 When you have found the path corresponding to the ir camera, write it down later (step 11).
@@ -32,7 +32,7 @@ When you have found the path corresponding to the ir camera, write it down later
 9. In the VM, go in the security options tab of the Windows settings and click on launch an improvement of the recognition of Windows Hello. A pop up is displayed and asks if we want to start the test, you can go back to Wireshark without having to go any further.
 10. You can stop the reccording in Wireshark. Now you will have to find the right wValue and wIndex associated with the emitter in Wireshark. For this you will have to test each different proposal of the Wireshark logs.
 11. Open the Setup Data section, and note the wValue, the wIndex, the wLength and the Data fragment for the next step.
-12. Open the enable-ir-emitter.c file and modify my information with yours (the file is commented to help you).
+12. In the `enable-ir-emitter.c` file : modify my information with yours (the file is commented to help you).
 13. Disconnect the camera from the vm and run `gcc enable-ir-emitter.c -o enable-ir-emitter` followed by `./enable-ir-emitter`
 14. If you don't have an error code, try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`)
 15. If not go back to step 11 to test the next entry.
