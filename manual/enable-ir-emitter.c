@@ -6,77 +6,30 @@
 #include <linux/uvcvideo.h>
 #include <linux/usb/video.h>
 #include <sys/ioctl.h>
-#include <string.h>
 
-int readDataSize(int argc, char **argv){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-dataSize")) 
-            return atoi(argv[++i]);
-
-    fprintf (stderr, "Missing the dataSize argument\n");
-    exit(EXIT_FAILURE);
-}
-
-void readData(int argc, char **argv, __u8 *data, unsigned dataSize){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-data")){
-            for(unsigned j = 0; j < dataSize; ++j)
-                data[j] = strtol(argv[++i], NULL, 16);
-            return;
-        }
-    fprintf (stderr, "Missing the data argument\n");
-    exit(EXIT_FAILURE);
-}
-
-int readUnit(int argc, char **argv){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-unit")) 
-            return strtol(argv[++i], NULL, 16);
-
-    fprintf (stderr, "Missing the unit argument\n");
-    exit(EXIT_FAILURE);
-}
-
-int readSelector(int argc, char **argv){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-selector")) 
-            return strtol(argv[++i], NULL, 16);
-
-    fprintf (stderr, "Missing the selector argument\n");
-    exit(EXIT_FAILURE);
-}
-
-/*
-* Four parameters are required: --data, --dataSize, --unit, --selector
-*       --dataSize : wLength, an integer indicating the number of components in the Data Fragment
-*       --data : Data Fragment, each component separated by a space 
-*       --unit : 2 first symbols of wIndex
-*       --selector : 2 first symbols of wValue
-*/
-int main(int argc, char **argv) {
-    int result, fd, dataSize, unit, selector;
+int main() {
+    int result, fd;
     errno = 0;
 
-    dataSize = readDataSize(argc, argv);
-    __u8 data[dataSize]; 
-    readData(argc, argv, data, dataSize);
-
-    unit = readUnit(argc, argv);
-    selector = readSelector(argc, argv);
-
-    struct uvc_xu_control_query query = {
-        .unit = unit,
-        .selector = selector,
-        .query = UVC_SET_CUR,
-        .size = dataSize,
-        .data = (__u8*)&data,
-    };
-
-    const char* device = "/dev/video2";
+    const char* device = "/dev/video2"; //your camera path
     if((fd = open(device, O_WRONLY)) < 0){
         fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
         return EXIT_FAILURE;
     }
+
+    //Data Fragment
+    __u8 data[9] = {0x01, 0x03, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    //You can use my python data-seq-to-hex script for format the data fragment directly in the buffer format.
+    //You just have to pass the data fragment in parameter
+    //Don't forget to change the buffer size with the value of wLength
+
+    struct uvc_xu_control_query query = {
+        .unit = 0x0e, //2 first symbols of wIndex
+        .selector = 0x06, //2 first symbols of wValue
+        .query = UVC_SET_CUR,
+        .size = 9, //wLength
+        .data = (__u8*)&data,
+    };
 
     result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
     if (result || errno) {
