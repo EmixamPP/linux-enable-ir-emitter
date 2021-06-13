@@ -11,36 +11,36 @@ In order to help those who are less comfortable with this kind of manipulation, 
 So before you start reading my whole tutorial below, try the automatic setup first, if it works you just saved at least an hour! 
 
 1. Run the python script `cd auto && python auto-config.py`
-2. The script will ask you to test your infrared camera, you just have to answer with yes/no if the infrared emitter works
+2. The script will ask you to test your infrared camera, you just have to answer with yes/no if the infrared emitter works.
 3. If no configuration works, go to the Setting up the script section bellow.
-4. If a configuration works, it will propose you to create a systemd service to automatically activate the transmitter at system startup. 
+4. If a configuration works, it will propose you to create a systemd service to automatically activate the transmitter at system startup.
 
-You can easily uninstall what the script did with: `bash cleaner uninstall` (thanks to [@supdrewin](https://github.com/supdrewin))
+You can easily uninstall what the script did with: `bash cleaner uninstall` (thanks to [@supdrewin](https://github.com/supdrewin)).
 
 ## Setting up the script
 (For information, the values used in the script are the one that works for my Lenovo T15.)
-Before starting all these steps; some users have shared their script settings. Take a look in `config.txt`, if you find your computer (or perhaps a similar reference), you can go directly to step 11 and modify the lines referenced by `config.txt`.
+Before starting all these steps; some users have shared their script settings. Take a look in `manual\config.txt`, if you find your computer (or perhaps a similar reference), you can go directly to step 11 and modify the lines referenced by `manual\config.txt`.
 
 1. Open the `manual` directory and open `enable-ir-emitter.c` in your text editor.
 2. Run the command `lsusb` to find your camera bus and write it down for later (step 7).
-3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera, e.g. with `ffplay /dev/videoX` (ffmpeg package).
+3. List your camera path with `v4l2-ctl --list-devices` and try to find the ir camera (greyscale image), e.g. with `ffplay /dev/videoX` (ffmpeg package).
 When you have found the path corresponding to the ir camera, write it down later (step 11).
-4. Install Windows in a VM and allow Windows access to the camera.
-5. Install Wireshark on your distro
+4. Install Windows in a VM and allow Windows access to the camera. (Dual boot can also do the trick, but it is less practical)
+5. Install Wireshark on your distro (or on Windows).
 6. Run the command `sudo modprobe usbmon` to allow Wireshark to observe the bus and start it with sudo : `sudo wireshark`.
-8. In Wireshark, go to the usbmon corresponding to the number of the bus. After that, use the filter `usb.transfer_type == 0x02 && usb.bmRequestType == 0x21` (to only display camera control packets)
+8. In Wireshark, go to the usbmon corresponding to the number of the bus. After that, use the filter `usb.transfer_type == 0x02 && usb.bmRequestType == 0x21` (to only display camera control packets).
 9. In the VM, go in the security options tab of the Windows settings and click on launch an improvement of the recognition of Windows Hello. A pop up is displayed and asks if we want to start the test, you can go back to Wireshark without having to go any further.
 10. You can stop the reccording in Wireshark. Now you will have to find the right wValue and wIndex associated with the emitter in Wireshark. For this you will have to test each different proposal of the Wireshark logs.
 11. Open the Setup Data section, and note the wValue, the wIndex, the wLength and the Data fragment for the next step.
 12. In the `enable-ir-emitter.c` file : modify my information with yours (the file is commented to help you).
-13. Disconnect the camera from the vm and run `gcc enable-ir-emitter.c -o enable-ir-emitter` followed by `./enable-ir-emitter`
-14. If you don't have an error code, try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`)
+13. Disconnect the camera from the vm and run `gcc enable-ir-emitter.c -o enable-ir-emitter` followed by `./enable-ir-emitter`.
+14. If you don't have an error code, try if it work with `ffplay /dev/videoX` ! (or `sudo howdy test`).
 15. If not go back to step 11 to test the next entry.
 
-For howdy, set the dark_threshold to 100 in `sudo howdy config`
+For howdy, set the dark_threshold to 100 in `sudo howdy config`.
 
 ## Launch the script at each startup (with systemd)
-1. Download enable-ir-emitter.service.
+1. Open the `manual` directory.
 2. Copy enable-ir-emitter to /usr/local/bin : `sudo cp enable-ir-emitter /usr/local/bin`.
 3. Copy `enable-ir-emitter.service` to /etc/systemd/system/ : `sudo cp enable-ir-emitter.service /etc/systemd/system/`.
 4. Run `sudo systemctl enable --now enable-ir-emitter` to launch the script each time the system is opened.
