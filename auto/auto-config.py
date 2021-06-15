@@ -16,10 +16,8 @@ def create_systemd(command):
 
 
 if __name__ == "__main__":
-    print("Compilation of the C script ...")
     system("gcc enable-ir-emitter-template.c -o enable-ir-emitter")
 
-    print("Trying all know infrared camera configuration ...")
     with open("config.yaml") as config_file:
         config_list = load(config_file, Loader=FullLoader)
 
@@ -52,5 +50,4 @@ if __name__ == "__main__":
                     print("No problem, here is the command: ", command)
                 break
 
-        print("Configuration #{} does not work".format(i))
         i += 1
