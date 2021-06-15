@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Home</class>
+ <widget class="QMainWindow" name="Home">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="vlCentralWidget">
+    <item>
+     <spacer name="topSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="quickAutoBtn">
+      <property name="text">
+       <string>Quick automatic configuration</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="fullAutoBtn">
+      <property name="text">
+       <string>Full automatic configuration</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="manualBtn">
+      <property name="text">
+       <string>Manual configuration</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="modifyBtn">
+      <property name="text">
+       <string>Run acutal configuration</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="systemdBtn">
+      <property name="text">
+       <string>Start infrared emitter at boot</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="botSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>quickAutoBtn</sender>
+   <signal>released()</signal>
+   <receiver>Home</receiver>
+   <slot>quickAutoPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>363</x>
+     <y>195</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>363</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fullAutoBtn</sender>
+   <signal>released()</signal>
+   <receiver>Home</receiver>
+   <slot>fullAutoPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>399</x>
+     <y>251</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>433</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>modifyBtn</sender>
+   <signal>released()</signal>
+   <receiver>Home</receiver>
+   <slot>modifyPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>444</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>444</x>
+     <y>441</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>manualBtn</sender>
+   <signal>released()</signal>
+   <receiver>Home</receiver>
+   <slot>manualPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>500</x>
+     <y>287</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>500</x>
+     <y>445</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>systemdBtn</sender>
+   <signal>released()</signal>
+   <receiver>Home</receiver>
+   <slot>systemdPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>582</x>
+     <y>369</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>582</x>
+     <y>445</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>quickAutoPressed()</slot>
+  <slot>fullAutoPressed()</slot>
+  <slot>manualPressed()</slot>
+  <slot>modifyPressed()</slot>
+  <slot>systemdPressed()</slot>
+ </slots>
+</ui>
