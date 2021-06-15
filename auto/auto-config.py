@@ -3,7 +3,6 @@ from os import system
 
 
 def create_systemd(command):
-    print("Creation of the service ...")
     file_content = "[Unit]\nDescription=enable ir emitter\nAfter=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/{}\n\n[Install]\nWantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n".format(command[2:])
 
     file = open("enable-ir-emitter.service", "w")
@@ -44,7 +43,7 @@ if __name__ == "__main__":
                     check = input("Do you want to automatically activate the emitter at system startup ? Yes/No ? ").lower()
 
                 if check in ("yes", "y"):
-                    print("Creating the script with systemd ... (administrator commands will be executed)")
+                    print("Creation of the systemd service ... (administrator commands will be executed)")
                     create_systemd(command)
                 else:
                     print("No problem, here is the command: ", command)
