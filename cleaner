@@ -9,7 +9,6 @@ usage() {
 Usage:
   bash cleaner [option]
   option:
-    help           print usage of this script
     uninstall      uninstall enable-ir-emitter
     reinstall      reinstall enable-ir-emitter"
 }
@@ -35,14 +34,15 @@ uninstall() {
 
 reinstall() {
   uninstall
-  cd auto
-  sudo python3 auto-config.py
+  cd auto || exit 1
+
+  sudo rm -rf enable-ir-emitter
+  sudo rm -rf enable-ir-emitter.service
+
+  python3 auto-config.py
 }
 
 case $1 in
-  help)
-    usage
-  ;;
   "uninstall")
     uninstall
   ;;
@@ -50,7 +50,7 @@ case $1 in
     reinstall
   ;;
   *)
-    echo "use 'bash cleaner help' for help"
+    usage
     exit 1
   ;;
 esac

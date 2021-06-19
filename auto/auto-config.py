@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from yaml import load, FullLoader
 from os import system
 
@@ -35,7 +37,17 @@ if __name__ == "__main__":
         check = ""
         if not res:
             while check not in ("yes", "no", "y", "n"):
-                check = input("A configuration has been found, please test if the emitter of your infrared camera works.\nDoes it work? Yes/No ? ").lower()
+                check = input("A configuration has been found, do you want to test now ? Yes/No ? ").lower()
+
+            if check in ("yes", "y"):
+                check = ""
+                system("python3 capture.py 2 5")
+            else:
+                check = ""
+                print("OK, please test if the emitter of your infrared camera works by yourself.")
+
+            while check not in ("yes", "no", "y", "n"):
+                check = input("Does it work ? Yes/No ? ").lower()
 
             if check in ("yes", "y"):
                 check = ""
