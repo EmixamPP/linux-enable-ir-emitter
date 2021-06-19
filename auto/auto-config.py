@@ -2,10 +2,12 @@
 
 from yaml import load, FullLoader
 from os import system
+from cv2 import VideoCapture
 
 
 def create_systemd(command):
-    file_content = "[Unit]\nDescription=enable ir emitter\nAfter=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/{}\n\n[Install]\nWantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n".format(command[2:])
+    file_content = "[Unit]\nDescription=enable ir emitter\nAfter=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/{}\n\n[Install]\nWantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target\n".format(
+        command[2:])
 
     file = open("enable-ir-emitter.service", "w")
     file.write(file_content)
@@ -14,6 +16,17 @@ def create_systemd(command):
     system("sudo cp enable-ir-emitter /usr/local/bin")
     system("sudo cp enable-ir-emitter.service /etc/systemd/system")
     system("sudo systemctl enable --now enable-ir-emitter")
+
+
+def capture(video_path_number, time):
+    """Start a video capture.
+    video_path_number -- the integer part of /dev/videoX. e.g.: 2 for /dev/video2 
+    time -- for how long ? (seconds)
+    """
+    capture = VideoCapture(video_path_number)
+    capture.read()
+    system("sleep " + str(time))
+    capture.release()
 
 
 if __name__ == "__main__":
@@ -34,27 +47,18 @@ if __name__ == "__main__":
         command = "./enable-ir-emitter -dataSize {} -data {} -unit {} -selector {}".format(data_size, data, unit, selector)
         res = system(command)
 
-        check = ""
         if not res:
-            while check not in ("yes", "no", "y", "n"):
-                check = input("A configuration has been found, do you want to test now ? Yes/No ? ").lower()
-
-            if check in ("yes", "y"):
-                check = ""
-                system("python3 capture.py 2 5")
+            user_input = input("A configuration has been found, do you want to test now ? Yes/No ? ").lower()
+            if user_input in ("yes", "y"):
+                capture(2, 3)
             else:
-                check = ""
-                print("OK, please test if the emitter of your infrared camera works by yourself.")
+                print("Please test if the emitter of your infrared camera works by yourself.")
 
-            while check not in ("yes", "no", "y", "n"):
-                check = input("Does it work ? Yes/No ? ").lower()
+            user_input = input("Does it work ? Yes/No ? ").lower()
 
-            if check in ("yes", "y"):
-                check = ""
-                while check not in ("yes", "no", "y", "n"):
-                    check = input("Do you want to automatically activate the emitter at system startup ? Yes/No ? ").lower()
-
-                if check in ("yes", "y"):
+            if user_input in ("yes", "y"):
+                user_input = input("Do you want to automatically activate the emitter at system startup ? Yes/No ? ").lower()
+                if user_input in ("yes", "y"):
                     print("Creation of the systemd service ... (administrator commands will be executed)")
                     create_systemd(command)
                 else:
