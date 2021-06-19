@@ -34,11 +34,7 @@ uninstall() {
 
 reinstall() {
   uninstall
-  cd auto || exit 1
-
-  sudo rm -rf enable-ir-emitter
-  sudo rm -rf enable-ir-emitter.service
-
+  cd auto || (echo "Please place you in the git root directory." && exit 1)
   python3 auto-config.py
 }
 
