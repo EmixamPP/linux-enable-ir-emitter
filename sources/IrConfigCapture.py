@@ -1,7 +1,7 @@
 import os
 import pyshark
 
-from sources.IrConfiguration import IrConfiguration
+from IrConfiguration import IrConfiguration
 
 
 class IrConfigCapture():

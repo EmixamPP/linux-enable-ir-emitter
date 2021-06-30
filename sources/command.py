@@ -2,8 +2,8 @@ import yaml
 import os
 import sys
 
-from sources.IrConfiguration import IrConfiguration
-from sources.IrConfigCapture import IrConfigCapture
+from IrConfiguration import IrConfiguration
+from IrConfigCapture import IrConfigCapture
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 config_file_path = local_path + "/config.yaml"

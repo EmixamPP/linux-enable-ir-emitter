@@ -4,7 +4,7 @@ import sys
 import os
 import argparse
 
-from sources import command
+import command
 
 
 def _check_sudo():
