@@ -4,17 +4,43 @@ import sys
 import os
 import argparse
 
+from sources import command
+
+
+def _check_sudo():
+    """Exit if the script isn't run as sudo
+    """
+    if os.getenv("SUDO_USER") is not None:
+        print("Please run as root", file=sys.stderr)
+        sys.exit(1)
+
+
+def _check_no_sudo():
+    """Exit if the script is run as sudo
+    """
+    if os.getenv("SUDO_USER") is None:
+        print("Please don't run as root", file=sys.stderr)
+        sys.exit(1)
+
+
 parser = argparse.ArgumentParser(
     description="Provides support for infrared cameras.",
     formatter_class=argparse.RawTextHelpFormatter,
     prog="linux-enable-ir-emitter",
-    epilog="For help see : https://github.com/EmixamPP/linux-enable-ir-emitter")
+    epilog="For help see : https://github.com/EmixamPP/linux-enable-ir-emitter/wiki"
+)
 
 parser.add_argument(
     "command",
-    help="can be one of the following : run, quick, full, manual, boot :\n\trun the actual config\n\tquick ir configuration\n\tfull ir configuration\n\tmanual ir configuration\n\tenable ir at boot",
+    help="""can be one of the following : run, quick, full, manual, boot, test :
+  run the actual config
+  quick ir configuration
+  full ir configuration
+  manual ir configuration
+  enable ir at boot
+  try to trigger the ir emitter""",
     metavar="command",
-    choices=["run", "quick", "full", "manual", "boot"]
+    choices=["run", "quick", "full", "manual", "boot", "test"]
 )
 
 parser.add_argument(
@@ -25,21 +51,34 @@ parser.add_argument(
     nargs="?"
 )
 
+parser.add_argument(
+    "-p", "--video_path",
+    metavar="video_path",
+    help="specify the path to the infrared camera, by default is '/dev/video2'",
+    nargs=1
+)
+
 args = parser.parse_args()
+video_path = args.video_path[0] if args.video_path else "/dev/video2"
 
 if args.command == "run":
-    print("run")
+    command.run()
 elif args.command == "quick":
-    print('quick')
+    command.quick(video_path)
 elif args.command == "full":
-    print("full")
+    _check_sudo()
+    command.full(video_path)
 elif args.command == "manual":
-    print("manual")
+    _check_no_sudo()
+    command.manual(video_path)
 elif args.command == "boot":
-    if os.getenv("SUDO_USER") is None:
-        print("Please run as root")
+    _check_sudo()
+    if args.boot_status is None:
+        print("Required [boot_status] argument", file=sys.stderr)
         sys.exit(1)
-    elif args.boot_status is None:
-        print("Required [boot_status] argument")
     else:
-        print("boot")
+        command.boot(args.boot_status)
+elif args.command == "test":
+    command.test()
+else:
+    parser.print_help()

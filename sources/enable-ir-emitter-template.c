@@ -47,11 +47,11 @@ int readSelector(int argc, char **argv){
 }
 
 /*
-* Four parameters are required: --data, --dataSize, --unit, --selector
-*       --dataSize : wLength, an integer indicating the number of components in the Data Fragment
-*       --data : Data Fragment, each component separated by a space 
-*       --unit : 2 first symbols of wIndex
-*       --selector : 2 first symbols of wValue
+* Four parameters are required: -data, -dataSize, -unit, -selector 
+*       -dataSize : wLength, an integer indicating the number of components in the Data Fragment [in decimal]
+*       -data : Data Fragment, each component separated by a space [in hexadecimal]
+*       -unit : 2 first symbols of wIndex [in hexadecimal]
+*       -selector : 2 first symbols of wValue [in hexadecimal]
 */
 int main(int argc, char **argv) {
     int result, fd, dataSize, unit, selector;
