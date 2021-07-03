@@ -71,7 +71,8 @@ class IrConfiguration:
         Returns:
             int: 256 if error, else 0
         """
-        command = "{} -dataSize {} -data {} -unit {} -selector {}".format(bin_path, len(self.data), self._data_string(), self.unit, self.selector)
+        command = "{} -dataSize {} -data {} -unit {} -selector {}".format(
+            bin_path, len(self.data), self._data_string(), self.unit, self.selector)
         return os.system(command)
 
     def trigger_ir(self, time=3):
@@ -93,8 +94,10 @@ class IrConfiguration:
             save_dir_path (str): directory in which the file will be saved
         """
         with open(save_dir_path + "/irConfig.yaml", "w") as save_config_file:
-            save_config_file.write("#Caution: any manual modification of this file may corrupt the operation of the program! You must therefore be very careful.\n")
-            save_config_file.write("#Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration before.\n\n")
+            save_config_file.write(
+                "#Caution: any manual modification of this file may corrupt the operation of the program! You must therefore be very careful.\n")
+            save_config_file.write(
+                "#Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration before.\n\n")
             yaml.dump(self, save_config_file)
 
     @staticmethod
@@ -110,3 +113,15 @@ class IrConfiguration:
         with open(saved_path_file, "r") as save_file:
             object_deserialized = yaml.load(save_file, Loader=yaml.Loader)
         return object_deserialized
+
+    def __eq__(self, to_compare):
+        if not isinstance(to_compare, IrConfiguration):
+            return False
+        elif self.data != to_compare.data:
+            return False
+        elif self.unit != to_compare.unit:
+            return False
+        elif self.selector != to_compare.selector:
+            return False
+        else:
+            return True

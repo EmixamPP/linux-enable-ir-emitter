@@ -10,14 +10,17 @@ config_file_path = local_path + "/config.yaml"
 save_config_file_path = local_path + "/irConfig.yaml"
 
 systemd_name = "linux-enable-ir-emitter.service"
-systemd_file_path = local_path + systemd_name
+systemd_file_path = "/usr/lib/systemd/system/" + systemd_name
 
 
 def _show_config_test(ir_config):
-    """Test the configuration and ask the user if it works. In this case the script is exited.
+    """Test the configuration and ask the user if it works. In this case the coinfiguration is saved.
 
     Args:
         ir_config (IrConfiguration): configuration to test
+    
+    Returns:
+        bool: True if the configuration works, else False
     """
     if not ir_config.run():
         ir_config.trigger_ir()
@@ -26,12 +29,31 @@ def _show_config_test(ir_config):
 
         if check in ("yes", "y"):
             print("A configuration have been found. Here is what you can do:")
-            print(
-                "\t- activate the emitter at system startup : 'linux-ir-emitter boot enable'")
-            print(
-                "\t- manually activate the emitter for one session : 'linux-ir-emitter run'")
+            print("\t- activate the emitter at system startup : 'linux-ir-emitter boot enable'")
+            print("\t- manually activate the emitter for one session : 'linux-ir-emitter run'")
             ir_config.save(local_path)
-            sys.exit(0)
+            return True
+    return False
+
+
+def _show_config_contribution(ir_config):
+    """If the configuration does not exist is not in the configuration file. Then the user is invited to share it on Github
+
+    Args:
+        ir_config (IrConfiguration): the configuration to be compared with those in the YAML config file
+    """
+    with open(config_file_path, "r") as config_file:
+        config_list = yaml.load(config_file, Loader=yaml.Loader)
+
+    for config in config_list:
+        ir_config_to_compare = IrConfiguration(
+            config["data"], config["unit"], config["selector"], ir_config.videoPath)
+        if ir_config_to_compare == ir_config:
+            return
+
+    print("Your camera configuration is not in the database shared by the git community.")
+    print("Could you please take 5 minutes to copy and paste the contents of 'linux-enable-ir-emitter manual' into a new issue: https://github.com/EmixamPP/linux-enable-ir-emitter/issues.")
+    print("Thank you for the others !")
 
 
 def quick(video_path):
@@ -43,14 +65,12 @@ def quick(video_path):
     with open(config_file_path, "r") as config_file:
         config_list = yaml.load(config_file, Loader=yaml.Loader)
 
-    i = 0
-    while i < len(config_list):
-        config = config_list[i]
+    for config in config_list:
         ir_config = IrConfiguration(
             config["data"], config["unit"], config["selector"], video_path)
 
-        _show_config_test(ir_config)
-        i += 1
+        if _show_config_test(ir_config):
+            return
 
     print("No configuration was found please execute : 'linux-ir-emitter full'", file=sys.stderr)
 
@@ -73,6 +93,9 @@ def boot(status):
 
     Args:
         status (string): "enable" or "disable"
+
+    Raises:
+        Exception: status arg can only be equal to enable or disable
     """
     if status == "enable":
         os.system("systemctl enable --now {}".format(systemd_file_path))
@@ -116,11 +139,11 @@ def full(video_path):
     """
     input("Please read and folow this tutorial : https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration. Press enter when you'r ready")
     capture = IrConfigCapture(video_path)
-    capture.start(60)
-
+    capture.start(45)
     input("The capturing is finished, make sure the camera is connected to the host os. Press enter when it's done ")
     for ir_config in capture.config_list:
-        _show_config_test(ir_config)
+        if _show_config_test(ir_config):
+            _show_config_contribution(ir_config)
+            return
 
     print("No configuration was found", file=sys.stderr)
-    sys.exit(1)

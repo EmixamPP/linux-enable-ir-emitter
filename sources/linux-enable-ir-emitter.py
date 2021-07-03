@@ -10,16 +10,8 @@ import command
 def _check_sudo():
     """Exit if the script isn't run as sudo
     """
-    if os.getenv("SUDO_USER") is not None:
+    if os.getuid():
         print("Please run as root", file=sys.stderr)
-        sys.exit(1)
-
-
-def _check_no_sudo():
-    """Exit if the script is run as sudo
-    """
-    if os.getenv("SUDO_USER") is None:
-        print("Please don't run as root", file=sys.stderr)
         sys.exit(1)
 
 
@@ -64,12 +56,13 @@ video_path = args.video_path[0] if args.video_path else "/dev/video2"
 if args.command == "run":
     command.run()
 elif args.command == "quick":
+    _check_sudo()
     command.quick(video_path)
 elif args.command == "full":
     _check_sudo()
     command.full(video_path)
 elif args.command == "manual":
-    _check_no_sudo()
+    _check_sudo()
     command.manual(video_path)
 elif args.command == "boot":
     _check_sudo()

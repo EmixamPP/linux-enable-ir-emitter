@@ -11,9 +11,7 @@ class IrConfigCapture():
         Args:
             video_path (string): Path to the infrared camera e.g : "/dev/video2"
         """
-        interfaces = ["usbmon1", "usbmon2", "usbmon3", "usbmon4"]
-        self._capture = pyshark.LiveCapture(interface=interfaces, display_filter="usb.transfer_type==0x02 && usb.bmRequestType==0x21")
-        self._stop_flag = False
+        self._capture = pyshark.LiveCapture(interface="usbmon1", display_filter="usb.transfer_type==0x02 && usb.bmRequestType==0x21")
         self._config_list = []
         self._video_path = video_path
 
@@ -25,7 +23,8 @@ class IrConfigCapture():
         """
         os.system("modprobe usbmon")
         self._capture.sniff(timeout=time)
-        for pkt in self._capture:
+        for i in range(len(self._capture)):
+            pkt = self._capture[i].data
             config = self._pkt_to_config(pkt)
             if config:
                 self._config_list.append(config)
