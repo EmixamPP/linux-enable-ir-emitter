@@ -1,8 +1,7 @@
 # linux-enable-ir-emitter
 Provides support for infrared cameras that are not directly supported (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called. 
 
-This program was originally designed by [@PetePriority](https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it. 
-
+This program was originally designed by [@PetePriority](https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it.\
 At first I just wrote a tutorial and now I have made it into a utility that allows you to configure any infrared camera almost automatically !
 
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
@@ -22,12 +21,9 @@ This requires more preparation, but don't worry [a wiki page](https://github.com
 - At startup, if you have the error `Unable to open a file descriptor for /dev/videoX`. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
 
 ## Thanks to
-For helping me to improve the software
-* [@renyuneyun](https://github.com/renyuneyun)
-* [@supdrewin](https://github.com/supdrewin)
-* [@m4rtins](https://github.com/m4rtins)
+For helping me to improve the software:\
+[@renyuneyun](https://github.com/renyuneyun)  [@supdrewin](https://github.com/supdrewin)  [@m4rtins](https://github.com/m4rtins)
 
-For sharing their camera setup with the community to improve the automatic setup.
-* [@Stkai](https://github.com/Stkai)
-* [@reolat](https://github.com/reolat)
-* [@gregor160300](https://github.com/gregor160300)
+
+For sharing their camera setup with the community to improve the automatic setup:\
+[@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat) [@gregor160300](https://github.com/gregor160300)
