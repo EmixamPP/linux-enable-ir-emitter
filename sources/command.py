@@ -18,7 +18,7 @@ def _show_config_test(ir_config):
 
     Args:
         ir_config (IrConfiguration): configuration to test
-    
+
     Returns:
         bool: True if the configuration works, else False
     """
@@ -97,12 +97,13 @@ def boot(status):
     Raises:
         Exception: status arg can only be equal to enable or disable
     """
-    if status == "enable":
-        os.system("systemctl enable --now {}".format(systemd_file_path))
-    elif status == "disable":
-        os.system("systemctl disable --now {}".format(systemd_name))
+    if os.path.exists(systemd_file_path):
+        if status in ("enable", "disable"):
+            os.system("systemctl {} --now {}".format(status, systemd_name))
+        else:
+            raise Exception("status arg can only be equal to enable or disable")
     else:
-        raise Exception("status arg can only be equal to enable or disable")
+        print("Please install linux-enable-ir-emitter first", file=sys.stderr)
 
 
 def manual(video_path):

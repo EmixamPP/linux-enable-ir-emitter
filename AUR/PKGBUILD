@@ -1,0 +1,28 @@
+pkgname=linux-enable-ir-emitter
+pkgver=20210612.0
+pkgrel=1
+pkgdesc='Enables infrared cameras that are not directly enabled out-of-the box.'
+url='https://github.com/EmixamPP/linux-enable-ir-emitter'
+license=('MIT')
+depends=(
+    'python'
+    'python-pyshark'
+)
+arch=('x86_64')
+source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname"
+    cd sources
+    make
+}
+
+package() {
+    cd $srcdir/$pkgname
+    install -Dm 755 -t /usr/lib/linux-enable-ir-emiter/ enable-ir-emitter
+    install -Dm 644 -t /usr/lib/linux-enable-ir-emiter/ config.yaml
+    install -Dm 755 -t /usr/lib/linux-enable-ir-emiter/ *.py
+    install -Dm 644 -t /usr/lib/systemd/system/ linux-enable-ir-emitter.service
+    ln -fs /usr/lib/linux-enable-ir-emiter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
+}
