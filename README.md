@@ -9,17 +9,23 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 ## How to enable your infrared emitter ?
 You don't necessarily have to install my utility software, it can be used directly from the cloned repertory. But you won't have access to all the features. 
 
-1. To begin, let's install the utility :
+1. To begin, please install the dépendency :
+  - `sudo pacman -S wireshark-cli` for Arch distro based 
+  - `sudo dnf install wireshark-cli` for Fedora distro based 
+  - `sudo apt install tshark` for Debian distro based 
+  -  otherwise install `wireshark` and it should work in any case.
+
+2. Then, let's install the utility :
 ``` shell
 git clone -b software https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
 ```
-2. First of all, try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
-3. The utility will guide you through the terminal to ask you questions and find out if it worked.
-4. If not, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
+3. First of all, try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
+4. The utility will guide you through the terminal to ask you questions and find out if it worked.
+5. If not, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
 This requires more preparation, but don't worry [a wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration) and the terminal are there to guide you. 
-5. To enable the infrared emitter at boot, simply run `sudo linux-enable-ir-emitter boot enable`
+6. To enable the infrared emitter at boot, simply run `sudo linux-enable-ir-emitter boot enable`
 
 ## Issues
 - If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and reinstall `linux-enable-ir-emitter`. 
