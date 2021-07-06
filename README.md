@@ -7,9 +7,14 @@ At first I just wrote a tutorial and now I have made it into a utility that allo
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## How to enable your infrared emitter ?
-You don't necessarily have to install my utility sofware, it can be used directly from the cloned repertory. But you won't have access to all the features. 
+You don't necessarily have to install my utility software, it can be used directly from the cloned repertory. But you won't have access to all the features. 
 
-1. To begin, let's install the utility : `git clone && sudo bash installer.sh install`.
+1. To begin, let's install the utility :
+``` shell
+git clone -b software https://github.com/EmixamPP/linux-enable-ir-emitter.git
+cd linux-enable-ir-emitter
+sudo bash installer.sh install
+```
 2. First of all, try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
 3. The utility will guide you through the terminal to ask you questions and find out if it worked.
 4. If not, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
