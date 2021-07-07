@@ -9,7 +9,7 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 ## How to enable your infrared emitter ?
 You don't necessarily have to install my utility software, it can be used directly from the cloned repertory. But you won't have access to all the features. 
 
-1. To begin, please install the dépendency :
+1. To begin, please install the dependency wireshark :
   - `sudo pacman -S wireshark-cli` for Arch distro based 
   - `sudo dnf install wireshark-cli` for Fedora distro based 
   - `sudo apt install tshark` for Debian distro based 
