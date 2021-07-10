@@ -12,6 +12,12 @@ usage() {
     printf "$columnPrint" "  repair" "uninstall chicony-ir-toggle if possible and reinstall linux-enable-ir-emitter"
 }
 
+install_dependency() {
+    git clone https://github.com/KimiNewt/pyshark.git
+    cd pyshark/src
+    python3 setup.py install
+}
+
 do_install() {
     check_sudo
     cd sources && make
@@ -21,6 +27,8 @@ do_install() {
     install -Dm 755 -t /usr/lib/linux-enable-ir-emiter/ *.py
     install -Dm 644 -t /usr/lib/systemd/system/ linux-enable-ir-emitter.service
     ln -fs /usr/lib/linux-enable-ir-emiter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
+
+    install_dependency
 }
 
 do_uninstall() {
