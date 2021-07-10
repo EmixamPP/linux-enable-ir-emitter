@@ -112,9 +112,14 @@ def manual(video_path):
     Args:
         video_path (string): Path to the infrared camera e.g : "/dev/video2"
     """
+    dummy_config = IrConfiguration([0], 0, 0, video_path)
     if not os.path.exists(save_config_file_path):
-        IrConfiguration([0], 0, 0, video_path).save(local_path)
+        dummy_config.save(local_path)
+
     os.system("/bin/nano " + save_config_file_path)
+    actual_config = IrConfiguration.load(save_config_file_path)
+    if actual_config == dummy_config:
+        os.system("rm " + save_config_file_path)
 
 
 def test():
