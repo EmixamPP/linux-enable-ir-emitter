@@ -17,7 +17,7 @@ You don't necessarily have to install my utility software, it can be used direct
 
 2. Then, let's install the utility :
 ``` shell
-git clone -b software https://github.com/EmixamPP/linux-enable-ir-emitter.git
+git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
 
