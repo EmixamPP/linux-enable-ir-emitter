@@ -24,6 +24,8 @@ sudo bash installer.sh install
 linux-enable-ir-emitter -h
 ```
 
+You can easily uninstall the software by executing `sudo bash installer.sh uninstall`
+
 ## How to enable your infrared emitter ?
 1. Try the quick configuration, it is the easiest and does not require any manipulation : `linux-enable-ir-emitter quick`.
 2. If this does not work, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
