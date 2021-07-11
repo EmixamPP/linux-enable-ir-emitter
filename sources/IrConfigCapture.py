@@ -5,13 +5,29 @@ from IrConfiguration import IrConfiguration
 
 
 class IrConfigCapture():
+    @staticmethod
+    def _get_interface_list():
+        """Find all usbmon interface able to be sniffed
+        https://www.kernel.org/doc/Documentation/usb/usbmon.txt
+
+        Returns:
+            list: of string
+        """
+        os.system("modprobe usbmon")
+        usbmon_list = []
+        for usbmon_file in os.listdir("/sys/kernel/debug/usb/usbmon"):
+            if usbmon_file[1] == "u":
+                usbmon_list.append("usbmon" + usbmon_file[0])
+        return usbmon_list
+
     def __init__(self, video_path):
         """Captures every bus packet that may have been used to activate the infrared emitter.
 
         Args:
             video_path (string): Path to the infrared camera e.g : "/dev/video2"
         """
-        self._capture = pyshark.LiveCapture(interface="usbmon1", display_filter="usb.transfer_type==0x02 && usb.bmRequestType==0x21")
+        self._capture = pyshark.LiveCapture(interface=self._get_interface_list(),
+                                            display_filter="usb.transfer_type==0x02 && usb.bmRequestType==0x21")
         self._config_list = []
         self._video_path = video_path
 
@@ -21,7 +37,6 @@ class IrConfigCapture():
         Args:
             time (int): sniff the camera bus during [time] sec
         """
-        os.system("modprobe usbmon")
         self._capture.sniff(timeout=time)
         for i in range(len(self._capture)):
             pkt = self._capture[i].data

@@ -4,7 +4,6 @@ import cv2
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 bin_path = config_file_path = local_path + "/enable-ir-emitter"
-save_config_file_path = os.path.expanduser("~") + "/.irConfig.yaml"
 
 
 class IrConfiguration:
@@ -88,11 +87,11 @@ class IrConfiguration:
         os.system("sleep " + str(time))
         capture.release()
 
-    def save(self, save_dir_path):
-        """Save the configuration in a irConfig.yaml file
+    def save(self, save_config_file_path):
+        """Save the configuration in a .yaml file
 
         Args:
-            save_dir_path (str): directory in which the file will be saved
+            save_config_file_path (str): file in which the config will be saved
         """
         with open(save_config_file_path, "w") as save_config_file:
             save_config_file.write(
@@ -106,7 +105,7 @@ class IrConfiguration:
         """Creates an IrConfiguration object from a saved configuration file
 
         Args:
-            saved_path_file (str): path to the irConfig.yaml
+            saved_path_file (str): path to the .yaml config file
 
         Returns:
             IrConfiguration: the object created

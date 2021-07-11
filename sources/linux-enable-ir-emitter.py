@@ -62,7 +62,6 @@ args = parser.parse_args()
 video_path = args.video_path[0] if args.video_path else "/dev/video2"
 
 if args.command == "run":
-    _check_no_sudo()
     command.run()
 elif args.command == "quick":
     _check_no_sudo()

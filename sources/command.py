@@ -31,7 +31,7 @@ def _show_config_test(ir_config):
             print("A configuration have been found. Here is what you can do:")
             print("\t- activate the emitter at system startup : 'linux-ir-emitter boot enable'")
             print("\t- manually activate the emitter for one session : 'linux-ir-emitter run'")
-            ir_config.save(local_path)
+            ir_config.save(save_config_file_path)
             return True
     return False
 
@@ -114,7 +114,7 @@ def manual(video_path):
     """
     dummy_config = IrConfiguration([0], 0, 0, video_path)
     if not os.path.exists(save_config_file_path):
-        dummy_config.save(local_path)
+        dummy_config.save(save_config_file_path)
 
     os.system("/bin/nano " + save_config_file_path)
     actual_config = IrConfiguration.load(save_config_file_path)
