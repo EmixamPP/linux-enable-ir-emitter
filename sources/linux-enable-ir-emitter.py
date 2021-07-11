@@ -15,6 +15,14 @@ def _check_sudo():
         sys.exit(1)
 
 
+def _check_no_sudo():
+    """Exit if the script is run as sudo
+    """
+    if not os.getuid():
+        print("Please don't run as root", file=sys.stderr)
+        sys.exit(1)
+
+
 parser = argparse.ArgumentParser(
     description="Provides support for infrared cameras.",
     formatter_class=argparse.RawTextHelpFormatter,
@@ -56,13 +64,13 @@ video_path = args.video_path[0] if args.video_path else "/dev/video2"
 if args.command == "run":
     command.run()
 elif args.command == "quick":
-    _check_sudo()
+    _check_no_sudo()
     command.quick(video_path)
 elif args.command == "full":
     _check_sudo()
     command.full(video_path)
 elif args.command == "manual":
-    _check_sudo()
+    _check_no_sudo()
     command.manual(video_path)
 elif args.command == "boot":
     _check_sudo()

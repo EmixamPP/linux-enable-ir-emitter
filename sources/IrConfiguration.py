@@ -4,6 +4,7 @@ import cv2
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 bin_path = config_file_path = local_path + "/enable-ir-emitter"
+save_config_file_path = os.path.expanduser("~") + "/.irConfig.yaml"
 
 
 class IrConfiguration:
@@ -93,7 +94,7 @@ class IrConfiguration:
         Args:
             save_dir_path (str): directory in which the file will be saved
         """
-        with open(save_dir_path + "/irConfig.yaml", "w") as save_config_file:
+        with open(save_config_file_path, "w") as save_config_file:
             save_config_file.write(
                 "#Caution: any manual modification of this file may corrupt the operation of the program! You must therefore be very careful.\n")
             save_config_file.write(
