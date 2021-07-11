@@ -8,61 +8,22 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
-int readDataSize(int argc, char **argv){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-dataSize")) 
-            return atoi(argv[++i]);
-
-    fprintf (stderr, "Missing the dataSize argument\n");
-    exit(EXIT_FAILURE);
-}
-
-void readData(int argc, char **argv, __u8 *data, unsigned dataSize){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-data")){
-            for(unsigned j = 0; j < dataSize; ++j)
-                data[j] = strtol(argv[++i], NULL, 16);
-            return;
-        }
-    fprintf (stderr, "Missing the data argument\n");
-    exit(EXIT_FAILURE);
-}
-
-int readUnit(int argc, char **argv){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-unit")) 
-            return strtol(argv[++i], NULL, 16);
-
-    fprintf (stderr, "Missing the unit argument\n");
-    exit(EXIT_FAILURE);
-}
-
-int readSelector(int argc, char **argv){
-    for (unsigned i = 0; i < argc; ++i)
-        if (! strcmp(argv[i], "-selector")) 
-            return strtol(argv[++i], NULL, 16);
-
-    fprintf (stderr, "Missing the selector argument\n");
-    exit(EXIT_FAILURE);
-}
-
 /*
-* Four parameters are required: -data, -dataSize, -unit, -selector 
-*       -dataSize : wLength, an integer indicating the number of components in the Data Fragment [in decimal]
-*       -data : Data Fragment, each component separated by a space [in hexadecimal]
-*       -unit : 2 first symbols of wIndex [in hexadecimal]
-*       -selector : 2 first symbols of wValue [in hexadecimal]
+* usage : enable-ir-emitter [device] [unit] [selector] [dataSize] [data ...] 
+*       device : path to the infrared camera, e.g. /dev/video2
+*       dataSize : wLength, an integer indicating the number of components in the Data Fragment [in decimal]
+*       data : Data Fragment, each component separated by a space [in hexadecimal]
+*       unit : 2 first symbols of wIndex [in hexadecimal]
+*       selector : 2 first symbols of wValue [in hexadecimal]
 */
 int main(int argc, char **argv) {
-    int result, fd, dataSize, unit, selector;
-    errno = 0;
+    int unit = strtol(argv[2], NULL, 16);
+    int selector = strtol(argv[3], NULL, 16);
 
-    dataSize = readDataSize(argc, argv);
+    int dataSize = strtol(argv[4], NULL, 10);
     __u8 data[dataSize]; 
-    readData(argc, argv, data, dataSize);
-
-    unit = readUnit(argc, argv);
-    selector = readSelector(argc, argv);
+    for (unsigned i = 0; i < dataSize; ++i)
+        data[i] = strtol(argv[i+5], NULL, 16);
 
     struct uvc_xu_control_query query = {
         .unit = unit,
@@ -72,13 +33,15 @@ int main(int argc, char **argv) {
         .data = (__u8*)&data,
     };
 
-    const char* device = "/dev/video2";
-    if((fd = open(device, O_WRONLY)) < 0){
+    const char* device = argv[1];
+    int fd = open(device, O_WRONLY);
+    if(fd < 0){
         fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
         return EXIT_FAILURE;
     }
 
-    result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
+    errno = 0;
+    int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
     if (result || errno) {
         fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
         switch(errno) {

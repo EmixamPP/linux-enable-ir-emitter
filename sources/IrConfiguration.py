@@ -72,8 +72,8 @@ class IrConfiguration:
         Returns:
             int: 256 if error, else 0
         """
-        command = "{} -dataSize {} -data {} -unit {} -selector {}".format(
-            bin_path, len(self.data), self._data_string(), self.unit, self.selector)
+        command = "{} {} {} {} {} {}".format(
+            bin_path, self.videoPath, self.unit, self.selector, len(self.data), self._data_string())
         return os.system(command)
 
     def trigger_ir(self, time=3):
