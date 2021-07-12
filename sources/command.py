@@ -30,13 +30,13 @@ def boot(status):
     """Enable or disable the systemd service which activates the ir emitter
 
     Args:
-        status (string): "enable" or "disable"
+        status (string): "enable" or "disable" or "status"
 
     Raises:
         Exception: status arg can only be equal to enable or disable
     """
     if os.path.exists(systemd_file_path):
-        if status in ("enable", "disable"):
+        if status in ("enable", "disable", "status"):
             os.system("systemctl {} --now {}".format(status, systemd_name))
         else:
             raise Exception("status arg can only be equal to enable or disable")

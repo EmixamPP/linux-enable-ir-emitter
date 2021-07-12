@@ -37,7 +37,7 @@ parser.add_argument(
   quick ir configuration
   full ir configuration
   manual ir configuration
-  enable ir at boot
+  enable ir at boot, required [boot_status]
   try to trigger the ir emitter""",
     metavar="command",
     choices=["run", "quick", "full", "manual", "boot", "test"]
@@ -46,8 +46,9 @@ parser.add_argument(
 parser.add_argument(
     "boot_status",
     metavar="boot_status",
-    help="can be one of the following : enable, disable",
-    choices=["enable", "disable"],
+    help="""can be one of the following : enable, disable, status
+  to specify the [command boot]""",
+    choices=["enable", "disable", "status"],
     nargs="?"
 )
 
