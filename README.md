@@ -7,7 +7,7 @@ At first I just wrote a tutorial and now I have made it into a utility that allo
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Installation
-You don't necessarily have to install my utility software, it can be used directly from the cloned repertory. But you won't have access to all the features. (Only the "quick" and "run" commands will work) 
+You don't necessarily have to install my software, it can be used directly from the cloned repertory. But you won't have access to all the features. (Only the "quick" and "run" commands will work) 
 
 Please install the dependency wireshark :
   - `sudo pacman -S wireshark-cli` for Arch distro based 
@@ -27,12 +27,12 @@ linux-enable-ir-emitter -h
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`
 
 ## How to enable your infrared emitter ?
-1. Try the quick configuration, it is the easiest and does not require any manipulation : `linux-enable-ir-emitter quick`.
+1. Try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
 2. If this does not work, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
 This requires more preparation, please follow [the wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration). 
-3. To enable the infrared emitter at boot, simply run `linux-enable-ir-emitter boot enable`
+3. To enable the infrared emitter at boot, simply run `sudo linux-enable-ir-emitter boot enable`
 
-If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
+If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration). with the community to improve the automatic setup
 
 ## Issues
 - If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and reinstall `linux-enable-ir-emitter`. 
@@ -43,5 +43,5 @@ for helping me to improve the software:\
 [@renyuneyun](https://github.com/renyuneyun)  [@supdrewin](https://github.com/supdrewin)  [@m4rtins](https://github.com/m4rtins)
 
 
-for sharing their camera setup with the community to improve the automatic setup:\
+for sharing their camera configuration:\
 [@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat) [@gregor160300](https://github.com/gregor160300)
