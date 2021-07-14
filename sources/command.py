@@ -7,7 +7,7 @@ from IrConfigCapture import IrConfigCapture
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 config_file_path = local_path + "/config.yaml"
-save_config_file_path = local_path + "/.irConfig.yaml"
+save_config_file_path = local_path + "/irConfig.yaml"
 
 systemd_name = "linux-enable-ir-emitter.service"
 systemd_file_path = "/usr/lib/systemd/system/" + systemd_name
