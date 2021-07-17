@@ -1,7 +1,7 @@
 # linux-enable-ir-emitter
 Provides support for infrared cameras that are not directly supported (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called. 
 
-The original script was designed by [@PetePriority](https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it and no explanation was given.\
+The original script was designed by [@PetePriority](https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it and no explanation was given. (Only one infrared camera is supported)\
 At first I just wrote a tutorial and now I have made it into a utility that allows you to configure any infrared camera almost automatically !
 
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
