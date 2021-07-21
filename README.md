@@ -8,7 +8,7 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 
 ## Installation
 #### For Arch distro based :
-Warning: the AUR package is currently not up to date, please folow the manual installation explained below 
+Warning: the [AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/) is currently not up to date, please folow the manual installation explained below 
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter/AUR
