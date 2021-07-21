@@ -40,7 +40,7 @@ If this doesn't work for you, you can always try to configure your infrared came
 
 ## :hearts: Thanks to
 for helping me to improve the software:\
-[@renyuneyun](https://github.com/renyuneyun)  [@supdrewin](https://github.com/supdrewin)  [@m4rtins](https://github.com/m4rtins) [@furcelay](https://github.com/furcelay)
+[@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun) [@supdrewin](https://github.com/supdrewin) [@furcelay](https://github.com/furcelay) [@Diaoul](https://github.com/Diaoul)
 
 
 for sharing their camera configuration:\
