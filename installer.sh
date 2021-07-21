@@ -21,11 +21,11 @@ do_install() {
     check_sudo
     cd sources && make 
 
-    install -Dm 755 enable-ir-emitter /usr/lib/linux-enable-ir-emiter/
-    install -Dm 644 config.yaml /usr/lib/linux-enable-ir-emiter/
-    install -Dm 755 *.py /usr/lib/linux-enable-ir-emiter/
+    install -Dm 755 enable-ir-emitter /usr/lib/linux-enable-ir-emitter/
+    install -Dm 644 config.yaml /usr/lib/linux-enable-ir-emitter/
+    install -Dm 755 *.py /usr/lib/linux-enable-ir-emitter/
     install -Dm 644 linux-enable-ir-emitter.service /usr/lib/systemd/system/
-    ln -fs /usr/lib/linux-enable-ir-emiter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
+    ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
 
     install_dependency
 }
@@ -33,8 +33,8 @@ do_install() {
 do_uninstall() {
     check_sudo
 
-    rm -f /usr/bin/linux-enable-ir-emiter
-    rm -rf /usr/lib/linux-enable-ir-emiter/
+    rm -f /usr/bin/linux-enable-ir-emitter
+    rm -rf /usr/lib/linux-enable-ir-emitter/
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
 }
 

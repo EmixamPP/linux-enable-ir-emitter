@@ -7,8 +7,19 @@ At first I just wrote a tutorial and now I have made it into a utility that allo
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Installation
+#### For Arch distro based :
+Warning: the AUR package is currently not up to date, please folow the manual installation explained below 
+``` shell
+git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
+cd linux-enable-ir-emitter/AUR
+makepkg -cs
+sudo pacman -U linux-enable-ir-emitter-*
+
+linux-enable-ir-emitter -h
+```
+
+#### For other distro :
 Please install the dependency wireshark :
-  - `sudo pacman -S wireshark-cli` for Arch distro based 
   - `sudo dnf install wireshark-cli` for Fedora distro based 
   - `sudo apt install tshark` for Debian distro based 
   -  otherwise install `wireshark` and it should work in any case.
