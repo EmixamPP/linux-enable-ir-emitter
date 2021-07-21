@@ -9,7 +9,8 @@ license=('MIT')
 makedepends=('git')
 depends=('python')
 optdepends=(
-    'python-pyshark: required for configuration'
+    'python-pyshark: ir emitter initial configuration'
+    'python-opencv: ir emitter tests'
 )
 arch=('x86_64')
 source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter")
