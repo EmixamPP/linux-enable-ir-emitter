@@ -1,6 +1,6 @@
 import os
+import sys
 import yaml
-import cv2
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 bin_path = config_file_path = local_path + "/enable-ir-emitter"
@@ -81,6 +81,12 @@ class IrConfiguration:
         Args:
             time (int): transmit for how long ? (seconds). Defaults to 3.
         """
+        try:
+            import cv2
+        except ImportError:
+            print("Please install python opencv", file=sys.stderr)
+            return
+
         self.run()
         capture = cv2.VideoCapture(int(self.videoPath[-1]))
         capture.read()

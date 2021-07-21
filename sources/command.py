@@ -3,7 +3,6 @@ import os
 import sys
 
 from IrConfiguration import IrConfiguration
-from IrConfigCapture import IrConfigCapture
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 config_file_path = local_path + "/config.yaml"
@@ -142,6 +141,11 @@ def full(video_path):
         video_path (string): Path to the infrared camera e.g : "/dev/video2"
     """
     input("Please read and folow this tutorial : https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration. Press enter when you'r ready")
+    try:
+        from IrConfigCapture import IrConfigCapture
+    except ImportError:
+        print("Please install pyshark", file=sys.stderr)
+        return
     capture = IrConfigCapture(video_path)
     capture.start(45)
     input("The capturing is finished, make sure the camera is connected to the host os. Press enter when it's done ")
