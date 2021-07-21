@@ -4,28 +4,27 @@ usage() {
     columnPrint="%-20s%-s\n"
 
     printf "This is a simple tool to install/uninstall the sofware and help repair some problems cased by previous config.\n\n"
-    printf "usage: bash installer option \n\n"
+    printf "usage: bash installer option\n\n"
 
     printf "option:\n"
     printf "$columnPrint" "  install" "install linux-enable-ir-emitter"
     printf "$columnPrint" "  uninstall" "uninstall linux-enable-ir-emitter"
-    printf "$columnPrint" "  repair" "uninstall chicony-ir-toggle if possible and reinstall linux-enable-ir-emitter"
+    printf "$columnPrint" "  repair" "uninstall chicony-ir-toggle if possible and install linux-enable-ir-emitter"
 }
 
 install_dependency() {
-    git clone https://github.com/KimiNewt/pyshark.git
-    cd pyshark/src
-    python3 setup.py install
+    umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
+    pip install pyshark opencv-python pyyaml
 }
 
 do_install() {
     check_sudo
     cd sources && make 
 
-    install -Dm 755 -t /usr/lib/linux-enable-ir-emiter/ enable-ir-emitter
-    install -Dm 644 -t /usr/lib/linux-enable-ir-emiter/ config.yaml
-    install -Dm 755 -t /usr/lib/linux-enable-ir-emiter/ *.py
-    install -Dm 644 -t /usr/lib/systemd/system/ linux-enable-ir-emitter.service
+    install -Dm 755 enable-ir-emitter /usr/lib/linux-enable-ir-emiter/
+    install -Dm 644 config.yaml /usr/lib/linux-enable-ir-emiter/
+    install -Dm 755 *.py /usr/lib/linux-enable-ir-emiter/
+    install -Dm 644 linux-enable-ir-emitter.service /usr/lib/systemd/system/
     ln -fs /usr/lib/linux-enable-ir-emiter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
 
     install_dependency

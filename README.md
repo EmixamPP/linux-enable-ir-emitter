@@ -7,8 +7,6 @@ At first I just wrote a tutorial and now I have made it into a utility that allo
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Installation
-You don't necessarily have to install my software, it can be used directly from the cloned repertory. But you won't have access to all the features. (Only the "quick" and "run" commands will work) 
-
 Please install the dependency wireshark :
   - `sudo pacman -S wireshark-cli` for Arch distro based 
   - `sudo dnf install wireshark-cli` for Fedora distro based 
