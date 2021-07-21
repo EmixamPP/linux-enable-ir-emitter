@@ -20,9 +20,9 @@ linux-enable-ir-emitter -h
 
 #### For other distro :
 Please install the dependency wireshark :
-  - `sudo dnf install wireshark-cli` for Fedora distro based 
-  - `sudo apt install tshark` for Debian distro based 
-  -  otherwise install `wireshark` and it should work in any case.
+  - `sudo dnf install wireshark-cli` for Fedora distro based.
+  - `sudo apt install tshark` for Debian distro based.
+  -  Otherwise install `wireshark` and it should work in any case.
 
 Then, let's install linux-enable-ir-emitter :
 ``` shell
@@ -33,18 +33,18 @@ sudo bash installer.sh install
 linux-enable-ir-emitter -h
 ```
 
-You can easily uninstall the software by executing `sudo bash installer.sh uninstall`
+You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
 
 ## How to enable your infrared emitter ?
 1. Try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
 2. If this does not work, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
 This requires more preparation, please follow [the wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration). 
-3. To enable the infrared emitter at boot, simply run `sudo linux-enable-ir-emitter boot enable`
+3. To enable the infrared emitter at boot, simply run `sudo linux-enable-ir-emitter boot enable`.
 
-If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration). with the community to improve the automatic setup
+If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
 ## Issues
-- If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and reinstall `linux-enable-ir-emitter`. 
+- If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and install `linux-enable-ir-emitter`. 
 - At startup, if you have the error `Unable to open a file descriptor for /dev/videoX`. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
 
 ## :hearts: Thanks to
