@@ -16,9 +16,6 @@ install_dependency() {
     git clone https://github.com/KimiNewt/pyshark.git
     cd pyshark/src
     python3 setup.py install
-    
-    pip install pyshark
-    pip install opencv-python
 }
 
 do_install() {
