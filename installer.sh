@@ -16,11 +16,14 @@ install_dependency() {
     git clone https://github.com/KimiNewt/pyshark.git
     cd pyshark/src
     python3 setup.py install
+    
+    pip install pyshark
+    pip install opencv-python
 }
 
 do_install() {
     check_sudo
-    cd sources && make
+    cd sources && make 
 
     install -Dm 755 -t /usr/lib/linux-enable-ir-emiter/ enable-ir-emitter
     install -Dm 644 -t /usr/lib/linux-enable-ir-emiter/ config.yaml
