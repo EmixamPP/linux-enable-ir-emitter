@@ -8,13 +8,21 @@ usage() {
 
     printf "option:\n"
     printf "$columnPrint" "  install" "install linux-enable-ir-emitter"
-    printf "$columnPrint" "  uninstall" "uninstall linux-enable-ir-emitter"
+    printf "$columnPrint" "  optional" "install the optional Python dependencies"
+    printf "$columnPrint" "  uninstall" "uninstall linux-enable-ir-emitter and optional Python dependencies"
     printf "$columnPrint" "  repair" "uninstall chicony-ir-toggle if possible and install linux-enable-ir-emitter"
 }
 
 install_dependency() {
+    check_sudo
     umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
     pip install pyshark opencv-python pyyaml
+}
+
+install_opt_dependency() {
+    check_sudo
+    umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
+    pip install pyshark
 }
 
 do_install() {
@@ -36,6 +44,9 @@ do_uninstall() {
     rm -f /usr/bin/linux-enable-ir-emitter
     rm -rf /usr/lib/linux-enable-ir-emitter/
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
+
+    umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
+    pip uninstall pyshark -y  # not safe for other software, but certainly only used by mine
 }
 
 do_repair() {
@@ -64,6 +75,9 @@ case "$1" in
     ;;
 "repair")
     do_repair
+    ;;
+"optional")
+    install_opt_dependency
     ;;
 *)
     usage

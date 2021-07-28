@@ -1,5 +1,6 @@
-# Maintainer: EmixamPP <https://github.com/EmixamPP/linux-enable-ir-emitter/issues>
+# Maintainer: Maxime Dirksen <dirksen.maxime@gmail.com>
 # Maintainer: Antoine Bertin <ant.bertin@gmail.com>
+# Maintainer: Andrey Kolchenko <andrey@kolchenko.me>
 
 pkgname=linux-enable-ir-emitter
 pkgver=20210725.0

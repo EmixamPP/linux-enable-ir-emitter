@@ -7,24 +7,17 @@ At first I just wrote a tutorial and now I have made it into a utility that allo
 This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Installation
-#### For Arch distro based :
-Warning: the [AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/) is currently not up to date, please folow the manual installation explained below 
+### For Arch distro based :
+`linux-enable-ir-emitter` is available as an [AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/).
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter/AUR
-makepkg -cs
-sudo pacman -U linux-enable-ir-emitter-*
+makepkg -csi
 
 linux-enable-ir-emitter -h
 ```
 
-#### For other distro :
-Please install the dependency wireshark :
-  - `sudo dnf install wireshark-cli` for Fedora distro based.
-  - `sudo apt install tshark` for Debian distro based.
-  -  Otherwise install `wireshark` and it should work in any case.
-
-Then, let's install linux-enable-ir-emitter :
+### For other distro :
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
@@ -34,6 +27,10 @@ linux-enable-ir-emitter -h
 ```
 
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
+
+#### Optional installation :
+If you need to use the `linux-enable-ir-emitter full` command, please read the related [wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration).\
+This command is not always necessary, so I have removed the dependencies from the standard installation (feel free to let me know what you think about that). 
 
 ## How to enable your infrared emitter ?
 1. Try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
