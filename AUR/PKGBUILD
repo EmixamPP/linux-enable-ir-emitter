@@ -2,39 +2,38 @@
 # Maintainer: Antoine Bertin <ant.bertin@gmail.com>
 # Maintainer: Andrey Kolchenko <andrey@kolchenko.me>
 
-pkgname=linux-enable-ir-emitter
-pkgver=20210725.0
+pkgname=linux-enable-ir-emitter-git
+pkgver=r167.04f6c73
 pkgrel=1
 pkgdesc='Enables infrared cameras that are not directly enabled out-of-the box.'
+arch=(x86_64)
 url='https://github.com/EmixamPP/linux-enable-ir-emitter'
 license=(MIT)
-arch=(x86_64)
-
+depends=(python python-opencv python-yaml)
+makedepends=(git)
+optdepends=('python-pyshark: full configuration setup support')
 provides=(linux-enable-ir-emitter)
-conflicts=(chicony-ir-toggle)
-
-makedepends=('gcc' 'git' 'make')
-depends=('python' 'python-opencv' 'python-yaml')
-optdepends=(
-    'python-pyshark: full configuration setup support'
-    'systemd: system and service manager to support linux-enable-ir-emitter running automatically'
-)
-
+conflicts=(linux-enable-ir-emitter chicony-ir-toggle)
 source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter")
 sha256sums=('SKIP')
 
+pkgver() {
+    cd "${srcdir}/linux-enable-ir-emitter/sources"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
 build() {
-    cd "$pkgname"
-    cd sources
+    cd "${srcdir}/linux-enable-ir-emitter/sources"
     make
 }
 
 package() {
-    cd $srcdir/$pkgname
-    install -Dm 755 sources/enable-ir-emitter $pkgdir/usr/lib/linux-enable-ir-emitter/enable-ir-emitter
-    install -Dm 644 sources/config.yaml $pkgdir/usr/lib/linux-enable-ir-emitter/config.yaml
-    install -Dm 755 sources/*.py $pkgdir/usr/lib/linux-enable-ir-emitter/
-    install -Dm 644 sources/linux-enable-ir-emitter.service $pkgdir/usr/lib/systemd/system/linux-enable-ir-emitter.service
-    install -dm 755 $pkgdir/usr/bin/
-    ln -s /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py $pkgdir/usr/bin/linux-enable-ir-emitter
+    cd "${srcdir}/linux-enable-ir-emitter"
+    install -Dm 755 sources/enable-ir-emitter "${pkgdir}"/usr/lib/linux-enable-ir-emitter/enable-ir-emitter
+    install -Dm 644 sources/config.yaml "${pkgdir}"/usr/lib/linux-enable-ir-emitter/config.yaml
+    install -Dm 755 sources/*.py "${pkgdir}"/usr/lib/linux-enable-ir-emitter/
+    install -Dm 644 sources/linux-enable-ir-emitter.service "${pkgdir}"/usr/lib/systemd/system/linux-enable-ir-emitter.service
+    install -dm 755 "${pkgdir}"/usr/bin/
+    ln -s /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py "${pkgdir}"/usr/bin/linux-enable-ir-emitter
+    install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
 }
