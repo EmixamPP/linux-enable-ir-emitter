@@ -22,7 +22,7 @@ depends=(
 optdepends=(
     'python-pyshark: full configuration setup support'
 )
-source=("https://github.com/EmixamPP/linux-enable-ir-emitter/archive/v${pkgver}.tar.gz")
+source=("https://github.com/EmixamPP/linux-enable-ir-emitter/archive/refs/tags/${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 build() {
