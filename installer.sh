@@ -16,7 +16,7 @@ usage() {
 install_dependency() {
     check_sudo
     umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
-    pip install pyshark opencv-python pyyaml
+    pip install opencv-python pyyaml
 }
 
 install_opt_dependency() {

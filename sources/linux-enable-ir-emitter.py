@@ -22,6 +22,8 @@ parser = argparse.ArgumentParser(
     epilog="For help see : https://github.com/EmixamPP/linux-enable-ir-emitter/wiki"
 )
 
+parser.add_argument('--version', '-V', action='version', version='%(prog)s 2.0.0')
+
 parser.add_argument(
     "command",
     help="""can be one of the following : run, quick, full, manual, boot, test :

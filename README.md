@@ -10,8 +10,8 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 ### For Arch distro based :
 `linux-enable-ir-emitter` is available as an [AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/).
 ``` shell
-git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
-cd linux-enable-ir-emitter/AUR
+git clone https://aur.archlinux.org/linux-enable-ir-emitter.git
+cd linux-enable-ir-emitter
 makepkg -csi
 
 linux-enable-ir-emitter -h
@@ -45,9 +45,11 @@ If this doesn't work for you, you can always try to configure your infrared came
 - At startup, if you have the error `Unable to open a file descriptor for /dev/videoX`. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
 
 ## :hearts: Thanks to
-for helping me to improve the software:\
-[@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun) [@supdrewin](https://github.com/supdrewin) [@furcelay](https://github.com/furcelay) [@Diaoul](https://github.com/Diaoul)
+For helping me to improve the software:\
+[@m4rtins](https://github.com/m4rtins) [@supdrewin](https://github.com/supdrewin) [@renyuneyun](https://github.com/renyuneyun) [@furcelay](https://github.com/furcelay)
 
+For managing its distribution:\
+[@Diaoul](https://github.com/Diaoul) [@komex](https://github.com/komex) [@FabioLolix](https://github.com/FabioLolix)
 
-for sharing their camera configuration:\
+For sharing their camera configuration:\
 [@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat) [@gregor160300](https://github.com/gregor160300)

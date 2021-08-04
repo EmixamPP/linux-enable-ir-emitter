@@ -34,13 +34,10 @@ def boot(status):
     Raises:
         Exception: status arg can only be equal to enable or disable
     """
-    if os.path.exists(systemd_file_path):
-        if status in ("enable", "disable", "status"):
-            os.system("systemctl {} --now {}".format(status, systemd_name))
-        else:
-            raise Exception("status arg can only be equal to enable or disable")
+    if status in ("enable", "disable", "status"):
+        os.system("systemctl {} --now {}".format(status, systemd_name))
     else:
-        print("Please install linux-enable-ir-emitter first", file=sys.stderr)
+        raise Exception("status arg can only be equal to enable or disable")
 
 
 def manual(video_path):
