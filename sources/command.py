@@ -12,17 +12,38 @@ systemd_name = "linux-enable-ir-emitter.service"
 systemd_file_path = "/usr/lib/systemd/system/" + systemd_name
 
 
-def run():
-    """Run the config saved in irConfig.yaml
+def _load_saved_config():
+    """Load the ir config saved.
+
+    Returns:
+        IrConfiguration: the saved config
+        None: if a error occur
     """
     try:
         if os.path.exists(save_config_file_path):
-            ir_config = IrConfiguration.load(save_config_file_path)
-            ir_config.run()
+            return IrConfiguration.load(save_config_file_path)
         else:
             print("No configuration is currently saved", file=sys.stderr)
     except yaml.YAMLError:
         print("The config file is corrupted !", file=sys.stderr)
+
+    return None
+
+
+def run():
+    """Run the config saved in irConfig.yaml
+    """
+    ir_config = _load_saved_config()
+    if ir_config:
+        ir_config.run()
+
+
+def test():
+    """Try to trigger the ir emitter with the current configuration
+    """
+    ir_config = _load_saved_config()
+    if ir_config:
+        ir_config.trigger_ir(2)
 
 
 def boot(status):
@@ -51,27 +72,12 @@ def manual(video_path):
         dummy_config.save(save_config_file_path)
 
     os.system("/bin/nano " + save_config_file_path)
-    actual_config = IrConfiguration.load(save_config_file_path)
-    if actual_config == dummy_config:
+    if _load_saved_config() == dummy_config:
         os.system("rm " + save_config_file_path)
 
 
-def test():
-    """Try to trigger the ir emitter with the current configuration
-    """
-    try:
-        if os.path.exists(save_config_file_path):
-            ir_config = IrConfiguration.load(save_config_file_path)
-            ir_config.run()
-            ir_config.trigger_ir(2)
-        else:
-            print("No configuration is currently saved", file=sys.stderr)
-    except yaml.YAMLError:
-        print("The config file is corrupted !", file=sys.stderr)
-
-
 def _show_config_test(ir_config):
-    """Test the configuration and ask the user if it works. In this case the coinfiguration is saved.
+    """Test the configuration and ask the user if it works. In this case the configuration is saved.
 
     Args:
         ir_config (IrConfiguration): configuration to test
@@ -103,15 +109,16 @@ def quick(video_path):
 
         if _show_config_test(ir_config):
             print("A configuration have been found. Here is what you can do:")
-            print("\t- activate the emitter at system startup : 'linux-ir-emitter boot enable'")
-            print("\t- manually activate the emitter for one session : 'linux-ir-emitter run'")
+            print("\t- activate the emitter at system startup : 'linux-enable-ir-emitter boot enable'")
+            print("\t- manually activate the emitter for one session : 'linux-enable-ir-emitter run'")
             return
 
-    print("No configuration was found please execute : 'linux-ir-emitter full'", file=sys.stderr)
+    print("No configuration was found please execute : 'linux-enable-ir-emitter full'", file=sys.stderr)
 
 
 def _show_contribution(ir_config):
-    """Check if the configuration does not exist is not in the configuration file. Then the user is invited to share it on Github
+    """Check if the configuration does not exist is not in the configuration file. 
+    Then the user is invited to share it on Github
 
     Args:
         ir_config (IrConfiguration): the configuration to be compared with those in the YAML config file
@@ -133,6 +140,7 @@ def _show_contribution(ir_config):
 def full(video_path):
     """Try to find the ir emitter configuration by capturing the bus.
     On condition that the ir emitter is triggered via a Windows VM.
+    Exit if pysharsk is not installed.
 
     Args:
         video_path (string): Path to the infrared camera e.g : "/dev/video2"
@@ -140,13 +148,14 @@ def full(video_path):
     try:
         from IrConfigCapture import IrConfigCapture
     except ImportError:
-        print("The 'pyshark' python dependency is required for this command", file=sys.stderr)
+        print("The 'pyshark' python dependency is required for this command.", file=sys.stderr)
+        print("Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration.")
         sys.exit(1)
 
     input("Please read and folow this tutorial : https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration. Press enter when you'r ready")
     capture = IrConfigCapture(video_path)
     capture.start(45)
-    input("The capturing is finished, make sure the camera is connected to the host os. Press enter when it's done ")
+    input("The capturing is finished, make sure the camera is connected to the host os. Press enter when it's done")
 
     for ir_config in capture.config_list:
         if _show_config_test(ir_config):
