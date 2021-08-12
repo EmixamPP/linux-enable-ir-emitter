@@ -30,8 +30,8 @@ install -Dm 644 sources/config.yaml -t %{buildroot}%{_libdir}/%{name}
 install -Dm 644 sources/*.py -t %{buildroot}%{_libdir}/%{name}
 
 # boot service
-mkdir -p %{buildroot}%{_libdir}/systemd/system/
-install -Dm 644 sources/%{name}.service -t %{buildroot}%{_libdir}/systemd/system/
+mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/
+install -Dm 644 sources/%{name}.service -t %{buildroot}%{_prefix}/lib/systemd/system/
 
 # executable
 mkdir -p %{buildroot}%{_bindir}
@@ -41,8 +41,8 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %files
 %license LICENSE
 %doc README.md
-%{_libdir}/%{name}
-%{_libdir}/systemd/system/%{name}.service
+%{_libdir}/%{name}/
+%{_prefix}/lib/systemd/system/%{name}.service
 %{_bindir}/%{name}
 
 %changelog

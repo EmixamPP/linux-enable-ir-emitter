@@ -9,6 +9,7 @@ This script was created to use Howdy, a Windows Hello for linux <https://github.
 ## Installation
 ### For Arch distro based :
 `linux-enable-ir-emitter` is available as an [AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/).
+A VCS variant is also available as an [git AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter-git/).
 ``` shell
 git clone https://aur.archlinux.org/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
