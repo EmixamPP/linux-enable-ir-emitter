@@ -18,6 +18,14 @@ makepkg -csi
 linux-enable-ir-emitter -h
 ```
 
+### For Fedora distro based :
+``` shell
+sudo dnf copr enable emixampp/linux-enable-ir-emitter
+sudo dnf --refresh install linux-enable-ir-emitter
+
+linux-enable-ir-emitter -h
+```
+
 ### For other distro :
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git

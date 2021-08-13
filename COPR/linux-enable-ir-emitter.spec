@@ -9,6 +9,7 @@ URL:      https://github.com/EmixamPP/%{name}
 License:  MIT
 Source0:  https://github.com/EmixamPP/%{name}/archive/refs/tags/%{version}.tar.gz
 
+BuildRequires: make
 Requires: python3-opencv
 Requires: python3-pyyaml
 Requires: nano
