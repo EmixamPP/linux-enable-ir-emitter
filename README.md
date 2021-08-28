@@ -51,7 +51,7 @@ If this doesn't work for you, you can always try to configure your infrared came
 
 ## Issues
 - If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and install `linux-enable-ir-emitter`. 
-- At startup, if you have the error `Unable to open a file descriptor for /dev/videoX`. Take a look at issue [#1](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1).
+- If a configuration has been found and `linux-enable-ir-emitter boot enable` has been run, but after rebooting it no longer works : take a look at issue [#34](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/34).
 
 ## :hearts: Thanks to
 For helping me to improve the software:\
