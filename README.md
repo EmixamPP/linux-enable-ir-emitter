@@ -50,8 +50,8 @@ This requires more preparation, please follow [the wiki page](https://github.com
 If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
 ## Issues
-- If you had used `chicony-ir-toggle` before, and when opening the system, the systemd service won't start: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and install `linux-enable-ir-emitter`. 
-- If a configuration has been found and `linux-enable-ir-emitter boot enable` has been run, but after rebooting it no longer works : take a look at issue [#34](https://github.com/EmixamPP/linux-enable-ir-emitter/issues/34).
+- If you had used `chicony-ir-toggle` before: use the installer script to clean the installation: `sudo bash installer.sh repair`. Which will uninstall `chicony-ir-toggle` and reinstall `linux-enable-ir-emitter`. 
+- If a configuration has been found and `linux-enable-ir-emitter boot enable` has been run, but after rebooting it no longer works; consult the [Fix boot wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Fix-boot).
 
 ## :hearts: Thanks to
 For helping me to improve the software:\
