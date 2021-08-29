@@ -4,6 +4,7 @@ After=multi-user.target suspend.target hibernate.target hybrid-sleep.target susp
 
 [Service]
 Type=oneshot
+ExecStartPre=/sbin/modprobe uvcvideo
 ExecStart=/usr/bin/linux-enable-ir-emitter run
 
 [Install]
