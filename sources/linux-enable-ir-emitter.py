@@ -22,39 +22,38 @@ parser = argparse.ArgumentParser(
     epilog="For help see : https://github.com/EmixamPP/linux-enable-ir-emitter/wiki"
 )
 
-parser.add_argument('--version', '-V', action='version', version='%(prog)s 2.0.0')
-
-parser.add_argument(
-    "command",
-    help="""can be one of the following : run, quick, full, manual, boot, test :
-  run the actual config
-  quick ir configuration
-  full ir configuration
-  manual ir configuration
-  enable ir at boot, required [boot_status]
-  try to trigger the ir emitter""",
-    metavar="command",
-    choices=["run", "quick", "full", "manual", "boot", "test"]
-)
-
-parser.add_argument(
-    "boot_status",
-    metavar="boot_status",
-    help="""can be one of the following : enable, disable, status
-  to specify the [command boot]""",
-    choices=["enable", "disable", "status"],
-    nargs="?"
-)
+parser.add_argument('-V', '--version', action='version', version='%(prog)s 2.1.0')
 
 parser.add_argument(
     "-p", "--video_path",
     metavar="video_path",
     help="specify the path to the infrared camera, by default is '/dev/video2'",
+    default=["/dev/video2"],
     nargs=1
 )
 
+command_subparser = parser.add_subparsers(dest='command')
+command_run = command_subparser.add_parser("run", help="run the actual config")
+command_quick = command_subparser.add_parser("quick", help="quick ir configuration")
+command_full = command_subparser.add_parser("full", help="full ir configuration")
+command_manual = command_subparser.add_parser("manual", help="manual ir configuration")
+command_boot = command_subparser.add_parser("boot", help="enable ir at boot")
+command_test = command_subparser.add_parser("test", help="try to trigger the ir emitter")
+command_fix = command_subparser.add_parser("fix", help="fix well know problems")
+
+command_boot.add_argument(
+    "boot_status", 
+    choices=["enable", "disable", "status"], 
+    help="specify the boot action to perform"
+)
+command_fix.add_argument(
+    "fix_target", 
+    choices=["config", "chicony"], 
+    help="specify the target to fix: {reset the config, uninstall chicony-ir-toggle}"
+)
+
 args = parser.parse_args()
-video_path = args.video_path[0] if args.video_path else "/dev/video2"
+video_path = args.video_path[0]
 
 if args.command == "run":
     command.run()
@@ -69,12 +68,11 @@ elif args.command == "manual":
     command.manual(video_path)
 elif args.command == "boot":
     _check_sudo()
-    if args.boot_status is None:
-        print("Required [boot_status] argument", file=sys.stderr)
-        sys.exit(1)
-    else:
-        command.boot(args.boot_status)
+    command.boot(args.boot_status)
 elif args.command == "test":
     command.test()
+elif args.command == "fix":
+    _check_sudo()
+    command.fix(args.fix_target)
 else:
     parser.print_help()

@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  2.0.1
+Version:  2.1.0
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 
@@ -47,6 +47,13 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %{_prefix}/lib/systemd/system/%{name}.service
 %{_bindir}/%{name}
 
+%postun
+# delete files added after installation
+rm -rf %{_libdir}/%{name}/
+
 %changelog
+* Sun Aug 29 2021 Maxime Dirksen <emixampp@fedoraproject.org> - 2.1.0-1
+- New fix command, to resolve well know problems
+- Systemd service file modified to prevent /dev/video file descriptor  error
 * Thu Aug 12 2021 Maxime Dirksen <emixampp@fedoraproject.org> - 2.0.1-1
 - Initial package

@@ -3,14 +3,13 @@
 usage() {
     columnPrint="%-20s%-s\n"
 
-    printf "This is a simple tool to install/uninstall the sofware and help repair some problems cased by previous config.\n\n"
+    printf "This is a simple tool to install/uninstall the sofware.\n\n"
     printf "usage: bash installer option\n\n"
 
     printf "option:\n"
     printf "$columnPrint" "  install" "install linux-enable-ir-emitter"
     printf "$columnPrint" "  optional" "install the optional Python dependencies"
     printf "$columnPrint" "  uninstall" "uninstall linux-enable-ir-emitter and optional Python dependencies"
-    printf "$columnPrint" "  repair" "uninstall chicony-ir-toggle if possible and install linux-enable-ir-emitter"
 }
 
 install_dependency() {
@@ -49,16 +48,6 @@ do_uninstall() {
     pip uninstall pyshark -y  # not safe for other software, but certainly only used by mine
 }
 
-do_repair() {
-    check_sudo
-
-    rm -f /usr/local/bin/chicony-ir-toggle
-    rm -f /lib/udev/rules.d/99-ir-led.rules
-    rm -f /lib/systemd/system-sleep/ir-led.sh
-
-    do_install
-}
-
 check_sudo() {
     if [ "$EUID" -ne 0 ]; then
         echo "Please run as sudo"
@@ -72,9 +61,6 @@ case "$1" in
     ;;
 "install")
     do_install
-    ;;
-"repair")
-    do_repair
     ;;
 "optional")
     install_opt_dependency

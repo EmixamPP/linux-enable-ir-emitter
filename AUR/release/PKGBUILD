@@ -3,7 +3,7 @@
 # Contributor: Antoine Bertin <ant.bertin@gmail.com>
 
 pkgname=linux-enable-ir-emitter
-pkgver=2.0.1
+pkgver=2.1.0
 pkgrel=1
 epoch=1
 pkgdesc="Enables infrared cameras that are not directly enabled out-of-the box."

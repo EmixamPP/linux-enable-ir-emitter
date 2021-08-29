@@ -26,21 +26,19 @@ def _load_saved_config():
             print("No configuration is currently saved", file=sys.stderr)
     except yaml.YAMLError:
         print("The config file is corrupted !", file=sys.stderr)
-
+        print("Please execute 'linux-enable-ir-emitter fix config'.", file=sys.stderr)
     return None
 
 
 def run():
-    """Run the config saved in irConfig.yaml
-    """
+    """Run the config saved in irConfig.yaml"""
     ir_config = _load_saved_config()
     if ir_config:
         ir_config.run()
 
 
 def test():
-    """Try to trigger the ir emitter with the current configuration
-    """
+    """Try to trigger the ir emitter with the current configuration"""
     ir_config = _load_saved_config()
     if ir_config:
         ir_config.trigger_ir(2)
@@ -53,12 +51,13 @@ def boot(status):
         status (string): "enable" or "disable" or "status"
 
     Raises:
-        Exception: status arg can only be equal to enable or disable
+        Exception: boot status arg can only be equal to enable, disable or status
     """
     if status in ("enable", "disable", "status"):
         os.system("systemctl {} --now {}".format(status, systemd_name))
     else:
-        raise Exception("status arg can only be equal to enable or disable")
+        raise Exception(
+            "boot status arg can only be equal to enable, disable or status")
 
 
 def manual(video_path):
@@ -87,7 +86,8 @@ def _show_config_test(ir_config):
     """
     if not ir_config.run():
         ir_config.trigger_ir()
-        check = input("Did you see the ir emitter flashing ? Yes/No ? ").lower()
+        check = input(
+            "Did you see the ir emitter flashing ? Yes/No ? ").lower()
 
         if check in ("yes", "y"):
             ir_config.save(save_config_file_path)
@@ -105,12 +105,15 @@ def quick(video_path):
         config_list = yaml.load(config_file, Loader=yaml.Loader)
 
     for config in config_list:
-        ir_config = IrConfiguration(config["data"], config["unit"], config["selector"], video_path)
+        ir_config = IrConfiguration(
+            config["data"], config["unit"], config["selector"], video_path)
 
         if _show_config_test(ir_config):
             print("A configuration have been found. Here is what you can do:")
-            print("\t- activate the emitter at system startup : 'linux-enable-ir-emitter boot enable'")
-            print("\t- manually activate the emitter for one session : 'linux-enable-ir-emitter run'")
+            print(
+                "\t- activate the emitter at system boot : 'linux-enable-ir-emitter boot enable'")
+            print(
+                "\t- manually activate the emitter for one session : 'linux-enable-ir-emitter run'")
             return
 
     print("No configuration was found please execute : 'linux-enable-ir-emitter full'", file=sys.stderr)
@@ -148,7 +151,8 @@ def full(video_path):
     try:
         from IrConfigCapture import IrConfigCapture
     except ImportError:
-        print("The 'pyshark' python dependency is required for this command.", file=sys.stderr)
+        print(
+            "The 'pyshark' python dependency is required for this command.", file=sys.stderr)
         print("Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration.")
         sys.exit(1)
 
@@ -163,3 +167,33 @@ def full(video_path):
             return
 
     print("No configuration was found", file=sys.stderr)
+
+
+def fix(target):
+    """Fix well know problems
+
+    Args:
+        target (string): "config" or "chicony"
+
+    Raises:
+        Exception: fix target arg can only be equal to config or chicony
+    """
+    if target in ("config", "chicony"):
+        eval("_fix_" + target + "()")
+    else:
+        raise Exception(
+            "fix target arg can only be equal to config or chicony")
+
+
+def _fix_config():
+    """Rest the configuration"""
+    os.system("rm -f " + save_config_file_path)
+    print("The configuration file have been removed.")
+
+
+def _fix_chicony():
+    """Uninstall chicony-ir-toggle"""
+    os.system("rm -f /usr/local/bin/chicony-ir-toggle")
+    os.system("rm -f /lib/udev/rules.d/99-ir-led.rules")
+    os.system("rm -f /lib/systemd/system-sleep/ir-led.sh")
+    print("chicony-ir-toggle have been uninstall.")
