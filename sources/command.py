@@ -24,9 +24,9 @@ def _load_saved_config():
             return IrConfiguration.load(save_config_file_path)
         else:
             print("No configuration is currently saved", file=sys.stderr)
-    except yaml.YAMLError:
+    except:
         print("The config file is corrupted !", file=sys.stderr)
-        print("Please execute 'linux-enable-ir-emitter fix config'.", file=sys.stderr)
+        print("Execute 'linux-enable-ir-emitter fix config' to reset the file.", file=sys.stderr)
     return None
 
 

@@ -108,12 +108,20 @@ class IrConfiguration:
 
         Args:
             saved_path_file (str): path to the .yaml config file
-
+        
+        Raises:
+            yaml.YAMLError: the file cannot be deserialized
+            AssertError: the file does not contain all the expected attributes
+    
         Returns:
             IrConfiguration: the object created
         """
         with open(saved_path_file, "r") as save_file:
             object_deserialized = yaml.load(save_file, Loader=yaml.Loader)
+
+        dummy_config = IrConfiguration([0], 0, 0, '/dev/video2')
+        assert(dir(dummy_config) == dir(object_deserialized))
+
         return object_deserialized
 
     def __eq__(self, to_compare):

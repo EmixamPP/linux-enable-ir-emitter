@@ -1,29 +1,25 @@
-# linux-enable-ir-emitter
-Provides support for infrared cameras that are not directly supported (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called. 
+# <p align=center> linux-enable-ir-emitter </p>
 
-The original script was designed by [@PetePriority](https://github.com/PetePriority/chicony-ir-toggle). However, the handling of the error codes was not correct, which made it difficult to modify it and no explanation was given. (Only one infrared camera is supported)\
-At first I just wrote a tutorial and now I have made it into a utility that allows you to configure any infrared camera almost automatically !
+Provides support for infrared cameras that are not directly supported (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called.
 
-This script was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
+`linux-enable-ir-emitter` can almost automatically, configure any infrared camera. 
 
-## Installation
+This software was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
+
+## Installation <a href="https://github.com/emixampp/linux-enable-ir-emitter/releases"><img src="https://img.shields.io/github/release/emixampp/linux-enable-ir-emitter.svg?colorB=4c1"></a>
 ### For Arch distro based :
-`linux-enable-ir-emitter` is available as an [AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/).
-A VCS variant is also available as an [git AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter-git/).
+Page links: [Release AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/) and [VCS AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter-git/).
 ``` shell
 git clone https://aur.archlinux.org/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 makepkg -csi
-
-linux-enable-ir-emitter -h
 ```
 
 ### For Fedora distro based :
+Page link: [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
 ``` shell
 sudo dnf copr enable emixampp/linux-enable-ir-emitter
 sudo dnf --refresh install linux-enable-ir-emitter
-
-linux-enable-ir-emitter -h
 ```
 
 ### For other distro :
@@ -31,8 +27,6 @@ linux-enable-ir-emitter -h
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
-
-linux-enable-ir-emitter -h
 ```
 
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
@@ -42,6 +36,8 @@ If you need to use the `linux-enable-ir-emitter full` command, please read the r
 This command is not always necessary, so I have removed the dependencies from the standard installation (feel free to let me know what you think about that). 
 
 ## How to enable your infrared emitter ?
+
+0. `linux-enable-ir-emitter -h`
 1. Try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
 2. If this does not work, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
 This requires more preparation, please follow [the wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration). 
@@ -51,15 +47,19 @@ If this doesn't work for you, you can always try to configure your infrared came
 
 ## Issues
 - If you had used `chicony-ir-toggle` before: please execute `sudo linux-enable-ir-emitter fix chicony`
-- If the config file is corrupted : execute `sudo linux-enable-ir-emitter fix config`
-- If a configuration has been found and `linux-enable-ir-emitter boot enable` has been run, but after rebooting it no longer works; consult the [Fix boot wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Fix-boot).
+- If the config file is corrupted: execute `sudo linux-enable-ir-emitter fix config`
 
 ## :hearts: Thanks to
 For helping me to improve the software:\
-[@m4rtins](https://github.com/m4rtins) [@supdrewin](https://github.com/supdrewin) [@renyuneyun](https://github.com/renyuneyun) [@furcelay](https://github.com/furcelay)
+[@m4rtins](https://github.com/m4rtins) [@supdrewin](https://github.com/supdrewin) [@renyuneyun](https://github.com/renyuneyun) [@furcelay](https://github.com/furcelay) [@cchvuth](https://github.com/cchvuth)
 
 For managing its distribution:\
 [@Diaoul](https://github.com/Diaoul) [@komex](https://github.com/komex) [@FabioLolix](https://github.com/FabioLolix)
 
 For sharing their camera configuration:\
 [@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat) [@gregor160300](https://github.com/gregor160300)
+
+## Documentation 
+* [chicony-ir-toggle - MIT licence](https://github.com/PetePriority/chicony-ir-toggle).
+* <https://www.kernel.org/doc/html/v5.14/userspace-api/media/drivers/uvcvideo.html>
+* <https://wiki.wireshark.org/CaptureSetup/USB>
