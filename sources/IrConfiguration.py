@@ -94,12 +94,9 @@ class IrConfiguration:
             save_config_file_path (str): file in which the config will be saved
         """
         with open(save_config_file_path, "w") as save_config_file:
-            save_config_file.write(
-                "#Caution: any manual modification of this file may corrupt the operation of the program! You must therefore be very careful.\n")
-            save_config_file.write(
-                "#Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration before.\n")
-            save_config_file.write(
-                "#If you currupt the config file: execute 'linux-enable-ir-emitter fix config' to reset the file.\n\n")
+            save_config_file.write("#Caution: any manual modification of this file may corrupt the operation of the program! You must therefore be very careful.\n")
+            save_config_file.write("#Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration before.\n")
+            save_config_file.write("#If you currupt the config file: execute 'linux-enable-ir-emitter fix config' to reset the file.\n\n")
             yaml.dump(self, save_config_file)
 
     @staticmethod
