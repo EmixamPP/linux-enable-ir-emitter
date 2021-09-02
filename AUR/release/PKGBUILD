@@ -18,7 +18,6 @@ depends=(
     'python'
     'python-opencv'
     'python-yaml'
-    'nano'
 )
 optdepends=(
     'python-pyshark: full configuration setup support'

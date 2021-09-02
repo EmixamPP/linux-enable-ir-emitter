@@ -11,6 +11,8 @@ save_config_file_path = local_path + "/irConfig.yaml"
 systemd_name = "linux-enable-ir-emitter.service"
 systemd_file_path = "/usr/lib/systemd/system/" + systemd_name
 
+editor_path =  os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"
+
 
 def _load_saved_config():
     """Load the ir config saved.
@@ -60,7 +62,7 @@ def boot(status):
 
 
 def manual(video_path):
-    """Display the current configuration in the nano editor
+    """Display the current configuration in the default editor
 
     Args:
         video_path (string): Path to the infrared camera e.g : "/dev/video2"
@@ -69,7 +71,7 @@ def manual(video_path):
     if not os.path.exists(save_config_file_path):
         dummy_config.save(save_config_file_path)
 
-    os.system("/bin/nano " + save_config_file_path)
+    os.system(editor_path + ' ' + save_config_file_path)
     if _load_saved_config() == dummy_config:
         os.system("rm " + save_config_file_path)
 
@@ -84,9 +86,8 @@ def _show_config_test(ir_config):
     Returns:
         bool: True if the configuration works, else False
     """
-    if not ir_config.run():
-        ir_config.trigger_ir()
-
+    res_code = ir_config.trigger_ir()
+    if not res_code:
         check = input("Did you see the ir emitter flashing ? Yes/No ? ").lower()
         while (check not in ("yes", "y", "no", "n")):
             check = input("Yes/No ? ").lower()
@@ -97,7 +98,8 @@ def _show_config_test(ir_config):
             print("  - activate the emitter at system boot : 'linux-enable-ir-emitter boot enable'")
             print("  - manually activate the emitter for one session : 'linux-enable-ir-emitter run'")
             return True
-    return False
+    elif res_code == 2:
+        print("Cannot access to the camera ! Check the -p option or your other running processes.", file=sys.stderr)
 
 
 def quick(video_path):

@@ -13,7 +13,6 @@ BuildRequires: make
 BuildRequires: gcc
 Requires: python3-opencv
 Requires: python3-pyyaml
-Requires: nano
 
 %description
 Enables infrared cameras that are not directly enabled out-of-the box.
