@@ -9,12 +9,16 @@
 #include <string.h>
 
 /*
-* usage : enable-ir-emitter [device] [unit] [selector] [dataSize] [data ...] 
-*       device : path to the infrared camera, e.g. /dev/video2
-*       dataSize : wLength, an integer indicating the number of components in the Data Fragment [in decimal]
-*       data : Data Fragment, each component separated by a space [in hexadecimal]
-*       unit : 2 first symbols of wIndex [in hexadecimal]
-*       selector : 2 first symbols of wValue [in hexadecimal]
+* usage: enable-ir-emitter [device] [unit] [selector] [dataSize] [data ...] 
+*        device : path to the infrared camera, e.g. /dev/video2
+*        dataSize : wLength, an integer indicating the number of components in the Data Fragment [in decimal]
+*        data : Data Fragment, each component separated by a space [in hexadecimal]
+*        unit : 2 first symbols of wIndex [in hexadecimal]
+*        selector : 2 first symbols of wValue [in hexadecimal]
+* 
+* exit code: 0 sucess
+*            1 failure, see stderr output for more details
+*            2 failure, unable to open a file descriptor for the camera
 */
 int main(int argc, char **argv) {
     int unit = strtol(argv[2], NULL, 16);
@@ -37,7 +41,7 @@ int main(int argc, char **argv) {
     int fd = open(device, O_WRONLY);
     if(fd < 0){
         fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
-        return EXIT_FAILURE;
+        return 2;
     }
 
     errno = 0;
@@ -65,10 +69,10 @@ int main(int argc, char **argv) {
                 break;
         }
         close(fd);
-        return EXIT_FAILURE;
+        return 1;
     }
 
     close(fd);
-    return EXIT_SUCCESS;
+    return 0;
 }
 

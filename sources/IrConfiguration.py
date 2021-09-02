@@ -1,4 +1,5 @@
 import os
+import subprocess
 import yaml
 import cv2
 
@@ -54,38 +55,35 @@ class IrConfiguration:
     def selector(self, selector):
         self._selector = selector
 
-    def _data_string(self):
-        """Convert the self.data list to a string sequence
-
-        Returns:
-            str: e.g. "0x01 0x03 0x02 0x00 0x00 0x00 0x00 0x00 0x00"
-        """
-        data_str = str(self.data)  # => "[..., ..., ...]"
-        data_str = data_str.replace(",", "")  # => "[... ... ...]"
-        data_str = data_str[1:-1]  # => "... ... ..."
-        return data_str
-
     def run(self):
         """Execute the UVC_SET_CUR querry
 
         Returns:
-            int: 256 if error, else 0
+            int: 0 no error, sucess
+            int: 1 error, failure
+            int: 2 cannot access to the camera, failure
         """
-        command = "{} {} {} {} {} {}".format(
-            bin_path, self.videoPath, self.unit, self.selector, len(self.data), self._data_string())
-        return os.system(command)
+        command = [bin_path, self.videoPath, self.unit, self.selector, str(len(self.data))] + self.data
+        return subprocess.call(command, stderr=subprocess.STDOUT)
 
     def trigger_ir(self, time=3):
-        """Try to trigger the ir emitter
+        """Execute the UVC_SET_CUR querry and try to trigger the ir emitter. 
 
         Args:
             time (int): transmit for how long ? (seconds). Defaults to 3.
+
+        Returns:
+            int: 0 no error, sucess
+            int: 1 error, failure
+            int: 2 cannot access to the camera, failure
         """
-        self.run()
-        capture = cv2.VideoCapture(int(self.videoPath[-1]))
-        capture.read()
-        os.system("sleep " + str(time))
-        capture.release()
+        res_code = self.run()
+        if (not res_code):
+            capture = cv2.VideoCapture(int(self.videoPath[-1]))
+            capture.read()
+            os.system("sleep " + str(time))
+            capture.release()
+        return res_code
 
     def save(self, save_config_file_path):
         """Save the configuration in a .yaml file
@@ -116,7 +114,7 @@ class IrConfiguration:
         with open(saved_path_file, "r") as save_file:
             object_deserialized = yaml.load(save_file, Loader=yaml.Loader)
 
-        dummy_config = IrConfiguration([0], 0, 0, '/dev/video2')
+        dummy_config = IrConfiguration([0], 0, 0, '')
         assert(dir(dummy_config) == dir(object_deserialized))
 
         return object_deserialized
