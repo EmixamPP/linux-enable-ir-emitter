@@ -71,7 +71,8 @@ def manual(video_path):
     if not os.path.exists(save_config_file_path):
         dummy_config.save(save_config_file_path)
 
-    os.system(editor_path + ' ' + save_config_file_path)
+    if os.system(editor_path + ' ' + save_config_file_path + " 2>/dev/null") == 32512:
+        print("Error: no editor found (editor path = ", editor_path, "), setting the variable 'EDITOR' to your perferred editor should be considered.", sep='')
     if _load_saved_config() == dummy_config:
         os.system("rm " + save_config_file_path)
 
