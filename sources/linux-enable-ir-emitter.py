@@ -5,6 +5,7 @@ import os
 import argparse
 
 import command
+from exit import exit, code
 
 
 def _check_sudo():
@@ -12,8 +13,7 @@ def _check_sudo():
     """
     if os.getuid():
         print("Please run as root", file=sys.stderr)
-        sys.exit(1)
-
+        exit(code.PERMISSION_DENIED)
 
 parser = argparse.ArgumentParser(
     description="Provides support for infrared cameras.",

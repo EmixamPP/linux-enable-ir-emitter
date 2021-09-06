@@ -1,8 +1,10 @@
 import yaml
 import os
 import sys
+import subprocess
 
 from IrConfiguration import IrConfiguration
+from exit import exit, code
 
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 config_file_path = local_path + "/config.yaml"
@@ -15,50 +17,39 @@ editor_path =  os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nan
 
 
 def _load_saved_config():
-    """Load the ir config saved.
+    """Load the ir config saved. Exit if a error occur
 
     Returns:
         IrConfiguration: the saved config
-        None: if a error occur
+        None: no config saved
     """
     try:
         if os.path.exists(save_config_file_path):
             return IrConfiguration.load(save_config_file_path)
         else:
-            print("No configuration is currently saved.", file=sys.stderr)
+            print("No configuration is currently saved.")
     except:
         print("The config file is corrupted !", file=sys.stderr)
         print("Execute 'linux-enable-ir-emitter fix config' to reset the file.", file=sys.stderr)
-    return None
+        exit(code.FAILURE)
 
 
 def run():
     """Run the config saved in irConfig.yaml"""
     ir_config = _load_saved_config()
+    exit_code = code.SUCCESS
     if ir_config:
-        ir_config.run()
+        exit_code = ir_config.run()
+    exit(exit_code)
 
 
 def test():
     """Try to trigger the ir emitter with the current configuration"""
     ir_config = _load_saved_config()
+    exit_code = code.SUCCESS
     if ir_config:
-        ir_config.trigger_ir(2)
-
-
-def boot(status):
-    """Enable or disable the systemd service which activates the ir emitter
-
-    Args:
-        status (string): "enable" or "disable" or "status"
-
-    Raises:
-        Exception: boot status arg can only be equal to enable, disable or status
-    """
-    if status in ("enable", "disable", "status"):
-        os.system("systemctl {} --now {}".format(status, systemd_name))
-    else:
-        raise Exception("boot status arg can only be equal to 'enable', 'disable' or 'status'")
+       exit_code = ir_config.trigger_ir(2)
+    exit(exit_code)
 
 
 def manual(video_path):
@@ -71,10 +62,15 @@ def manual(video_path):
     if not os.path.exists(save_config_file_path):
         dummy_config.save(save_config_file_path)
 
-    if os.system(editor_path + ' ' + save_config_file_path + " 2>/dev/null") == 32512:
-        print("Error: no editor found (editor path = ", editor_path, "), setting the variable 'EDITOR' to your perferred editor should be considered.", sep='')
+    try:
+        subprocess.call([editor_path, save_config_file_path])
+    except FileNotFoundError:
+        print("No editor found, set the envion variable 'EDITOR' or install nano.", file=sys.stderr)
+        exit(code.MISSING_DEPENDENCY)
+
     if _load_saved_config() == dummy_config:
         os.system("rm " + save_config_file_path)
+    exit(code.SUCCESS)
 
 
 def _show_config_test(ir_config):
@@ -87,8 +83,8 @@ def _show_config_test(ir_config):
     Returns:
         bool: True if the configuration works, else False
     """
-    res_code = ir_config.trigger_ir()
-    if not res_code:
+    exit_code = ir_config.trigger_ir()
+    if exit_code == code.SUCCESS:
         check = input("Did you see the ir emitter flashing ? Yes/No ? ").lower()
         while (check not in ("yes", "y", "no", "n")):
             check = input("Yes/No ? ").lower()
@@ -99,8 +95,9 @@ def _show_config_test(ir_config):
             print("  - activate the emitter at system boot : 'linux-enable-ir-emitter boot enable'")
             print("  - manually activate the emitter for one session : 'linux-enable-ir-emitter run'")
             return True
-    elif res_code == 2:
+    elif exit_code == code.FILE_DESCRIPTOR_ERROR:
         print("Cannot access to the camera ! Check the -p option or your other running processes.", file=sys.stderr)
+    return False
 
 
 def quick(video_path):
@@ -115,9 +112,10 @@ def quick(video_path):
     for config in config_list:
         ir_config = IrConfiguration(config["data"], config["unit"], config["selector"], video_path)
         if _show_config_test(ir_config):
-            return
+            exit(code.SUCCESS)
 
     print("No configuration was found please execute : 'linux-enable-ir-emitter full'.", file=sys.stderr)
+    exit(code.FAILURE)
 
 
 def _show_contribution(ir_config):
@@ -132,7 +130,7 @@ def _show_contribution(ir_config):
 
     for config in config_list:
         ir_config_to_compare = IrConfiguration(config["data"], config["unit"], config["selector"], ir_config.videoPath)
-        if ir_config_to_compare == ir_config:
+        if ir_config_to_compare == ir_config: # if it's not a new config
             return
 
     print("Your camera configuration is not in the database shared by the git community.")
@@ -153,7 +151,7 @@ def full(video_path):
     except ImportError:
         print("The 'pyshark' python dependency is required for this command.", file=sys.stderr)
         print("Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration.")
-        sys.exit(1)
+        exit(code.MISSING_DEPENDENCY)
 
     input("Please read and folow this tutorial: https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration. Press enter when you'r ready ")
     capture = IrConfigCapture(video_path)
@@ -163,23 +161,26 @@ def full(video_path):
     for ir_config in capture.config_list:
         if _show_config_test(ir_config):
             _show_contribution(ir_config)
-            return
+            exit(code.SUCCESS)
+
     print("No configuration was found.", file=sys.stderr)
+    exit(code.FAILURE)
 
 
-def fix(target):
-    """Fix well know problems
+def boot(status):
+    """Enable or disable the systemd service which activates the ir emitter
 
     Args:
-        target (string): "config" or "chicony"
+        status (string): "enable" or "disable" or "status"
 
     Raises:
-        Exception: fix target arg can only be equal to config or chicony
+        Exception: boot status arg can only be equal to enable, disable or status
     """
-    if target in ("config", "chicony"):
-        eval("_fix_" + target + "()")
+    if status in ("enable", "disable", "status"):
+        os.system("systemctl {} --now {}".format(status, systemd_name))
     else:
-        raise Exception("fix target arg can only be equal to 'config' or 'chicony'")
+        raise Exception("boot status arg can only be equal to 'enable', 'disable' or 'status'")
+    exit(code.SUCCESS)
 
 
 def _fix_config():
@@ -194,3 +195,19 @@ def _fix_chicony():
     os.system("rm -f /lib/udev/rules.d/99-ir-led.rules")
     os.system("rm -f /lib/systemd/system-sleep/ir-led.sh")
     print("chicony-ir-toggle have been uninstall.")
+
+
+def fix(target):
+    """Fix well know problems
+
+    Args:
+        target (string): "config" or "chicony"
+
+    Raises:
+        Exception: fix target arg can only be equal to config or chicony
+    """
+    if target in ("config", "chicony"):
+        eval("_fix_" + target + "()")
+        exit(code.SUCCESS)
+    else:
+        raise Exception("fix target arg can only be equal to 'config' or 'chicony'")

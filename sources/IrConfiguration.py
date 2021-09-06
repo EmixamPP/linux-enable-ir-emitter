@@ -3,6 +3,8 @@ import subprocess
 import yaml
 import cv2
 
+from exit import code
+
 local_path = path = os.path.dirname(os.path.abspath(__file__))
 bin_path = config_file_path = local_path + "/enable-ir-emitter"
 
@@ -59,9 +61,9 @@ class IrConfiguration:
         """Execute the UVC_SET_CUR querry
 
         Returns:
-            int: 0 no error, sucess
-            int: 1 error, failure
-            int: 2 cannot access to the camera, failure
+            exit.code: code.SUCCESS
+            exit.code: code.FAILURE
+            exit.code: code.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
         command = [bin_path, self.videoPath, self.unit, self.selector, str(len(self.data))] + self.data
         return subprocess.call(command, stderr=subprocess.STDOUT)
@@ -73,17 +75,17 @@ class IrConfiguration:
             time (int): transmit for how long ? (seconds). Defaults to 3.
 
         Returns:
-            int: 0 no error, sucess
-            int: 1 error, failure
-            int: 2 cannot access to the camera, failure
+            exit.code: code.SUCCESS
+            exit.code: code.FAILURE
+            exit.code: code.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
-        res_code = self.run()
-        if (not res_code):
+        exit_code = self.run()
+        if (exit_code == code.SUCCESS):
             capture = cv2.VideoCapture(int(self.videoPath[-1]))
             capture.read()
             os.system("sleep " + str(time))
             capture.release()
-        return res_code
+        return exit_code
 
     def save(self, save_config_file_path):
         """Save the configuration in a .yaml file

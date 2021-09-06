@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     int fd = open(device, O_WRONLY);
     if(fd < 0){
         fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
-        return 2;
+        return 3;
     }
 
     errno = 0;
