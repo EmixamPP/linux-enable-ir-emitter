@@ -59,7 +59,7 @@ For managing its distribution:\
 [@Diaoul](https://github.com/Diaoul) [@komex](https://github.com/komex) [@FabioLolix](https://github.com/FabioLolix)
 
 For sharing their camera configuration:\
-[@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat) [@gregor160300](https://github.com/gregor160300) [@kapi117](https://github.com/kapi117)
+[@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat)
 
 ## Documentation 
 * [chicony-ir-toggle - MIT licence](https://github.com/PetePriority/chicony-ir-toggle).
