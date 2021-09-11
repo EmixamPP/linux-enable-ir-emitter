@@ -2,11 +2,9 @@ import os
 import subprocess
 import yaml
 import cv2
+import sys
 
-from exit import code
-
-local_path = path = os.path.dirname(os.path.abspath(__file__))
-bin_path = config_file_path = local_path + "/enable-ir-emitter"
+from globals import ExitCode, BIN_PATH, SAVE_CONFIG_FILE_PATH
 
 
 class IrConfiguration:
@@ -61,11 +59,11 @@ class IrConfiguration:
         """Execute the UVC_SET_CUR querry
 
         Returns:
-            exit.code: code.SUCCESS
-            exit.code: code.FAILURE
-            exit.code: code.FILE_DESCRIPTOR_ERROR cannot access to the camera
+            ExitCode: ExitCode.SUCCESS
+            ExitCode: ExitCode.FAILURE
+            ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
-        command = [bin_path, self.videoPath, self.unit, self.selector, str(len(self.data))] + self.data
+        command = [BIN_PATH, self.videoPath, self.unit, self.selector, str(len(self.data))] + self.data
         return subprocess.call(command, stderr=subprocess.STDOUT)
 
     def trigger_ir(self, time=3):
@@ -75,12 +73,12 @@ class IrConfiguration:
             time (int): transmit for how long ? (seconds). Defaults to 3.
 
         Returns:
-            exit.code: code.SUCCESS
-            exit.code: code.FAILURE
-            exit.code: code.FILE_DESCRIPTOR_ERROR cannot access to the camera
+            ExitCode: ExitCode.SUCCESS
+            ExitCode: ExitCode.FAILURE
+            ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
         exit_code = self.run()
-        if (exit_code == code.SUCCESS):
+        if (exit_code == ExitCode.SUCCESS):
             capture = cv2.VideoCapture(int(self.videoPath[-1]))
             capture.read()
             os.system("sleep " + str(time))
@@ -132,3 +130,20 @@ class IrConfiguration:
             return False
         else:
             return True
+
+def load_saved_config():
+    """Load the ir config saved. Exit if a error occur
+
+    Returns:
+        IrConfiguration: the saved config
+        None: no config saved
+    """
+    try:
+        if os.path.exists(SAVE_CONFIG_FILE_PATH):
+            return IrConfiguration.load(SAVE_CONFIG_FILE_PATH)
+        else:
+            print("No configuration is currently saved.")
+    except:
+        print("The config file is corrupted !", file=sys.stderr)
+        print("Execute 'linux-enable-ir-emitter fix config' to reset the file.", file=sys.stderr)
+        sys.exit(ExitCode.FAILURE)
