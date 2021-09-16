@@ -1,6 +1,7 @@
-import os
+import subprocess
+import sys
 
-from globals import ExitCode, SYSTEMD_NAME
+from globals import SYSTEMD_NAME, ExitCode
 
 
 def execute(boot_status):
@@ -11,13 +12,10 @@ def execute(boot_status):
 
         Raises:
             Exception: boot status arg can only be equal to enable, disable or status
-        
-        Returns:
-            ExitCode: always ExitCode.SUCCESS
     """
     if boot_status in ("enable", "disable", "status"):
-        os.system("systemctl {} --now {}".format(boot_status, SYSTEMD_NAME))
+        subprocess.call("systemctl {} --now {}".format(boot_status, SYSTEMD_NAME), shell=True)
     else:
         raise Exception("boot status arg can only be equal to 'enable', 'disable' or 'status'")
     
-    return ExitCode.SUCCESS
+    sys.exit(ExitCode.SUCCESS)

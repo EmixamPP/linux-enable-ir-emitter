@@ -2,55 +2,49 @@
 
 usage() {
     columnPrint="%-20s%-s\n"
-
-    printf "This is a simple tool to install/uninstall the sofware.\n\n"
-    printf "usage: bash installer option\n\n"
-
-    printf "option:\n"
-    printf "$columnPrint" "  install" "install linux-enable-ir-emitter"
-    printf "$columnPrint" "  optional" "install the optional Python dependencies"
-    printf "$columnPrint" "  uninstall" "uninstall linux-enable-ir-emitter and optional Python dependencies"
+    printf "This is a simple tool to install/uninstall the sofware.\n"
+    printf "usage: bash installer {install, uninstall}\n"
 }
 
 install_dependency() {
-    check_sudo
+    check_root
     umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
     pip install opencv-python pyyaml
 }
 
-install_opt_dependency() {
-    check_sudo
-    umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
-    pip install pyshark
-}
-
 do_install() {
-    check_sudo
-    cd sources && make 
+    check_root
+    make -C sources/uvc
 
-    install -Dm 755 enable-ir-emitter  -t /usr/lib/linux-enable-ir-emitter/
-    install -Dm 644 config.yaml -t /usr/lib/linux-enable-ir-emitter/
-    install -Dm 755 *.py -t /usr/lib/linux-enable-ir-emitter/
-    install -Dm 644 linux-enable-ir-emitter.service -t /usr/lib/systemd/system/
+    # software
+    install -Dm 755 sources/uvc/*query  -t /usr/lib/linux-enable-ir-emitter/uvc/
+    install -Dm 755 sources/uvc/*query.o  -t /usr/lib/linux-enable-ir-emitter/uvc/
+
+    install -Dm 644 sources/command/*.py -t /usr/lib/linux-enable-ir-emitter/command/
+
+    install -Dm 644 sources/*.py -t /usr/lib/linux-enable-ir-emitter/
+
+    # boot service
+    install -Dm 644 sources/linux-enable-ir-emitter.service -t /usr/lib/systemd/system/
+
+    # executable
+    chmod +x /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
 
     install_dependency
 }
 
 do_uninstall() {
-    check_sudo
+    check_root
 
     rm -f /usr/bin/linux-enable-ir-emitter
     rm -rf /usr/lib/linux-enable-ir-emitter/
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
-
-    umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
-    pip uninstall pyshark -y  # not safe for other software, but certainly only used by mine
 }
 
-check_sudo() {
+check_root() {
     if [ "$EUID" -ne 0 ]; then
-        echo "Please run as sudo"
+        echo "Please run as root."
         exit 1
     fi
 }
@@ -61,9 +55,6 @@ case "$1" in
     ;;
 "install")
     do_install
-    ;;
-"optional")
-    install_opt_dependency
     ;;
 *)
     usage

@@ -1,35 +1,37 @@
 import os
+import time
 import subprocess
 import yaml
-import cv2
 import sys
+import cv2
+import logging
 
-from globals import ExitCode, BIN_PATH, SAVE_CONFIG_FILE_PATH
+from globals import ExitCode, UVC_SET_QUERY_PATH, SAVE_CONFIG_FILE_PATH
 
 
 class IrConfiguration:
-    def __init__(self, data, unit, selector, videoPath):
+    def __init__(self, control, unit, selector, device):
         """Query a UVC XU control (UVC_SET_CUR querry)
            Which is intended to activate the infrared camera transmitter.
 
         Args:
-            data (int list): Control value
+            control (int list): Control value
             unit (int): Extension unit ID
             selector (int): Control selector
-            videoPath (str): Path to the infrared camera e.g : "/dev/video2"
+            device (str): the infrared camera e.g : "/dev/video2"
         """
-        self._data = [hex(i) for i in data]
-        self._unit = hex(unit)
-        self._selector = hex(selector)
-        self._videoPath = videoPath
+        self._control = [int(i) for i in control]
+        self._unit = int(unit)
+        self._selector = int(selector)
+        self._device = device
 
     @property
-    def videoPath(self):
-        return self._videoPath
+    def device(self):
+        return self._device
 
     @property
-    def data(self):
-        return self._data
+    def control(self):
+        return self._control
 
     @property
     def unit(self):
@@ -38,39 +40,45 @@ class IrConfiguration:
     @property
     def selector(self):
         return self._selector
-
-    @videoPath.setter
-    def videoPath(self, videoPath):
-        self._videoPath = videoPath
-
-    @data.setter
-    def data(self, data):
-        self._data = data
-
-    @unit.setter
-    def unit(self, unit):
-        self._unit = unit
-
-    @selector.setter
-    def selector(self, selector):
-        self._selector = selector
-
+    
+    @property
+    def control_size(self):
+        return len(self._control)
+    
+    @property
+    def _control_str(self):
+        """Convert the self.data list to a string sequence
+        Returns:
+            str: e.g. "0x01 0x03 0x02 0x00 0x00 0x00 0x00 0x00 0x00"
+        """
+        control = str(self.control)  # => "[..., ..., ...]"
+        control = control.replace(",", "")  # => "[... ... ...]"
+        control = control[1:-1]  # => "... ... ..."
+        return control
+    
     def run(self):
-        """Execute the UVC_SET_CUR querry
+        """Execute the UVC_SET_CUR query
 
         Returns:
             ExitCode: ExitCode.SUCCESS
             ExitCode: ExitCode.FAILURE
             ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
-        command = [BIN_PATH, self.videoPath, self.unit, self.selector, str(len(self.data))] + self.data
-        return subprocess.call(command, stderr=subprocess.STDOUT)
+        # Subprocess does not work with systemd ! 
+        # The exit codes returned by os.system not correspond to those returned by the executed program.
+        command = "{} {} {} {} {} {}".format(UVC_SET_QUERY_PATH, self.device, self.unit, self.selector, self.control_size, self._control_str)
+        exit_code = os.system(command)
+        if exit_code == 32256: 
+            return ExitCode.FILE_DESCRIPTOR_ERROR
+        elif exit_code == 256:
+            return ExitCode.FAILURE
+        return ExitCode.SUCCESS
 
-    def trigger_ir(self, time=3):
-        """Execute the UVC_SET_CUR querry and try to trigger the ir emitter. 
+    def triggerIr(self, duration=2):
+        """Execute the UVC_SET_CUR query and try to trigger the ir emitter. 
 
         Args:
-            time (int): transmit for how long ? (seconds). Defaults to 3.
+            duration (int): transmit for how long ? (seconds). Defaults to 2.
 
         Returns:
             ExitCode: ExitCode.SUCCESS
@@ -79,9 +87,9 @@ class IrConfiguration:
         """
         exit_code = self.run()
         if (exit_code == ExitCode.SUCCESS):
-            capture = cv2.VideoCapture(int(self.videoPath[-1]))
+            capture = cv2.VideoCapture(int(self.device[-1]))
             capture.read()
-            os.system("sleep " + str(time))
+            time.sleep(duration)
             capture.release()
         return exit_code
 
@@ -122,7 +130,7 @@ class IrConfiguration:
     def __eq__(self, to_compare):
         if not isinstance(to_compare, IrConfiguration):
             return False
-        elif self.data != to_compare.data:
+        elif self.control != to_compare.control:
             return False
         elif self.unit != to_compare.unit:
             return False
@@ -142,8 +150,8 @@ def load_saved_config():
         if os.path.exists(SAVE_CONFIG_FILE_PATH):
             return IrConfiguration.load(SAVE_CONFIG_FILE_PATH)
         else:
-            print("No configuration is currently saved.")
+            logging.error("No configuration is currently saved.")
     except:
-        print("The config file is corrupted !", file=sys.stderr)
-        print("Execute 'linux-enable-ir-emitter fix config' to reset the file.", file=sys.stderr)
+        logging.critical("The config file is corrupted.")
+        logging.info("Execute 'linux-enable-ir-emitter fix config' to reset the file.")
         sys.exit(ExitCode.FAILURE)

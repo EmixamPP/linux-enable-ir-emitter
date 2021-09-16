@@ -16,7 +16,7 @@ makepkg -csi
 ``` 
 
 ### For Fedora distro based (Mageia + openSUSE) : 
-<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://img.shields.io/badge/copr-v2.1.0--1-blue"> <img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
+<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://img.shields.io/badge/copr-v3.0.0--1-blue"> <img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
 ``` shell
 sudo dnf copr enable emixampp/linux-enable-ir-emitter
 sudo dnf --refresh install linux-enable-ir-emitter
@@ -30,38 +30,18 @@ git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
 ```
-
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
-
-#### Optional installation :
-If you need to use the `linux-enable-ir-emitter full` command, please read the related [wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration).\
-This command is not always necessary, so I have removed the dependencies from the standard installation (feel free to let me know what you think about that). 
 
 ## How to enable your infrared emitter ?
 
 0. `linux-enable-ir-emitter -h`
-1. Try the quick configuration, it is the easiest and does not require any manipulation : `sudo linux-enable-ir-emitter quick`.
-2. If this does not work, you will have to undertake a semi-automatic configuration with `sudo linux-enable-ir-emitter full`.
-This requires more preparation, please follow [the wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Semi-automatic-configuration). 
-3. To enable the infrared emitter at boot, simply run `sudo linux-enable-ir-emitter boot enable`.
+1. `sudo linux-enable-ir-emitter configure` look closely at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2
+2. `sudo linux-enable-ir-emitter boot enable`
 
 If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
 ## Issues
-- If you had used `chicony-ir-toggle` before: please execute `sudo linux-enable-ir-emitter fix chicony`
-- If the config file is corrupted: execute `sudo linux-enable-ir-emitter fix config`
+Please consult the wiki before open an issue. It contains a lot of useful information !
 
 ## :hearts: Thanks to
-For helping me to improve the software:\
-[@m4rtins](https://github.com/m4rtins) [@supdrewin](https://github.com/supdrewin) [@renyuneyun](https://github.com/renyuneyun) [@furcelay](https://github.com/furcelay) [@cchvuth](https://github.com/cchvuth)
-
-For managing its distribution:\
-[@Diaoul](https://github.com/Diaoul) [@komex](https://github.com/komex) [@FabioLolix](https://github.com/FabioLolix)
-
-For sharing their camera configuration:\
-[@Stkai](https://github.com/Stkai) [@reolat](https://github.com/reolat)
-
-## Documentation 
-* [chicony-ir-toggle - MIT licence](https://github.com/PetePriority/chicony-ir-toggle).
-* <https://www.kernel.org/doc/html/v5.14/userspace-api/media/drivers/uvcvideo.html>
-* <https://wiki.wireshark.org/CaptureSetup/USB>
+[@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun)  [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 
