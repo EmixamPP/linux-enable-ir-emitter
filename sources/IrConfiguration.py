@@ -67,6 +67,9 @@ class IrConfiguration:
         # Subprocess does not work with systemd ! 
         # The exit codes returned by os.system not correspond to those returned by the executed program.
         command = "{} {} {} {} {} {}".format(UVC_SET_QUERY_PATH, self.device, self.unit, self.selector, self.control_size, self._control_str)
+        if logging.getLogger().level != logging.DEBUG:
+            command += " &> /dev/null"
+
         exit_code = os.system(command)
         if exit_code == 32256: 
             return ExitCode.FILE_DESCRIPTOR_ERROR
