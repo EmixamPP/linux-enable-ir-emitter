@@ -15,17 +15,13 @@ arch=('x86_64')
 provides=(linux-enable-ir-emitter)
 conflicts=(linux-enable-ir-emitter-git chicony-ir-toggle)
 
-depends=(
-    'python'
-    'python-opencv'
-    'python-yaml'
-)
+depends=(python python-opencv python-yaml)
+
 source=("https://github.com/EmixamPP/linux-enable-ir-emitter/archive/refs/tags/${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 build() {
-    cd "${srcdir}/${pkgname}-${pkgver}/sources"
-    make
+    make -C "${srcdir}/linux-enable-ir-emitter/sources/uvc"
 }
 
 package() {
