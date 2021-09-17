@@ -23,7 +23,7 @@ def execute(target):
     """Fix well know problems
 
     Args:
-        target (string): "config" or "chicony"
+        target (str): "config" or "chicony"
 
     Raises:
         Exception: fix target arg can only be equal to config or chicony

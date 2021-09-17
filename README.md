@@ -2,7 +2,7 @@
 
 Provides support for infrared cameras that are not directly enabled out-of-the box (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called.
 
-`linux-enable-ir-emitter` can almost automatically, configure any infrared camera. 
+`linux-enable-ir-emitter` can automatically configure any infrared camera. 
 
 This software was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
@@ -41,7 +41,7 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
 ## Issues
-Please consult the wiki before open an issue. It contains a lot of useful information !
+Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue. It contains a lot of useful information !
 
 ## :hearts: Thanks to
 [@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun)  [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 

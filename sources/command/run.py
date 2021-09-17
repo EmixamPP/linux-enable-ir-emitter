@@ -1,18 +1,14 @@
 import sys
-import logging
 
 from IrConfiguration import load_saved_config
+from command.configure import exitIfFileDescriptorError
 from globals import ExitCode
 
 
 def execute():
-    """Run the config saved in irConfig.yaml"""
+    """Apply the saved configuration"""
     ir_config = load_saved_config()
-    exit_code = ExitCode.FAILURE
-    if ir_config:
-        exit_code = ir_config.run()
-        
-    if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR:
-        logging.critical("Cannot access to %s.", ir_config.device)
+    exit_code = ExitCode.FAILURE if not ir_config else ir_config.run()
+    exitIfFileDescriptorError(exit_code, ir_config.device)
     sys.exit(exit_code)
     

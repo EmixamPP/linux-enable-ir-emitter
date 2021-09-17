@@ -1,6 +1,5 @@
 import os
 import time
-import subprocess
 import yaml
 import sys
 import cv2
@@ -49,7 +48,7 @@ class IrConfiguration:
     def _control_str(self):
         """Convert the self.data list to a string sequence
         Returns:
-            str: e.g. "0x01 0x03 0x02 0x00 0x00 0x00 0x00 0x00 0x00"
+            str: e.g. "1 3 3 0 0 0 0 0 0"
         """
         control = str(self.control)  # => "[..., ..., ...]"
         control = control.replace(",", "")  # => "[... ... ...]"
@@ -141,6 +140,7 @@ class IrConfiguration:
             return False
         else:
             return True
+
 
 def load_saved_config():
     """Load the ir config saved. Exit if a error occur

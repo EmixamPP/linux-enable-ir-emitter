@@ -11,7 +11,7 @@ def execute(device):
     """Display the current configuration in the default editor
 
     Args:
-        device (string): Path to the infrared camera e.g : "/dev/video2"
+        device (str): Path to the infrared camera e.g : "/dev/video2"
     """
     dummy_config = IrConfiguration([0], 0, 0, device)
     if not os.path.exists(SAVE_CONFIG_FILE_PATH):

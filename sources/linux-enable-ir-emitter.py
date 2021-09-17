@@ -5,10 +5,9 @@ import os
 import argparse
 import logging
 
-from cv2 import log
-
 from command import boot, fix, manual, run, test, configure
 from globals import ExitCode
+
 
 def _check_root():
     """Exit if the script isn't run as sudo"""
@@ -24,10 +23,15 @@ if __name__ == "__main__":
         description="Provides support for infrared cameras.",
         formatter_class=argparse.RawTextHelpFormatter,
         prog="linux-enable-ir-emitter",
-        epilog="For help see : https://github.com/EmixamPP/linux-enable-ir-emitter/"
+        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/"
     )
 
-    parser.add_argument('-V', '--version', action='version', version='%(prog)s 3.0.0')
+    parser.add_argument(
+        "-V", "--version", 
+        action="version", 
+        version="%(prog)s 3.0.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        help="show version information and exit"
+    )
     parser.add_argument(
         "-d",
         metavar="device",
@@ -37,8 +41,8 @@ if __name__ == "__main__":
     )
 
     command_subparser = parser.add_subparsers(dest='command')
-    command_run = command_subparser.add_parser("run", help="run the actual configuration")
-    command_configure = command_subparser.add_parser("configure", help="find an ir configuration")
+    command_run = command_subparser.add_parser("run", help="apply the actual configuration")
+    command_configure = command_subparser.add_parser("configure", help="automatic ir configuration")
     command_manual = command_subparser.add_parser("manual", help="manual ir configuration")
     command_boot = command_subparser.add_parser("boot", help="enable ir at boot")
     command_test = command_subparser.add_parser("test", help="try to trigger the ir emitter")
@@ -55,7 +59,7 @@ if __name__ == "__main__":
         help="specify the target to fix: {reset the config, uninstall chicony-ir-toggle}"
     )
     command_configure.add_argument(
-        '-v', '--verbose', 
+        '--verbose', 
         help="print verbose information",
         action='store_true', 
         default=False

@@ -10,10 +10,10 @@ from IrConfiguration import IrConfiguration
 
 """DOCUMENTATION
 - https://www.kernel.org/doc/html/v5.14/userspace-api/media/drivers/uvcvideo.html
-    info 1: All uvc queries are explained
-    info 2: All possible units can be found by parsing the uvc descriptor
+    info 1: uvc queries are explained
+    info 2: units can be found by parsing the uvc descriptor
 - https://www.mail-archive.com/search?l=linux-uvc-devel@lists.berlios.de&q=subject:%22Re%5C%3A+%5C%5BLinux%5C-uvc%5C-devel%5C%5D+UVC%22&o=newest&f=1
-    info 1: There are 8 bits possible selector value and since the manufacturer does not provide a driver, it is impossible to know which one it is.
+    info 1: selector is on 8 bits and since the manufacturer does not provide a driver, it is impossible to know which value it is.
 """
 
 
@@ -29,20 +29,20 @@ def execute(device):
             control_size, exit_code = _getControlSize(device, unit, str(selector))
             if exit_code == ExitCode.FAILURE:
                 continue
-            _exitIfFileDescriptorError(exit_code, device)
+            exitIfFileDescriptorError(exit_code, device)
 
             # get the current control instruction value
             current_control, exit_code = _getCurrentControl(device, unit, str(selector), control_size)
             if exit_code == ExitCode.FAILURE:
                 continue
-            _exitIfFileDescriptorError(exit_code, device)
+            exitIfFileDescriptorError(exit_code, device)
             
             # get the max control instruction value
             max_control, exit_code = _getMaxControl(device, unit, str(selector), control_size)
             if exit_code == ExitCode.FAILURE or current_control == max_control:
                 # or: cause maxControl isn't a possible instruction for enable the ir emitter
                 continue
-            _exitIfFileDescriptorError(exit_code, device)
+            exitIfFileDescriptorError(exit_code, device)
 
 
             # try the max control instruction value
@@ -50,7 +50,7 @@ def execute(device):
             exit_code = ir_config.triggerIr()
             if exit_code == ExitCode.FAILURE:
                 continue
-            _exitIfFileDescriptorError(exit_code, device)
+            exitIfFileDescriptorError(exit_code, device)
 
             logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}".format(unit, selector, current_control, max_control))
 
@@ -93,9 +93,7 @@ def _emitterIsWorking():
     while (check not in ("yes", "y", "no", "n")):
         check = input("Yes/No ? ").lower()
 
-    if check in ("yes", "y"):
-        return True
-    return False
+    return check in ("yes", "y")
 
 
 def _getUnitList(device):
@@ -163,7 +161,7 @@ def _getMaxControl(device, unit, selector, control_size):
     return exec.stdout.strip().decode('utf-8').split(' '), exec.returncode
 
 
-def _exitIfFileDescriptorError(exit_code, device):
+def exitIfFileDescriptorError(exit_code, device):
     """Exit if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR
 
     Args:
