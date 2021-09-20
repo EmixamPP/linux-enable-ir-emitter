@@ -50,10 +50,7 @@ class IrConfiguration:
         Returns:
             str: e.g. "1 3 3 0 0 0 0 0 0"
         """
-        control = str(self.control)  # => "[..., ..., ...]"
-        control = control.replace(",", "")  # => "[... ... ...]"
-        control = control[1:-1]  # => "... ... ..."
-        return control
+        return ' '.join(str(value) for value in self.control)
     
     def run(self):
         """Execute the UVC_SET_CUR query
@@ -88,7 +85,7 @@ class IrConfiguration:
             ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
         exit_code = self.run()
-        if (exit_code == ExitCode.SUCCESS):
+        if exit_code == ExitCode.SUCCESS:
             capture = cv2.VideoCapture(int(self.device[-1]))
             capture.read()
             time.sleep(duration)

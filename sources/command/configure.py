@@ -44,6 +44,7 @@ def execute(device):
                 continue
             exitIfFileDescriptorError(exit_code, device)
 
+            logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}".format(unit, selector, current_control, max_control))
 
             # try the max control instruction value
             ir_config = IrConfiguration(max_control, unit, selector, device)
@@ -51,9 +52,7 @@ def execute(device):
             if exit_code == ExitCode.FAILURE:
                 continue
             exitIfFileDescriptorError(exit_code, device)
-
-            logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}".format(unit, selector, current_control, max_control))
-
+            
             if _emitterIsWorking():
                 ir_config.save(SAVE_CONFIG_FILE_PATH)
                 logging.info("The configuration is completed with success. To activate the emitter at system boot execute 'linux-enable-ir-emitter boot enable'")
