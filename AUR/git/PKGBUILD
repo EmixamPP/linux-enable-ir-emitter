@@ -16,6 +16,8 @@ conflicts=(linux-enable-ir-emitter chicony-ir-toggle)
 makedepends=(git)
 depends=(python python-opencv python-yaml)
 
+install=linux-enable-ir-emitter.install
+
 source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter")
 sha256sums=('SKIP')
 
@@ -38,14 +40,8 @@ package() {
 
     install -Dm 644 sources/command/*.py -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/command/
 
-    install -Dm 644 sources/*.py -t /usr/lib/linux-enable-ir-emitter/
+    install -Dm 644 sources/*.py -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/
 
     # boot service
     install -Dm 644 sources/linux-enable-ir-emitter.service -t ${pkgdir}/usr/lib/systemd/system/
-
-    # executable
-    mkdir -p ${pkgdir}/usr/bin/
-    chmod +x /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
-    ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py ${pkgdir}/usr/bin/linux-enable-ir-emitter
 }
-
