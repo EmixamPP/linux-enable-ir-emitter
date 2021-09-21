@@ -37,6 +37,7 @@ install -Dm 644 sources/%{name}.service -t %{buildroot}%{_prefix}/lib/systemd/sy
 
 # executable
 chmod +x %{buildroot}%{_libdir}/%{name}/%{name}.py
+mkdir -p %{buildroot}%{_bindir}/
 ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
@@ -47,13 +48,14 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}/
 
 %postun
-# delete files added after installation
-rm -rf %{_libdir}/%{name}/
+# delete file added after installation
+rm -f %{_sysconfdir}/%{name}.yaml
 
 %changelog
-* Thu Sep 16 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.0.0-1
+* Tue Sep 21 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.0.0-1
 - New configuration system
-- Custom exit code
+- Exit codes
+- Change configuration file location
 * Sun Aug 29 2021 Maxime Dirksen <emixampp@fedoraproject.org> - 2.1.0-1
 - New fix command, to resolve well know problems
 - Systemd service file modified to prevent /dev/video file descriptor  error

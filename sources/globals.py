@@ -3,7 +3,14 @@ import enum
 
 
 LOCAL_PATH = path = os.path.dirname(os.path.abspath(__file__))
-SAVE_CONFIG_FILE_PATH = LOCAL_PATH + "/irConfig.yaml"
+
+def _getSaveConfigFilePath():
+    old_version_path = LOCAL_PATH + "/irConfig.yaml"
+    actual_version_path = "/etc/linux-enable-ir-emitter.yaml"
+    if os.path.exists(old_version_path): 
+        return old_version_path
+    return actual_version_path
+SAVE_CONFIG_FILE_PATH = _getSaveConfigFilePath()
 
 UVC_DIR_PATH = LOCAL_PATH + "/uvc/"
 UVC_LEN_QUERY_PATH = UVC_DIR_PATH + "len_query"
