@@ -45,7 +45,7 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %doc README.md
 %{_libdir}/%{name}/
 %{_prefix}/lib/systemd/system/%{name}.service
-%{_bindir}/%{name}/
+%{_bindir}/%{name}
 
 %postun
 # delete file added after installation
