@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  3.0.0
+Version:  3.1.0
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -48,11 +48,12 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %postun
-# delete file added after installation
+# delete files added after installation
+rm -rf %{_libdir}/%{name}/
 rm -f %{_sysconfdir}/%{name}.yaml
 
 %changelog
-* Tue Sep 21 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.0.0-1
+* Tue Sep 22 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.0-1
 - New configuration system
 - Exit codes
 - Change configuration file location

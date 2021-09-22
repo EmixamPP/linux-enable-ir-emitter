@@ -1,16 +1,46 @@
 import os
 import enum
+import logging
+import sys
+
+
+class ExitCode(enum.IntEnum):
+    SUCCESS = 0
+    FAILURE = 1
+    FILE_DESCRIPTOR_ERROR = 126
+    MISSING_DEPENDENCY = 3
+    ROOT_REQUIRED = 2
+
+
+def check_root():
+    """Exit if the script isn't run as sudo"""
+    if os.getuid():
+        logging.critical("Please run as root.")
+        sys.exit(ExitCode.ROOT_REQUIRED)
 
 
 LOCAL_PATH = path = os.path.dirname(os.path.abspath(__file__))
 
-def _getSaveConfigFilePath():
+def _getConfigFilePath():
     old_version_path = LOCAL_PATH + "/irConfig.yaml"
-    actual_version_path = "/etc/linux-enable-ir-emitter.yaml"
-    if os.path.exists(old_version_path): 
-        return old_version_path
-    return actual_version_path
-SAVE_CONFIG_FILE_PATH = _getSaveConfigFilePath()
+    path = "/etc/linux-enable-ir-emitter.yaml"
+    if os.path.exists(old_version_path):
+        check_root()
+        with open(path, "w") as new, open(old_version_path) as old:
+            line = old.readline()
+            while(line):
+                if line == "_data:\n":
+                    new.write("_control:\n")
+                elif "'0x" in line:
+                    new.write(line.replace("'", ""))
+                elif line[:11] == "_videoPath:":
+                    new.write(line.replace("videoPath", "device"))
+                else:
+                    new.write(line)
+                line = old.readline()
+        os.remove(old_version_path)
+    return  path
+SAVE_CONFIG_FILE_PATH =  _getConfigFilePath() 
 
 UVC_DIR_PATH = LOCAL_PATH + "/uvc/"
 UVC_LEN_QUERY_PATH = UVC_DIR_PATH + "len_query"
@@ -20,11 +50,3 @@ UVC_SET_QUERY_PATH = UVC_DIR_PATH + "set_query"
 SYSTEMD_NAME = "linux-enable-ir-emitter.service"
 
 EDITOR_PATH =  os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"
-
-
-class ExitCode(enum.IntEnum):
-    SUCCESS = 0
-    FAILURE = 1
-    FILE_DESCRIPTOR_ERROR = 126
-    MISSING_DEPENDENCY = 3
-    ROOT_REQUIRED = 2

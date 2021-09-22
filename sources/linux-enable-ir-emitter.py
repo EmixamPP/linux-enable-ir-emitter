@@ -1,19 +1,10 @@
 #!/usr/bin/python3
 
-import sys
-import os
 import argparse
 import logging
 
 from command import boot, fix, manual, run, test, configure
-from globals import ExitCode
-
-
-def _check_root():
-    """Exit if the script isn't run as sudo"""
-    if os.getuid():
-        logging.critical("Please run as root.")
-        sys.exit(ExitCode.ROOT_REQUIRED)
+from globals import check_root
 
 
 if __name__ == "__main__":
@@ -29,7 +20,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.0.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.1.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
     parser.add_argument(
@@ -38,6 +29,12 @@ if __name__ == "__main__":
         help="specify your infrared camera '/dev/videoX', by default is '/dev/video2'",
         default=["/dev/video2"],
         nargs=1
+    )
+    parser.add_argument(
+        '--verbose', 
+        help="print verbose information",
+        action='store_true', 
+        default=False
     )
 
     command_subparser = parser.add_subparsers(dest='command')
@@ -58,31 +55,27 @@ if __name__ == "__main__":
         choices=["config", "chicony"], 
         help="specify the target to fix: {reset the config, uninstall chicony-ir-toggle}"
     )
-    command_configure.add_argument(
-        '--verbose', 
-        help="print verbose information",
-        action='store_true', 
-        default=False
-    )
 
     args = parser.parse_args()
+
+    if args.verbose:
+            logging.getLogger().setLevel(logging.DEBUG)
+
     if args.command == "run":
         run.execute()
     elif args.command == "configure":
-        _check_root()
-        if args.verbose:
-            logging.getLogger().setLevel(logging.DEBUG)
+        check_root()
         configure.execute(args.d[0])
     elif args.command == "manual":
-        _check_root()
+        check_root()
         manual.execute(args.d[0])
     elif args.command == "boot":
-        _check_root()
+        check_root()
         boot.execute(args.boot_status)
     elif args.command == "test":
         test.execute()
     elif args.command == "fix":
-        _check_root()
+        check_root()
         fix.execute(args.fix_target)
     else:
         parser.print_help()

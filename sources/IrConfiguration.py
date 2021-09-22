@@ -144,7 +144,6 @@ def load_saved_config():
 
     Returns:
         IrConfiguration: the saved config
-        None: no config saved
     """
     try:
         if os.path.exists(SAVE_CONFIG_FILE_PATH):

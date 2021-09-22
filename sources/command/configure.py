@@ -44,22 +44,36 @@ def execute(device):
                 continue
             exitIfFileDescriptorError(exit_code, device)
 
-            logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}".format(unit, selector, current_control, max_control))
-
-            # try the max control instruction value
-            ir_config = IrConfiguration(max_control, unit, selector, device)
-            exit_code = ir_config.triggerIr()
-            if exit_code == ExitCode.FAILURE:
-                continue
+            res_control, exit_code = _getResControl(device, unit, str(selector), control_size, current_control, max_control)
             exitIfFileDescriptorError(exit_code, device)
+
+            logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}, res control: {}".format(unit, selector, current_control, max_control, res_control))
+
+            # try to find the right control instruction
+            next_control = current_control
+            while(next_control):
+                next_control = _getNextCurrControl(next_control, res_control, max_control)
+                if not next_control:
+                    continue
+
+                ir_config = IrConfiguration(next_control, unit, selector, device)
+                logging.getLogger().setLevel(logging.INFO)  
+                # debug print are disabled during the test cause it is not relevent while automatic configuration
+                exit_code = ir_config.triggerIr()
+                logging.getLogger().setLevel(logging.DEBUG)
+                if exit_code == ExitCode.FAILURE:
+                    continue
+                exitIfFileDescriptorError(exit_code, device)
+
+                logging.debug("control: {}".format(next_control))
+                if _emitterIsWorking():
+                    ir_config.save(SAVE_CONFIG_FILE_PATH)
+                    logging.info("The configuration is completed with success. To activate the emitter at system boot execute 'linux-enable-ir-emitter boot enable'")
+                    sys.exit(ExitCode.SUCCESS)
             
-            if _emitterIsWorking():
-                ir_config.save(SAVE_CONFIG_FILE_PATH)
-                logging.info("The configuration is completed with success. To activate the emitter at system boot execute 'linux-enable-ir-emitter boot enable'")
-                sys.exit(ExitCode.SUCCESS)
-            else:  # reset the control value
-                command = [UVC_SET_QUERY_PATH, device, unit, str(selector), control_size] + current_control
-                subprocess.run(command, capture_output=True)
+            # reset the control
+            command = [UVC_SET_QUERY_PATH, device, unit, str(selector), control_size] + current_control
+            subprocess.run(command, capture_output=True)
 
     logging.error("The configuration has failed.")
     logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter")
@@ -154,10 +168,55 @@ def _getMaxControl(device, unit, selector, control_size):
         control_size: control size
 
     Returns:
-        tuple(str, int): the max control and the exit code of the query
+        tuple(str list, int): the maximum control and the exit code of the query
     """
     exec = subprocess.run([UVC_GET_QUERY_PATH, "1", device, unit, selector, control_size], capture_output=True)
     return exec.stdout.strip().decode('utf-8').split(' '), exec.returncode
+
+
+def _getResControl(device, unit, selector, control_size, curr_control, max_control):
+    """Execute the UVC GET RES QUERY
+
+    Args:
+        device (str): the infrared camera '/dev/videoX'
+        unit (str): extension unit ID
+        selector (str): control selector
+        control_size: control size
+        curr_control (list of int|str): current control
+        max_control (list of int|str): maximum control
+
+    Returns:
+        tuple(str list, int): the maximum control and the exit code of the query (but never FAILURE)
+    """
+    exec = subprocess.run([UVC_GET_QUERY_PATH, "2", device, unit, selector, control_size], capture_output=True)
+    res_control, exit_code = exec.stdout.strip().decode('utf-8').split(' '), exec.returncode
+    if exit_code != ExitCode.FAILURE:
+        return res_control, exit_code
+    
+    # try to find the resolution control by substitution, it may result in a false ressolution control
+    return [int(c1 != c2) for c1, c2 in zip(curr_control, max_control)], ExitCode.SUCCESS
+
+
+def _getNextCurrControl(curr_control, res_control, max_control):
+    """Compute the next possible control instruction
+
+    Args:
+        curr_control (list of int|str): last executed control
+        res_control (list of int|str): resolution control
+        max_control (list of int|str): maximum control
+
+    Returns:
+        int list: the next possible control
+        None: no more possible instruction
+    """
+    new_current_control = []
+    for c1, c2, c3 in zip(curr_control, res_control, max_control):
+        new_c1 = int(c1) + int(c2)
+        if new_c1 > int(c3):
+            return
+        else:
+            new_current_control.append(new_c1)
+    return new_current_control
 
 
 def exitIfFileDescriptorError(exit_code, device):
