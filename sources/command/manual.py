@@ -24,6 +24,6 @@ def execute(device):
         sys.exit(ExitCode.MISSING_DEPENDENCY)
 
     if load_saved_config() == dummy_config:
-        subprocess.run("rm " + SAVE_CONFIG_FILE_PATH, shell=True, capture_output=True)
+        os.remove(SAVE_CONFIG_FILE_PATH)
     
     sys.exit(ExitCode.SUCCESS)

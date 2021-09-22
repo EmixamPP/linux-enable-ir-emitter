@@ -13,7 +13,7 @@ class ExitCode(enum.IntEnum):
 
 
 def check_root():
-    """Exit if the script isn't run as sudo"""
+    """Exit if the script isn't run as root"""
     if os.getuid():
         logging.critical("Please run as root.")
         sys.exit(ExitCode.ROOT_REQUIRED)

@@ -140,17 +140,18 @@ class IrConfiguration:
 
 
 def load_saved_config():
-    """Load the ir config saved. Exit if a error occur
+    """Load the ir configuration saved. Exit if a error occur
 
     Returns:
-        IrConfiguration: the saved config
+        IrConfiguration: the saved configuration
+        None: if no configuration is saved
     """
     try:
         if os.path.exists(SAVE_CONFIG_FILE_PATH):
             return IrConfiguration.load(SAVE_CONFIG_FILE_PATH)
         else:
-            logging.critical("No configuration is currently saved.")
-            sys.exit(ExitCode.FAILURE)
+            logging.error("No configuration is currently saved.")
+            return
     except:
         logging.critical("The config file is corrupted.")
         logging.info("Execute 'linux-enable-ir-emitter fix config' to reset the file.")

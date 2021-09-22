@@ -2,13 +2,15 @@
 
 import argparse
 import logging
+import re
+import sys
 
 from command import boot, fix, manual, run, test, configure
-from globals import check_root
+from globals import ExitCode, check_root
 
 
 if __name__ == "__main__":
-    logging.basicConfig(encoding='utf-8', format='%(levelname)s: %(message)s', level=logging.INFO)
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
@@ -18,23 +20,23 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-V", "--version", 
-        action="version", 
-        version="%(prog)s 3.1.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
-        help="show version information and exit"
-    )
-    parser.add_argument(
-        "-d",
+        "-d", "--device",
         metavar="device",
         help="specify your infrared camera '/dev/videoX', by default is '/dev/video2'",
         default=["/dev/video2"],
         nargs=1
     )
     parser.add_argument(
-        '--verbose', 
+        "-v", "--verbose", 
         help="print verbose information",
         action='store_true', 
         default=False
+    )
+    parser.add_argument(
+        "-V", "--version", 
+        action="version", 
+        version="%(prog)s 3.1.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        help="show version information and exit"
     )
 
     command_subparser = parser.add_subparsers(dest='command')
@@ -59,16 +61,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-            logging.getLogger().setLevel(logging.DEBUG)
+        logging.getLogger().setLevel(logging.DEBUG)
+    if not re.fullmatch("/dev/video[0-9]", args.device[0]):
+        logging.critical("Your device path must have the '/dev/videoX' format.")
+        sys.exit(ExitCode.FAILURE)
 
     if args.command == "run":
         run.execute()
     elif args.command == "configure":
         check_root()
-        configure.execute(args.d[0])
+        configure.execute(args.device[0])
     elif args.command == "manual":
         check_root()
-        manual.execute(args.d[0])
+        manual.execute(args.device[0])
     elif args.command == "boot":
         check_root()
         boot.execute(args.boot_status)
