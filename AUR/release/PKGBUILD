@@ -1,10 +1,11 @@
 # Maintainer: Maxime Dirksen <dirksen.maxime@gmail.com>
-# Co-Maintainer: Andrey Kolchenko <andrey@kolchenko.me>
 # Co-Maintener: Supdrewin <supdrewin@outlook.com>
+# Co-Maintainer: Andrey Kolchenko <andrey@kolchenko.me>
+# Co-Maintainer: Rui ZHAO <renyuneyun@gmail.com>
 # Contributor: Antoine Bertin <ant.bertin@gmail.com>
 
 pkgname=linux-enable-ir-emitter
-pkgver=3.1.0
+pkgver=3.1.1
 pkgrel=1
 epoch=1
 pkgdesc="Enables infrared cameras that are not directly enabled out-of-the box."
