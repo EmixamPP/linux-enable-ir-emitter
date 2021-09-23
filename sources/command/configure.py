@@ -17,7 +17,7 @@ from IrConfiguration import IrConfiguration
 """
 
 
-def execute(device):
+def execute(device, neg_answer_limit):
     if _isAllReadyConfigured(device):
         logging.error("Your infrared camera is already working, skipping the configuration.")
         sys.exit(ExitCode.FAILURE)
@@ -46,30 +46,36 @@ def execute(device):
 
             res_control, exit_code = _getResControl(device, unit, str(selector), control_size, current_control, max_control)
             exitIfFileDescriptorError(exit_code, device)
-
             logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}, res control: {}".format(unit, selector, current_control, max_control, res_control))
 
             # try to find the right control instruction
             next_control = current_control
+            neg_answer_counter = 0
             while(next_control):
                 next_control = _getNextCurrControl(next_control, res_control, max_control)
                 if not next_control:
                     continue
-
                 ir_config = IrConfiguration(next_control, unit, selector, device)
-                logging.getLogger().setLevel(logging.INFO)  
+
                 # debug print are disabled during the test cause it is not relevent while automatic configuration
+                init_log_level  = logging.getLogger().level
+                logging.getLogger().setLevel(logging.INFO)  
                 exit_code = ir_config.triggerIr()
-                logging.getLogger().setLevel(logging.DEBUG)
+                logging.getLogger().setLevel(init_log_level)
+
                 if exit_code == ExitCode.FAILURE:
                     continue
                 exitIfFileDescriptorError(exit_code, device)
-
                 logging.debug("control: {}".format(next_control))
+
                 if _emitterIsWorking():
                     ir_config.save(SAVE_CONFIG_FILE_PATH)
                     logging.info("The configuration is completed with success. To activate the emitter at system boot execute 'linux-enable-ir-emitter boot enable'")
                     sys.exit(ExitCode.SUCCESS)
+                elif neg_answer_counter + 1 >= neg_answer_limit:  
+                    logging.debug("Negative answer limit exceeded, skipping the pattern.")
+                    break # this control pattern seems to don't work
+                neg_answer_counter += 1
             
             # reset the control
             command = [UVC_SET_QUERY_PATH, device, unit, str(selector), control_size] + current_control

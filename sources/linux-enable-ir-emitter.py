@@ -14,7 +14,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
-        formatter_class=argparse.RawTextHelpFormatter,
         prog="linux-enable-ir-emitter",
         epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/"
     )
@@ -57,7 +56,15 @@ if __name__ == "__main__":
         choices=["config", "chicony"], 
         help="specify the target to fix: {reset the config, uninstall chicony-ir-toggle}"
     )
-
+    command_configure.add_argument(
+        "-l", "--limit",
+        metavar="k",
+        help="after k negative answer the pattern will be skiped, by default is 5. Use 256 for unlimited",
+        default=[5],
+        type=int,
+        nargs=1
+    ) 
+    
     args = parser.parse_args()
 
     if args.verbose:
@@ -70,7 +77,7 @@ if __name__ == "__main__":
         run.execute()
     elif args.command == "configure":
         check_root()
-        configure.execute(args.device[0])
+        configure.execute(args.device[0], args.limit[0])
     elif args.command == "manual":
         check_root()
         manual.execute(args.device[0])
