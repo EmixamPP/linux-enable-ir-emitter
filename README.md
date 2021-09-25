@@ -34,14 +34,15 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 
 ## How to enable your infrared emitter ?
 
-1. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
-2. `sudo linux-enable-ir-emitter configure` look closely at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
-3. `sudo linux-enable-ir-emitter boot enable`
+0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
+1. `sudo linux-enable-ir-emitter configure` look closely at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
+2. `sudo linux-enable-ir-emitter boot enable`
+
+If you like the project, don't hesitate to star the repository to support me, thank you !
 
 If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
-## Issues
-Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue. It contains a lot of useful information !
+Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue.
 
 ## :hearts: Thanks to
 [@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun)  [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 
