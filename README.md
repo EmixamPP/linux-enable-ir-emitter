@@ -16,7 +16,7 @@ makepkg -csi
 ``` 
 
 ### For Fedora distro based (Mageia + openSUSE) : 
-<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://img.shields.io/badge/copr-v3.0.0--1-blue"> <img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
+<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
 ``` shell
 sudo dnf copr enable emixampp/linux-enable-ir-emitter
 sudo dnf --refresh install linux-enable-ir-emitter
@@ -34,14 +34,17 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 
 ## How to enable your infrared emitter ?
 
-1. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
-2. `sudo linux-enable-ir-emitter configure` look closely at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
-3. `sudo linux-enable-ir-emitter boot enable`
+0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
+1. `sudo linux-enable-ir-emitter configure` look closely at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
+2. `sudo linux-enable-ir-emitter boot enable`
+
+If you like the project, don't hesitate to star the repository to support me, thank you !
 
 If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
-## Issues
-Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue. It contains a lot of useful information !
+Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue.
+
+The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
 ## :hearts: Thanks to
 [@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun)  [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 
