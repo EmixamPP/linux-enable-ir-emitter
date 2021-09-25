@@ -15,16 +15,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
         prog="linux-enable-ir-emitter",
-        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/"
+        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/",
+        formatter_class=argparse.RawTextHelpFormatter
     )
 
-    parser.add_argument(
-        "-d", "--device",
-        metavar="device",
-        help="specify your infrared camera '/dev/videoX', by default is '/dev/video2'",
-        default=["/dev/video2"],
-        nargs=1
-    )
     parser.add_argument(
         "-v", "--verbose", 
         help="print verbose information",
@@ -34,7 +28,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.1.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.2.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
@@ -57,6 +51,13 @@ if __name__ == "__main__":
         help="specify the target to fix: {reset the config, uninstall chicony-ir-toggle}"
     )
     command_configure.add_argument(
+        "-d", "--device",
+        metavar="device",
+        help="specify your infrared camera '/dev/videoX', by default is '/dev/video2'",
+        default=["/dev/video2"],
+        nargs=1
+    )
+    command_configure.add_argument(
         "-l", "--limit",
         metavar="k",
         help="after k negative answer the pattern will be skiped, by default is 5. Use 256 for unlimited",
@@ -69,18 +70,18 @@ if __name__ == "__main__":
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-    if not re.fullmatch("/dev/video[0-9]", args.device[0]):
-        logging.critical("Your device path must have the '/dev/videoX' format.")
-        sys.exit(ExitCode.FAILURE)
 
     if args.command == "run":
         run.execute()
     elif args.command == "configure":
+        if not re.fullmatch("/dev/video[0-9]", args.device[0]):
+            logging.critical("Your device path must have the '/dev/videoX' format.")
+            sys.exit(ExitCode.FAILURE)
         check_root()
         configure.execute(args.device[0], args.limit[0])
     elif args.command == "manual":
         check_root()
-        manual.execute(args.device[0])
+        manual.execute()
     elif args.command == "boot":
         check_root()
         boot.execute(args.boot_status)

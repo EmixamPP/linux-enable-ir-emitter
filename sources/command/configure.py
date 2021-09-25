@@ -4,8 +4,9 @@ import cv2
 import logging
 import sys
 
-from globals import UVC_LEN_QUERY_PATH, UVC_SET_QUERY_PATH, UVC_GET_QUERY_PATH, ExitCode, SAVE_CONFIG_FILE_PATH
+from globals import UVC_LEN_QUERY_PATH, UVC_SET_QUERY_PATH, UVC_GET_QUERY_PATH, ExitCode
 from IrConfiguration import IrConfiguration
+from IrConfigurationSerializer import IrConfigurationSerializer
 
 
 """DOCUMENTATION
@@ -69,7 +70,7 @@ def execute(device, neg_answer_limit):
                 logging.debug("control: {}".format(next_control))
 
                 if _emitterIsWorking():
-                    ir_config.save(SAVE_CONFIG_FILE_PATH)
+                    IrConfigurationSerializer.add_config(ir_config)
                     logging.info("The configuration is completed with success. To activate the emitter at system boot execute 'linux-enable-ir-emitter boot enable'")
                     sys.exit(ExitCode.SUCCESS)
                 elif neg_answer_counter + 1 >= neg_answer_limit:  

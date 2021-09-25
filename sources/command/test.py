@@ -1,13 +1,21 @@
+import logging
 import sys
 
-from globals import ExitCode
+from IrConfigurationSerializer import IrConfigurationSerializer
 from command.configure import exitIfFileDescriptorError
-from IrConfiguration import load_saved_config
+from globals import ExitCode
 
 
 def execute():
     """Try to trigger the ir emitter with the current configuration"""
-    ir_config = load_saved_config()
-    exit_code = sys.exit(ExitCode.FAILURE) if not ir_config else ir_config.triggerIr()
-    exitIfFileDescriptorError(exit_code, ir_config.device)
-    sys.exit(exit_code)
+    ir_config_list = IrConfigurationSerializer.load_all_saved_config()
+    if not ir_config_list : sys.exit(ExitCode.FAILURE)
+
+    for ir_config in ir_config_list:
+        exit_code = ir_config.triggerIr()
+        exitIfFileDescriptorError(exit_code, ir_config.device)
+        if exit_code != ExitCode.SUCCESS:
+            logging.critical("Bad configuration for %s.", ir_config.device)
+            sys.exit(exit_code)
+        
+    sys.exit(ExitCode.SUCCESS)
