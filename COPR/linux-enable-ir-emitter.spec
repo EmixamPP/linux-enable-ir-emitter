@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  3.2.0
+Version:  3.3.0
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -13,6 +13,7 @@ BuildRequires: make
 BuildRequires: gcc
 Requires: python3-opencv
 Requires: python3-pyyaml
+Requires: python3-scipy
 
 %description
 Enables infrared cameras that are not directly enabled out-of-the box.
@@ -26,11 +27,11 @@ make -C sources/uvc
 %install
 # software
 install -Dm 644 sources/*.py -t %{buildroot}%{_libdir}/%{name}/
-
-install -Dm 755 sources/uvc/*query -t %{buildroot}%{_libdir}/%{name}/uvc/
-install -Dm 755 sources/uvc/*query.o -t %{buildroot}%{_libdir}/%{name}/uvc/
-
 install -Dm 644 sources/command/*.py -t %{buildroot}%{_libdir}/%{name}/command/
+install -Dm 644 sources/driver/*.py -t %{buildroot}%{_libdir}/%{name}/driver/
+
+install -Dm 755 sources/driver/uvc/*query -t %{buildroot}%{_libdir}/%{name}/driver/uvc/
+install -Dm 755 sources/driver/uvc/*query.o -t %{buildroot}%{_libdir}/%{name}/driver/uvc/
 
 # boot service
 install -Dm 644 sources/%{name}.service -t %{buildroot}%{_prefix}/lib/systemd/system/
@@ -53,6 +54,8 @@ rm -rf %{_libdir}/%{name}/
 rm -f %{_sysconfdir}/%{name}.yaml
 
 %changelog
+* Tue Oct 6 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.3.0-1
+- Fully automatic configuration
 * Sat Sep 25 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
 - Multiple device support
 * Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1

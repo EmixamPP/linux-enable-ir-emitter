@@ -9,13 +9,13 @@ usage() {
 install_dependency() {
     check_root
     umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
-    pip install opencv-python pyyaml
+    pip install opencv-python pyyaml scipy
 }
 
 do_install() {
     check_root
     install_dependency
-    make -C sources/uvc
+    make -C sources/driver/uvc
 
     # software
     install -Dm 755 sources/uvc/*query  -t /usr/lib/linux-enable-ir-emitter/uvc/ -v

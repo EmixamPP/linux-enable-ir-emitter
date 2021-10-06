@@ -2,21 +2,21 @@ import logging
 import sys
 import os
 
-from globals import SAVE_CONFIG_FILE_PATH, ExitCode
+from globals import SAVE_DRIVER_FILE_PATH, ExitCode
 
 
-def _fix_config():
-    """Reset the configuration
+def _fix_driver():
+    """Reset the driver
 
     Returns:
         ExitCode: SUCCESS or FAILURE
     """
     try:
-        os.remove(SAVE_CONFIG_FILE_PATH)
-        logging.info("The configuration file have been delete.")
+        os.remove(SAVE_DRIVER_FILE_PATH)
+        logging.info("The driver file have been delete.")
         return ExitCode.SUCCESS
     except FileNotFoundError:
-        logging.error("No configuration file to delete.")
+        logging.error("No driver file to delete.")
         return ExitCode.FAILURE
 
 
@@ -42,11 +42,11 @@ def execute(target):
     """Fix well know problems
 
     Args:
-        target (str): "config" or "chicony"
+        target (str): "driver" or "chicony"
 
     Raises:
-        Exception: fix target arg can only be equal to config or chicony
+        Exception: fix target arg can only be equal to driver or chicony
     """
-    if target in ("config", "chicony"):
+    if target in ("driver", "chicony"):
         sys.exit(eval("_fix_" + target + "()"))
-    raise Exception("fix target arg can only be equal to 'config' or 'chicony'")
+    raise Exception("fix target arg can only be equal to 'driver' or 'chicony'")

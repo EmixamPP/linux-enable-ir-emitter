@@ -1,21 +1,24 @@
 import logging
 import sys
 
-from IrConfigurationSerializer import IrConfigurationSerializer
-from command.configure import exitIfFileDescriptorError
-from globals import ExitCode
+from DriverSerializer import DriverSerializer
+from globals import ExitCode, exitIfFileDescriptorError
 
 
-def execute():
-    """Apply all saved configurations"""
-    ir_config_list = IrConfigurationSerializer.load_all_saved_config()
-    if not ir_config_list : sys.exit(ExitCode.FAILURE)
+def execute(trigger=False):
+    """Apply all saved drivers
 
-    for ir_config in ir_config_list:
-        exit_code = ir_config.run()
-        exitIfFileDescriptorError(exit_code, ir_config.device)
+    Args:
+        trigger (bool): and try to trigger the ir emitter. Defaults to False.
+    """
+    driver_list = DriverSerializer.load_saved_drivers()
+    if not driver_list : sys.exit(ExitCode.FAILURE)
+
+    for driver in driver_list:
+        exit_code = driver.run() if not trigger else driver.triggerIr()
+        exitIfFileDescriptorError(exit_code, driver.device)
         if exit_code != ExitCode.SUCCESS: 
-            logging.critical("Bad configuration for %s.", ir_config.device)
+            logging.critical("Bad driver for %s.", driver.device)
             sys.exit(exit_code)
         
     sys.exit(ExitCode.SUCCESS)

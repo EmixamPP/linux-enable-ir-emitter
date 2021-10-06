@@ -5,7 +5,7 @@ import logging
 import re
 import sys
 
-from command import boot, fix, manual, run, test, configure
+from command import boot, fix, manual, run, configure
 from globals import ExitCode, check_root
 
 
@@ -28,12 +28,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.2.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.3.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
     command_subparser = parser.add_subparsers(dest='command')
-    command_run = command_subparser.add_parser("run", help="apply the actual configuration")
+    command_run = command_subparser.add_parser("run", help="apply the driver")
     command_configure = command_subparser.add_parser("configure", help="automatic ir configuration")
     command_manual = command_subparser.add_parser("manual", help="manual ir configuration")
     command_boot = command_subparser.add_parser("boot", help="enable ir at boot")
@@ -47,8 +47,8 @@ if __name__ == "__main__":
     )
     command_fix.add_argument(
         "fix_target", 
-        choices=["config", "chicony"], 
-        help="specify the target to fix: {reset the config, uninstall chicony-ir-toggle}"
+        choices=["driver", "chicony"], 
+        help="specify the target to fix: {reset the driver, uninstall chicony-ir-toggle}"
     )
     command_configure.add_argument(
         "-d", "--device",
@@ -65,6 +65,12 @@ if __name__ == "__main__":
         type=int,
         nargs=1
     ) 
+    command_configure.add_argument(
+        "-m", "--manual-check", 
+        help="semi-automatic configuration",
+        action='store_true',
+        default=False
+    ) 
     
     args = parser.parse_args()
 
@@ -78,7 +84,7 @@ if __name__ == "__main__":
             logging.critical("Your device path must have the '/dev/videoX' format.")
             sys.exit(ExitCode.FAILURE)
         check_root()
-        configure.execute(args.device[0], args.limit[0])
+        configure.execute(args.device[0], args.limit[0], args.manual_check)
     elif args.command == "manual":
         check_root()
         manual.execute()
@@ -86,7 +92,7 @@ if __name__ == "__main__":
         check_root()
         boot.execute(args.boot_status)
     elif args.command == "test":
-        test.execute()
+        run.execute(True)
     elif args.command == "fix":
         check_root()
         fix.execute(args.fix_target)
