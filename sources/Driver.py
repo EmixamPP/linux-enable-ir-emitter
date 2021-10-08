@@ -59,11 +59,11 @@ class Driver:
             ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
         # Subprocess does not work with systemd ! 
-        # The exit codes returned by os.system not correspond to those returned by the executed program.
         command = "{} {} {} {} {} {}".format(UVC_SET_QUERY_PATH, self.device, self.unit, self.selector, self.control_size, self._control_str)
         if logging.getLogger().level != logging.DEBUG:
             command += " &> /dev/null"
 
+        # The exit codes returned by os.system not correspond to those returned by the executed program.
         exit_code = os.system(command)
         if exit_code == 32256: 
             return ExitCode.FILE_DESCRIPTOR_ERROR
@@ -84,10 +84,12 @@ class Driver:
         """
         exit_code = self.run()
         if exit_code == ExitCode.SUCCESS:
-            capture = cv2.VideoCapture(int(self.device[-1]))
-            capture.read()
+            device = cv2.VideoCapture(int(self.device[-1]))
+            if not device.isOpened():
+                return ExitCode.FILE_DESCRIPTOR_ERROR
+            device.read()
             time.sleep(duration)
-            capture.release()
+            device.release()
         return exit_code
 
     def __eq__(self, to_compare):

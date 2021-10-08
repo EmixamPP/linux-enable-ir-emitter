@@ -15,7 +15,7 @@ install_dependency() {
 do_install() {
     check_root
     install_dependency
-    make -C sources/driver/uvc
+    make -C sources/uvc
 
     # software
     install -Dm 755 sources/uvc/*query  -t /usr/lib/linux-enable-ir-emitter/uvc/ -v

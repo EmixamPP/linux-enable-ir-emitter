@@ -68,8 +68,12 @@ class DriverGenerator:
                 curr_control = self._currControl(unit, selector, control_size)
                 if not curr_control:
                     continue
-                inital_driver = Driver(
-                    curr_control, unit, selector, self._device)
+                initial_driver = Driver(curr_control, unit, selector, self._device)
+
+                exit_code = self.executeDriver(initial_driver)
+                if exit_code != ExitCode.SUCCESS:
+                    # if an unit and selector exists but can't be modified
+                    continue
 
                 # get the max control instruction value
                 max_control = self._maxControl(unit, selector, control_size)
@@ -77,8 +81,7 @@ class DriverGenerator:
                     # or: cause maxControl isn't a possible instruction for enable the ir emitter
                     continue
 
-                res_control = self._resControl(
-                    unit, selector, control_size, curr_control, max_control)
+                res_control = self._resControl(unit, selector, control_size, curr_control, max_control)
 
                 logging.debug("unit: {}, selector: {}, curr control: {}, max control: {}, res control: {}".format(
                     unit, selector, curr_control, max_control, res_control))
@@ -86,7 +89,7 @@ class DriverGenerator:
                 # try to find the right control instruction
                 next_control = curr_control
                 neg_answer_counter = 0
-                while(next_control and neg_answer_counter <= self._neg_answer_limit):
+                while(next_control and neg_answer_counter < self._neg_answer_limit):
                     next_control = self._nextCurrControl(next_control, res_control, max_control)
                     if not next_control:
                         continue
@@ -100,13 +103,14 @@ class DriverGenerator:
                             self._driver = driver
                             return
                         candidate_drivers.append((driver, mean_var))
-
-                    neg_answer_counter += 1
-                    # reset the control
-                    inital_driver.run()
+                    else:
+                        neg_answer_counter += 1
     
-                if neg_answer_counter >= self._neg_answer_limit:
+                if neg_answer_counter > self._neg_answer_limit:
                     logging.debug("Negative answer limit exceeded, skipping the pattern.")
+            
+                # reset the control
+                self.executeDriver(initial_driver)
 
         self._driver = max(candidate_drivers, key=lambda driver:driver[1])[0]
 
@@ -145,16 +149,9 @@ class DriverGenerator:
         Returns:
             tuple(bool, int): true if work and mean variance of frames captured after applied the driver
         """
-        # debug print are disabled during the test because it is not relevent while automatic configuration
-        init_log_level = logging.getLogger().level
-        logging.getLogger().setLevel(logging.INFO)
         if self._manual_check:
-            isWorking = self.manualEmitterIsWorking(driver)
-            mean_var = numpy.inf
-        else:
-            isWorking, mean_var = self.automaticEmitterIsWorking(driver)
-        logging.getLogger().setLevel(init_log_level)
-        return isWorking, mean_var
+            return self.manualEmitterIsWorking(driver), numpy.inf
+        return self.automaticEmitterIsWorking(driver) 
 
     def manualEmitterIsWorking(self, driver):
         """Execute the driver and ask if the ir flashing
@@ -165,9 +162,8 @@ class DriverGenerator:
         Returns:
             bool: true if the user input yes, otherwise false
         """
-        exit_code = driver.triggerIr()
-        self._raiseIfFileDescritonError(exit_code)
-        if exit_code == ExitCode.FAILURE:
+        exit_code = self.executeDriver(driver, True)
+        if exit_code != ExitCode.SUCCESS:
             return False    
         return self._askQuestionIsWorking()   
 
@@ -189,19 +185,40 @@ class DriverGenerator:
             driver (Driver): driver to test
 
         Returns:
-            tuple(bool, int): true if work and mean variance of frames captured after applied the driver
+            tuple(bool, int): true if work and mean variance of frames captured after applied the driver, 
+                            if false the variance equal 0
         """
         before = self.captureFrames()
 
-        exit_code = driver.run()
-        self._raiseIfFileDescritonError(exit_code)
-        if exit_code == ExitCode.FAILURE:
-            return False, numpy.inf
+        exit_code = self.executeDriver(driver)
+        if exit_code != ExitCode.SUCCESS:
+            return False, 0
 
         after = self.captureFrames()
 
         p = stats.ttest_ind(before, after)[1]/2
         return p < 0.01, numpy.mean(after)
+
+    def executeDriver(self, driver, trigger_ir=False):
+        """Execute a driver
+
+        Args:
+            driver (Driver): driver to execute
+            trigger_ir (bool): and trigger the emitter. Defaults to False.
+        
+        Raises:
+            DriverGeneratorError: error_code:ExitCode.FILE_DESCRIPTOR_ERROR
+
+        Returns:
+            ExitCode: exit code returned by the driver execution
+        """
+        # debug print are disabled during the test because it is not relevent while automatic configuration
+        init_log_level = logging.getLogger().level
+        logging.getLogger().setLevel(logging.INFO)
+        exit_code = driver.run() if not trigger_ir else driver.triggerIr()
+        logging.getLogger().setLevel(init_log_level)
+        self._raiseIfFileDescritonError(exit_code)
+        return exit_code
 
     @property
     def _units(self):
