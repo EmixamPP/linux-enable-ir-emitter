@@ -15,7 +15,7 @@ cd linux-enable-ir-emitter
 makepkg -csi
 ``` 
 
-### For Fedora distro based (Mageia + openSUSE) : 
+### For Fedora distro based :  
 <a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
 ``` shell
 sudo dnf copr enable emixampp/linux-enable-ir-emitter
