@@ -31,7 +31,7 @@ def _getDriverFilePath():
             line = old.readline()
             while(line):
                 if line == "!!python/object:IrConfiguration.IrConfiguration\n":
-                    new.write(line.replace("IrConfiguration", "Driver"))
+                    new.write(line.replace("IrConfiguration.IrConfiguration", "driver.Driver.Driver"))
                 if line == "_data:\n":
                     new.write("_control:\n")
                 elif "'0x" in line:
@@ -45,7 +45,7 @@ def _getDriverFilePath():
     return  path
 SAVE_DRIVER_FILE_PATH =  _getDriverFilePath() 
 
-UVC_DIR_PATH = LOCAL_PATH + "/uvc/"
+UVC_DIR_PATH = LOCAL_PATH + "/driver/uvc/"
 UVC_LEN_QUERY_PATH = UVC_DIR_PATH + "len_query"
 UVC_GET_QUERY_PATH = UVC_DIR_PATH + "get_query"
 UVC_SET_QUERY_PATH = UVC_DIR_PATH + "set_query"

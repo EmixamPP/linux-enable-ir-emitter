@@ -1,6 +1,6 @@
 import os
 import time
-import cv2
+import cv2 as cv
 import logging
 
 from globals import ExitCode, UVC_SET_QUERY_PATH
@@ -71,11 +71,11 @@ class Driver:
             return ExitCode.FAILURE
         return ExitCode.SUCCESS
 
-    def triggerIr(self, duration=2):
+    def triggerIr(self, duration=1.5):
         """Execute Driver.run() and try to trigger the ir emitter. 
 
         Args:
-            duration (int): transmit for how long ? (seconds). Defaults to 2.
+            duration (int|float): transmit for how long ? (seconds). Defaults to 1.5.
 
         Returns:
             ExitCode: ExitCode.SUCCESS
@@ -84,13 +84,17 @@ class Driver:
         """
         exit_code = self.run()
         if exit_code == ExitCode.SUCCESS:
-            device = cv2.VideoCapture(int(self.device[-1]))
+            device = cv.VideoCapture(self.deviceNumber)
             if not device.isOpened():
                 return ExitCode.FILE_DESCRIPTOR_ERROR
             device.read()
             time.sleep(duration)
             device.release()
         return exit_code
+    
+    @property
+    def deviceNumber(self):
+        return int(self._device[-1])
 
     def __eq__(self, to_compare):
         if not isinstance(to_compare, Driver):
@@ -105,4 +109,5 @@ class Driver:
             return False
         else:
             return True
+
     

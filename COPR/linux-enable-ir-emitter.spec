@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  3.3.0
+Version:  3.2.0
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -13,7 +13,6 @@ BuildRequires: make
 BuildRequires: gcc
 Requires: python3-opencv
 Requires: python3-pyyaml
-Requires: python3-scipy
 
 %description
 Enables infrared cameras that are not directly enabled out-of-the box.
@@ -22,7 +21,7 @@ Enables infrared cameras that are not directly enabled out-of-the box.
 %autosetup
 
 %build
-make -C sources/uvc
+make -C sources/driver/uvc
 
 %install
 # software
@@ -54,8 +53,6 @@ rm -rf %{_libdir}/%{name}/
 rm -f %{_sysconfdir}/%{name}.yaml
 
 %changelog
-* Tue Oct 6 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.3.0-1
-- Fully automatic configuration
 * Sat Sep 25 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
 - Multiple device support
 * Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1

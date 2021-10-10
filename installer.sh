@@ -8,23 +8,23 @@ usage() {
 
 install_dependency() {
     check_root
-    umask 022  # not really clean but it's the easy way to install dependencies for all users using pip
-    pip install opencv-python pyyaml scipy
+    umask 022  # not really clean but it's the easiest way to install dependencies for all users using pip
+    pip install opencv-python pyyaml
 }
 
 do_install() {
     check_root
     install_dependency
-    make -C sources/uvc
+    make -C sources/driver/uvc
 
     # software
-    install -Dm 755 sources/uvc/*query  -t /usr/lib/linux-enable-ir-emitter/uvc/ -v
-    install -Dm 755 sources/uvc/*query.o  -t /usr/lib/linux-enable-ir-emitter/uvc/ -v
-
-    install -Dm 644 sources/command/*.py -t /usr/lib/linux-enable-ir-emitter/command/ -v
-
     install -Dm 644 sources/*.py -t /usr/lib/linux-enable-ir-emitter/ -v
+    install -Dm 644 sources/command/*.py -t /usr/lib/linux-enable-ir-emitter/command/ -v
+    install -Dm 644 sources/driver/*.py -t /usr/lib/linux-enable-ir-emitter/driver/ -v
 
+    install -Dm 755 sources/driver/uvc/*query  -t /usr/lib/linux-enable-ir-emitter/driver/uvc/ -v
+    install -Dm 755 sources/driver/uvc/*query.o  -t /usr/lib/linux-enable-ir-emitter/driver/uvc/ -v
+    
     # boot service
     install -Dm 644 sources/linux-enable-ir-emitter.service -t /usr/lib/systemd/system/ -v
 

@@ -41,8 +41,9 @@ int main(int argc, char **argv) {
         .data = (__u8*)&control,
     };
 
+    errno = 0;
     int fd = open(device, O_WRONLY);
-    if(fd < 0){
+    if(fd < 0 || errno){
         fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
         return 126;
     }

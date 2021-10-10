@@ -2,8 +2,8 @@ import logging
 import sys
 
 from globals import ExitCode, exitIfFileDescriptorError
-from DriverGenerator import DriverGenerator, DriverGeneratorError
-from DriverSerializer import DriverSerializer
+from driver.DriverGenerator import DriverGenerator, DriverGeneratorError
+from driver.DriverSerializer import DriverSerializer
 
 
 """DOCUMENTATION
@@ -15,16 +15,15 @@ from DriverSerializer import DriverSerializer
 """
 
 
-def execute(device, neg_answer_limit, manual_check):
+def execute(device, neg_answer_limit):
     """Find a driver for the infrared camera
 
     Args:
         device (str): the infrared camera '/dev/videoX'
         neg_answer_limit (int): after k negative answer the pattern will be skiped. Use 256 for unlimited
-        manual_check (bool): true for manual checking, false for automatic checking
     """
 
-    driver_generator = DriverGenerator(device, neg_answer_limit, manual_check)
+    driver_generator = DriverGenerator(device, neg_answer_limit)
     
     logging.info("Warning to do not kill the processus !")
     try:
@@ -41,5 +40,5 @@ def execute(device, neg_answer_limit, manual_check):
         exitIfFileDescriptorError(e.error_code, device)
 
     logging.error("The configuration has failed.")
-    logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter")
+    logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter/wiki")
     sys.exit(ExitCode.FAILURE)

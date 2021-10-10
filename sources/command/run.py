@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from DriverSerializer import DriverSerializer
+from driver.DriverSerializer import DriverSerializer
 from globals import ExitCode, exitIfFileDescriptorError
 
 

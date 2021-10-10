@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h> 
 #include <linux/usb/video.h>
@@ -45,9 +46,10 @@ int main(int argc, char **argv) {
         .data = control,
     };
     
+    errno = 0;
     int fd = open(device, O_WRONLY);
-    if (fd < 0) {
-        fprintf(stderr, "Unable to open a file descriptor for %s\n", device);
+    if(fd < 0 || errno){
+        fprintf (stderr, "Unable to open a file descriptor for %s\n", device);
         return 126;
     }
 

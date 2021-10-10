@@ -1,4 +1,4 @@
-from Driver import Driver
+from driver.Driver import Driver
 
 # old version, ensure compatibility with 3.3.0
 class IrConfiguration(Driver):

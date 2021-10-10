@@ -3,8 +3,8 @@ import logging
 import subprocess
 import sys
 
-from Driver import Driver
-from DriverSerializer import DriverSerializer
+from driver.Driver import Driver
+from driver.DriverSerializer import DriverSerializer
 from globals import SAVE_DRIVER_FILE_PATH, EDITOR_PATH, ExitCode
 
 

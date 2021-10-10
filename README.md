@@ -2,7 +2,7 @@
 
 Provides support for infrared cameras that are not directly enabled out-of-the box (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called.
 
-`linux-enable-ir-emitter` can automatically configure any infrared camera. 
+`linux-enable-ir-emitter` can automatically generate a driver for any infrared emitter.
 
 This software was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
@@ -33,9 +33,8 @@ sudo bash installer.sh install
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
 
 ## How to enable your infrared emitter ?
-
 0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
-1. `sudo linux-enable-ir-emitter configure` look closely at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
+1. `sudo linux-enable-ir-emitter configure` look at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
 2. `sudo linux-enable-ir-emitter boot enable`
 
 If you like the project, don't hesitate to star the repository to support me, thank you !

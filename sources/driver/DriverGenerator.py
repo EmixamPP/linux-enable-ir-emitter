@@ -1,25 +1,21 @@
 import subprocess
 import logging
 import cv2 as cv
-import numpy
-from scipy import stats
+import time
 
-from Driver import Driver
+from driver.Driver import Driver
 from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH
 
 
 class DriverGenerator:
-    def __init__(self, device, neg_answer_limit, manual_check):
+    def __init__(self, device, neg_answer_limit):
         """Try to find a driver for an infrared camera
         Args:
             device (str): the infrared camera '/dev/videoX'
             neg_answer_limit (int): after k negative answer the pattern will be skiped. Use 256 for unlimited
-            manual_check (bool): true for manual checking
         """
         self._device = device
         self._neg_answer_limit = neg_answer_limit
-        self._manual_check = manual_check
-
         self._driver = None
     
     @property
@@ -50,11 +46,9 @@ class DriverGenerator:
             DriverGeneratorError: error_code:DriverGeneratorError.DRIVER_ALREADY_EXIST
             DriverGeneratorError: error_code:ExitCode.FILE_DESCRIPTOR_ERROR
         """
-        self.captureFrames()
-        if self._askQuestionIsWorking():
+        if self.emitterIsWorking():
             raise DriverGeneratorError("a driver already exists", DriverGeneratorError.DRIVER_ALREADY_EXIST)
 
-        candidate_drivers = []
         for unit in self._units:
             for selector in range(0, 256):
                 selector = str(selector)
@@ -78,7 +72,7 @@ class DriverGenerator:
                 # get the max control instruction value
                 max_control = self._maxControl(unit, selector, control_size)
                 if not max_control or curr_control == max_control:
-                    # or: cause maxControl isn't a possible instruction for enable the ir emitter
+                    # or: because maxControl isn't a possible instruction for enable the ir emitter
                     continue
 
                 res_control = self._resControl(unit, selector, control_size, curr_control, max_control)
@@ -97,14 +91,10 @@ class DriverGenerator:
                     logging.debug("control: {}".format(next_control))
                     driver = Driver(next_control, unit, selector, self._device)
 
-                    isWorking, mean_var = self.emitterIsWorking(driver)
-                    if isWorking:
-                        if self._manual_check:
-                            self._driver = driver
-                            return
-                        candidate_drivers.append((driver, mean_var))
-                    else:
-                        neg_answer_counter += 1
+                    if self.driverIsWorking(driver):
+                        self._driver = driver
+                        return
+                    neg_answer_counter += 1
     
                 if neg_answer_counter > self._neg_answer_limit:
                     logging.debug("Negative answer limit exceeded, skipping the pattern.")
@@ -112,49 +102,8 @@ class DriverGenerator:
                 # reset the control
                 self.executeDriver(initial_driver)
 
-        self._driver = max(candidate_drivers, key=lambda driver:driver[1])[0]
-
-    def captureFrames(self, sample_size=30):
-        """Capture frames and compute their variance
-
-        Raises:
-            DriverGeneratorError: Cannot access to {self.device}
-
-        Args:
-            sample_size (int): number of images to capture, default is 30
-
-        Returns:
-            int list: 30 frame variances
-        """
-        device = cv.VideoCapture(self.deviceNumber)
-        if not device.isOpened():
-            self._raiseIfFileDescritonError(ExitCode.FILE_DESCRIPTOR_ERROR)
-
-        # the variance of a frame gives an indicator of the shades of grey
-        # when the emitter is triggered, strong shades are visible due to the return of infrared
-        frames = [numpy.var(device.read()[1]) for _ in range(sample_size)]
-
-        device.release()
-        return frames
-
-    def emitterIsWorking(self, driver):
-        """Execute the driver and check if the infrared emitter work
-
-        Raises:
-            DriverGeneratorError: Cannot access to {self.device}
-
-        Args:
-            driver (Driver): driver to test
-
-        Returns:
-            tuple(bool, int): true if work and mean variance of frames captured after applied the driver
-        """
-        if self._manual_check:
-            return self.manualEmitterIsWorking(driver), numpy.inf
-        return self.automaticEmitterIsWorking(driver) 
-
-    def manualEmitterIsWorking(self, driver):
-        """Execute the driver and ask if the ir flashing
+    def driverIsWorking(self, driver):
+        """Apply the driver and execute DriverGenerator.emitterIsWorking()
 
         Args:
             driver (Driver): driver to test
@@ -165,39 +114,26 @@ class DriverGenerator:
         exit_code = self.executeDriver(driver, True)
         if exit_code != ExitCode.SUCCESS:
             return False    
-        return self._askQuestionIsWorking()   
+        return self.emitterIsWorking()   
 
-    def _askQuestionIsWorking(self):
-        """Ask the question "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? "
+    def emitterIsWorking(self):
+        """Trigger the infrared emitter and ask the question:
+         "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? "
 
         Returns:
             bool: true if the user input yes, otherwise false
         """
+        device = cv.VideoCapture(self.deviceNumber)
+        if not device.isOpened():
+            self._raiseIfFileDescritonError(ExitCode.FILE_DESCRIPTOR_ERROR)
+        device.read()
+        time.sleep(1.5)
+        device.release()
+
         check = input("Did you see the ir emitter flashing (not just turn on) ? Yes/No ? ").lower()
         while (check not in ("yes", "y", "no", "n")):
             check = input("Yes/No ? ").lower()
         return check in ("yes", "y")
-
-    def automaticEmitterIsWorking(self, driver):
-        """Execute the driver and check automaticaly if the infrared emitter work
-
-        Args:
-            driver (Driver): driver to test
-
-        Returns:
-            tuple(bool, int): true if work and mean variance of frames captured after applied the driver, 
-                            if false the variance equal 0
-        """
-        before = self.captureFrames()
-
-        exit_code = self.executeDriver(driver)
-        if exit_code != ExitCode.SUCCESS:
-            return False, 0
-
-        after = self.captureFrames()
-
-        p = stats.ttest_ind(before, after)[1]/2
-        return p < 0.01, numpy.mean(after)
 
     def executeDriver(self, driver, trigger_ir=False):
         """Execute a driver
@@ -212,7 +148,7 @@ class DriverGenerator:
         Returns:
             ExitCode: exit code returned by the driver execution
         """
-        # debug print are disabled during the test because it is not relevent while automatic configuration
+        # debug print are disabled because it is not relevent while automatic configuration
         init_log_level = logging.getLogger().level
         logging.getLogger().setLevel(logging.INFO)
         exit_code = driver.run() if not trigger_ir else driver.triggerIr()
@@ -233,8 +169,7 @@ class DriverGenerator:
             command, shell=True).strip().decode("utf-8")
         command = "find /sys/class/video4linux/video" + \
             self._device[-1] + "/device/ -name product -exec cat {} +"
-        pid = subprocess.check_output(
-            command, shell=True).strip().decode("utf-8")
+        pid = subprocess.check_output(command, shell=True).strip().decode("utf-8")
 
         command = "lsusb -d {}:{} -v | grep bUnitID | grep -Eo '[0-9]+'".format(vid, pid)
         return subprocess.run(command, shell=True, capture_output=True).stdout.strip().decode("utf-8").split("\n")

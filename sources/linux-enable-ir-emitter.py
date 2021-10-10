@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
         prog="linux-enable-ir-emitter",
-        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/",
+        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/wiki",
         formatter_class=argparse.RawTextHelpFormatter
     )
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.3.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.2.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
@@ -65,12 +65,6 @@ if __name__ == "__main__":
         type=int,
         nargs=1
     ) 
-    command_configure.add_argument(
-        "-m", "--manual-check", 
-        help="semi-automatic configuration",
-        action='store_true',
-        default=False
-    ) 
     
     args = parser.parse_args()
 
@@ -84,7 +78,7 @@ if __name__ == "__main__":
             logging.critical("Your device path must have the '/dev/videoX' format.")
             sys.exit(ExitCode.FAILURE)
         check_root()
-        configure.execute(args.device[0], args.limit[0], args.manual_check)
+        configure.execute(args.device[0], args.limit[0])
     elif args.command == "manual":
         check_root()
         manual.execute()

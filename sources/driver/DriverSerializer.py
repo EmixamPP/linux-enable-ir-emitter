@@ -4,7 +4,7 @@ import sys
 import logging
 
 from globals import SAVE_DRIVER_FILE_PATH, ExitCode
-from Driver import Driver
+from driver.Driver import Driver
 
 
 class DriverSerializer:
