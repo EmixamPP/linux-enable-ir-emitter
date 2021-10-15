@@ -41,6 +41,7 @@ do_uninstall() {
     rm -fv /usr/bin/linux-enable-ir-emitter 
     rm -rfv /usr/lib/linux-enable-ir-emitter/
     rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
+    rm -fv /lib/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/linux-enable-ir-emitter.yaml
 }
 
