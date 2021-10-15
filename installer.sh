@@ -26,7 +26,9 @@ do_install() {
     install -Dm 755 sources/driver/uvc/*query.o  -t /usr/lib/linux-enable-ir-emitter/driver/uvc/ -v
     
     # boot service
-    install -Dm 644 sources/linux-enable-ir-emitter.service -t /usr/lib/systemd/system/ -v
+    [[ $(cat /etc/os-release | grep 'debian') ]] &&
+        install -Dm 644 sources/linux-enable-ir-emitter.service -t /lib/systemd/system/ -v ||
+        install -Dm 644 sources/linux-enable-ir-emitter.service -t /usr/lib/systemd/system/ -v
 
     # executable
     chmod +x /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
