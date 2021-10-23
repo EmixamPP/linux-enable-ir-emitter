@@ -90,5 +90,3 @@ if __name__ == "__main__":
     elif args.command == "fix":
         check_root()
         fix.execute(args.fix_target)
-    else:
-        parser.print_help()

@@ -24,13 +24,14 @@ sudo dnf --refresh install linux-enable-ir-emitter
 
 ### For other distro :
 <a href="https://github.com/emixampp/linux-enable-ir-emitter/releases"><img src="https://img.shields.io/github/release/emixampp/linux-enable-ir-emitter.svg?colorB=4c1"></a>
-
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
 ```
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
+
+Feel free to create a PPA for Debian distro based and share it with this community. Or any other package repository in order to support other Linux distribution.
 
 ## How to enable your infrared emitter ?
 0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
@@ -39,11 +40,11 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 
 If you like the project, don't hesitate to star the repository to support me, thank you !
 
-If this doesn't work for you, you can always try to configure your infrared camera yourself by following the tutorial on [this wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
-
 Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue.
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
+
+You can also always try to configure your infrared camera yourself by following the tutorial on this [wiki page](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration).
 
 ## :hearts: Thanks to
 [@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun)  [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 

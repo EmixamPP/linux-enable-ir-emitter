@@ -13,6 +13,7 @@ BuildRequires: make
 BuildRequires: gcc
 Requires: python3-opencv
 Requires: python3-pyyaml
+Requires: usbutils
 
 %description
 Enables infrared cameras that are not directly enabled out-of-the box.
@@ -53,7 +54,7 @@ rm -rf %{_libdir}/%{name}/
 rm -f %{_sysconfdir}/%{name}.yaml
 
 %changelog
-* Sat Sep 25 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
+* Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
 - Multiple device support
 * Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1
 - Limit in negative answers for a same pattern
