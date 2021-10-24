@@ -50,8 +50,10 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 
 %postun
 # delete files added after installation
-rm -rf %{_libdir}/%{name}/
-rm -f %{_sysconfdir}/%{name}.yaml
+if [ "$1" -eq 0 ]; then
+    rm -rf %{_libdir}/%{name}/
+    rm -f %{_sysconfdir}/%{name}.yaml
+fi
 
 %changelog
 * Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
