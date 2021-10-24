@@ -42,6 +42,16 @@ do_uninstall() {
     rm -fv /etc/linux-enable-ir-emitter.yaml
 }
 
+do_update() {
+    check_root
+
+    rm -fv /usr/bin/linux-enable-ir-emitter 
+    rm -rfv /usr/lib/linux-enable-ir-emitter/
+    rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
+
+    do_install
+}
+
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo "Please run as root."
@@ -55,6 +65,9 @@ case "$1" in
     ;;
 "install")
     do_install
+    ;;
+"update")
+    do_update
     ;;
 *)
     usage

@@ -111,7 +111,7 @@ class DriverGenerator:
         Returns:
             bool: true if the user input yes, otherwise false
         """
-        exit_code = self.executeDriver(driver, True)
+        exit_code = self.executeDriver(driver)
         if exit_code != ExitCode.SUCCESS:
             return False    
         return self.emitterIsWorking()   
@@ -135,12 +135,11 @@ class DriverGenerator:
             check = input("Yes/No ? ").lower()
         return check in ("yes", "y")
 
-    def executeDriver(self, driver, trigger_ir=False):
+    def executeDriver(self, driver):
         """Execute a driver
 
         Args:
             driver (Driver): driver to execute
-            trigger_ir (bool): and trigger the emitter. Defaults to False.
         
         Raises:
             DriverGeneratorError: error_code:ExitCode.FILE_DESCRIPTOR_ERROR
@@ -151,7 +150,7 @@ class DriverGenerator:
         # debug print are disabled because it is not relevent while automatic configuration
         init_log_level = logging.getLogger().level
         logging.getLogger().setLevel(logging.INFO)
-        exit_code = driver.run() if not trigger_ir else driver.triggerIr()
+        exit_code = driver.run()
         logging.getLogger().setLevel(init_log_level)
         self._raiseIfFileDescritonError(exit_code)
         return exit_code
