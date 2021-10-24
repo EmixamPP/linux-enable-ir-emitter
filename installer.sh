@@ -2,8 +2,8 @@
 
 usage() {
     columnPrint="%-20s%-s\n"
-    printf "This is a simple tool to install/uninstall the sofware.\n"
-    printf "usage: bash installer {install, uninstall}\n"
+    printf "This is a simple tool to install/reinstall/uninstall the sofware.\n"
+    printf "usage: bash installer {install, reinstall, uninstall}\n"
 }
 
 install_dependency() {
@@ -42,7 +42,7 @@ do_uninstall() {
     rm -fv /etc/linux-enable-ir-emitter.yaml
 }
 
-do_update() {
+do_reinstall() {
     check_root
 
     rm -fv /usr/bin/linux-enable-ir-emitter 
@@ -66,8 +66,8 @@ case "$1" in
 "install")
     do_install
     ;;
-"update")
-    do_update
+"reinstall")
+    do_reinstall
     ;;
 *)
     usage
