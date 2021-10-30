@@ -4,6 +4,7 @@ import argparse
 import logging
 import re
 import sys
+import os
 
 from command import boot, fix, manual, run, configure
 from globals import ExitCode, check_root
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.2.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.2.1\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
@@ -53,7 +54,7 @@ if __name__ == "__main__":
     command_configure.add_argument(
         "-d", "--device",
         metavar="device",
-        help="specify your infrared camera '/dev/videoX', by default is '/dev/video2'",
+        help="specify your infrared camera, by default is '/dev/video2'",
         default=["/dev/video2"],
         nargs=1
     )
@@ -73,20 +74,27 @@ if __name__ == "__main__":
 
     if args.command == "run":
         run.execute()
+
     elif args.command == "configure":
-        if not re.fullmatch("/dev/video[0-9]", args.device[0]):
-            logging.critical("Your device path must have the '/dev/videoX' format.")
-            sys.exit(ExitCode.FAILURE)
+        if not re.fullmatch("/dev/video[0-9]+", args.device[0]):
+            args.device[0] = os.path.realpath(args.device[0])
+            if not re.fullmatch("/dev/video[0-9]+", args.device[0]):
+                logging.critical("The device {} does not exists.".format(args.device[0]))
+                sys.exit(ExitCode.FAILURE)
         check_root()
         configure.execute(args.device[0], args.limit[0])
+
     elif args.command == "manual":
         check_root()
         manual.execute()
+
     elif args.command == "boot":
         check_root()
         boot.execute(args.boot_status)
+
     elif args.command == "test":
         run.execute(True)
+
     elif args.command == "fix":
         check_root()
         fix.execute(args.fix_target)

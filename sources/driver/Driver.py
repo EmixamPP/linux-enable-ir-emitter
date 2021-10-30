@@ -84,17 +84,13 @@ class Driver:
         """
         exit_code = self.run()
         if exit_code == ExitCode.SUCCESS:
-            device = cv.VideoCapture(self.deviceNumber)
+            device = cv.VideoCapture(self.device)
             if not device.isOpened():
                 return ExitCode.FILE_DESCRIPTOR_ERROR
             device.read()
             time.sleep(duration)
             device.release()
         return exit_code
-    
-    @property
-    def deviceNumber(self):
-        return int(self._device[-1])
 
     def __eq__(self, to_compare):
         if not isinstance(to_compare, Driver):

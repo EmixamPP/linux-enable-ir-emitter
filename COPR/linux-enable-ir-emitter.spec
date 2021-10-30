@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  3.2.0
+Version:  3.2.1
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -56,6 +56,8 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %changelog
+* Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.1-1
+- Support any device path format
 * Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
 - Multiple device support
 * Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1
@@ -66,6 +68,6 @@ fi
 - Change configuration file location
 * Sun Aug 29 2021 Maxime Dirksen <emixampp@fedoraproject.org> - 2.1.0-1
 - New fix command, to resolve well know problems
-- Systemd service file modified to prevent /dev/video file descriptor  error
+- Systemd service file modified to prevent /dev/video file descriptor error
 * Thu Aug 12 2021 Maxime Dirksen <emixampp@fedoraproject.org> - 2.0.1-1
 - Initial package

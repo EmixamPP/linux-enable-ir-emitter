@@ -2,6 +2,7 @@ import subprocess
 import logging
 import cv2 as cv
 import time
+import re
 
 from driver.Driver import Driver
 from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH
@@ -37,7 +38,8 @@ class DriverGenerator:
 
     @property
     def deviceNumber(self):
-        return int(self._device[-1])
+        start_pos = re.search("[0-9]", self.device).start()
+        return self.device[start_pos:]
 
     def generate(self):
         """Try to find a driver DriverGenerator.device
@@ -123,7 +125,7 @@ class DriverGenerator:
         Returns:
             bool: true if the user input yes, otherwise false
         """
-        device = cv.VideoCapture(self.deviceNumber)
+        device = cv.VideoCapture(self.device)
         if not device.isOpened():
             self._raiseIfFileDescritonError(ExitCode.FILE_DESCRIPTOR_ERROR)
         device.read()
@@ -163,11 +165,11 @@ class DriverGenerator:
             str list: list of extension unit ID for the device
         """
         command = "find /sys/class/video4linux/video" + \
-            self._device[-1] + "/device/ -name vendor -exec cat {} +"
+            self.deviceNumber + "/device/ -name vendor -exec cat {} +"
         vid = subprocess.check_output(
             command, shell=True).strip().decode("utf-8")
         command = "find /sys/class/video4linux/video" + \
-            self._device[-1] + "/device/ -name product -exec cat {} +"
+            self.deviceNumber + "/device/ -name product -exec cat {} +"
         pid = subprocess.check_output(command, shell=True).strip().decode("utf-8")
 
         command = "lsusb -d {}:{} -v | grep bUnitID | grep -Eo '[0-9]+'".format(vid, pid)
