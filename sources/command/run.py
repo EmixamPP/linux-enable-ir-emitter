@@ -5,11 +5,11 @@ from driver.DriverSerializer import DriverSerializer
 from globals import ExitCode, exitIfFileDescriptorError
 
 
-def execute(trigger=False):
+def execute(trigger=False) -> None:
     """Apply all saved drivers
 
     Args:
-        trigger (bool): and try to trigger the ir emitter. Defaults to False.
+        trigger: and try to trigger the ir emitter. Defaults to False.
     """
     driver_list = DriverSerializer.load_saved_drivers()
     if not driver_list : sys.exit(ExitCode.FAILURE)

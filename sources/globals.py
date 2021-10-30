@@ -12,7 +12,19 @@ class ExitCode(enum.IntEnum):
     ROOT_REQUIRED = 2
 
 
-def check_root():
+def exitIfFileDescriptorError(exit_code: ExitCode, device: str) -> None:
+    """Exit if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR
+
+    Args:
+        exit_code: the exit code to check
+        device: the infrared camera '/dev/videoX'
+    """
+    if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR:
+        logging.critical("Cannot access to %s.", device)
+        sys.exit(ExitCode.FILE_DESCRIPTOR_ERROR)
+
+
+def check_root() -> None:
     """Exit if the script isn't run as root"""
     if os.getuid():
         logging.critical("Please run as root.")
@@ -21,7 +33,7 @@ def check_root():
 
 LOCAL_PATH = path = os.path.dirname(os.path.abspath(__file__))
 
-def _getDriverFilePath():
+def _getDriverFilePath() -> str:
     # old version, ensure compatibility with 3.0.0
     old_version_path = LOCAL_PATH + "/irConfig.yaml"
     path = "/etc/linux-enable-ir-emitter.yaml"
@@ -53,14 +65,3 @@ UVC_SET_QUERY_PATH = UVC_DIR_PATH + "set_query"
 SYSTEMD_NAME = "linux-enable-ir-emitter.service"
 
 EDITOR_PATH =  os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"
-
-def exitIfFileDescriptorError(exit_code, device):
-    """Exit if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR
-
-    Args:
-        exit_code (ExitCode): the exit code to check
-        device (str): the infrared camera '/dev/videoX'
-    """
-    if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR:
-        logging.critical("Cannot access to %s.", device)
-        sys.exit(ExitCode.FILE_DESCRIPTOR_ERROR)

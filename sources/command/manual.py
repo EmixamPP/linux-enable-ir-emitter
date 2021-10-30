@@ -8,7 +8,7 @@ from driver.DriverSerializer import DriverSerializer
 from globals import SAVE_DRIVER_FILE_PATH, EDITOR_PATH, ExitCode
 
 
-def execute():
+def execute() -> None:
     """Display the current driver in the default editor"""
     if not os.path.exists(SAVE_DRIVER_FILE_PATH):
         dummy_driver = Driver([0], 0, 0, "/dev/videoX")

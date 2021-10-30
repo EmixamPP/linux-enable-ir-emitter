@@ -9,39 +9,35 @@ from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH
 
 
 class DriverGenerator:
-    def __init__(self, device, neg_answer_limit):
+    def __init__(self, device: str, neg_answer_limit: int) -> None:
         """Try to find a driver for an infrared camera
         Args:
-            device (str): the infrared camera '/dev/videoX'
-            neg_answer_limit (int): after k negative answer the pattern will be skiped. Use 256 for unlimited
+            device: the infrared camera '/dev/videoX'
+            neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
         """
         self._device = device
         self._neg_answer_limit = neg_answer_limit
         self._driver = None
     
     @property
-    def device(self):
-        """
-        Returns:
-            device (str): the infrared camera '/dev/videoX'
-        """
+    def device(self) -> str:
         return self._device
     
     @property
-    def driver(self):
+    def driver(self) -> Driver or None:
         """
         Returns:
-            Driver: working driver for DriverGenerator.device
-            None: no working driver
+            The working driver for DriverGenerator.device
+            None if no working driver
         """
         return self._driver
 
     @property
-    def deviceNumber(self):
+    def deviceNumber(self) -> str:
         start_pos = re.search("[0-9]", self.device).start()
         return self.device[start_pos:]
 
-    def generate(self):
+    def generate(self) -> None:
         """Try to find a driver DriverGenerator.device
 
         Raises:
@@ -104,14 +100,14 @@ class DriverGenerator:
                 # reset the control
                 self.executeDriver(initial_driver)
 
-    def driverIsWorking(self, driver):
+    def driverIsWorking(self, driver: Driver) -> bool:
         """Apply the driver and execute DriverGenerator.emitterIsWorking()
 
         Args:
             driver (Driver): driver to test
 
         Returns:
-            bool: true if the user input yes, otherwise false
+            true if the user input yes, otherwise false
         """
         exit_code = self.executeDriver(driver)
         if exit_code != ExitCode.SUCCESS:
@@ -137,17 +133,17 @@ class DriverGenerator:
             check = input("Yes/No ? ").lower()
         return check in ("yes", "y")
 
-    def executeDriver(self, driver):
+    def executeDriver(self, driver: Driver) -> bool:
         """Execute a driver
 
         Args:
-            driver (Driver): driver to execute
+            driver: driver to execute
         
         Raises:
             DriverGeneratorError: error_code:ExitCode.FILE_DESCRIPTOR_ERROR
 
         Returns:
-            ExitCode: exit code returned by the driver execution
+            ExitCode returned by the driver execution
         """
         # debug print are disabled because it is not relevent while automatic configuration
         init_log_level = logging.getLogger().level
@@ -158,11 +154,11 @@ class DriverGenerator:
         return exit_code
 
     @property
-    def _units(self):
+    def _units(self) -> list[str]:
         """Return the list of extension unit ID
 
         Returns:
-            str list: list of extension unit ID for the device
+            list of extension unit ID for the device
         """
         command = "find /sys/class/video4linux/video" + \
             self.deviceNumber + "/device/ -name vendor -exec cat {} +"
@@ -175,74 +171,74 @@ class DriverGenerator:
         command = "lsusb -d {}:{} -v | grep bUnitID | grep -Eo '[0-9]+'".format(vid, pid)
         return subprocess.run(command, shell=True, capture_output=True).stdout.strip().decode("utf-8").split("\n")
 
-    def _controlSize(self, unit, selector):
+    def _controlSize(self, unit: str, selector: str) -> str or None:
         """Execute the UVC LEN QUERY
 
         Args:
-            unit (str): extension unit ID
-            selector (str): control selector
+            unit: extension unit ID
+            selector: control selector
 
         Raises:
             DriverGeneratorError: Cannot access to {self.device}
 
         Returns:
-            int: the control size and the exit code of the query
-            None: error
+            The control size and the exit code of the query
+            None if error
         """
         exec = subprocess.run([UVC_LEN_QUERY_PATH, self._device, unit, selector], capture_output=True)
         exit_code = exec.returncode
         self._raiseIfFileDescritonError(exit_code)
         return exec.stdout.strip().decode('utf-8') if exit_code == ExitCode.SUCCESS else None
 
-    def _currControl(self, unit, selector, control_size):
+    def _currControl(self, unit: str, selector: str, control_size: str) -> list[str] or None:
         """Execute the UVC GET CURR QUERY
 
         Args:
-            unit (str): extension unit ID
-            selector (str): control selector
-            control_size (str): control size
+            unit: extension unit ID
+            selector: control selector
+            control_size: control size
 
          Raises:
             DriverGeneratorError: Cannot access to {self.device}
 
         Returns:
-            str list: the current control
-            None: error
+            The current control
+            None if error
         """
         exec = subprocess.run([UVC_GET_QUERY_PATH, "0", self._device, unit, selector, control_size], capture_output=True)
         exit_code = exec.returncode
         self._raiseIfFileDescritonError(exit_code)
         return exec.stdout.strip().decode('utf-8').split(' ') if exit_code == ExitCode.SUCCESS else None
 
-    def _maxControl(self, unit, selector, control_size):
+    def _maxControl(self, unit: str, selector: str, control_size: str) -> list[str]:
         """Execute the UVC GET MAX QUERY
 
         Args:
-            unit (str): extension unit ID
-            selector (str): control selector
-            control_size (str): control size
+            unit: extension unit ID
+            selector: control selector
+            control_size: control size
 
         Returns:
-            str list: the maximum control
-            None: error
+            The maximum control
+            None if error
         """
         exec = subprocess.run([UVC_GET_QUERY_PATH, "1", self._device, unit, selector, control_size], capture_output=True)
         exit_code = exec.returncode
         self._raiseIfFileDescritonError(exit_code)
         return exec.stdout.strip().decode('utf-8').split(' ') if exit_code == ExitCode.SUCCESS else None
 
-    def _resControl(self, unit, selector, control_size, curr_control, max_control):
+    def _resControl(self, unit: str, selector: str, control_size: str, curr_control: list[str], max_control: list[str]) -> list[str]:
         """Execute the UVC GET RES QUERY
 
         Args:
-            unit (str): extension unit ID
-            selector (str): control selector
-            control_size (str): control size
-            curr_control (str list): current control
-            max_control (str list): maximum control
+            unit: extension unit ID
+            selector: control selector
+            control_size: control size
+            curr_control: current control
+            max_control: maximum control
 
         Returns:
-            str list: the resolution control
+            The resolution control
         """
         exec = subprocess.run([UVC_GET_QUERY_PATH, "2", self._device, unit, selector, control_size], capture_output=True)
         exit_code = exec.returncode
@@ -253,17 +249,17 @@ class DriverGenerator:
         # try to find the resolution control by substitution, it may result in a false ressolution control
         return [str(int(c1 != c2)) for c1, c2 in zip(curr_control, max_control)]
 
-    def _nextCurrControl(self, curr_control, res_control, max_control):
+    def _nextCurrControl(self, curr_control: list[str], res_control: list[str], max_control: list[str]) -> list[str] or None:
         """Compute the next possible control instruction
 
         Args:
-            curr_control (str list): last executed control
-            res_control (str list): resolution control
-            max_control (str list): maximum control
+            curr_control: last executed control
+            res_control: resolution control
+            max_control: maximum control
 
         Returns:
-            str list: the next possible control
-            None: no more possible instruction
+            The next possible control
+            None if no more possible instruction
         """
         new_current_control = []
         for c1, c2, c3 in zip(curr_control, res_control, max_control):
@@ -274,12 +270,12 @@ class DriverGenerator:
                 new_current_control.append(str(new_c1))
         return new_current_control
 
-    def _raiseIfFileDescritonError(self, exit_code):
+    def _raiseIfFileDescritonError(self, exit_code: ExitCode) -> None:
         """ Raise error if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR 
             otherwise do nothing 
 
         Args:
-            exit_code (ExitCode): the exit code to check
+            exit_code: the exit code to check
 
         Raises:
             DriverGeneratorError: Cannot access to {self.device}
@@ -292,10 +288,10 @@ class DriverGenerator:
 class DriverGeneratorError(Exception):
     DRIVER_ALREADY_EXIST = -1
 
-    def __init__(self, message, error_code):
+    def __init__(self, message: object, error_code: int or ExitCode) -> None:
         super().__init__(message)
         self.message = message
         self.error_code = error_code
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "DriverGeneratorError, raison: {}, error code: {}".format(self.message, self.error_code)

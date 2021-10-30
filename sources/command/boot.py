@@ -4,11 +4,11 @@ import sys
 from globals import SYSTEMD_NAME, ExitCode
 
 
-def execute(boot_status):
+def execute(boot_status: str) -> None:
     """Enable or disable the systemd service which activates the ir emitter
 
         args:
-            boot_status (str): "enable" or "disable" or "status"
+            boot_status: "enable" or "disable" or "status"
 
         Raises:
             Exception: boot status arg can only be equal to enable, disable or status

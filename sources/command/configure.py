@@ -15,12 +15,12 @@ from driver.DriverSerializer import DriverSerializer
 """
 
 
-def execute(device, neg_answer_limit):
+def execute(device: str, neg_answer_limit: int) -> None:
     """Find a driver for the infrared camera
 
     Args:
-        device (str): the infrared camera '/dev/videoX'
-        neg_answer_limit (int): after k negative answer the pattern will be skiped. Use 256 for unlimited
+        device: the infrared camera '/dev/videoX'
+        neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
     """
 
     driver_generator = DriverGenerator(device, neg_answer_limit)

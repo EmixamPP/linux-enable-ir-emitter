@@ -7,15 +7,15 @@ from globals import ExitCode, UVC_SET_QUERY_PATH
 
 
 class Driver:
-    def __init__(self, control, unit, selector, device):
+    def __init__(self, control: list[int], unit: int, selector: int, device: str) -> None:
         """Query a UVC XU control (UVC_SET_CUR querry)
            Which is intended to activate the infrared camera transmitter.
 
         Args:
-            control (int list): Control value
-            unit (int): Extension unit ID
-            selector (int): Control selector
-            device (str): the infrared camera e.g : "/dev/video2"
+            control: Control value
+            unit: Extension unit ID
+            selector: Control selector
+            device: the infrared camera e.g : "/dev/video2"
         """
         self._control = [int(i) for i in control]
         self._unit = int(unit)
@@ -23,40 +23,40 @@ class Driver:
         self._device = device
 
     @property
-    def device(self):
+    def device(self) -> str:
         return self._device
 
     @property
-    def control(self):
+    def control(self) -> list[int]:
         return self._control
 
     @property
-    def unit(self):
+    def unit(self) -> int:
         return self._unit
 
     @property
-    def selector(self):
+    def selector(self) -> int:
         return self._selector
     
     @property
-    def control_size(self):
+    def control_size(self) -> int:
         return len(self._control)
     
     @property
-    def _control_str(self):
+    def _control_str(self) -> str:
         """Convert the self.data list to a string sequence
         Returns:
-            str: e.g. "1 3 3 0 0 0 0 0 0"
+            Each value separate by a space, e.g. "1 3 3 0 0 0 0 0 0"
         """
         return ' '.join(str(value) for value in self.control)
     
-    def run(self):
+    def run(self) -> ExitCode:
         """Execute the UVC_SET_CUR query
 
         Returns:
-            ExitCode: ExitCode.SUCCESS
-            ExitCode: ExitCode.FAILURE
-            ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
+            ExitCode.SUCCESS
+            ExitCode.FAILURE
+            ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
         # Subprocess does not work with systemd ! 
         command = "{} {} {} {} {} {}".format(UVC_SET_QUERY_PATH, self.device, self.unit, self.selector, self.control_size, self._control_str)
@@ -71,16 +71,16 @@ class Driver:
             return ExitCode.FAILURE
         return ExitCode.SUCCESS
 
-    def triggerIr(self, duration=1.5):
+    def triggerIr(self, duration=1.5) -> ExitCode:
         """Execute Driver.run() and try to trigger the ir emitter. 
 
         Args:
-            duration (int|float): transmit for how long ? (seconds). Defaults to 1.5.
+            duration: trigger for how long ? (seconds). Defaults to 1.5.
 
         Returns:
-            ExitCode: ExitCode.SUCCESS
-            ExitCode: ExitCode.FAILURE
-            ExitCode: ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
+            ExitCode.SUCCESS
+            ExitCode.FAILURE
+            ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
         exit_code = self.run()
         if exit_code == ExitCode.SUCCESS:
@@ -92,7 +92,7 @@ class Driver:
             device.release()
         return exit_code
 
-    def __eq__(self, to_compare):
+    def __eq__(self, to_compare: object) -> bool:
         if not isinstance(to_compare, Driver):
             return False
         elif self.control != to_compare.control:

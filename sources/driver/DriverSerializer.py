@@ -9,23 +9,23 @@ from driver.Driver import Driver
 
 class DriverSerializer:
     @staticmethod
-    def _deserialize_saved_drivers():
+    def _deserialize_saved_drivers() -> list[Driver]:
         """Load all drivers saved in globals.SAVE_DRIVER_FILE_PATH
         No error catching
 
         Returns:
-            Driver list: saved driver
+            List of saved driver
         """
         with open(SAVE_DRIVER_FILE_PATH, "r") as save_file:
             return list(yaml.load_all(save_file, Loader=yaml.Loader))
 
     @staticmethod
-    def load_saved_drivers():
+    def load_saved_drivers() -> Driver or None:
         """Load all drivers saved in globals.SAVE_DRIVER_FILE_PATH
 
         Returns:
-            Driver list: saved driver
-            None: if no driver is saved
+            List of saved driver
+            None if no driver is saved
         """
         try:
             if os.path.exists(SAVE_DRIVER_FILE_PATH):
@@ -41,11 +41,11 @@ class DriverSerializer:
             sys.exit(ExitCode.FAILURE)
     
     @staticmethod
-    def save_drivers(driver_list):
+    def save_drivers(driver_list: list[Driver]) -> None:
         """Save all drivers in globals.SAVE_DRIVER_FILE_PATH
 
         Args:
-            driver_list (Driver list): drivers to save
+            driver_list: drivers to save
         """
         with open(SAVE_DRIVER_FILE_PATH, "w") as save_driver_file:
             save_driver_file.write("#Caution: any manual modification of this file may corrupt the operation of the program! You must therefore be very careful.\n")
@@ -54,11 +54,11 @@ class DriverSerializer:
             yaml.dump_all(driver_list, save_driver_file)
     
     @staticmethod
-    def add_driver(driver):
+    def add_driver(driver: Driver) -> None:
         """Add a driver to file globals.SAVE_DRIVER_FILE_PATH
 
         Args:
-            driver (Driver): driver to add
+            driver: driver to add
         """
         saved_drivers_list = None
         try:

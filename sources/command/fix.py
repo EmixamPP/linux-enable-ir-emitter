@@ -5,11 +5,11 @@ import os
 from globals import SAVE_DRIVER_FILE_PATH, ExitCode
 
 
-def _fix_driver():
+def _fix_driver() -> ExitCode:
     """Reset the driver
 
     Returns:
-        ExitCode: SUCCESS or FAILURE
+        ExitCode.SUCCESS or ExitCode.FAILURE
     """
     try:
         os.remove(SAVE_DRIVER_FILE_PATH)
@@ -20,11 +20,11 @@ def _fix_driver():
         return ExitCode.FAILURE
 
 
-def _fix_chicony():
+def _fix_chicony() -> ExitCode:
     """Uninstall chicony-ir-toggle
     
      Returns:
-        ExitCode: SUCCESS or FAILURE
+        ExitCode.SUCCESS or ExitCode.FAILURE
     """
     try:
         os.remove("/usr/local/bin/chicony-ir-toggle")
@@ -38,11 +38,11 @@ def _fix_chicony():
     
 
 
-def execute(target):
+def execute(target: str) -> None:
     """Fix well know problems
 
     Args:
-        target (str): "driver" or "chicony"
+        target: "driver" or "chicony"
 
     Raises:
         Exception: fix target arg can only be equal to driver or chicony
