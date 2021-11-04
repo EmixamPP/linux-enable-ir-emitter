@@ -63,7 +63,7 @@ UVC_GET_QUERY_PATH = UVC_DIR_PATH + "get_query"
 UVC_SET_QUERY_PATH = UVC_DIR_PATH + "set_query"
 
 SYSTEMD_NAME = "linux-enable-ir-emitter.service"
-SYSTEMD_PATH = "/etc/systemd/system/" + SYSTEMD_NAME
+SYSTEMD_PATH = "/usr/lib/systemd/system/" + SYSTEMD_NAME
 UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
 UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME
 

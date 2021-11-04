@@ -49,7 +49,7 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 if [ "$1" -eq 0 ]; then
     rm -rf %{_libdir}/%{name}/
     rm -f /etc/%{name}.yaml
-    rm -f /etc/systemd/system/linux-enable-ir-emitter.service
+    rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter-rules
 fi
 
