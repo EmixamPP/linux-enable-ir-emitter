@@ -41,6 +41,7 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %files
 %license LICENSE
 %doc README.md
+%ghost /usr/lib/systemd/system/linux-enable-ir-emitter.service
 %{_libdir}/%{name}/
 %{_bindir}/%{name}
 
