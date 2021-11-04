@@ -23,7 +23,7 @@ def execute(boot_status: str) -> None:
 
         exit_code = systemd.enable()
         if exit_code: sys.exit(ExitCode.FAILURE)
-        logging.info("The boot service have been enabled.")
+        logging.info("The boot service have been enabled, please reboot.")
 
     elif boot_status == "disable":
         exit_code = Systemd.disable()
