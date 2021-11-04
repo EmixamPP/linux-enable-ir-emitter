@@ -7,15 +7,6 @@ from driver.DriverGenerator import DriverGenerator, DriverGeneratorError
 from driver.DriverSerializer import DriverSerializer
 
 
-"""DOCUMENTATION
-- https://www.kernel.org/doc/html/v5.14/userspace-api/media/drivers/uvcvideo.html
-    info 1: uvc queries are explained
-    info 2: units can be found by parsing the uvc descriptor
-- https://www.mail-archive.com/search?l=linux-uvc-devel@lists.berlios.de&q=subject:%22Re%5C%3A+%5C%5BLinux%5C-uvc%5C-devel%5C%5D+UVC%22&o=newest&f=1
-    info 1: selector is on 8 bits and since the manufacturer does not provide a driver, it is impossible to know which value it is.
-"""
-
-
 def execute(device: str, neg_answer_limit: int) -> None:
     """Find a driver for the infrared camera
 

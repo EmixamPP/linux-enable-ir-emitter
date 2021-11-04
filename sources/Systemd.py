@@ -3,6 +3,19 @@ from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
 import subprocess
 import logging
 
+
+"""DOCUMENTATION
+- https://www.freedesktop.org/software/systemd/man/systemd.unit.html
+    info 1: systemd service section
+    info 2: exit code
+- https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1
+    info 1: udev rule
+    info 2: systemd service section
+- https://stackoverflow.com/questions/47630139/camera-dev-video0-dependencies-in-systemd-service-ubuntu-16-04
+    info 1: modprobe uvcvideo command
+"""
+
+
 class Systemd:
     def __init__(self, devices: list[str]) -> None:
         self.devices = devices
@@ -49,7 +62,7 @@ class Systemd:
         """
         exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True)
 
-        if exec.returncode == 4:  # https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
+        if exec.returncode == 4:  # 
             logging.error("The boot service does not exists.")
         else:
             print(exec.stdout.strip().decode('utf-8'))
@@ -71,9 +84,9 @@ class Systemd:
     def _add_device_to_service(self) -> None:
         """Add each device to self.service """
         for device in self.devices:
-            target = "dev-{}.device ".format(device[5:])
+            target = " dev-{}.device".format(device[5:])
             self.service["Unit"]["After"] += target
-            self.service["Unit"]["BindsTo"] += target
+            self.service["Unit"]["Wants"] += target
     
     @staticmethod
     def _initialize_service_file() -> ConfigParser:
@@ -88,11 +101,12 @@ class Systemd:
 
         service["Unit"] = {}
         service["Unit"]["Description"] = "enable the infrared emitter"
-        service["Unit"]["BindsTo"] = ""
-        service["Unit"]["After"] = ""
+        service["Unit"]["Wants"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
+        service["Unit"]["After"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
 
         service["Service"] = {}
         service["Service"]["Type"] = "oneshot"
+        service["Service"]["ExecStartPre"] = "/sbin/modprobe uvcvideo"
         service["Service"]["ExecStart"] = "/usr/bin/linux-enable-ir-emitter run"
 
         service["Install"] = {}
