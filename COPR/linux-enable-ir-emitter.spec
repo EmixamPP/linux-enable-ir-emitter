@@ -42,7 +42,6 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %license LICENSE
 %doc README.md
 %{_libdir}/%{name}/
-%{_prefix}/lib/systemd/system/%{name}.service
 %{_bindir}/%{name}
 
 %postun
@@ -60,7 +59,7 @@ fi
 - Improve systemd service
 * Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
 - Multiple device support
-* Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1
+* Thu Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1
 - Limit in negative answers for a same pattern
 * Wed Sep 22 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.0-1
 - New configuration system
