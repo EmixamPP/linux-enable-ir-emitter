@@ -71,7 +71,7 @@ class Driver:
             return ExitCode.FAILURE
         return ExitCode.SUCCESS
 
-    def triggerIr(self, duration=1.5) -> ExitCode:
+    def trigger_ir(self, duration=1.5) -> ExitCode:
         """Execute Driver.run() and try to trigger the ir emitter. 
 
         Args:

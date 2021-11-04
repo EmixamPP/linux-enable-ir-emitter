@@ -2,8 +2,8 @@
 
 usage() {
     columnPrint="%-20s%-s\n"
-    printf "This is a simple tool to install/reinstall/uninstall the sofware.\n"
-    printf "usage: bash installer {install, reinstall, uninstall}\n"
+    printf "This is a simple tool to install/reinstall/uninstall/update the sofware.\n"
+    printf "usage: bash installer {install, reinstall, uninstall, update}\n"
 }
 
 install_dependency() {
@@ -25,9 +25,6 @@ do_install() {
     install -Dm 755 sources/driver/uvc/*query  -t /usr/lib/linux-enable-ir-emitter/driver/uvc/ -v
     install -Dm 755 sources/driver/uvc/*query.o  -t /usr/lib/linux-enable-ir-emitter/driver/uvc/ -v
     
-    # boot service
-    install -Dm 644 sources/linux-enable-ir-emitter.service -t /usr/lib/systemd/system/ -v
-
     # executable
     chmod +x /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
@@ -38,17 +35,29 @@ do_uninstall() {
 
     rm -fv /usr/bin/linux-enable-ir-emitter 
     rm -rfv /usr/lib/linux-enable-ir-emitter/
-    rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
+    rm -fv /etc/systemd/system/linux-enable-ir-emitter.service
+    rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
     rm -fv /etc/linux-enable-ir-emitter.yaml
 }
 
 do_reinstall() {
     check_root
 
-    rm -fv /usr/bin/linux-enable-ir-emitter 
-    rm -rfv /usr/lib/linux-enable-ir-emitter/
-    rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
+    mv /etc/linux-enable-ir-emitter.yaml /tmp/
+    do_uninstall
+    mv /tmp/linux-enable-ir-emitter.yaml /etc/
 
+    do_install
+}
+
+do_update() {
+    check_root
+
+    mv /etc/linux-enable-ir-emitter.yaml /tmp/
+    do_uninstall
+    mv /tmp/linux-enable-ir-emitter.yaml /etc/
+
+    git fetch && git pull
     do_install
 }
 
@@ -68,6 +77,9 @@ case "$1" in
     ;;
 "reinstall")
     do_reinstall
+    ;;
+"update")
+    do_update
     ;;
 *)
     usage

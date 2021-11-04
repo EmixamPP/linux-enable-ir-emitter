@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.2.1\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.2.2\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
@@ -81,6 +81,7 @@ if __name__ == "__main__":
             if not re.fullmatch("/dev/video[0-9]+", args.device[0]):
                 logging.critical("The device {} does not exists.".format(args.device[0]))
                 sys.exit(ExitCode.FAILURE)
+
         check_root()
         configure.execute(args.device[0], args.limit[0])
 

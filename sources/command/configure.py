@@ -1,7 +1,8 @@
 import logging
 import sys
 
-from globals import ExitCode, exitIfFileDescriptorError
+from globals import ExitCode, exit_if_file_descriptor_error
+from command import boot
 from driver.DriverGenerator import DriverGenerator, DriverGeneratorError
 from driver.DriverSerializer import DriverSerializer
 
@@ -31,13 +32,13 @@ def execute(device: str, neg_answer_limit: int) -> None:
         if driver_generator.driver:
             DriverSerializer.add_driver(driver_generator.driver)
             driver_generator.driver.run()
-            logging.info("The configuration is completed with success. To activate the emitter at system boot execute 'linux-enable-ir-emitter boot enable'")
-            return
+            logging.info("The configuration is completed with success.")
+            boot.execute("enable")
 
     except DriverGeneratorError as e:
         if e.error_code == DriverGeneratorError.DRIVER_ALREADY_EXIST:
             logging.error("Your infrared camera is already working, skipping the configuration.")
-        exitIfFileDescriptorError(e.error_code, device)
+        exit_if_file_descriptor_error(e.error_code, device)
 
     logging.error("The configuration has failed.")
     logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter/wiki")

@@ -9,9 +9,9 @@ from driver.Driver import Driver
 
 class DriverSerializer:
     @staticmethod
-    def _deserialize_saved_drivers() -> list[Driver]:
+    def _deserialize_saved_drivers() -> list[object]:
         """Load all drivers saved in globals.SAVE_DRIVER_FILE_PATH
-        No error catching
+        No error catching or type checking
 
         Returns:
             List of saved driver
@@ -20,7 +20,7 @@ class DriverSerializer:
             return list(yaml.load_all(save_file, Loader=yaml.Loader))
 
     @staticmethod
-    def load_saved_drivers() -> Driver or None:
+    def load_saved_drivers() -> list[Driver] or None:
         """Load all drivers saved in globals.SAVE_DRIVER_FILE_PATH
 
         Returns:
@@ -34,7 +34,9 @@ class DriverSerializer:
                 for driver in deserialized:
                     assert(isinstance(driver, Driver) and dir(dummy_driver) == dir(driver))
                 return deserialized
+
             logging.error("No driver is currently saved.")
+
         except:
             logging.critical("The driver file is corrupted.")
             logging.info("Execute 'linux-enable-ir-emitter fix driver' to reset the file.")
@@ -63,10 +65,15 @@ class DriverSerializer:
         saved_drivers_list = None
         try:
             saved_drivers_list = DriverSerializer._deserialize_saved_drivers()
+
+            # check if the device is already added, it will be removed in order to be update
             for saved_driver in saved_drivers_list.copy():
-                if saved_driver.device == driver.device:
+                if saved_driver.device == driver.device:  
                     saved_drivers_list.remove(saved_driver)
+
             saved_drivers_list.append(driver)
+
         except:  # if driver file corrupted or no driver saved: delete all saved drivers
             saved_drivers_list = [driver]
+
         DriverSerializer.save_drivers(saved_drivers_list)

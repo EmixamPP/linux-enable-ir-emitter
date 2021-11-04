@@ -33,9 +33,6 @@ install -Dm 644 sources/driver/*.py -t %{buildroot}%{_libdir}/%{name}/driver/
 install -Dm 755 sources/driver/uvc/*query -t %{buildroot}%{_libdir}/%{name}/driver/uvc/
 install -Dm 755 sources/driver/uvc/*query.o -t %{buildroot}%{_libdir}/%{name}/driver/uvc/
 
-# boot service
-install -Dm 644 sources/%{name}.service -t %{buildroot}%{_prefix}/lib/systemd/system/
-
 # executable
 chmod +x %{buildroot}%{_libdir}/%{name}/%{name}.py
 mkdir -p %{buildroot}%{_bindir}/
@@ -52,12 +49,15 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 # delete files added after installation
 if [ "$1" -eq 0 ]; then
     rm -rf %{_libdir}/%{name}/
-    rm -f %{_sysconfdir}/%{name}.yaml
+    rm -f /etc/%{name}.yaml
+    rm -f /etc/systemd/system/linux-enable-ir-emitter.service
+    rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter-rules
 fi
 
 %changelog
-* Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.1-1
+* Fri Nov 4 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.2-1
 - Support any device path format
+- Improve systemd service
 * Sat Oct 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.0-1
 - Multiple device support
 * Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1

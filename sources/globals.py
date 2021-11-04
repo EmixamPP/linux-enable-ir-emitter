@@ -12,7 +12,7 @@ class ExitCode(enum.IntEnum):
     ROOT_REQUIRED = 2
 
 
-def exitIfFileDescriptorError(exit_code: ExitCode, device: str) -> None:
+def exit_if_file_descriptor_error(exit_code: ExitCode, device: str) -> None:
     """Exit if exit_code == ExitCode.FILE_DESCRIPTOR_ERROR
 
     Args:
@@ -33,7 +33,7 @@ def check_root() -> None:
 
 LOCAL_PATH = path = os.path.dirname(os.path.abspath(__file__))
 
-def _getDriverFilePath() -> str:
+def _driver_file_path() -> str:
     # old version, ensure compatibility with 3.0.0
     old_version_path = LOCAL_PATH + "/irConfig.yaml"
     path = "/etc/linux-enable-ir-emitter.yaml"
@@ -55,7 +55,7 @@ def _getDriverFilePath() -> str:
                 line = old.readline()
         os.remove(old_version_path)
     return  path
-SAVE_DRIVER_FILE_PATH =  _getDriverFilePath() 
+SAVE_DRIVER_FILE_PATH =  _driver_file_path() 
 
 UVC_DIR_PATH = LOCAL_PATH + "/driver/uvc/"
 UVC_LEN_QUERY_PATH = UVC_DIR_PATH + "len_query"
@@ -63,5 +63,8 @@ UVC_GET_QUERY_PATH = UVC_DIR_PATH + "get_query"
 UVC_SET_QUERY_PATH = UVC_DIR_PATH + "set_query"
 
 SYSTEMD_NAME = "linux-enable-ir-emitter.service"
+SYSTEMD_PATH = "/etc/systemd/system/" + SYSTEMD_NAME
+UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
+UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME
 
 EDITOR_PATH =  os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"
