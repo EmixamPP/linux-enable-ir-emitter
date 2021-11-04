@@ -86,7 +86,7 @@ class Systemd:
         for device in self.devices:
             target = " dev-{}.device".format(device[5:])
             self.service["Unit"]["After"] += target
-            self.service["Unit"]["Wants"] += target
+            self.service["Unit"]["Requires"] += target
     
     @staticmethod
     def _initialize_service_file() -> ConfigParser:
@@ -101,7 +101,7 @@ class Systemd:
 
         service["Unit"] = {}
         service["Unit"]["Description"] = "enable the infrared emitter"
-        service["Unit"]["Wants"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
+        service["Unit"]["Requires"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
         service["Unit"]["After"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
 
         service["Service"] = {}
