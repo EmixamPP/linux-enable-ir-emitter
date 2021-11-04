@@ -62,7 +62,7 @@ fi
 - Multiple device support
 * Tue Sep 23 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.1-1
 - Limit in negative answers for a same pattern
-* Tue Sep 22 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.0-1
+* Wed Sep 22 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.1.0-1
 - New configuration system
 - Exit codes
 - Change configuration file location
