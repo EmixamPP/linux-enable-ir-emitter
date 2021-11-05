@@ -2,7 +2,7 @@
 
 Name:     linux-enable-ir-emitter
 Version:  3.2.2
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
 License:  MIT
@@ -46,10 +46,16 @@ ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %postun
-# delete files added after installation
+# if last uninstallation (not after update)
 if [ "$1" -eq 0 ]; then
+    # delete python cache
     rm -rf %{_libdir}/%{name}/
+
+    # delete config file
     rm -f /etc/%{name}.yaml
+
+    # delete systemd service
+    systmctl disable linux-enable-ir-emitter
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter-rules
 fi

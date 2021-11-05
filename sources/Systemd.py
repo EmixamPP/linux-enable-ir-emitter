@@ -101,7 +101,7 @@ class Systemd:
 
         service["Unit"] = {}
         service["Unit"]["Description"] = "enable the infrared emitter"
-        service["Unit"]["Requires"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
+        service["Unit"]["Requires"] = ""
         service["Unit"]["After"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
 
         service["Service"] = {}
