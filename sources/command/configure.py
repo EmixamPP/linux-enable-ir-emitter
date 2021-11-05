@@ -17,7 +17,7 @@ def execute(device: str, neg_answer_limit: int) -> None:
 
     driver_generator = DriverGenerator(device, neg_answer_limit)
     
-    logging.info("Warning to do not kill the processus !")
+    logging.info("Warning to do not kill the processes !")
     try:
         driver_generator.generate()
         if driver_generator.driver:
