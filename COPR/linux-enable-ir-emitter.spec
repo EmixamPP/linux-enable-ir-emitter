@@ -55,7 +55,7 @@ if [ "$1" -eq 0 ]; then
     rm -f /etc/%{name}.yaml
 
     # delete systemd service
-    systmctl disable linux-enable-ir-emitter
+    systemctl disable linux-enable-ir-emitter.service
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter-rules
 fi
