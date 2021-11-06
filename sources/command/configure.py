@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import NoReturn
 
 from globals import ExitCode, exit_if_file_descriptor_error
 from command import boot
@@ -7,7 +8,7 @@ from driver.DriverGenerator import DriverGenerator, DriverGeneratorError
 from driver.DriverSerializer import DriverSerializer
 
 
-def execute(device: str, neg_answer_limit: int) -> None:
+def execute(device: str, neg_answer_limit: int) -> NoReturn:
     """Find a driver for the infrared camera
 
     Args:

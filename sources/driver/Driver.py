@@ -2,12 +2,13 @@ import os
 import time
 import cv2 as cv
 import logging
+from typing import List
 
 from globals import ExitCode, UVC_SET_QUERY_PATH
 
 
 class Driver:
-    def __init__(self, control: list[int], unit: int, selector: int, device: str) -> None:
+    def __init__(self, control: List[int], unit: int, selector: int, device: str) -> None:
         """Query a UVC XU control (UVC_SET_CUR querry)
            Which is intended to activate the infrared camera transmitter.
 
@@ -27,7 +28,7 @@ class Driver:
         return self._device
 
     @property
-    def control(self) -> list[int]:
+    def control(self) -> List[int]:
         return self._control
 
     @property

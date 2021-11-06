@@ -32,17 +32,25 @@ do_install() {
 
 do_uninstall() {
     check_root
-
-    rm -fv /usr/bin/linux-enable-ir-emitter 
+    # software
     rm -rfv /usr/lib/linux-enable-ir-emitter/
+
+    # executable
+    rm -fv /usr/bin/linux-enable-ir-emitter 
+    
+    # driver
+    rm -fv /etc/linux-enable-ir-emitter.yaml
+
+    # systemd service
+    systemctl disable linux-enable-ir-emitter.service
     rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
-    rm -fv /etc/linux-enable-ir-emitter.yaml
 }
 
 do_reinstall() {
     check_root
 
+    # save driver
     mv /etc/linux-enable-ir-emitter.yaml /tmp/
     do_uninstall
     mv /tmp/linux-enable-ir-emitter.yaml /etc/
@@ -53,10 +61,12 @@ do_reinstall() {
 do_update() {
     check_root
 
+    # save driver
     mv /etc/linux-enable-ir-emitter.yaml /tmp/
     do_uninstall
     mv /tmp/linux-enable-ir-emitter.yaml /etc/
 
+    # update git
     git fetch && git pull
     do_install
 }

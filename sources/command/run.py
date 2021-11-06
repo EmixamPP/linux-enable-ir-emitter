@@ -1,11 +1,12 @@
 import logging
 import sys
+from typing import NoReturn
 
 from driver.DriverSerializer import DriverSerializer
 from globals import ExitCode, exit_if_file_descriptor_error
 
 
-def execute(trigger=False) -> None:
+def execute(trigger=False) -> NoReturn:
     """Apply all saved drivers
 
     Args:

@@ -51,7 +51,7 @@ if [ "$1" -eq 0 ]; then
     # delete python cache
     rm -rf %{_libdir}/%{name}/
 
-    # delete config file
+    # delete driver
     rm -f /etc/%{name}.yaml
 
     # delete systemd service

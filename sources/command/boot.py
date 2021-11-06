@@ -1,12 +1,13 @@
 import sys
 import logging
+from typing import NoReturn
 
 from globals import ExitCode
 from Systemd import Systemd
 from driver.DriverSerializer import DriverSerializer
 
 
-def execute(boot_status: str) -> None:
+def execute(boot_status: str) -> NoReturn:
     """Enable or disable the systemd service which activates the ir emitter
 
         args:

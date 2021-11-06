@@ -1,7 +1,9 @@
-from configparser import ConfigParser
-from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
 import subprocess
 import logging
+from configparser import ConfigParser
+from typing import List
+
+from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
 
 
 """DOCUMENTATION
@@ -17,7 +19,7 @@ import logging
 
 
 class Systemd:
-    def __init__(self, devices: list[str]) -> None:
+    def __init__(self, devices: List[str]) -> None:
         self.devices = devices
         self.service = self._initialize_service_file()
         self._add_device_to_service()
@@ -62,7 +64,7 @@ class Systemd:
         """
         exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True)
 
-        if exec.returncode == 4:  # 
+        if exec.returncode == 4:
             logging.error("The boot service does not exists.")
         else:
             print(exec.stdout.strip().decode('utf-8'))

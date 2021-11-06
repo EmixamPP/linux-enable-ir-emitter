@@ -2,6 +2,7 @@ import os
 import yaml
 import sys
 import logging
+from typing import List
 
 from globals import SAVE_DRIVER_FILE_PATH, ExitCode
 from driver.Driver import Driver
@@ -9,7 +10,7 @@ from driver.Driver import Driver
 
 class DriverSerializer:
     @staticmethod
-    def _deserialize_saved_drivers() -> list[object]:
+    def _deserialize_saved_drivers() -> List[object]:
         """Load all drivers saved in globals.SAVE_DRIVER_FILE_PATH
         No error catching or type checking
 
@@ -20,7 +21,7 @@ class DriverSerializer:
             return list(yaml.load_all(save_file, Loader=yaml.Loader))
 
     @staticmethod
-    def load_saved_drivers() -> list[Driver] or None:
+    def load_saved_drivers() -> List[Driver] or None:
         """Load all drivers saved in globals.SAVE_DRIVER_FILE_PATH
 
         Returns:
@@ -31,6 +32,7 @@ class DriverSerializer:
             if os.path.exists(SAVE_DRIVER_FILE_PATH):
                 dummy_driver = Driver([0], 0, 0, '')
                 deserialized = DriverSerializer._deserialize_saved_drivers()
+                
                 for driver in deserialized:
                     assert(isinstance(driver, Driver) and dir(dummy_driver) == dir(driver))
                 return deserialized
@@ -43,7 +45,7 @@ class DriverSerializer:
             sys.exit(ExitCode.FAILURE)
     
     @staticmethod
-    def save_drivers(driver_list: list[Driver]) -> None:
+    def save_drivers(driver_list: List[Driver]) -> None:
         """Save all drivers in globals.SAVE_DRIVER_FILE_PATH
 
         Args:

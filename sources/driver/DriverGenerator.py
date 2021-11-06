@@ -3,6 +3,7 @@ import logging
 import cv2 as cv
 import time
 import re
+from typing import List
 
 from driver.Driver import Driver
 from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH
@@ -123,7 +124,7 @@ class DriverGenerator:
             return False    
         return self.emitter_is_working()   
 
-    def emitter_is_working(self):
+    def emitter_is_working(self) -> bool:
         """Trigger the infrared emitter and ask the question:
          "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? "
 
@@ -133,6 +134,7 @@ class DriverGenerator:
         device = cv.VideoCapture(self.device)
         if not device.isOpened():
             self._raise_if_file_descriptor_error(ExitCode.FILE_DESCRIPTOR_ERROR)
+
         device.read()
         time.sleep(1.5)
         device.release()
@@ -157,13 +159,15 @@ class DriverGenerator:
         # debug print are disabled because it is not relevent while automatic configuration
         init_log_level = logging.getLogger().level
         logging.getLogger().setLevel(logging.INFO)
+
         exit_code = driver.run()
+
         logging.getLogger().setLevel(init_log_level)
         self._raise_if_file_descriptor_error(exit_code)
         return exit_code
 
     @property
-    def _units(self) -> list[str]:
+    def _units(self) -> List[str]:
         """Return the list of extension unit ID
 
         Returns:
@@ -199,7 +203,7 @@ class DriverGenerator:
         self._raise_if_file_descriptor_error(exit_code)
         return exec.stdout.strip().decode('utf-8') if exit_code == ExitCode.SUCCESS else None
 
-    def _curr_control(self, unit: str, selector: str, control_size: str) -> list[str] or None:
+    def _curr_control(self, unit: str, selector: str, control_size: str) -> List[str] or None:
         """Execute the UVC GET CURR QUERY
 
         Args:
@@ -219,7 +223,7 @@ class DriverGenerator:
         self._raise_if_file_descriptor_error(exit_code)
         return exec.stdout.strip().decode('utf-8').split(' ') if exit_code == ExitCode.SUCCESS else None
 
-    def _max_control(self, unit: str, selector: str, control_size: str) -> list[str]:
+    def _max_control(self, unit: str, selector: str, control_size: str) -> List[str]:
         """Execute the UVC GET MAX QUERY
 
         Args:
@@ -236,7 +240,7 @@ class DriverGenerator:
         self._raise_if_file_descriptor_error(exit_code)
         return exec.stdout.strip().decode('utf-8').split(' ') if exit_code == ExitCode.SUCCESS else None
 
-    def _res_control(self, unit: str, selector: str, control_size: str, curr_control: list[str], max_control: list[str]) -> list[str]:
+    def _res_control(self, unit: str, selector: str, control_size: str, curr_control: List[str], max_control: List[str]) -> List[str]:
         """Execute the UVC GET RES QUERY
 
         Args:
@@ -258,7 +262,7 @@ class DriverGenerator:
         # try to find the resolution control by substitution, it may result in a false ressolution control
         return [str(int(c1 != c2)) for c1, c2 in zip(curr_control, max_control)]
 
-    def _next_curr_control(self, curr_control: list[str], res_control: list[str], max_control: list[str]) -> list[str] or None:
+    def _next_curr_control(self, curr_control: List[str], res_control: List[str], max_control: List[str]) -> List[str] or None:
         """Compute the next possible control instruction
 
         Args:

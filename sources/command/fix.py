@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+from typing import NoReturn
 
 from globals import SAVE_DRIVER_FILE_PATH, ExitCode
 
@@ -38,7 +39,7 @@ def _fix_chicony() -> ExitCode:
     
 
 
-def execute(target: str) -> None:
+def execute(target: str) -> NoReturn:
     """Fix well know problems
 
     Args:

@@ -39,5 +39,5 @@ replace /dev/videoX with your device and paste here
 **Additional info**
  - Distro: 
  - Version: 
- - Version of linux-enable-ir-emitter:
- - How did you install linux-enable-ir-emitter: <!--- bash or AUR or COPR -->
+ - Version of linux-enable-ir-emitter: <!-- linux-enable-ir-emitter -V -->
+ - How did you install linux-enable-ir-emitter: <!-- bash or AUR or COPR -->

@@ -6,7 +6,6 @@ import re
 import sys
 import os
 
-from command import boot, fix, manual, run, configure
 from globals import ExitCode, check_root
 
 
@@ -73,6 +72,7 @@ if __name__ == "__main__":
         logging.getLogger().setLevel(logging.DEBUG)
 
     if args.command == "run":
+        from command import run
         run.execute()
 
     elif args.command == "configure":
@@ -82,20 +82,25 @@ if __name__ == "__main__":
                 logging.critical("The device {} does not exists.".format(args.device[0]))
                 sys.exit(ExitCode.FAILURE)
 
+        from command import configure
         check_root()
         configure.execute(args.device[0], args.limit[0])
 
     elif args.command == "manual":
+        from command import manual
         check_root()
         manual.execute()
 
     elif args.command == "boot":
+        from command import boot
         check_root()
         boot.execute(args.boot_status)
 
     elif args.command == "test":
+        from command import run
         run.execute(True)
 
     elif args.command == "fix":
+        from command import fix
         check_root()
         fix.execute(args.fix_target)
