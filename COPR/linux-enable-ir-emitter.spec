@@ -1,8 +1,8 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  3.2.2
-Release:  2%{?dist}
+Version:  3.2.4
+Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
 License:  MIT
@@ -38,12 +38,16 @@ chmod +x %{buildroot}%{_libdir}/%{name}/%{name}.py
 mkdir -p %{buildroot}%{_bindir}/
 ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 
+# auto complete for bash
+install -Dm 644 sources/autocomplete/%{name} -t %{buildroot}%{_datadir}/bash-completion/completions/
+
 %files
 %license LICENSE
 %doc README.md
 %ghost /usr/lib/systemd/system/linux-enable-ir-emitter.service
 %{_libdir}/%{name}/
 %{_bindir}/%{name}
+%{_datadir}/bash-completion/completions/%{name}
 
 %postun
 # if last uninstallation (not after update)
@@ -61,6 +65,9 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %changelog
+* Sun Nov 14 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.4-1
+- Tweak for integration into Howdy(https://github.com/boltgolt/howdy)  
+- Bash auto completition
 * Thu Nov 4 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.2-1
 - Support any device path format
 - Improve systemd service

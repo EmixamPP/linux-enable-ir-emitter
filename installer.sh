@@ -28,6 +28,10 @@ do_install() {
     # executable
     chmod +x /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
+
+    # auto complete for bash
+    install -Dm 644 sources/autocomplete/%{name} -t /usr/share/bash-completion/completions/
+
 }
 
 do_uninstall() {
@@ -45,6 +49,9 @@ do_uninstall() {
     systemctl disable linux-enable-ir-emitter.service
     rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
+
+    # auto complete for bash
+    rm -fv /usr/share/bash-completion/completions/linux-enable-ir-emitter
 }
 
 do_reinstall() {

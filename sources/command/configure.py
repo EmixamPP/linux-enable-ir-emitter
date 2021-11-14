@@ -8,19 +8,20 @@ from driver.DriverGenerator import DriverGenerator, DriverGeneratorError
 from driver.DriverSerializer import DriverSerializer
 
 
-def execute(device: str, neg_answer_limit: int) -> NoReturn:
+def execute(device: str, neg_answer_limit: int, pipe_format: bool) -> NoReturn:
     """Find a driver for the infrared camera
 
     Args:
         device: the infrared camera '/dev/videoX'
         neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
+        pipe_format: if True, input messages are print on a seperate line
     """
 
-    driver_generator = DriverGenerator(device, neg_answer_limit)
-    
+    driver_generator = DriverGenerator(device)
+
     logging.info("Warning to do not kill the processes !")
     try:
-        driver_generator.generate()
+        driver_generator.generate(neg_answer_limit, pipe_format)
         if driver_generator.driver:
             DriverSerializer.add_driver(driver_generator.driver)
             driver_generator.driver.run()

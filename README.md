@@ -29,14 +29,14 @@ git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
 ```
-You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
+You can easily uninstall the software by executing `sudo bash installer.sh uninstall` or to update it `sudo bash installer.sh update`.
 
 Feel free to create a PPA for Debian distro based and share it with this community. Or any other package repository in order to support other Linux distribution.
 
 ## How to enable your infrared emitter ?
 0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
 1. `sudo linux-enable-ir-emitter configure` look at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
-2. `sudo linux-enable-ir-emitter boot enable`
+2. reboot
 
 If you like the project, don't hesitate to star the repository to support me, thank you !
 

@@ -19,14 +19,12 @@ from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH
 
 
 class DriverGenerator:
-    def __init__(self, device: str, neg_answer_limit: int) -> None:
+    def __init__(self, device: str) -> None:
         """Try to find a driver for an infrared camera
         Args:
             device: the infrared camera '/dev/videoX'
-            neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
         """
         self._device = device
-        self._neg_answer_limit = neg_answer_limit
         self._driver = None
     
     @property
@@ -47,14 +45,18 @@ class DriverGenerator:
         start_pos = re.search("[0-9]", self.device).start()
         return self.device[start_pos:]
 
-    def generate(self) -> None:
+    def generate(self, neg_answer_limit: int, pipe_format: bool) -> None:
         """Try to find a driver DriverGenerator.device
+
+        Args:
+            neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
+            pipe_format: if True, input messages are print on a seperate line
 
         Raises:
             DriverGeneratorError: error_code:DriverGeneratorError.DRIVER_ALREADY_EXIST
             DriverGeneratorError: error_code:ExitCode.FILE_DESCRIPTOR_ERROR
         """
-        if self.emitter_is_working():
+        if self.emitter_is_working(pipe_format):
             raise DriverGeneratorError("a driver already exists", DriverGeneratorError.DRIVER_ALREADY_EXIST)
 
         for unit in self._units:
@@ -91,7 +93,7 @@ class DriverGenerator:
                 # try to find the right control instruction
                 next_control = curr_control
                 neg_answer_counter = 0
-                while(next_control and neg_answer_counter < self._neg_answer_limit):
+                while(next_control and neg_answer_counter < neg_answer_limit):
                     next_control = self._next_curr_control(next_control, res_control, max_control)
                     if not next_control:
                         continue
@@ -99,22 +101,23 @@ class DriverGenerator:
                     logging.debug("control: {}".format(next_control))
                     driver = Driver(next_control, unit, selector, self._device)
 
-                    if self.driver_is_working(driver):
+                    if self.driver_is_working(driver, pipe_format):
                         self._driver = driver
                         return
                     neg_answer_counter += 1
     
-                if neg_answer_counter > self._neg_answer_limit:
+                if neg_answer_counter > neg_answer_limit:
                     logging.debug("Negative answer limit exceeded, skipping the pattern.")
             
                 # reset the control
                 self.execute_driver(initial_driver)
 
-    def driver_is_working(self, driver: Driver) -> bool:
-        """Apply the driver and execute DriverGenerator.emitterIsWorking()
+    def driver_is_working(self, driver: Driver, pipe_format: bool) -> bool:
+        """Apply the driver and execute DriverGenerator.emitterIsWorking(pipe_format)
 
         Args:
             driver (Driver): driver to test
+            pipe_format: parameter used by DriverGenerator.emitterIsWorking
 
         Returns:
             true if the user input yes, otherwise false
@@ -122,11 +125,14 @@ class DriverGenerator:
         exit_code = self.execute_driver(driver)
         if exit_code != ExitCode.SUCCESS:
             return False    
-        return self.emitter_is_working()   
+        return self.emitter_is_working(pipe_format)   
 
-    def emitter_is_working(self) -> bool:
+    def emitter_is_working(self, pipe_format: bool) -> bool:
         """Trigger the infrared emitter and ask the question:
          "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? "
+
+        Args:
+            pipe_format: if True, input messages are print on a seperate line
 
         Returns:
             bool: true if the user input yes, otherwise false
@@ -139,7 +145,8 @@ class DriverGenerator:
         time.sleep(1.5)
         device.release()
 
-        check = input("Did you see the ir emitter flashing (not just turn on) ? Yes/No ? ").lower()
+        end_of_input = "\n" if pipe_format else " "
+        check = input("Did you see the ir emitter flashing (not just turn on) ? Yes/No ?" + end_of_input).lower()
         while (check not in ("yes", "y", "no", "n")):
             check = input("Yes/No ? ").lower()
         return check in ("yes", "y")

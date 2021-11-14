@@ -5,6 +5,7 @@ import logging
 import re
 import sys
 import os
+import subprocess
 
 from globals import ExitCode, check_root
 
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version", 
         action="version", 
-        version="%(prog)s 3.2.2\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.2.3\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
@@ -65,6 +66,12 @@ if __name__ == "__main__":
         type=int,
         nargs=1
     ) 
+    command_configure.add_argument(
+        "-p", "--pipe-format",
+        help="input messages are print on a seperate line (usefull for subprocess pipe)",
+        action='store_true', 
+        default=False
+    ) 
     
     args = parser.parse_args()
 
@@ -79,12 +86,19 @@ if __name__ == "__main__":
         if not re.fullmatch("/dev/video[0-9]+", args.device[0]):
             args.device[0] = os.path.realpath(args.device[0])
             if not re.fullmatch("/dev/video[0-9]+", args.device[0]):
+
+                try:
+                    available_devices = subprocess.check_output(["ls /dev/video*"], shell=True).decode("utf-8").strip().replace("\n", " ")
+                except subprocess.CalledProcessError: 
+                    available_devices = "no device found"
+
                 logging.critical("The device {} does not exists.".format(args.device[0]))
+                logging.info("Please choose among this list: {}".format(available_devices))
                 sys.exit(ExitCode.FAILURE)
 
         from command import configure
         check_root()
-        configure.execute(args.device[0], args.limit[0])
+        configure.execute(args.device[0], args.limit[0], args.pipe_format)
 
     elif args.command == "manual":
         from command import manual
@@ -104,3 +118,6 @@ if __name__ == "__main__":
         from command import fix
         check_root()
         fix.execute(args.fix_target)
+
+    else:
+        parser.print_help()
