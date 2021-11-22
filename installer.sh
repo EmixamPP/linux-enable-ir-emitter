@@ -30,7 +30,7 @@ do_install() {
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
 
     # auto complete for bash
-    install -Dm 644 sources/autocomplete/%{name} -t /usr/share/bash-completion/completions/
+    install -Dm 644 sources/autocomplete/linux-enable-ir-emitter -t /usr/share/bash-completion/completions/
 
 }
 
