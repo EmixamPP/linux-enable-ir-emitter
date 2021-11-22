@@ -62,7 +62,7 @@ class Driver:
         # Subprocess does not work with systemd !
         command = "{} {} {} {} {} {}".format(UVC_SET_QUERY_PATH, self.device, self.unit, self.selector, self.control_size, self._control_str)
         if logging.getLogger().level != logging.DEBUG:
-            command += " &> /dev/null"
+            command += " >/dev/null 2>&1"
 
         # The exit codes returned by os.system not correspond to those returned by the executed program.
         exit_code = os.system(command)
