@@ -21,15 +21,15 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-v", "--verbose", 
+        "-v", "--verbose",
         help="print verbose information",
-        action='store_true', 
+        action='store_true',
         default=False
     )
     parser.add_argument(
-        "-V", "--version", 
-        action="version", 
-        version="%(prog)s 3.2.3\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        "-V", "--version",
+        action="version",
+        version="%(prog)s 3.2.4\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 
@@ -42,13 +42,13 @@ if __name__ == "__main__":
     command_fix = command_subparser.add_parser("fix", help="fix well know problems")
 
     command_boot.add_argument(
-        "boot_status", 
-        choices=["enable", "disable", "status"], 
+        "boot_status",
+        choices=["enable", "disable", "status"],
         help="specify the boot action to perform"
     )
     command_fix.add_argument(
-        "fix_target", 
-        choices=["driver", "chicony"], 
+        "fix_target",
+        choices=["driver", "chicony"],
         help="specify the target to fix: {reset the driver, uninstall chicony-ir-toggle}"
     )
     command_configure.add_argument(
@@ -65,20 +65,21 @@ if __name__ == "__main__":
         default=[5],
         type=int,
         nargs=1
-    ) 
+    )
     command_configure.add_argument(
         "-p", "--pipe-format",
         help="input messages are print on a seperate line (usefull for subprocess pipe)",
-        action='store_true', 
+        action='store_true',
         default=False
-    ) 
-    
+    )
+
     args = parser.parse_args()
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
     if args.command == "run":
+        os.system("/usr/bin/date >> /home/maxime/Téléchargements/test.txt")
         from command import run
         run.execute()
 
@@ -89,7 +90,7 @@ if __name__ == "__main__":
 
                 try:
                     available_devices = subprocess.check_output(["ls /dev/video*"], shell=True).decode("utf-8").strip().replace("\n", " ")
-                except subprocess.CalledProcessError: 
+                except subprocess.CalledProcessError:
                     available_devices = "no device found"
 
                 logging.critical("The device {} does not exists.".format(args.device[0]))

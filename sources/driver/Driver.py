@@ -38,11 +38,11 @@ class Driver:
     @property
     def selector(self) -> int:
         return self._selector
-    
+
     @property
     def control_size(self) -> int:
         return len(self._control)
-    
+
     @property
     def _control_str(self) -> str:
         """Convert the self.data list to a string sequence
@@ -50,7 +50,7 @@ class Driver:
             Each value separate by a space, e.g. "1 3 3 0 0 0 0 0 0"
         """
         return ' '.join(str(value) for value in self.control)
-    
+
     def run(self) -> ExitCode:
         """Execute the UVC_SET_CUR query
 
@@ -59,14 +59,14 @@ class Driver:
             ExitCode.FAILURE
             ExitCode.FILE_DESCRIPTOR_ERROR cannot access to the camera
         """
-        # Subprocess does not work with systemd ! 
+        # Subprocess does not work with systemd !
         command = "{} {} {} {} {} {}".format(UVC_SET_QUERY_PATH, self.device, self.unit, self.selector, self.control_size, self._control_str)
         if logging.getLogger().level != logging.DEBUG:
             command += " &> /dev/null"
 
         # The exit codes returned by os.system not correspond to those returned by the executed program.
         exit_code = os.system(command)
-        if exit_code == 32256: 
+        if exit_code == 32256:
             return ExitCode.FILE_DESCRIPTOR_ERROR
         elif exit_code == 256:
             return ExitCode.FAILURE
@@ -106,5 +106,3 @@ class Driver:
             return False
         else:
             return True
-
-    

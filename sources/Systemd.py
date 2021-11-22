@@ -23,7 +23,7 @@ class Systemd:
         self.devices = devices
         self.service = self._initialize_service_file()
         self._add_device_to_service()
-    
+
     @staticmethod
     def disable() -> int:
         """Disable the service
@@ -45,15 +45,15 @@ class Systemd:
             0: the service have been enabled successfully
             other value: Error with the boot service.
         """
-        self._create_udev_rule()  
+        self._create_udev_rule()
         self._create_service()
 
         exit_code = subprocess.run(["systemctl", "enable", SYSTEMD_NAME], capture_output=True).returncode
-        
+
         if exit_code:
             logging.error("Error with the boot service.")
         return exit_code
-    
+
     @staticmethod
     def status() -> int:
         """Print the service status
@@ -69,8 +69,7 @@ class Systemd:
         else:
             print(exec.stdout.strip().decode('utf-8'))
         return exec.returncode
-    
-        
+
     def _create_service(self) -> None:
         """Create the service file at SYSTEMD_PATH"""
         with open(SYSTEMD_PATH, 'w') as service_file:
@@ -89,7 +88,7 @@ class Systemd:
             target = " dev-{}.device".format(device[5:])
             self.service["Unit"]["After"] += target
             self.service["Unit"]["Requires"] += target
-    
+
     @staticmethod
     def _initialize_service_file() -> ConfigParser:
         """Represent the systemd service file by a ConfigParser.

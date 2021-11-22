@@ -32,7 +32,7 @@ class DriverSerializer:
             if os.path.exists(SAVE_DRIVER_FILE_PATH):
                 dummy_driver = Driver([0], 0, 0, '')
                 deserialized = DriverSerializer._deserialize_saved_drivers()
-                
+
                 for driver in deserialized:
                     assert(isinstance(driver, Driver) and dir(dummy_driver) == dir(driver))
                 return deserialized
@@ -43,7 +43,7 @@ class DriverSerializer:
             logging.critical("The driver file is corrupted.")
             logging.info("Execute 'linux-enable-ir-emitter fix driver' to reset the file.")
             sys.exit(ExitCode.FAILURE)
-    
+
     @staticmethod
     def save_drivers(driver_list: List[Driver]) -> None:
         """Save all drivers in globals.SAVE_DRIVER_FILE_PATH
@@ -56,7 +56,7 @@ class DriverSerializer:
             save_driver_file.write("#Please consult https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Manual-configuration before.\n")
             save_driver_file.write("#If you currupt the driver file: execute 'linux-enable-ir-emitter fix driver' to reset the file.\n\n")
             yaml.dump_all(driver_list, save_driver_file)
-    
+
     @staticmethod
     def add_driver(driver: Driver) -> None:
         """Add a driver to file globals.SAVE_DRIVER_FILE_PATH
@@ -70,7 +70,7 @@ class DriverSerializer:
 
             # check if the device is already added, it will be removed in order to be update
             for saved_driver in saved_drivers_list.copy():
-                if saved_driver.device == driver.device:  
+                if saved_driver.device == driver.device:
                     saved_drivers_list.remove(saved_driver)
 
             saved_drivers_list.append(driver)

@@ -20,5 +20,5 @@ def execute() -> NoReturn:
     except FileNotFoundError:
         logging.critical("No editor found, set the envion variable 'EDITOR' or install nano.")
         sys.exit(ExitCode.MISSING_DEPENDENCY)
-    
+
     sys.exit(ExitCode.SUCCESS)

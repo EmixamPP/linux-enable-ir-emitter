@@ -54,8 +54,10 @@ def _driver_file_path() -> str:
                     new.write(line)
                 line = old.readline()
         os.remove(old_version_path)
-    return  path
-SAVE_DRIVER_FILE_PATH =  _driver_file_path() 
+    return path
+
+
+SAVE_DRIVER_FILE_PATH = _driver_file_path()
 
 UVC_DIR_PATH = LOCAL_PATH + "/driver/uvc/"
 UVC_LEN_QUERY_PATH = UVC_DIR_PATH + "len_query"
@@ -67,4 +69,4 @@ SYSTEMD_PATH = "/usr/lib/systemd/system/" + SYSTEMD_NAME
 UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
 UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME
 
-EDITOR_PATH =  os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"
+EDITOR_PATH = os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"

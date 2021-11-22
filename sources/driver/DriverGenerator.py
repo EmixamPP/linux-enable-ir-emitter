@@ -26,11 +26,11 @@ class DriverGenerator:
         """
         self._device = device
         self._driver = None
-    
+
     @property
     def device(self) -> str:
         return self._device
-    
+
     @property
     def driver(self) -> Driver or None:
         """
@@ -105,10 +105,10 @@ class DriverGenerator:
                         self._driver = driver
                         return
                     neg_answer_counter += 1
-    
+
                 if neg_answer_counter > neg_answer_limit:
                     logging.debug("Negative answer limit exceeded, skipping the pattern.")
-            
+
                 # reset the control
                 self.execute_driver(initial_driver)
 
@@ -124,8 +124,8 @@ class DriverGenerator:
         """
         exit_code = self.execute_driver(driver)
         if exit_code != ExitCode.SUCCESS:
-            return False    
-        return self.emitter_is_working(pipe_format)   
+            return False
+        return self.emitter_is_working(pipe_format)
 
     def emitter_is_working(self, pipe_format: bool) -> bool:
         """Trigger the infrared emitter and ask the question:
@@ -156,7 +156,7 @@ class DriverGenerator:
 
         Args:
             driver: driver to execute
-        
+
         Raises:
             DriverGeneratorError: error_code:ExitCode.FILE_DESCRIPTOR_ERROR
 

@@ -23,7 +23,7 @@ def _fix_driver() -> ExitCode:
 
 def _fix_chicony() -> ExitCode:
     """Uninstall chicony-ir-toggle
-    
+
      Returns:
         ExitCode.SUCCESS or ExitCode.FAILURE
     """
@@ -36,7 +36,6 @@ def _fix_chicony() -> ExitCode:
     except FileNotFoundError:
         logging.error("chicony-ir-toggle is not installed.")
         return ExitCode.FAILURE
-    
 
 
 def execute(target: str) -> NoReturn:
