@@ -79,7 +79,6 @@ if __name__ == "__main__":
         logging.getLogger().setLevel(logging.DEBUG)
 
     if args.command == "run":
-        os.system("/usr/bin/date >> /home/maxime/Téléchargements/test.txt")
         from command import run
         run.execute()
 
