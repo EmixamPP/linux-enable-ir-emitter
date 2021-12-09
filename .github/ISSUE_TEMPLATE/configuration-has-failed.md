@@ -23,16 +23,12 @@ paste here
 paste here
 ```
 
-**Ouput of `v4l2-ctl --list-devices`**
-```
-paste here
-```
-
-**Ouput of `v4l2-ctl -d /dev/videoX --list-formats-ext`**
+<!-- replace /dev/video2 with your device if you used the -d option -->
+**Ouput of `v4l2-ctl -d /dev/video2 --list-formats-ext`**
 <details><summary>v4l2 device output</summary>
 
 ```
-replace /dev/videoX with your device and paste here
+paste here
 ```
 </details>
 
