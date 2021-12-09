@@ -2,6 +2,7 @@ import os
 import enum
 import logging
 import sys
+import subprocess
 
 
 class ExitCode(enum.IntEnum):
@@ -32,6 +33,7 @@ def check_root() -> None:
 
 
 LOCAL_PATH = path = os.path.dirname(os.path.abspath(__file__))
+
 
 def _driver_file_path() -> str:
     # old version, ensure compatibility with 3.0.0
@@ -70,3 +72,15 @@ UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
 UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME
 
 EDITOR_PATH = os.environ["EDITOR"] if "EDITOR" in os.environ else "/usr/bin/nano"
+
+
+def get_vid(device_number):
+    command = "find /sys/class/video4linux/video" + \
+        device_number + "/device/ -name vendor -exec cat {} +"
+    return subprocess.check_output(command, shell=True).strip().decode("utf-8")
+
+
+def get_pid(device_number):
+    command = "find /sys/class/video4linux/video" + \
+        device_number + "/device/ -name product -exec cat {} +"
+    return subprocess.check_output(command, shell=True).strip().decode("utf-8")

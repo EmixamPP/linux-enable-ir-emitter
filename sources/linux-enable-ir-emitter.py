@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version",
         action="version",
-        version="%(prog)s 3.2.4\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 3.2.5\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
 

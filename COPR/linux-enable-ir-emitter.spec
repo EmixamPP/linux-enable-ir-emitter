@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  3.2.4
+Version:  3.2.5
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -65,9 +65,10 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %changelog
-* Sun Nov 14 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.4-1
+* Sun Dec 9 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.5-1
 - Tweak for integration into Howdy(https://github.com/boltgolt/howdy)  
 - Bash auto completition
+- Better systemd support
 * Thu Nov 4 2021 Maxime dirksen <emixampp@fedoraproject.org> - 3.2.2-1
 - Support any device path format
 - Improve systemd service

@@ -2,8 +2,9 @@ import subprocess
 import logging
 from configparser import ConfigParser
 from typing import List
+import re
 
-from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
+from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME, get_pid, get_vid
 
 
 """DOCUMENTATION
@@ -23,6 +24,11 @@ class Systemd:
         self.devices = devices
         self.service = self._initialize_service_file()
         self._add_device_to_service()
+    
+    @staticmethod
+    def device_number(device: str) -> str:
+        start_pos = re.search("[0-9]", device).start()
+        return device[start_pos:]
 
     @staticmethod
     def disable() -> int:
@@ -79,8 +85,14 @@ class Systemd:
         """Create the rule file at UDEV_RULE_PATH"""
         with open(UDEV_RULE_PATH, 'w') as rule_file:
             for device in self.devices:
-                rule = 'KERNEL=="{}", SYMLINK="{}", TAG+="systemd"'.format(device[5:], device[5:])
-                rule_file.write(rule + "\n")
+                vid = get_vid(self.device_number(device))
+                pid = get_pid(self.device_number(device))
+
+                rule1 = 'KERNEL=="{}", SYMLINK="{}", TAG+="systemd"'.format(device[5:], device[5:])
+                rule2 = 'ACTION=="add|change", ATTRS{idVendor}=="'+ vid +'", ATTRS{idProduct}=="' + pid + '", RUN+="/usr/bin/linux-enable-ir-emitter run"'
+
+                rule_file.write(rule1 + "\n")
+                rule_file.write(rule2 + "\n")
 
     def _add_device_to_service(self) -> None:
         """Add each device to self.service """

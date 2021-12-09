@@ -6,7 +6,7 @@ import re
 from typing import List
 
 from driver.Driver import Driver
-from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH
+from globals import ExitCode, UVC_GET_QUERY_PATH, UVC_LEN_QUERY_PATH, get_pid, get_vid
 
 
 """DOCUMENTATION
@@ -180,13 +180,8 @@ class DriverGenerator:
         Returns:
             list of extension unit ID for the device
         """
-        command = "find /sys/class/video4linux/video" + \
-            self.device_number + "/device/ -name vendor -exec cat {} +"
-        vid = subprocess.check_output(
-            command, shell=True).strip().decode("utf-8")
-        command = "find /sys/class/video4linux/video" + \
-            self.device_number + "/device/ -name product -exec cat {} +"
-        pid = subprocess.check_output(command, shell=True).strip().decode("utf-8")
+        vid = get_vid(self.device_number)
+        pid = get_pid(self.device_number)
 
         command = "lsusb -d {}:{} -v | grep bUnitID | grep -Eo '[0-9]+'".format(vid, pid)
         return subprocess.run(command, shell=True, capture_output=True).stdout.strip().decode("utf-8").split("\n")
