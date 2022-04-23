@@ -29,7 +29,7 @@ TODO
 <a href="https://github.com/emixampp/linux-enable-ir-emitter/releases"><img src="https://img.shields.io/github/release/emixampp/linux-enable-ir-emitter.svg?colorB=4c1"></a>
 
 
-The following dependencies are needed : python $\geq$ 3.6.2, opencv (C/C++), usbutils
+The following dependencies are needed : python, opencv (C/C++), usbutils
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
