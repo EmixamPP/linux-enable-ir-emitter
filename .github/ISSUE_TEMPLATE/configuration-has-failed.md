@@ -8,9 +8,9 @@ assignees: ''
 ---
 
 **Which device did you used ?**
-<!-- the default or you used the -d option) -->
+<!-- the default /dev/video2 or you used the "-d /dev/videoX" option) -->
 
-**Ouput of `linux-enable-ir-emitter --verbose configuration`**
+**Ouput of `linux-enable-ir-emitter --verbose configure`**
 <details><summary>configure command output</summary>
 
 ```
@@ -23,17 +23,21 @@ paste here
 paste here
 ```
 
-<!-- replace /dev/video2 with your device if you used the -d option -->
-**Ouput of `v4l2-ctl -d /dev/video2 --list-formats-ext`**
+**Ouput of `v4l2-ctl --list-devices`**
+```
+paste here
+```
+
+**Ouput of `v4l2-ctl -d /dev/videoX --list-formats-ext`**
 <details><summary>v4l2 device output</summary>
 
 ```
-paste here
+replace /dev/videoX with your device and paste here
 ```
 </details>
 
 **Additional info**
  - Distro: 
  - Version: 
- - Version of linux-enable-ir-emitter: <!-- linux-enable-ir-emitter -V -->
- - How did you install linux-enable-ir-emitter: <!-- bash or AUR or COPR -->
+ - Version of linux-enable-ir-emitter:
+ - How did you install linux-enable-ir-emitter: <!--- bash or AUR or COPR -->

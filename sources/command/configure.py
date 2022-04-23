@@ -1,38 +1,30 @@
 import logging
-import sys
 from typing import NoReturn
+import subprocess
 
-from globals import ExitCode, exit_if_file_descriptor_error
+from globals import ExitCode, DRIVER_GENERATOR_PATH, SAVE_DRIVER_FOLDER_PATH, driver_name
 from command import boot
-from driver.DriverGenerator import DriverGenerator, DriverGeneratorError
-from driver.DriverSerializer import DriverSerializer
 
 
-def execute(device: str, neg_answer_limit: int, pipe_format: bool) -> NoReturn:
+def execute(device: str, neg_answer_limit: int) -> NoReturn:
     """Find a driver for the infrared camera
 
     Args:
         device: the infrared camera '/dev/videoX'
         neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
-        pipe_format: if True, input messages are print on a seperate line
     """
-
-    driver_generator = DriverGenerator(device)
+    log_level = int(logging.getLogger().level == logging.DEBUG)
+    
+    driver_path = SAVE_DRIVER_FOLDER_PATH + driver_name(device)
 
     logging.info("Warning to do not kill the process !")
-    try:
-        driver_generator.generate(neg_answer_limit, pipe_format)
-        if driver_generator.driver:
-            DriverSerializer.add_driver(driver_generator.driver)
-            driver_generator.driver.run()
-            logging.info("The configuration is completed with success.")
-            boot.execute("enable")
+    exit_code = subprocess.call([DRIVER_GENERATOR_PATH, device, str(neg_answer_limit), driver_path, str(log_level)])
 
-    except DriverGeneratorError as e:
-        if e.error_code == DriverGeneratorError.DRIVER_ALREADY_EXIST:
-            logging.error("Your infrared camera is already working, skipping the configuration.")
-        exit_if_file_descriptor_error(e.error_code, device)
+    if exit_code != ExitCode.SUCCESS:
+        logging.error("The configuration has failed.")
+        logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter/wiki")
+    else:
+        logging.info("The driver has been successfully generated.")
+        boot.execute("enable")
 
-    logging.error("The configuration has failed.")
-    logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter/wiki")
-    sys.exit(ExitCode.FAILURE)
+    exit(exit_code)

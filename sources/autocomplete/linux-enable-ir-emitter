@@ -1,30 +1,24 @@
 #!/bin/bash
 # Autocomplete file run in bash
-# Will sugest arguments on tab
 
 _linux-enable-ir-emitter() {
 	local cur prev opts
 	COMPREPLY=()
-	# The argument typed so far
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	# The previous argument
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
 	# Go though all cases we support
 	case "${prev}" in
 		"linux-enable-ir-emitter")
-			opts="run configure manual boot test fix"
+			opts="run configure boot delete"
 			;;
 		"boot")
 			opts="enable disable status"
 			;;
-        "fix")
-			opts="driver chicony"
-			;;
 		"-d"|"--device")
             opts=$(ls /dev/video*)
 			;;
- 		*) # Nothing matched
+ 		*)
         return 0
 		;;
 	esac
@@ -33,5 +27,4 @@ _linux-enable-ir-emitter() {
 	return 0
 }
 
-# Register the autocomplete function
 complete -F _linux-enable-ir-emitter linux-enable-ir-emitter

@@ -20,10 +20,10 @@ paste here
 ```
 </details>
 
-<!-- Specify if possible when the problem occurred -->
+<!-- specify if possible when the problem occurred -->
 
 **Additional info**
  - Distro: 
  - Version: 
- - Version of linux-enable-ir-emitter: <!-- linux-enable-ir-emitter -V -->
- - How did you install linux-enable-ir-emitter: <!-- bash or AUR or COPR -->
+ - Version of linux-enable-ir-emitter:
+ - How did you install linux-enable-ir-emitter: <!--- bash or AUR or COPR -->
