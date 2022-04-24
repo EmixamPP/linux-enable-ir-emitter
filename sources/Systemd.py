@@ -1,6 +1,7 @@
 import subprocess
 import logging
 from configparser import ConfigParser
+from typing import List
 
 from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
 
@@ -42,7 +43,7 @@ def get_pid(device: str):
 
 
 class Systemd:
-    def __init__(self, devices: list[str]) -> None:
+    def __init__(self, devices: List[str]) -> None:
         self.devices = devices
         self.service = self._initialize_service_file()
         self._add_device_to_service()
@@ -55,8 +56,7 @@ class Systemd:
             0: the service have been disabled successfully
             other value: The boot service does not exists.
         """
-        exit_code = subprocess.run(
-            ["systemctl", "disable", SYSTEMD_NAME], capture_output=True).returncode
+        exit_code = subprocess.run(["systemctl", "disable", SYSTEMD_NAME], capture_output=True).returncode
 
         if exit_code:
             logging.error("The boot service does not exists.")
@@ -72,8 +72,7 @@ class Systemd:
         self._create_udev_rule()
         self._create_service()
 
-        exit_code = subprocess.run(
-            ["systemctl", "enable", SYSTEMD_NAME], capture_output=True).returncode
+        exit_code = subprocess.run(["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True).returncode
 
         if exit_code:
             logging.error("Error with the boot service.")
@@ -82,15 +81,13 @@ class Systemd:
     @staticmethod
     def status() -> int:
         """Print the service status
-
         Returns:
             0: the service works fine
             other value: error with the boot service
         """
-        exec = subprocess.run(
-            ["systemctl", "status", SYSTEMD_NAME], capture_output=True)
+        exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True)
 
-        if exec.returncode == 4:  #
+        if exec.returncode == 4:
             logging.error("The boot service does not exists.")
         else:
             print(exec.stdout.strip().decode('utf-8'))
@@ -105,9 +102,14 @@ class Systemd:
         """Create the rule file at UDEV_RULE_PATH"""
         with open(UDEV_RULE_PATH, 'w') as rule_file:
             for device in self.devices:
-                rule = 'KERNEL=="{}", SYMLINK="{}", TAG+="systemd"'.format(
-                    device[5:], device[5:])
-                rule_file.write(rule + "\n")
+                vid = get_vid(device)
+                pid = get_pid(device)
+
+                rule1 = 'KERNEL=="{}", SYMLINK="{}", TAG+="systemd"'.format(device[5:], device[5:])
+                rule2 = 'ACTION=="add|change", ATTRS{idVendor}=="'+ vid +'", ATTRS{idProduct}=="' + pid + '", RUN+="/usr/bin/linux-enable-ir-emitter run"'
+
+                rule_file.write(rule1 + "\n")
+                rule_file.write(rule2 + "\n")
 
     def _add_device_to_service(self) -> None:
         """Add each device to self.service """
