@@ -21,7 +21,7 @@ inline int execute_uvc_query(int fd, struct uvc_xu_control_query *query)
      int result = ioctl(fd, UVCIOC_CTRL_QUERY, query);
      if (result || errno)
      {
-          /* // ioctl debug not really useful for automated driver generation
+          /* // ioctl debug not really useful for automated driver generation since linux-enable-ir-emitter v3
           fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
           switch (errno) {
           case ENOENT:

@@ -1,10 +1,11 @@
 import re
+from typing import List
 
 from globals import SAVE_DRIVER_FOLDER_PATH
 
 OLD_DRIVER_PATH = "/etc/linux-enable-ir-emitter.yaml"
 
-def write_new_driver(control: list[str], device: str, unit: str, selector: str) -> None:
+def write_new_driver(control: List[str], device: str, unit: str, selector: str) -> None:
     """Migrate old driver file structure to the new one, 
     if one of the parameter is not correct, the driver will written
 
