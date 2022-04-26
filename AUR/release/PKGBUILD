@@ -23,12 +23,14 @@ install=linux-enable-ir-emitter.install
 source=("https://github.com/EmixamPP/linux-enable-ir-emitter/archive/refs/tags/${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
+name=${pkgname}-${pkgver}
+
 build() {
-    make -C "${srcdir}/${pkgname}-${pkgver}/sources/driver/"
+    make -C "${srcdir}/${name}/sources/driver/"
 }
 
 package() {
-    cd "${srcdir}/${pkgname}-${pkgver}"
+    cd "${srcdir}/${name}"
 
     install -Dm 644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}"
 
@@ -45,8 +47,8 @@ package() {
     "${pkgdir}"/usr/bin/linux-enable-ir-emitter
 
     # auto complete for bash
-    install -Dm 644 sources/autocomplete/%{name} -t "${pkgdir}"/usr/share/bash-completion/completions/
+    install -Dm 644 sources/autocomplete/${pkgname} -t "${pkgdir}"/usr/share/bash-completion/completions/
 
     # drivers folder
-    mkdir -p %{buildroot}%{_sysconfdir}/%{name}/
+    mkdir -p "${pkgdir}"/etc/${pkgname}/
 }
