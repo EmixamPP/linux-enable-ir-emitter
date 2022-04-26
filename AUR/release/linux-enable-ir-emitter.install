@@ -1,11 +1,10 @@
 pre_remove() {
   # disable service and remove targets
-  systmctl disable linux-enable-ir-emitter
+  systemctl disable linux-enable-ir-emitter
 }
 
 post_remove() {
   # delete systemd service
   rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
-  rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter-rules
+  rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 }
-    

@@ -17,6 +17,8 @@ conflicts=(linux-enable-ir-emitter chicony-ir-toggle)
 makedepends=(git)
 depends=(python opencv usbutils)
 
+install=linux-enable-ir-emitter.install
+
 source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter#branch=dev")
 sha256sums=('SKIP')
 

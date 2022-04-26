@@ -72,6 +72,12 @@ class Systemd:
         self._create_udev_rule()
         self._create_service()
 
+        exit_code = self._trigger_rules()
+
+        if exit_code:
+            logging.error("Error with trigger the rules.")
+        return exit_code
+
         exit_code = subprocess.run(["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True).returncode
 
         if exit_code:
@@ -110,6 +116,13 @@ class Systemd:
 
                 rule_file.write(rule1 + "\n")
                 rule_file.write(rule2 + "\n")
+
+    @staticmethod
+    def _trigger_rules() -> int:
+        """Manually force udev to trigger the rules.
+        The rules are not re-triggered automatically on already existing devices.
+        """
+        return subprocess.run(["udevadm", "trigger"], capture_output=True).returncode
 
     def _add_device_to_service(self) -> None:
         """Add each device to self.service """
