@@ -57,9 +57,9 @@ class Systemd:
             other value: The boot service does not exists.
         """
         exit_code = subprocess.run(["systemctl", "disable", SYSTEMD_NAME], capture_output=True).returncode
-
         if exit_code:
             logging.error("The boot service does not exists.")
+
         return exit_code
 
     def enable(self) -> int:
@@ -72,16 +72,15 @@ class Systemd:
         self._create_udev_rule()
         self._create_service()
 
-        exit_code = self._trigger_rules()
-
+        exit_code = subprocess.run(["udevadm", "control", "--reload-rules"], capture_output=True).returncode
+        exit_code = exit_code + subprocess.run(["udevadm", "trigger"], capture_output=True).returncode
         if exit_code:
-            logging.error("Error with trigger the rules.")
-        return exit_code
+            logging.error("Error with the udev boot service.")
 
-        exit_code = subprocess.run(["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True).returncode
-
+        exit_code = subprocess.run(["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True).returncode 
         if exit_code:
-            logging.error("Error with the boot service.")
+            logging.error("Error with the systemd boot service.")
+
         return exit_code
 
     @staticmethod
@@ -91,7 +90,7 @@ class Systemd:
             0: the service works fine
             other value: error with the boot service
         """
-        exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True)
+        exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True).returncode
 
         if exec.returncode == 4:
             logging.error("The boot service does not exists.")
@@ -112,17 +111,10 @@ class Systemd:
                 pid = get_pid(device)
 
                 rule1 = 'KERNEL=="{}", SYMLINK="{}", TAG+="systemd"'.format(device[5:], device[5:])
-                rule2 = 'ACTION=="add|change", ATTRS{idVendor}=="'+ vid +'", ATTRS{idProduct}=="' + pid + '", RUN+="/usr/bin/linux-enable-ir-emitter run"'
+                rule2 = 'ACTION=="add|change", ATTRS{idVendor}=="%s", ATTRS{idProduct}=="%s", RUN+="/usr/bin/linux-enable-ir-emitter run"' %(vid, pid)
 
                 rule_file.write(rule1 + "\n")
                 rule_file.write(rule2 + "\n")
-
-    @staticmethod
-    def _trigger_rules() -> int:
-        """Manually force udev to trigger the rules.
-        The rules are not re-triggered automatically on already existing devices.
-        """
-        return subprocess.run(["udevadm", "trigger"], capture_output=True).returncode
 
     def _add_device_to_service(self) -> None:
         """Add each device to self.service """

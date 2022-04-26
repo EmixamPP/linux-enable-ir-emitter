@@ -12,7 +12,7 @@ def execute(boot_status: str) -> NoReturn:
 
         args:
             boot_status: "enable" or "disable" or "status"
-python-opencv python-yaml
+
         Raises:
             Exception: boot status arg can only be equal to enable, disable or status
     """
@@ -27,7 +27,7 @@ python-opencv python-yaml
         systemd = Systemd(devices)
         exit_code = systemd.enable()
         if exit_code: sys.exit(ExitCode.FAILURE)
-        logging.info("The boot service have been enabled, please reboot.")
+        logging.info("The boot service have been enabled.")
 
     elif boot_status == "disable":
         exit_code = Systemd.disable()
