@@ -66,7 +66,7 @@ if [ "$1" -eq 0 ]; then
 
     # delete drivers
     rm -rf %{_sysconfdir}/%{name}/ # v4 and higher 
-    rm -rf %{_sysconfdir}/%{name}.yaml # v3
+    rm -f %{_sysconfdir}/%{name}.yaml # v3
 
     # delete systemd service
     systmctl disable linux-enable-ir-emitter

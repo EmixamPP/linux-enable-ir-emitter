@@ -17,12 +17,12 @@ def write_new_driver(control: List[str], device: str, unit: str, selector: str) 
     """
     if (re.fullmatch("/dev/video[0-9]+", device) and len(control) and unit and selector): 
         with open(SAVE_DRIVER_FOLDER_PATH + device[5:], 'w') as f:
-            f.write("device=%s\n" %(device))
-            f.write("unit=%s\n" %(unit))
-            f.write("selector=%s\n" %(selector))
-            f.write("size=%d\n" %(len(control)))   
+            f.write("device={}\n".format(device))
+            f.write("unit={}\n".format(unit))
+            f.write("selector={}\n".format(selector))
+            f.write("size={}\n".format(len(control)))   
             for i in range(len(control)):
-                f.write("control%d=%s\n" %(i, control[i]))
+                f.write("control{}={}\n".format(i, control[i]))
 
 if __name__ == "__main__":
     control = []

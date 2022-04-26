@@ -1,9 +1,20 @@
+post_intall() {
+  # support update v3 to v4 
+  if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
+    python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
+  fi
+}
+
 pre_remove() {
   # disable service and remove targets
   systemctl disable linux-enable-ir-emitter
 }
 
 post_remove() {
+  # delete drivers
+  rm -f /etc/linux-enable-ir-emitter.etc # v3
+  rm -rf /etc/linux-enable-ir-emitter # v4 and higher 
+  
   # delete systemd service
   rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
   rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter.rules

@@ -25,6 +25,15 @@ do_install() {
 
     # drivers folder
     mkdir -p /etc/linux-enable-ir-emitter/
+
+    do_post_install
+}
+
+do_post_install() {
+    # support update v3 to v4 
+    if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
+        python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
+    fi
 }
 
 do_uninstall() {
@@ -34,6 +43,7 @@ do_uninstall() {
     rm -fv /usr/share/bash-completion/completions/linux-enable-ir-emitter
     rm -rfv /usr/lib/linux-enable-ir-emitter/
     rm -rfv /etc/linux-enable-ir-emitter/
+    rm -fv /etc/linux-enable-ir-emitter.yaml
     rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 }
