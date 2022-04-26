@@ -4,7 +4,7 @@
 # Contributor: Nikolay Bryskin <nbryskin@gmail.com>
 
 pkgname=linux-enable-ir-emitter-git
-pkgver=4.0.0.r0.g2a3d6ff
+pkgver=4.0.0.r7.g294ac8d
 pkgrel=1
 pkgdesc="Enables infrared cameras that are not directly enabled out-of-the box"
 url="https://github.com/EmixamPP/linux-enable-ir-emitter"
@@ -17,11 +17,13 @@ conflicts=(linux-enable-ir-emitter chicony-ir-toggle)
 makedepends=(git)
 depends=(python opencv usbutils)
 
-source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter")
+source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter#branch=dev")
 sha256sums=('SKIP')
 
+name=${pkgname/-git}
+
 pkgver() {
-    cd "${srcdir}/${pkgname/-git}"
+    cd "${srcdir}/${name}"
     git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
@@ -30,7 +32,7 @@ build() {
 }
 
 package() {
-    cd "${srcdir}/${pkgname/-git}"
+    cd "${srcdir}/${name}"
 
     install -Dm 644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}"
 
@@ -47,8 +49,8 @@ package() {
     "${pkgdir}"/usr/bin/linux-enable-ir-emitter
 
     # auto complete for bash
-    install -Dm 644 sources/autocomplete/%{name} -t "${pkgdir}"/usr/share/bash-completion/completions/
+    install -Dm 644 sources/autocomplete/${name} -t "${pkgdir}"/usr/share/bash-completion/completions/
 
     # drivers folder
-    mkdir -p "${pkgdir}"/etc/%{name}/
+    mkdir -p "${pkgdir}"/etc/${name}/
 }
