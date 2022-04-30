@@ -34,6 +34,12 @@ do_post_install() {
     if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
         python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
     fi
+
+    # if SELinux is installed, fix denied access to /dev/video
+    command -v chcon &> /dev/null
+    if [ "$?" -eq 0 ]; then
+        chcon -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+    fi
 }
 
 do_uninstall() {
