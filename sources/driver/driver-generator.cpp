@@ -5,6 +5,8 @@
 - https://www.mail-archive.com/search?l=linux-uvc-devel@lists.berlios.de&q=subject:%22Re%5C%3A+%5C%5BLinux%5C-uvc%5C-devel%5C%5D+UVC%22&o=newest&f=1
     info 1: selector is on 8 bits and since the manufacturer does not provide a driver, it is impossible to know which value it is.
 ***/
+
+#include <stdint.h>
 #include <linux/uvcvideo.h>
 #include <iostream>
 #include <thread>
@@ -13,7 +15,7 @@
 using namespace std;
 
 // for triger_camera
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #pragma GCC diagnostic ignored "-Wconversion"
 #include <opencv2/videoio.hpp>
@@ -34,9 +36,9 @@ using namespace cv::utils::logging;
  * @param ctrl control value
  * @param len size of the control value
  */
-void print_ctrl(__u8 *ctrl, __u16 len)
+void print_ctrl(uint8_t *ctrl, uint16_t len)
 {
-    for (__u16 i = 0; i < len; ++i)
+    for (uint16_t i = 0; i < len; ++i)
         cout << " " << (int)ctrl[i];
 }
 
@@ -105,23 +107,23 @@ bool test_emitter(int deviceID)
  *
  * @param device path to the camera /dev/videoX
  *
- * @return vector<__u8>* list of units
+ * @return vector<uint8_t>* list of units
  */
-vector<__u8> *get_units(const char *device)
+vector<uint8_t> *get_units(const char *device)
 {
     const string *vid = shell_exec("udevadm info " + string(device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
     const string *pid = shell_exec("udevadm info " + string(device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
     const string *units = shell_exec("lsusb -d" + *vid + ":" + *pid + " -v | grep bUnitID | grep -Eo '[0-9]+'");
-    auto *unitsList = new vector<__u8>;
+    auto *unitsList = new vector<uint8_t>;
 
     unsigned i = 0, j = 0;
     for (; j < units->length(); ++j)
         if (units->at(j) == '\n')
         {
-            unitsList->push_back((__u8)stoi(units->substr(i, j - i)));
+            unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
             i = j + 1;
         }
-    unitsList->push_back((__u8) stoi(units->substr(i, j - i)));
+    unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
 
     return unitsList;
 }
@@ -135,7 +137,7 @@ vector<__u8> *get_units(const char *device)
  * @param ctrlSize len of the control value
  * @return non zero if there is no more possible control value
  */
-int get_next_curCtrl(__u8 *curCtrl, const __u8 *resCtrl, const __u8 *maxCtrl, __u16 ctrlSize)
+int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, uint16_t ctrlSize)
 {
     for (unsigned i = 0; i < ctrlSize; ++i)
     {
@@ -178,16 +180,16 @@ int main(int, char *argv[])
     }
 
     int res;
-    for (__u8 &unit : *get_units(device))
-        for (__u8 selector = 0; selector < 255; ++selector)
+    for (uint8_t &unit : *get_units(device))
+        for (uint8_t selector = 0; selector < 255; ++selector)
         { // TODO 256
             // get the control instruction lenght
-            const __u16 ctrlSize = len_uvc_query(device, unit, selector);
+            const uint16_t ctrlSize = len_uvc_query(device, unit, selector);
             if (!ctrlSize)
                 continue;
 
             // get the current control value
-            __u8 curCtrl[ctrlSize];
+            uint8_t curCtrl[ctrlSize];
             res = get_uvc_query(UVC_GET_CUR, device, unit, selector, ctrlSize, curCtrl);
             if (res)
                 continue;
@@ -198,31 +200,32 @@ int main(int, char *argv[])
                 continue;
 
             // try the max control value (the value does not necessary exists)
-            __u8 maxCtrl[ctrlSize];
+            uint8_t maxCtrl[ctrlSize];
             res = get_uvc_query(UVC_GET_MAX, device, unit, selector, ctrlSize, maxCtrl);
             if (res)
-                memset(maxCtrl, 255, ctrlSize * sizeof(__u8)); // use the 255 array
+                memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
 
             // try get the resolution control value (the value does not necessary exists)
-            __u8 resCtrl[ctrlSize];
+            uint8_t resCtrl[ctrlSize];
             res = get_uvc_query(UVC_GET_RES, device, unit, selector, ctrlSize, resCtrl);
             if (res)
-                for (unsigned i = 0; i < ctrlSize; ++i) // compute the step from the current and max control
+                for (unsigned i = 0; i < ctrlSize; ++i)    // compute the step from the current and max control
                     resCtrl[i] = curCtrl[i] != maxCtrl[i]; // step of 0 or 1
 
             // try get the min control value (the value does not necessary exists) to test it
-            __u8 nextCtrl[ctrlSize];
+            uint8_t nextCtrl[ctrlSize];
             res = get_uvc_query(UVC_GET_MIN, device, unit, selector, ctrlSize, nextCtrl);
-            if (res || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(__u8))) // or: the min control value is the current control
+            if (res || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(uint8_t))) // or: the min control value is the current control
             {
-                memcpy(nextCtrl, curCtrl, ctrlSize * sizeof(__u8)); // assign the next value of the current one
+                memcpy(nextCtrl, curCtrl, ctrlSize * sizeof(uint8_t)); // assign the next value of the current one
                 res = get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize);
                 if (res) // the current control value is equal to the maximal control
                     continue;
             }
 
-            if (debug){
-                cout << "DEBUG: unit: " << (int) unit << ", selector: " << (int) selector;
+            if (debug)
+            {
+                cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector;
                 cout << ", cur control:";
                 print_ctrl(curCtrl, ctrlSize);
                 cout << ", first control to test:";

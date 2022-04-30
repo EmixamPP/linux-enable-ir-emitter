@@ -2,6 +2,7 @@
 #define DRIVER
 
 #include <stdio.h>
+#include <stdint.h>
 #include <linux/uvcvideo.h>
 #include <fstream>
 #include <iostream>
@@ -12,24 +13,24 @@ using namespace std;
 struct Driver
 {
     char device[16];
-    __u8 unit;
-    __u8 selector;
-    __u16 size;
-    __u8 *control;
+    uint8_t unit;
+    uint8_t selector;
+    uint16_t size;
+    uint8_t *control;
 };
 
 /**
  * @brief Write the driver in a file
- * 
+ *
  * @param driverFile path where the driver will be written
  * @param device path to the infrared camera, /dev/videoX
- * @param unit extension unit ID 
+ * @param unit extension unit ID
  * @param selector control selector
  * @param size size of the uvc control
  * @param control control value
- * @return non zero if error 
+ * @return non zero if error
  */
-inline int write_driver(const char *driverFile, const char *device, __u8 unit, __u8 selector, __u16 size, const __u8 *control)
+inline int write_driver(const char *driverFile, const char *device, uint8_t unit, uint8_t selector, uint16_t size, const uint8_t *control)
 {
     ofstream file(driverFile);
     if (!file.is_open())
@@ -51,7 +52,7 @@ inline int write_driver(const char *driverFile, const char *device, __u8 unit, _
 
 /**
  * @brief Read the driver and return its values
- * 
+ *
  * @param driverFile path where the driver is store
  * @return the driver values
  */
@@ -70,7 +71,7 @@ inline struct Driver *read_driver(const char *driverFile)
     fscanf(file, " unit=%d", &(driver->unit));
     fscanf(file, " selector=%d", &(driver->selector));
     fscanf(file, " size=%d", &(driver->size));
-    driver->control = (__u8 *)malloc(driver->size * sizeof(__u8));
+    driver->control = (uint8_t *)malloc(driver->size * sizeof(uint8_t));
     for (unsigned i = 0; i < driver->size; ++i)
     {
         const char *key = (" control" + to_string(i) + "=%d").c_str();

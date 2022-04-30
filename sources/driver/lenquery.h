@@ -1,10 +1,11 @@
 #ifndef LENQUERY
 #define LENQUERY
 
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <linux/usb/video.h>
 
 #include "executequery.h"
@@ -19,9 +20,9 @@
  * @return size of the control, 0 if error
  * Exit 126 if unable to open the camera device
  **/
-inline __u16 len_uvc_query(const char *device, __u8 unit, __u8 selector)
+inline uint16_t len_uvc_query(const char *device, uint8_t unit, uint8_t selector)
 {
-    __u8 len[2] = {0x00, 0x00};
+    uint8_t len[2] = {0x00, 0x00};
     struct uvc_xu_control_query query = {
         .unit = unit,
         .selector = selector,
@@ -32,7 +33,6 @@ inline __u16 len_uvc_query(const char *device, __u8 unit, __u8 selector)
 
     errno = 0;
     int fd = open(device, O_WRONLY);
-
     if (fd < 0 || errno)
     {
         fprintf(stderr, "ERROR: Cannot access to %s\n", device);
@@ -47,7 +47,7 @@ inline __u16 len_uvc_query(const char *device, __u8 unit, __u8 selector)
     }
 
     close(fd);
-    return (__u16) (len[0] + len[1] * 16); // UVC_GET_LEN is in little-endian
+    return (uint16_t) (len[0] + len[1] * 16); // UVC_GET_LEN is in little-endian
 }
 
 #endif

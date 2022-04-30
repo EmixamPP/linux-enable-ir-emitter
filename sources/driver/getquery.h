@@ -1,10 +1,11 @@
 #ifndef GETQUERY
 #define GETQUERY
 
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <linux/usb/video.h>
 
 #include "executequery.h"
@@ -22,7 +23,7 @@
  * @return non zero if error
  * Exit 126 if unable to open the camera device
  **/
-inline int get_uvc_query(__u8 query_type, const char *device, __u8 unit, __u8 selector, __u16 controlSize, __u8 *control)
+inline int get_uvc_query(uint8_t query_type, const char *device, uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control)
 {   
     struct uvc_xu_control_query query = {
         .unit = unit,
