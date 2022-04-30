@@ -58,6 +58,12 @@ if [ "$1" -eq 2 ] && [ -f %{_sysconfdir}/%{name}.yaml ]; then
     python %{_libdir}/%{name}/migrate-v3.py
 fi
 
+# if SELinux is installed, fix denied access to /dev/video
+command -v chcon &> /dev/null
+if [ "$?" -eq 0 ]; then
+    chcon -t bin_t %{_libdir}/%{name}/driver/execute-driver %{_libdir}/%{name}/driver/driver-generator
+fi
+
 %postun
 # if last uninstallation (not after update)
 if [ "$1" -eq 0 ]; then
