@@ -37,12 +37,12 @@ package() {
     # software
     install -Dm 644 sources/*.py -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/
     install -Dm 644 sources/command/*.py -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/command/
-    install -Dm 755 sources/driver/driver-generator -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/driver/
-    install -Dm 755 sources/driver/execute-driver -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/driver/
+    install -Dm 555 sources/driver/driver-generator -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/driver/
+    install -Dm 555 sources/driver/execute-driver -t ${pkgdir}/usr/lib/linux-enable-ir-emitter/driver/
 
     # executable
     install -d "${pkgdir}"/usr/bin/
-    chmod +x "${pkgdir}"/usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
+    chmod 655 "${pkgdir}"/usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py \
     "${pkgdir}"/usr/bin/linux-enable-ir-emitter
 

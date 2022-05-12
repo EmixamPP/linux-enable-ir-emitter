@@ -30,11 +30,11 @@ make -C sources/driver/
 # software
 install -Dm 644 sources/*.py -t %{buildroot}%{_libdir}/%{name}/
 install -Dm 644 sources/command/*.py -t %{buildroot}%{_libdir}/%{name}/command/
-install -Dm 755 sources/driver/driver-generator -t %{buildroot}%{_libdir}/%{name}/driver/
-install -Dm 755 sources/driver/execute-driver -t %{buildroot}%{_libdir}/%{name}/driver/
+install -Dm 555 sources/driver/driver-generator -t %{buildroot}%{_libdir}/%{name}/driver/
+install -Dm 555 sources/driver/execute-driver -t %{buildroot}%{_libdir}/%{name}/driver/
 
 # executable
-chmod +x %{buildroot}%{_libdir}/%{name}/%{name}.py
+chmod 755 %{buildroot}%{_libdir}/%{name}/%{name}.py
 mkdir -p %{buildroot}%{_bindir}/
 ln -fs %{_libdir}/%{name}/%{name}.py %{buildroot}%{_bindir}/%{name}
 
@@ -56,6 +56,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/%{name}/
 # support update v3 to v4 
 if [ "$1" -eq 2 ] && [ -f %{_sysconfdir}/%{name}.yaml ]; then 
     python %{_libdir}/%{name}/migrate-v3.py
+    rm -f %{_sysconfdir}/%{name}.yaml
 fi
 
 # if SELinux is installed, fix denied access to /dev/video
@@ -77,11 +78,11 @@ if [ "$1" -eq 0 ]; then
     # delete systemd service
     systmctl disable linux-enable-ir-emitter
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
-    rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter-rules
+    rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 fi
 
 %changelog
-* Sat Apr 23 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
+* Thu May 12 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
 - Rework, optimization and improvement of driver generation 
 - Remove manual configuration commands
 - Remove option for integration into Howdy

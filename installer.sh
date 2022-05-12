@@ -13,11 +13,11 @@ do_install() {
     # software
     install -Dm 644 sources/*.py -t /usr/lib/linux-enable-ir-emitter/ -v
     install -Dm 644 sources/command/*.py -t /usr/lib/linux-enable-ir-emitter/command/ -v
-    install -Dm 644 sources/driver/driver-generator -t /usr/lib/linux-enable-ir-emitter/driver/ -v
-    install -Dm 644 sources/driver/execute-driver -t /usr/lib/linux-enable-ir-emitter/driver/ -v
+    install -Dm 555 sources/driver/driver-generator -t /usr/lib/linux-enable-ir-emitter/driver/ -v
+    install -Dm 555 sources/driver/execute-driver -t /usr/lib/linux-enable-ir-emitter/driver/ -v
     
     # executable
-    chmod +x /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
+    chmod 755 /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
 
     # auto complete for bash
