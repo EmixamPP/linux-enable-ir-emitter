@@ -1,0 +1,10 @@
+sources/globals.py /usr/lib/linux-enable-ir-emitter/
+sources/linux-enable-ir-emitter.py /usr/lib/linux-enable-ir-emitter/
+sources/migrate-v3.py /usr/lib/linux-enable-ir-emitter/
+sources/Systemd.py /usr/lib/linux-enable-ir-emitter/
+sources/command/. /usr/lib/linux-enable-ir-emitter/command/
+
+sources/driver/driver-generator /usr/lib/linux-enable-ir-emitter/driver/
+sources/driver/execute-driver /usr/lib/linux-enable-ir-emitter/driver/
+
+sources/autocomplete/linux-enable-ir-emitter /usr/share/bash-completion/completions/

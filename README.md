@@ -7,6 +7,13 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 This software was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
 ## Installation
+### For Fedora distro based (.rpm) :  
+<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
+``` shell
+sudo dnf copr enable emixampp/linux-enable-ir-emitter
+sudo dnf --refresh install linux-enable-ir-emitter
+```
+
 ### For Arch distro based : 
 <a href="https://aur.archlinux.org/packages/linux-enable-ir-emitter/"><img src="https://img.shields.io/aur/version/linux-enable-ir-emitter"></a> Page links : [Release AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/) and [VCS AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter-git/).
 ``` shell
@@ -15,21 +22,19 @@ cd linux-enable-ir-emitter
 makepkg -csi
 ``` 
 
-### For Fedora distro based (.rpm) :  
-<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
-``` shell
-sudo dnf copr enable emixampp/linux-enable-ir-emitter
-sudo dnf --refresh install linux-enable-ir-emitter
-```
-
 ### For Debian distro based (.deb) : 
-TODO
+Page link : [PPA package](https://launchpad.net/~emixampp/+archive/ubuntu/linux-enable-ir-emitter).
+``` shell
+sudo add-apt-repository ppa:emixampp/linux-enable-ir-emitter
+sudo apt update
+sudo apt install linux-enable-ir-emitter
+```
 
 ### For other distro :
 <a href="https://github.com/emixampp/linux-enable-ir-emitter/releases"><img src="https://img.shields.io/github/release/emixampp/linux-enable-ir-emitter.svg?colorB=4c1"></a>
 
 
-The following dependencies are needed : python, opencv (C/C++), usbutils
+The following dependencies are needed : python3, opencv2 (C/C++), usbutils
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
@@ -39,9 +44,8 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 
 ## How to enable your infrared emitter ?
 0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
-1. `sudo linux-enable-ir-emitter configure` look at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default is /dev/video2.
-2. `sudo linux-enable-ir-emitter boot enable`
-3. reboot
+1. `sudo linux-enable-ir-emitter configure` look at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default it is /dev/video2.
+2. Test your infrared camera 
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 

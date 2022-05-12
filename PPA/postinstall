@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# fix permission
+chmod 555 /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+chmod 555 /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+
+# executable
+chmod 655 /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
+ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
+
+# drivers folder 
+mkdir -p /etc/linux-enable-ir-emitter/
+
+# support update v3 to v4 
+if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
+    python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
+    rm /etc/linux-enable-ir-emitter.yaml
+fi
+
+# if SELinux is installed, fix denied access to /dev/video
+command -v chcon &> /dev/null
+if [ "$?" -eq 0 ]; then
+    chcon -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+fi
