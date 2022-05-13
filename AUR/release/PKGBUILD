@@ -42,7 +42,7 @@ package() {
 
     # executable
     install -d "${pkgdir}"/usr/bin/
-    chmod 655 "${pkgdir}"/usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
+    chmod 755 "${pkgdir}"/usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py \
     "${pkgdir}"/usr/bin/linux-enable-ir-emitter
 
