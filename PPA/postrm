@@ -6,9 +6,8 @@ if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
     rm -rf /usr/lib/linux-enable-ir-emitter/
 
     # delete drivers
-    rm -rf /etc/linux-enable-ir-emitter/ # v4 and higher 
-    rm -f /etc/linux-enable-ir-emitter.yaml # v3
-
+    rm -rf /etc/linux-enable-ir-emitter/
+    
     # delete systemd service
     systmctl disable linux-enable-ir-emitter
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service

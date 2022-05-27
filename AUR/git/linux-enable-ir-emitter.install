@@ -19,8 +19,7 @@ pre_remove() {
 
 post_remove() {
   # delete drivers
-  rm -f /etc/linux-enable-ir-emitter.etc # v3
-  rm -rf /etc/linux-enable-ir-emitter # v4 and higher 
+  rm -rf /etc/linux-enable-ir-emitter
   
   # delete systemd service
   rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service

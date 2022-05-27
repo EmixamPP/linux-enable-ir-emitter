@@ -2,8 +2,8 @@
 
 usage() {
     columnPrint="%-20s%-s\n"
-    printf "This is a simple tool to install/uninstall/update the sofware.\n"
-    printf "usage: bash installer {install, uninstall, update}\n"
+    printf "Simple tool to install/uninstall/update linux-enable-ir-emitter.\n"
+    printf "usage: bash installer.sh {install, uninstall, update}\n"
 }
 
 do_install() {
@@ -13,8 +13,8 @@ do_install() {
     # software
     install -Dm 644 sources/*.py -t /usr/lib/linux-enable-ir-emitter/ -v
     install -Dm 644 sources/command/*.py -t /usr/lib/linux-enable-ir-emitter/command/ -v
-    install -Dm 555 sources/driver/driver-generator -t /usr/lib/linux-enable-ir-emitter/driver/ -v
-    install -Dm 555 sources/driver/execute-driver -t /usr/lib/linux-enable-ir-emitter/driver/ -v
+    install -Dm 755 sources/driver/driver-generator -t /usr/lib/linux-enable-ir-emitter/driver/ -v
+    install -Dm 755 sources/driver/execute-driver -t /usr/lib/linux-enable-ir-emitter/driver/ -v
     
     # executable
     chmod 755 /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
@@ -49,7 +49,6 @@ do_uninstall() {
     rm -fv /usr/share/bash-completion/completions/linux-enable-ir-emitter
     rm -rfv /usr/lib/linux-enable-ir-emitter/
     rm -rfv /etc/linux-enable-ir-emitter/
-    rm -fv /etc/linux-enable-ir-emitter.yaml
     rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 }

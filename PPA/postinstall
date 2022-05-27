@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # fix permission
-chmod 555 /usr/lib/linux-enable-ir-emitter/driver/driver-generator
-chmod 555 /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+chmod 655 /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+chmod 655 /usr/lib/linux-enable-ir-emitter/driver/execute-driver
 
 # executable
 chmod 655 /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py

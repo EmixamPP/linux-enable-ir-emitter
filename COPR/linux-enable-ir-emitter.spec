@@ -30,8 +30,8 @@ make -C sources/driver/
 # software
 install -Dm 644 sources/*.py -t %{buildroot}%{_libdir}/%{name}/
 install -Dm 644 sources/command/*.py -t %{buildroot}%{_libdir}/%{name}/command/
-install -Dm 555 sources/driver/driver-generator -t %{buildroot}%{_libdir}/%{name}/driver/
-install -Dm 555 sources/driver/execute-driver -t %{buildroot}%{_libdir}/%{name}/driver/
+install -Dm 755 sources/driver/driver-generator -t %{buildroot}%{_libdir}/%{name}/driver/
+install -Dm 755 sources/driver/execute-driver -t %{buildroot}%{_libdir}/%{name}/driver/
 
 # executable
 chmod 755 %{buildroot}%{_libdir}/%{name}/%{name}.py
