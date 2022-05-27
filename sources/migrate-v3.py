@@ -29,7 +29,7 @@ if __name__ == "__main__":
     device = unit = selector = None
     for line in open(OLD_DRIVER_PATH, "r"):
         line = line.strip()
-        if "---" == line[:3]:  # many drivers has been configured
+        if "---" == line[:3]:  # if many drivers has been configured
             write_new_driver(control, device, unit, selector)
             control = []
             device = unit = selector = None

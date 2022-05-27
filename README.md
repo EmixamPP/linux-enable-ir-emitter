@@ -2,7 +2,7 @@
 
 Provides support for infrared cameras that are not directly enabled out-of-the box (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called.
 
-`linux-enable-ir-emitter` can automatically generate a driver for any (UVC) infrared emitter.
+`linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for any (UVC) infrared emitter.
 
 This software was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
 
@@ -32,8 +32,6 @@ sudo apt install linux-enable-ir-emitter
 
 ### For other distro :
 <a href="https://github.com/emixampp/linux-enable-ir-emitter/releases"><img src="https://img.shields.io/github/release/emixampp/linux-enable-ir-emitter.svg?colorB=4c1"></a>
-
-
 The following dependencies are needed : python3, opencv2 (C/C++), usbutils
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
@@ -43,9 +41,7 @@ sudo bash installer.sh install
 You can easily uninstall the software by executing `sudo bash installer.sh uninstall`. Or update it with `sudo bash installer.sh update`.
 
 ## How to enable your infrared emitter ?
-0. `linux-enable-ir-emitter -h` (each sub-command also has a help -h)
-1. `sudo linux-enable-ir-emitter configure` look at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default it is /dev/video2.
-2. Test your infrared camera 
+Execute `sudo linux-enable-ir-emitter configure`, then look at the ir emitter and answer to the asked questions. You can specify your infrared camera with the option `-d /dev/videoX`, by default it is /dev/video2.
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 

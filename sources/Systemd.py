@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import os
 from configparser import ConfigParser
 from typing import List
 
@@ -8,13 +9,16 @@ from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
 
 """DOCUMENTATION
 - https://www.freedesktop.org/software/systemd/man/systemd.unit.html
-    info 1: systemd service section
-    info 2: exit code
+    info 1: systemd service type
+    info 2: systemctl exit code
+    info 3: systemd service dependencies
 - https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1
-    info 1: udev rule
-    info 2: systemd service section
+    info 1: systemd wait for /dev/video
+    info 2: systemd service dependencies
 - https://stackoverflow.com/questions/47630139/camera-dev-video0-dependencies-in-systemd-service-ubuntu-16-04
     info 1: modprobe uvcvideo command
+- https://wiki.archlinux.org/title/udev
+    info 1: udev rule run script
 """
 
 
@@ -27,7 +31,7 @@ def get_vid(device: str):
     Returns:
         str: vendor id
     """
-    return subprocess.check_output("udevadm info " + device + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'", shell=True).strip().decode("utf-8")
+    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_VENDOR_ID=\\K.*'".format(device), shell=True).strip().decode("utf-8")
 
 
 def get_pid(device: str):
@@ -39,13 +43,13 @@ def get_pid(device: str):
     Returns:
         str: product id
     """
-    return subprocess.check_output("udevadm info " + device + " | grep -oP 'E: ID_MODEL_ID=\\K.*'", shell=True).strip().decode("utf-8")
+    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_MODEL_ID=\\K.*'".format(device), shell=True).strip().decode("utf-8")
 
 
 class Systemd:
     def __init__(self, devices: List[str]) -> None:
         self.devices = devices
-        self.service = self._initialize_service_file()
+        self.service = self._initialize_systemd_file()
         self._add_device_to_service()
 
     @staticmethod
@@ -59,6 +63,9 @@ class Systemd:
         exit_code = subprocess.run(["systemctl", "disable", SYSTEMD_NAME], capture_output=True).returncode
         if exit_code:
             logging.error("The boot service does not exists.")
+        else:
+            os.remove(SYSTEMD_PATH)
+            os.remove(UDEV_RULE_PATH)
 
         return exit_code
 
@@ -70,7 +77,7 @@ class Systemd:
             other value: Error with the boot service.
         """
         self._create_udev_rule()
-        self._create_service()
+        self._create_systemd()
 
         exit_code = subprocess.run(["udevadm", "control", "--reload-rules"], capture_output=True).returncode
         exit_code = exit_code + subprocess.run(["udevadm", "trigger"], capture_output=True).returncode
@@ -90,7 +97,7 @@ class Systemd:
             0: the service works fine
             other value: error with the boot service
         """
-        exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True).returncode
+        exec = subprocess.run(["systemctl", "status", SYSTEMD_NAME], capture_output=True)
 
         if exec.returncode == 4:
             logging.error("The boot service does not exists.")
@@ -98,7 +105,7 @@ class Systemd:
             print(exec.stdout.strip().decode('utf-8'))
         return exec.returncode
 
-    def _create_service(self) -> None:
+    def _create_systemd(self) -> None:
         """Create the service file at SYSTEMD_PATH"""
         with open(SYSTEMD_PATH, 'w') as service_file:
             self.service.write(service_file)
@@ -124,7 +131,7 @@ class Systemd:
             self.service["Unit"]["Requires"] += target
 
     @staticmethod
-    def _initialize_service_file() -> ConfigParser:
+    def _initialize_systemd_file() -> ConfigParser:
         """Represent the systemd service file by a ConfigParser.
         Initialize the parser with the default values, which does not contain devices rules.
 

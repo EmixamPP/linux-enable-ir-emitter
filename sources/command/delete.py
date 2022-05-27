@@ -22,7 +22,7 @@ def execute(device: str) -> NoReturn:
         for driver in drivers:
             os.remove(SAVE_DRIVER_FOLDER_PATH + driver)
     except FileNotFoundError:
-        pass
+        pass # there exist no driver for device, but there is no need to send error message
 
     logging.info("The drivers have been deleted.")
     exit(ExitCode.SUCCESS)

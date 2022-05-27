@@ -22,7 +22,7 @@ def execute(device: str, neg_answer_limit: int) -> NoReturn:
 
     if exit_code != ExitCode.SUCCESS:
         logging.error("The configuration has failed.")
-        logging.info("Do not hesitate to open an issue on GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter/wiki")
+        logging.info("Do not hesitate to visit the GitHub ! https://github.com/EmixamPP/linux-enable-ir-emitter/wiki")
     else:
         logging.info("The driver has been successfully generated.")
         boot.execute("enable")
