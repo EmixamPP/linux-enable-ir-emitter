@@ -30,6 +30,8 @@ using namespace cv::utils::logging;
 #include "executequery.h"
 #include "driver.hpp"
 
+constexpr unsigned CAMERA_TRIGER_TIME = 2; //triger during how many seconds
+
 /**
  * @brief Print the control value in the standart output (without eol character)
  *
@@ -65,9 +67,8 @@ string *shell_exec(string cmd)
  * @brief Trigger the infrared emitter
  *
  * @param deviceID id of the camera device
- * @param time triger during how many seconds (default=2)
  */
-void triger_camera(int deviceID, int time = 2)
+void triger_camera(int deviceID)
 {
     VideoCapture cap;
     cap.open(deviceID);
@@ -76,7 +77,7 @@ void triger_camera(int deviceID, int time = 2)
         cerr << "Cannot access to /dev/video" << deviceID << endl;
         exit(126);
     }
-    this_thread::sleep_for(chrono::seconds(time));
+    this_thread::sleep_for(chrono::seconds(CAMERA_TRIGER_TIME));
     cap.release();
 }
 
@@ -181,8 +182,8 @@ int main(int, char *argv[])
 
     int res;
     for (uint8_t &unit : *get_units(device))
-        for (uint8_t selector = 0; selector < 255; ++selector)
-        { // TODO 256
+        for (uint8_t selector = 0;; ++selector)
+        {
             // get the control instruction lenght
             const uint16_t ctrlSize = len_uvc_query(device, unit, selector);
             if (!ctrlSize)
@@ -190,25 +191,21 @@ int main(int, char *argv[])
 
             // get the current control value
             uint8_t curCtrl[ctrlSize];
-            res = get_uvc_query(UVC_GET_CUR, device, unit, selector, ctrlSize, curCtrl);
-            if (res)
+            if (get_uvc_query(UVC_GET_CUR, device, unit, selector, ctrlSize, curCtrl))
                 continue;
 
             // check if the control value can be modified
-            res = set_uvc_query(device, unit, selector, ctrlSize, curCtrl);
-            if (res)
+            if (set_uvc_query(device, unit, selector, ctrlSize, curCtrl))
                 continue;
 
             // try the max control value (the value does not necessary exists)
             uint8_t maxCtrl[ctrlSize];
-            res = get_uvc_query(UVC_GET_MAX, device, unit, selector, ctrlSize, maxCtrl);
-            if (res)
+            if (get_uvc_query(UVC_GET_MAX, device, unit, selector, ctrlSize, maxCtrl))
                 memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
 
             // try get the resolution control value (the value does not necessary exists)
             uint8_t resCtrl[ctrlSize];
-            res = get_uvc_query(UVC_GET_RES, device, unit, selector, ctrlSize, resCtrl);
-            if (res)
+            if (get_uvc_query(UVC_GET_RES, device, unit, selector, ctrlSize, resCtrl))
                 for (unsigned i = 0; i < ctrlSize; ++i)    // compute the step from the current and max control
                     resCtrl[i] = curCtrl[i] != maxCtrl[i]; // step of 0 or 1
 
@@ -218,8 +215,7 @@ int main(int, char *argv[])
             if (res || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(uint8_t))) // or: the min control value is the current control
             {
                 memcpy(nextCtrl, curCtrl, ctrlSize * sizeof(uint8_t)); // assign the next value of the current one
-                res = get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize);
-                if (res) // the current control value is equal to the maximal control
+                if (get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize)) // the current control value is equal to the maximal control
                     continue;
             }
 
@@ -256,6 +252,10 @@ int main(int, char *argv[])
 
             // reset the control
             set_uvc_query(device, unit, selector, ctrlSize, curCtrl);
+
+            // the condition selector < 256 is not in the loop, due to the range of uint8.
+            if (selector == 255)
+                break;
         }
 
     return 1;
