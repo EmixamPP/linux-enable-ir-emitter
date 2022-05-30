@@ -54,7 +54,7 @@ inline int write_driver(const char *driverFile, const char *device, uint8_t unit
  * @brief Read the driver and return its values
  *
  * @param driverFile path where the driver is store
- * @return the driver values
+ * @return the driver values or nullptr
  */
 #pragma GCC diagnostic ignored "-Wformat" // ignore warning on fscanf type
 inline struct Driver *read_driver(const char *driverFile)

@@ -1,3 +1,6 @@
+#include <iostream>
+using namespace std;
+
 #include "setquery.h"
 #include "driver.hpp"
 
@@ -16,6 +19,10 @@
 int main(int, char **argv)
 {
     Driver *driver = read_driver(argv[1]);
+    if (!driver) {
+        cerr << "CRITICAL: No driver for" << argv[1] << "has been configured." << endl;
+        return 1;
+    }
     int res = set_uvc_query(driver->device, driver->unit, driver->selector, driver->size, driver->control);
     delete driver;
     return res;
