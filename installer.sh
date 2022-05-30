@@ -33,6 +33,7 @@ do_post_install() {
     # support update v3 to v4 
     if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
         python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
+        rm -fv /etc/linux-enable-ir-emitter.yaml
     fi
 
     # if SELinux is installed, fix denied access to /dev/video
