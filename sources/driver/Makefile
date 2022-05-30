@@ -1,6 +1,7 @@
 all: driver-generator execute-driver
 
-flags = -O3
+# can't use c++20 because of opencv
+flags = -O3 -std=c++17
 warning_flags = -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wcast-qual -Wconversion -Wunreachable-code -Winit-self
 opencv_flags = $(shell pkg-config opencv4 --cflags --libs)
 

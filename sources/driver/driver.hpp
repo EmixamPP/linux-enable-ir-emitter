@@ -30,7 +30,7 @@ struct Driver
  * @param control control value
  * @return non zero if error
  */
-inline int write_driver(const char *driverFile, const char *device, uint8_t unit, uint8_t selector, uint16_t size, const uint8_t *control)
+inline int write_driver(const char *driverFile, const char *device, const uint8_t unit, const uint8_t selector, const uint16_t size, const uint8_t *control)
 {
     ofstream file(driverFile);
     if (!file.is_open())

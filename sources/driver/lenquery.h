@@ -20,10 +20,10 @@
  * @return size of the control, 0 if error
  * Exit 126 if unable to open the camera device
  **/
-inline uint16_t len_uvc_query(const char *device, uint8_t unit, uint8_t selector)
+inline uint16_t len_uvc_query(const char *device, const uint8_t unit, const uint8_t selector)
 {
     uint8_t len[2] = {0x00, 0x00};
-    struct uvc_xu_control_query query = {
+    const struct uvc_xu_control_query query = {
         .unit = unit,
         .selector = selector,
         .query = UVC_GET_LEN,
@@ -32,7 +32,7 @@ inline uint16_t len_uvc_query(const char *device, uint8_t unit, uint8_t selector
     };
 
     errno = 0;
-    int fd = open(device, O_WRONLY);
+    const int fd = open(device, O_WRONLY);
     if (fd < 0 || errno)
     {
         fprintf(stderr, "ERROR: Cannot access to %s\n", device);

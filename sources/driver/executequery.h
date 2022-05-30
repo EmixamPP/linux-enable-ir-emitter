@@ -15,7 +15,7 @@
  *
  * @return non zero if error
  **/
-inline int execute_uvc_query(int fd, struct uvc_xu_control_query *query)
+inline int execute_uvc_query(const int fd, const struct uvc_xu_control_query *query)
 {
      errno = 0;
      int result = ioctl(fd, UVCIOC_CTRL_QUERY, query);

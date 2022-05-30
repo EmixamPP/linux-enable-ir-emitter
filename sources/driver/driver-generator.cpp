@@ -38,7 +38,7 @@ constexpr unsigned CAMERA_TRIGER_TIME = 2; //triger during how many seconds
  * @param ctrl control value
  * @param len size of the control value
  */
-void print_ctrl(uint8_t *ctrl, uint16_t len)
+void print_ctrl(const uint8_t *ctrl, const uint16_t len)
 {
     for (uint16_t i = 0; i < len; ++i)
         cout << " " << (int)ctrl[i];
@@ -50,7 +50,7 @@ void print_ctrl(uint8_t *ctrl, uint16_t len)
  * @param cmd command
  * @return output
  */
-string *shell_exec(string cmd)
+string *shell_exec(const string cmd)
 {
     char buffer[128];
     string *result = new string();
@@ -68,7 +68,7 @@ string *shell_exec(string cmd)
  *
  * @param deviceID id of the camera device
  */
-void triger_camera(int deviceID)
+void triger_camera(const int deviceID)
 {
     VideoCapture cap;
     cap.open(deviceID);
@@ -89,7 +89,7 @@ void triger_camera(int deviceID)
  * @return true  if the user has input Yes
  * @return false if the user has input No
  */
-bool test_emitter(int deviceID)
+bool test_emitter(const int deviceID)
 {
     triger_camera(deviceID);
     string answer;
@@ -110,7 +110,7 @@ bool test_emitter(int deviceID)
  *
  * @return vector<uint8_t>* list of units
  */
-vector<uint8_t> *get_units(const char *device)
+const vector<uint8_t> *get_units(const char *device)
 {
     const string *vid = shell_exec("udevadm info " + string(device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
     const string *pid = shell_exec("udevadm info " + string(device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
@@ -138,7 +138,7 @@ vector<uint8_t> *get_units(const char *device)
  * @param ctrlSize len of the control value
  * @return non zero if there is no more possible control value
  */
-int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, uint16_t ctrlSize)
+int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
 {
     for (unsigned i = 0; i < ctrlSize; ++i)
     {
@@ -164,15 +164,15 @@ int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *ma
  *            1 Error
  *            265 Unable to open the camera device
  */
-int main(int, char *argv[])
+int main(int, const char *argv[])
 {
     setLogLevel(LogLevel::LOG_LEVEL_SILENT);
     const char *device = argv[1];
     int deviceID;
     sscanf(device, "/dev/video%d", &deviceID);
-    int negAnswerLimit = atoi(argv[2]);
+    const int negAnswerLimit = atoi(argv[2]);
     const char *driverFile = argv[3];
-    bool debug = atoi(argv[4]);
+    const bool debug = atoi(argv[4]);
 
     if (test_emitter(deviceID))
     {
@@ -180,10 +180,10 @@ int main(int, char *argv[])
         return 1;
     }
 
-    int res;
-    for (uint8_t &unit : *get_units(device))
-        for (uint8_t selector = 0;; ++selector)
-        {
+    int result;
+    for (const uint8_t &unit : *get_units(device))
+        for (uint8_t selector = 0; selector < 255; ++selector) // it should be < 256, but it have no idea how to do it proprely
+        {   
             // get the control instruction lenght
             const uint16_t ctrlSize = len_uvc_query(device, unit, selector);
             if (!ctrlSize)
@@ -211,8 +211,8 @@ int main(int, char *argv[])
 
             // try get the min control value (the value does not necessary exists) to test it
             uint8_t nextCtrl[ctrlSize];
-            res = get_uvc_query(UVC_GET_MIN, device, unit, selector, ctrlSize, nextCtrl);
-            if (res || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(uint8_t))) // or: the min control value is the current control
+            result = get_uvc_query(UVC_GET_MIN, device, unit, selector, ctrlSize, nextCtrl);
+            if (result || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(uint8_t))) // or: the min control value is the current control
             {
                 memcpy(nextCtrl, curCtrl, ctrlSize * sizeof(uint8_t)); // assign the next value of the current one
                 if (get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize)) // the current control value is equal to the maximal control
@@ -235,8 +235,8 @@ int main(int, char *argv[])
 
             // try to find the right control value
             int negAnswerCounter = 0;
-            res = 0;
-            while (!res && negAnswerCounter < negAnswerLimit)
+            result = 0;
+            while (!result && negAnswerCounter < negAnswerLimit)
             {
                 set_uvc_query(device, unit, selector, ctrlSize, nextCtrl);
 
@@ -244,7 +244,7 @@ int main(int, char *argv[])
                     return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
 
                 ++negAnswerCounter;
-                res = get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize);
+                result = get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize);
             }
 
             if (debug && negAnswerCounter >= negAnswerLimit)
@@ -252,10 +252,6 @@ int main(int, char *argv[])
 
             // reset the control
             set_uvc_query(device, unit, selector, ctrlSize, curCtrl);
-
-            // the condition selector < 256 is not in the loop, due to the range of uint8.
-            if (selector == 255)
-                break;
         }
 
     return 1;
