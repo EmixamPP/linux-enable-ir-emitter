@@ -17,6 +17,7 @@ def execute(device: str, neg_answer_limit: int) -> NoReturn:
     
     driver_path = SAVE_DRIVER_FOLDER_PATH + driver_name(device)
 
+    logging.info("Ensure to not use the camera during the execution.")
     logging.info("Warning to do not kill the process !")
     exit_code = subprocess.call([DRIVER_GENERATOR_PATH, device, str(neg_answer_limit), driver_path, str(log_level)])
 
