@@ -2,10 +2,6 @@
 #define LENQUERY
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <linux/usb/video.h>
 
 #include "executequery.h"
@@ -13,14 +9,13 @@
 /**
  * @brief Get the size of the uvc control for the indicated device.
  *
- * @param device path to the infrared camera /dev/videoX
+ * @param fd file descriptor of the camera device
  * @param unit extension unit ID
  * @param selector control selector
  *
  * @return size of the control, 0 if error
- * Exit 126 if unable to open the camera device
  **/
-inline uint16_t len_uvc_query(const char *device, const uint8_t unit, const uint8_t selector)
+inline uint16_t len_uvc_query(const int fd, const uint8_t unit, const uint8_t selector)
 {
     uint8_t len[2] = {0x00, 0x00};
     const struct uvc_xu_control_query query = {
@@ -31,23 +26,10 @@ inline uint16_t len_uvc_query(const char *device, const uint8_t unit, const uint
         .data = len,
     };
 
-    errno = 0;
-    const int fd = open(device, O_WRONLY);
-    if (fd < 0 || errno)
-    {
-        fprintf(stderr, "ERROR: Cannot access to %s\n", device);
-        exit(126);
-    }
-
-    int result = execute_uvc_query(fd, &query);
-    if (result)
-    {
-        close(fd);
+    if (execute_uvc_query(fd, &query))
         return 0;
-    }
 
-    close(fd);
-    return (uint16_t) (len[0] + len[1] * 16); // UVC_GET_LEN is in little-endian
+    return (uint16_t)(len[0] + len[1] * 16); // UVC_GET_LEN is in little-endian
 }
 
 #endif

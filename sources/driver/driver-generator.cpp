@@ -7,6 +7,8 @@
 ***/
 
 #include <stdint.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <linux/uvcvideo.h>
 #include <iostream>
 #include <thread>
@@ -30,7 +32,8 @@ using namespace cv::utils::logging;
 #include "executequery.h"
 #include "driver.hpp"
 
-constexpr unsigned CAMERA_TRIGER_TIME = 2; //triger during how many seconds
+constexpr unsigned CAMERA_TRIGER_TIME = 2; // triger the camera during how many seconds
+constexpr unsigned FILE_DESCRIPTOR_ERROR = 126;
 
 /**
  * @brief Print the control value in the standart output (without eol character)
@@ -56,7 +59,11 @@ string *shell_exec(const string cmd)
     string *result = new string();
     unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe)
-        throw runtime_error("popen() failed!");
+    {
+        *result = "error";
+        return result;
+    }
+
     while (fgets(buffer, 128 * sizeof(char), pipe.get()) != nullptr)
         *result += buffer;
     result->erase(result->end() - 1); // remove last \n
@@ -67,6 +74,8 @@ string *shell_exec(const string cmd)
  * @brief Trigger the infrared emitter
  *
  * @param deviceID id of the camera device
+ *
+ * @throw int 126 if unable to open the camera device
  */
 void triger_camera(const int deviceID)
 {
@@ -74,8 +83,8 @@ void triger_camera(const int deviceID)
     cap.open(deviceID);
     if (!cap.isOpened())
     {
-        cerr << "Cannot access to /dev/video" << deviceID << endl;
-        exit(126);
+        cerr << "CRITICAL: Cannot access to /dev/video" << deviceID << endl;
+        throw FILE_DESCRIPTOR_ERROR;
     }
     this_thread::sleep_for(chrono::seconds(CAMERA_TRIGER_TIME));
     cap.release();
@@ -86,8 +95,10 @@ void triger_camera(const int deviceID)
  *        "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? "
  *
  * @param deviceID id of the camera device
- * @return true  if the user has input Yes
- * @return false if the user has input No
+ *
+ * @throw int 126 if unable to open the camera device
+ *
+ * @return true if the user has input Yes, false if the user has input No
  */
 bool test_emitter(const int deviceID)
 {
@@ -126,6 +137,9 @@ const vector<uint8_t> *get_units(const char *device)
         }
     unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
 
+    delete vid;
+    delete pid;
+    delete units;
     return unitsList;
 }
 
@@ -140,11 +154,17 @@ const vector<uint8_t> *get_units(const char *device)
  */
 int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
 {
+    if (!memcmp(curCtrl, maxCtrl, ctrlSize * sizeof(uint8_t))) // curCtrl == maxCtrl
+        return 1;
+
     for (unsigned i = 0; i < ctrlSize; ++i)
     {
         curCtrl[i] = curCtrl[i] + resCtrl[i];
-        if (curCtrl[i] > maxCtrl[i])
-            return 1;
+        if (curCtrl[i] > maxCtrl[i]) // resCtrl does not allow to reach maxCtrl
+        {
+            memcpy(curCtrl, maxCtrl, ctrlSize * sizeof(uint8_t)); // set maxCtrl
+            return 0;
+        }
     }
     return 0;
 }
@@ -162,7 +182,7 @@ int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *ma
  *
  * Exit code: 0 Success
  *            1 Error
- *            265 Unable to open the camera device
+ *            126 Unable to open the camera device
  */
 int main(int, const char *argv[])
 {
@@ -174,49 +194,70 @@ int main(int, const char *argv[])
     const char *driverFile = argv[3];
     const bool debug = atoi(argv[4]);
 
-    if (test_emitter(deviceID))
+    errno = 0;
+    const int fd = open(device, O_WRONLY);
+    if (fd < 0 || errno)
     {
-        cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
-        return 1;
+        cerr << "CRITICAL: Cannot access to " << device << endl;
+        exit(FILE_DESCRIPTOR_ERROR);
+    }
+
+    try
+    {
+        if (test_emitter(deviceID))
+        {
+            cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
+            return 1;
+        }
+    }
+    catch (int code)
+    {
+        close(fd);
+        exit(code);
     }
 
     int result;
-    for (const uint8_t &unit : *get_units(device))
-        for (uint8_t selector = 0; selector < 255; ++selector) // it should be < 256, but it have no idea how to do it proprely
-        {   
+    const vector<uint8_t> *units = get_units(device);
+    for (const uint8_t &unit : *units)
+        for (uint8_t selector = 0; selector < 255; ++selector) // it should be < 256, but it have no idea how to do it proprely (i.e. without cast)
+        {
             // get the control instruction lenght
-            const uint16_t ctrlSize = len_uvc_query(device, unit, selector);
+            const uint16_t ctrlSize = len_uvc_query(fd, unit, selector);
             if (!ctrlSize)
                 continue;
 
             // get the current control value
             uint8_t curCtrl[ctrlSize];
-            if (get_uvc_query(UVC_GET_CUR, device, unit, selector, ctrlSize, curCtrl))
+            if (get_uvc_query(UVC_GET_CUR, fd, unit, selector, ctrlSize, curCtrl))
                 continue;
 
             // check if the control value can be modified
-            if (set_uvc_query(device, unit, selector, ctrlSize, curCtrl))
+            if (set_uvc_query(fd, unit, selector, ctrlSize, curCtrl))
                 continue;
 
-            // try the max control value (the value does not necessary exists)
+            // try to get the maximum control value (the value does not necessary exists)
             uint8_t maxCtrl[ctrlSize];
-            if (get_uvc_query(UVC_GET_MAX, device, unit, selector, ctrlSize, maxCtrl))
+            if (get_uvc_query(UVC_GET_MAX, fd, unit, selector, ctrlSize, maxCtrl))
                 memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
 
             // try get the resolution control value (the value does not necessary exists)
             uint8_t resCtrl[ctrlSize];
-            if (get_uvc_query(UVC_GET_RES, device, unit, selector, ctrlSize, resCtrl))
-                for (unsigned i = 0; i < ctrlSize; ++i)    // compute the step from the current and max control
+            if (get_uvc_query(UVC_GET_RES, fd, unit, selector, ctrlSize, resCtrl))
+            {
+                if (debug)
+                    cout << "DEBUG: Computing the resolution control." << endl;
+                for (unsigned i = 0; i < ctrlSize; ++i)
                     resCtrl[i] = curCtrl[i] != maxCtrl[i]; // step of 0 or 1
+            }
 
-            // try get the min control value (the value does not necessary exists) to test it
+            // try get the minimum control value (the value does not necessary exists) to start from it
             uint8_t nextCtrl[ctrlSize];
-            result = get_uvc_query(UVC_GET_MIN, device, unit, selector, ctrlSize, nextCtrl);
+            result = get_uvc_query(UVC_GET_MIN, fd, unit, selector, ctrlSize, nextCtrl);
             if (result || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(uint8_t))) // or: the min control value is the current control
             {
-                memcpy(nextCtrl, curCtrl, ctrlSize * sizeof(uint8_t)); // assign the next value of the current one
-                if (get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize)) // the current control value is equal to the maximal control
-                    continue;
+                memcpy(nextCtrl, curCtrl, ctrlSize * sizeof(uint8_t));      // set the current value
+                if (get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize)) // and start from the next one
+                    continue;                                               // the current control value is equal to the maximal control
             }
 
             if (debug)
@@ -238,10 +279,24 @@ int main(int, const char *argv[])
             result = 0;
             while (!result && negAnswerCounter < negAnswerLimit)
             {
-                set_uvc_query(device, unit, selector, ctrlSize, nextCtrl);
+                result = set_uvc_query(fd, unit, selector, ctrlSize, nextCtrl);
 
-                if (test_emitter(deviceID))
-                    return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
+                if (!result)
+                    try
+                    {
+                        if (test_emitter(deviceID)) // found
+                        {
+                            close(fd);
+                            return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
+                        }
+                    }
+                    catch (int code) // if error during test, reset the control and exit
+                    {
+                        set_uvc_query(fd, unit, selector, ctrlSize, curCtrl);
+                        close(fd);
+                        delete units;
+                        exit(code);
+                    }
 
                 ++negAnswerCounter;
                 result = get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize);
@@ -251,8 +306,12 @@ int main(int, const char *argv[])
                 cout << "DEBUG: Negative answer limit exceeded, skipping the pattern." << endl;
 
             // reset the control
-            set_uvc_query(device, unit, selector, ctrlSize, curCtrl);
+            result = set_uvc_query(fd, unit, selector, ctrlSize, curCtrl);
+            if (result)
+                cout << "ERROR: Impossible to reset the control." << endl;
         }
 
+    close(fd);
+    delete units;
     return 1;
 }

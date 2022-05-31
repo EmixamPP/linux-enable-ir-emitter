@@ -2,7 +2,12 @@
 using namespace std;
 
 #include "setquery.h"
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "driver.hpp"
+
+constexpr unsigned FILE_DESCRIPTOR_ERROR = 126;
 
 /**
  * Execute a driver created by driver-generator
@@ -14,16 +19,30 @@ using namespace std;
  *
  * Exit code: 0 Success
  *            1 Error
- *            265 Unable to open the camera device
+ *            126 Unable to open the camera device
  */
 int main(int, const char **argv)
 {
     const Driver *driver = read_driver(argv[1]);
-    if (!driver) {
+    if (!driver)
+    {
         cerr << "CRITICAL: No driver for" << argv[1] << "has been configured." << endl;
         return 1;
     }
-    int result = set_uvc_query(driver->device, driver->unit, driver->selector, driver->size, driver->control);
+
+    errno = 0;
+    const int fd = open(driver->device, O_WRONLY);
+    if (fd < 0 || errno)
+    {
+        fprintf(stderr, "ERROR: Cannot access to %s\n", driver->device);
+        delete driver;
+        exit(FILE_DESCRIPTOR_ERROR);
+    }
+
+    int result = set_uvc_query(fd, driver->unit, driver->selector, driver->size, driver->control);
+
     delete driver;
+    close(fd);
+
     return result;
 }
