@@ -4,7 +4,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 
 `linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for any (UVC) infrared emitter.
 
-This software was created to use Howdy, a Windows Hello for linux <https://github.com/boltgolt/howdy>.
+This software was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
 ### For Fedora distro based (.rpm) :  
@@ -55,3 +55,5 @@ The software supports the configuration of multiple devices, execute the configu
 
 ## :hearts: Thanks to
 [@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@logicito](https://github.com/logicito) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun)  [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 
+
+for having reported a bug, tested the version in development, contributed to the code or helped to maintain the distributions package.
