@@ -1,10 +1,9 @@
+#include <fcntl.h>
+#include <unistd.h>
 #include <iostream>
 using namespace std;
 
 #include "setquery.h"
-#include <fcntl.h>
-#include <unistd.h>
-
 #include "driver.hpp"
 
 constexpr unsigned FILE_DESCRIPTOR_ERROR = 126;

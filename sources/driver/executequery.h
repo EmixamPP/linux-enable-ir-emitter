@@ -2,7 +2,6 @@
 #define EXECUTEQUERY
 
 #include <errno.h>
-#include <stdio.h>
 #include <sys/ioctl.h>
 #include <linux/uvcvideo.h>
 

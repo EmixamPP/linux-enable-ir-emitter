@@ -1,13 +1,9 @@
 #ifndef DRIVER
 #define DRIVER
 
-#include <stdio.h>
 #include <stdint.h>
-#include <linux/uvcvideo.h>
 #include <fstream>
 #include <iostream>
-#include <string>
-
 using namespace std;
 
 struct Driver

@@ -13,10 +13,9 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include <iterator>
 using namespace std;
 
-// for triger_camera
+// opencv (for triger_camera())
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -210,7 +209,7 @@ int main(int, const char *argv[])
             return 1;
         }
     }
-    catch (int code)
+    catch (unsigned code)
     {
         close(fd);
         exit(code);
@@ -290,7 +289,7 @@ int main(int, const char *argv[])
                             return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
                         }
                     }
-                    catch (int code) // if error during test, reset the control and exit
+                    catch (unsigned code) // if error during test, reset the control and exit
                     {
                         set_uvc_query(fd, unit, selector, ctrlSize, curCtrl);
                         close(fd);
