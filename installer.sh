@@ -63,6 +63,8 @@ do_update() {
 
     git fetch && git pull
     do_install
+
+    linux-enable-ir-emitter boot enable &> /dev/null
 }
 
 check_root() {
