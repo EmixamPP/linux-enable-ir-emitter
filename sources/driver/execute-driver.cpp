@@ -6,7 +6,7 @@ using namespace std;
 #include "setquery.h"
 #include "driver.hpp"
 
-constexpr unsigned FILE_DESCRIPTOR_ERROR = 126;
+#define	EXIT_FD_ERROR 126;
 
 /**
  * Execute a driver created by driver-generator
@@ -26,7 +26,7 @@ int main(int, const char **argv)
     if (!driver)
     {
         cerr << "CRITICAL: No driver for" << argv[1] << "has been configured." << endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     errno = 0;
@@ -35,13 +35,12 @@ int main(int, const char **argv)
     {
         fprintf(stderr, "ERROR: Cannot access to %s\n", driver->device);
         delete driver;
-        exit(FILE_DESCRIPTOR_ERROR);
+        return EXIT_FD_ERROR;
     }
 
     int result = set_uvc_query(fd, driver->unit, driver->selector, driver->size, driver->control);
 
     delete driver;
     close(fd);
-
     return result;
 }

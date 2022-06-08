@@ -16,7 +16,7 @@
  * @param controlSize size of the uvc control
  * @param control control value
  *
- * @return non zero if error
+ * @return 1 if error, otherwise 0
  **/
 inline int get_uvc_query(uint8_t query_type, const int fd, const uint8_t unit, const uint8_t selector, const uint16_t controlSize, uint8_t *control)
 {

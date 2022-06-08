@@ -11,7 +11,7 @@
  * @param fd file descriptor of the camera device
  * @param query uvc query to execute
  *
- * @return non zero if error
+ * @return 1 if error, otherwise 0 
  **/
 inline int execute_uvc_query(const int fd, const struct uvc_xu_control_query *query)
 {

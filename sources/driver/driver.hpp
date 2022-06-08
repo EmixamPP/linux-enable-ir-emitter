@@ -24,7 +24,7 @@ struct Driver
  * @param selector control selector
  * @param size size of the uvc control
  * @param control control value
- * @return non zero if error
+ * @return 0 if success, 1 if error
  */
 inline int write_driver(const char *driverFile, const char *device, const uint8_t unit, const uint8_t selector, const uint16_t size, const uint8_t *control)
 {

@@ -31,8 +31,8 @@ using namespace cv::utils::logging;
 #include "executequery.h"
 #include "driver.hpp"
 
-constexpr unsigned CAMERA_TRIGER_TIME = 2; // triger the camera during how many seconds
-constexpr unsigned FILE_DESCRIPTOR_ERROR = 126;
+#define EXIT_FD_ERROR 126;
+constexpr int CAMERA_TRIGER_TIME = 2; // triger the camera during how many seconds
 
 /**
  * @brief Print the control value in the standart output (without eol character)
@@ -74,19 +74,20 @@ string *shell_exec(const string cmd)
  *
  * @param deviceID id of the camera device
  *
- * @throw int 126 if unable to open the camera device
+ * @return 1 if unable to open the device, otherwise 0
  */
-void triger_camera(const int deviceID)
+int triger_camera(const int deviceID)
 {
     VideoCapture cap;
     cap.open(deviceID);
     if (!cap.isOpened())
     {
         cerr << "CRITICAL: Cannot access to /dev/video" << deviceID << endl;
-        throw FILE_DESCRIPTOR_ERROR;
+        return 1;
     }
     this_thread::sleep_for(chrono::seconds(CAMERA_TRIGER_TIME));
     cap.release();
+    return 0;
 }
 
 /**
@@ -95,13 +96,13 @@ void triger_camera(const int deviceID)
  *
  * @param deviceID id of the camera device
  *
- * @throw int 126 if unable to open the camera device
- *
- * @return true if the user has input Yes, false if the user has input No
+ * @return 0 if the user inputed Yes, 1 if the user inputed No, 126 if unable to open the camera device
  */
-bool test_emitter(const int deviceID)
+int is_emitter_working(const int deviceID)
 {
-    triger_camera(deviceID);
+    if (triger_camera(deviceID))
+        return 126;
+
     string answer;
     cout << "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? ";
     cin >> answer;
@@ -110,7 +111,7 @@ bool test_emitter(const int deviceID)
         cout << "Yes/No ? ";
         cin >> answer;
     }
-    return answer == "yes" || answer == "y" || answer == "Yes";
+    return answer == "no" || answer == "n" || answer == "No";
 }
 
 /**
@@ -192,32 +193,33 @@ int main(int, const char *argv[])
     const int negAnswerLimit = atoi(argv[2]);
     const char *driverFile = argv[3];
     const bool debug = atoi(argv[4]);
+    int result;
 
     errno = 0;
     const int fd = open(device, O_WRONLY);
     if (fd < 0 || errno)
     {
         cerr << "CRITICAL: Cannot access to " << device << endl;
-        exit(FILE_DESCRIPTOR_ERROR);
+        return EXIT_FD_ERROR;
     }
 
-    try
+    result = is_emitter_working(deviceID);
+    if (result == 1)
     {
-        if (test_emitter(deviceID))
-        {
-            cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
-            return 1;
-        }
+        cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
+        close(fd);
+        return EXIT_FAILURE;
     }
-    catch (unsigned code)
+    else if (result == 126)
     {
         close(fd);
-        exit(code);
+        return EXIT_FD_ERROR;
     }
 
-    int result;
+    // begin research
     const vector<uint8_t> *units = get_units(device);
     for (const uint8_t &unit : *units)
+    {
         for (uint8_t selector = 0; selector < 255; ++selector) // it should be < 256, but it have no idea how to do it proprely (i.e. without cast)
         {
             // get the control instruction lenght
@@ -281,21 +283,22 @@ int main(int, const char *argv[])
                 result = set_uvc_query(fd, unit, selector, ctrlSize, nextCtrl);
 
                 if (!result)
-                    try
+                {
+                    result = is_emitter_working(deviceID);
+                    if (!result) // found
                     {
-                        if (test_emitter(deviceID)) // found
-                        {
-                            close(fd);
-                            return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
-                        }
+                        close(fd);
+                        delete units;
+                        return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
                     }
-                    catch (unsigned code) // if error during test, reset the control and exit
+                    else if (result == 126) // if unable to test the camera, reset the control and exit
                     {
                         set_uvc_query(fd, unit, selector, ctrlSize, curCtrl);
                         close(fd);
                         delete units;
-                        exit(code);
+                        return EXIT_FD_ERROR;
                     }
+                }
 
                 ++negAnswerCounter;
                 result = get_next_curCtrl(nextCtrl, resCtrl, maxCtrl, ctrlSize);
@@ -309,8 +312,9 @@ int main(int, const char *argv[])
             if (result)
                 cout << "ERROR: Impossible to reset the control." << endl;
         }
+    }
 
     close(fd);
     delete units;
-    return 1;
+    return EXIT_FAILURE;
 }
