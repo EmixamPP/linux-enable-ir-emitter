@@ -6,15 +6,22 @@ post_intall() {
   fi
 
   # if SELinux is installed, fix denied access to /dev/video
-  command -v chcon &> /dev/null
+  which semanage &> /dev/null
   if [ "$?" -eq 0 ]; then
-    chcon -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+      semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+      semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/driver-generator
   fi
 }
 
 pre_remove() {
   # disable service and remove targets
   systemctl disable linux-enable-ir-emitter
+
+  which semanage &> /dev/null
+  if [ "$?" -eq 0 ]; then
+      semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+      semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+  fi
 }
 
 post_remove() {

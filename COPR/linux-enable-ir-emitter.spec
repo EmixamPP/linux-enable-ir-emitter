@@ -53,20 +53,27 @@ mkdir -p %{buildroot}%{_sysconfdir}/%{name}/
 %{_datadir}/bash-completion/completions/%{name}
 
 %post
+# if SELinux is installed, fix denied access to /dev/video
+which semanage &> /dev/null
+if [ "$?" -eq 0 ] && [ "$1" -eq 1 ]; then
+    semanage fcontext -a -t bin_t %{_libdir}/%{name}/driver/execute-driver
+    semanage fcontext -a -t bin_t %{_libdir}/%{name}/driver/driver-generator
+fi
+
 # support update v3 to v4 
 if [ "$1" -eq 2 ] && [ -f %{_sysconfdir}/%{name}.yaml ]; then 
     python %{_libdir}/%{name}/migrate-v3.py
     rm -f %{_sysconfdir}/%{name}.yaml
 fi
 
-# if SELinux is installed, fix denied access to /dev/video
-command -v chcon &> /dev/null
-if [ "$?" -eq 0 ]; then
-    chcon -t bin_t %{_libdir}/%{name}/driver/execute-driver %{_libdir}/%{name}/driver/driver-generator
+%preun
+which semanage &> /dev/null
+if [ "$?" -eq 0 ] && [ "$1" -eq 0 ]; then
+    semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+    semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/driver-generator
 fi
 
 %postun
-# if last uninstallation (not after update)
 if [ "$1" -eq 0 ]; then
     # delete python cache
     rm -rf %{_libdir}/%{name}/

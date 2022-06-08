@@ -37,9 +37,10 @@ do_post_install() {
     fi
 
     # if SELinux is installed, fix denied access to /dev/video
-    command -v chcon &> /dev/null
+    which semanage &> /dev/null
     if [ "$?" -eq 0 ]; then
-        chcon -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+        semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+        semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/driver-generator
     fi
 }
 
