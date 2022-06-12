@@ -8,14 +8,14 @@ This software was created to use [Howdy](https://github.com/boltgolt/howdy), a W
 
 ## Installation
 ### For Fedora distro based (.rpm) :  
-<a href="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/"><img src="https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/package/linux-enable-ir-emitter/status_image/last_build.png"></a> Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
+Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
 ``` shell
 sudo dnf copr enable emixampp/linux-enable-ir-emitter
 sudo dnf --refresh install linux-enable-ir-emitter
 ```
 
 ### For Arch distro based : 
-<a href="https://aur.archlinux.org/packages/linux-enable-ir-emitter/"><img src="https://img.shields.io/aur/version/linux-enable-ir-emitter"></a> Page links : [Release AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/) and [VCS AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter-git/).
+Page links : [Release AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter/) and [VCS AUR package](https://aur.archlinux.org/packages/linux-enable-ir-emitter-git/).
 ``` shell
 git clone https://aur.archlinux.org/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
@@ -31,8 +31,7 @@ sudo apt install linux-enable-ir-emitter
 ```
 
 ### For other distro :
-<a href="https://github.com/emixampp/linux-enable-ir-emitter/releases"><img src="https://img.shields.io/github/release/emixampp/linux-enable-ir-emitter.svg?colorB=4c1"></a>
-The following dependencies are needed : python3, opencv2 (C/C++), usbutils
+The following dependencies are needed : python3, opencv (C++), usbutils
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
