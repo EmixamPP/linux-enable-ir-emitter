@@ -1,7 +1,7 @@
 import re
 from typing import List
 
-from globals import SAVE_DRIVER_FOLDER_PATH
+from globals import get_driver_path
 
 OLD_DRIVER_PATH = "/etc/linux-enable-ir-emitter.yaml"
 
@@ -16,7 +16,7 @@ def write_new_driver(control: List[str], device: str, unit: str, selector: str) 
         selector: control selector
     """
     if (re.fullmatch("/dev/video[0-9]+", device) and len(control) and unit and selector): 
-        with open(SAVE_DRIVER_FOLDER_PATH + device[5:], 'w') as f:
+        with open(get_driver_path(device), 'w') as f:
             f.write("device={}\n".format(device))
             f.write("unit={}\n".format(unit))
             f.write("selector={}\n".format(selector))

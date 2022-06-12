@@ -2,7 +2,7 @@ import logging
 from typing import NoReturn
 import subprocess
 
-from globals import ExitCode, DRIVER_GENERATOR_PATH, SAVE_DRIVER_FOLDER_PATH, driver_name
+from globals import ExitCode, DRIVER_GENERATOR_PATH, get_driver_path
 from command import boot
 
 
@@ -14,11 +14,10 @@ def execute(device: str, neg_answer_limit: int) -> NoReturn:
         neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
     """
     log_level = int(logging.getLogger().level == logging.DEBUG)
-    
-    driver_path = SAVE_DRIVER_FOLDER_PATH + driver_name(device)
-
+    driver_path = get_driver_path(device)
     logging.info("Ensure to not use the camera during the execution.")
     logging.info("Warning to do not kill the process !")
+
     exit_code = subprocess.call([DRIVER_GENERATOR_PATH, device, str(neg_answer_limit), driver_path, str(log_level)])
 
     if exit_code != ExitCode.SUCCESS:

@@ -24,10 +24,8 @@ int main(int, const char **argv)
 {
     const Driver *driver = read_driver(argv[1]);
     if (!driver)
-    {
-        cerr << "CRITICAL: No driver for" << argv[1] << "has been configured." << endl;
         return EXIT_FAILURE;
-    }
+    
 
     errno = 0;
     const int fd = open(driver->device, O_WRONLY);

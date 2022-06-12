@@ -19,7 +19,6 @@ if __name__ == "__main__":
         epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/wiki",
         formatter_class=argparse.RawTextHelpFormatter
     )
-
     parser.add_argument(
         "-v", "--verbose", 
         help="print verbose information",
@@ -38,18 +37,9 @@ if __name__ == "__main__":
         help="specify your infrared camera, by default is '/dev/video2'",
         nargs=1
     )
-
     command_subparser = parser.add_subparsers(dest='command')
     command_run = command_subparser.add_parser("run", help="apply the driver")
     command_configure = command_subparser.add_parser("configure", help="generate ir emitter driver")
-    command_delete = command_subparser.add_parser("delete", help="delete driver")
-    command_boot = command_subparser.add_parser("boot", help="enable ir at boot")
-
-    command_boot.add_argument(
-        "boot_status", 
-        choices=["enable", "disable", "status"], 
-        help="specify the boot action to perform"
-    )
     command_configure.add_argument(
         "-l", "--limit",
         metavar="k",
@@ -58,21 +48,28 @@ if __name__ == "__main__":
         type=int,
         nargs=1
     )
+    command_delete = command_subparser.add_parser("delete", help="delete driver")
+    command_boot = command_subparser.add_parser("boot", help="enable ir at boot")
+    command_boot.add_argument(
+        "boot_status", 
+        choices=["enable", "disable", "status"], 
+        help="specify the boot action to perform"
+    )
 
     args = parser.parse_args()
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-
        
     device = args.device[0] if args.device else "/dev/video2"
     if not re.fullmatch("/dev/video[0-9]+", device):
         device = os.path.realpath(device) # try to get the path pattern /dev/videoX
     try:
-        available_devices = subprocess.check_output(["ls /dev/video*"], shell=True).decode("utf-8").strip().replace("\n", " ")
+        available_devices = subprocess.check_output(["ls /dev/video*"], shell=True).decode("utf-8").replace("\n", " ")
     except subprocess.CalledProcessError:
-        available_devices = "no device found"
-    if device not in available_devices:
+        logging.critical("No camera device recognized by the system.")
+        exit(ExitCode.FAILURE)
+    if device not in available_devices.split():
         logging.critical("The device {} does not exists.".format(device))
         logging.info("Please choose among this list: {}".format(available_devices))
         exit(ExitCode.FAILURE)

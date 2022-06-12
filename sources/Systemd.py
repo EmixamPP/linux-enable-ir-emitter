@@ -31,7 +31,7 @@ def get_vid(device: str):
     Returns:
         str: vendor id
     """
-    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_VENDOR_ID=\\K.*'".format(device), shell=True).strip().decode("utf-8")
+    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_VENDOR_ID=\\K.*'".format(device), shell=True).decode("utf-8").strip()
 
 
 def get_pid(device: str):
@@ -43,14 +43,12 @@ def get_pid(device: str):
     Returns:
         str: product id
     """
-    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_MODEL_ID=\\K.*'".format(device), shell=True).strip().decode("utf-8")
+    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_MODEL_ID=\\K.*'".format(device), shell=True).decode("utf-8").strip()
 
 
 class Systemd:
     def __init__(self, devices: List[str]) -> None:
         self.devices = devices
-        self.service = self._initialize_systemd_file()
-        self._add_device_to_service()
 
     @staticmethod
     def disable() -> int:
@@ -76,7 +74,7 @@ class Systemd:
             0: the service have been enabled successfully
             other value: Error with the boot service.
         """
-        self._create_udev_rule()
+        self._create_udev()
         self._create_systemd()
 
         exit_code = subprocess.run(["udevadm", "control", "--reload-rules"], capture_output=True).returncode
@@ -102,15 +100,16 @@ class Systemd:
         if exec.returncode == 4:
             logging.error("The boot service does not exists.")
         else:
-            print(exec.stdout.strip().decode('utf-8'))
+            print(exec.stdout.decode('utf-8').strip())
         return exec.returncode
 
     def _create_systemd(self) -> None:
         """Create the service file at SYSTEMD_PATH"""
+        systemd = self._initialize_systemd()
         with open(SYSTEMD_PATH, 'w') as service_file:
-            self.service.write(service_file)
+            systemd.write(service_file)
 
-    def _create_udev_rule(self) -> None:
+    def _create_udev(self) -> None:
         """Create the rule file at UDEV_RULE_PATH"""
         with open(UDEV_RULE_PATH, 'w') as rule_file:
             for device in self.devices:
@@ -123,20 +122,11 @@ class Systemd:
                 rule_file.write(rule1 + "\n")
                 rule_file.write(rule2 + "\n")
 
-    def _add_device_to_service(self) -> None:
-        """Add each device to self.service """
-        for device in self.devices:
-            target = " dev-{}.device".format(device[5:])
-            self.service["Unit"]["After"] += target
-            self.service["Unit"]["Requires"] += target
-
-    @staticmethod
-    def _initialize_systemd_file() -> ConfigParser:
+    def _initialize_systemd(self) -> ConfigParser:
         """Represent the systemd service file by a ConfigParser.
-        Initialize the parser with the default values, which does not contain devices rules.
 
         Returns:
-            ConfigParser: the intialized systemd service 
+            ConfigParser: the systemd service 
         """
         service = ConfigParser()
         service.optionxform = str
@@ -145,6 +135,10 @@ class Systemd:
         service["Unit"]["Description"] = "enable the infrared emitter"
         service["Unit"]["Requires"] = ""
         service["Unit"]["After"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
+        for device in self.devices:
+            target = " dev-{}.device".format(device[5:])
+            service["Unit"]["After"] += target
+            service["Unit"]["Requires"] += target
 
         service["Service"] = {}
         service["Service"]["Type"] = "oneshot"

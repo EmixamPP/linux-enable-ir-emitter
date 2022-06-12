@@ -3,6 +3,7 @@ import enum
 import logging
 import sys
 import re
+from typing import List
 
 SAVE_DRIVER_FOLDER_PATH = "/etc/linux-enable-ir-emitter/"
 
@@ -42,7 +43,7 @@ def driver_name(device: str) -> str:
         str: driver name, videoX
     """
     assert(re.fullmatch("/dev/video[0-9]+", device))
-    return device[device.rindex("v"):]
+    return device[5:]
 
 
 def device_name(driver: str) -> str:
@@ -57,3 +58,35 @@ def device_name(driver: str) -> str:
     """
     assert(re.fullmatch("video[0-9]+", driver))
     return "/dev/" + driver
+
+
+def get_driver_path(device: str) -> str:
+    """Get the theoritical driver path (does not necessary exists)
+    corresponding to the device
+
+    Args:
+        device (str): path to the infrared camera, /dev/videoX
+
+    Returns:
+        str: theoritical path to the driver
+    """
+    return SAVE_DRIVER_FOLDER_PATH + driver_name(device)
+
+
+def get_drivers_name() -> List[str]:
+    """Return names of all genereted drivers"""
+    return os.listdir(SAVE_DRIVER_FOLDER_PATH)
+
+
+def get_drivers_path() -> List[str]:
+    """Return paths of all genereted drivers"""
+    drivers = get_drivers_name()
+    for i in range(len(drivers)):
+        drivers[i] = SAVE_DRIVER_FOLDER_PATH + drivers[i]
+    return drivers
+
+
+def get_devices() -> List[str]:
+    """Return all configured devices"""
+    drivers = get_drivers_name()
+    return [device_name(driver) for driver in drivers]

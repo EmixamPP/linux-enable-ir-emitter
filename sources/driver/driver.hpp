@@ -58,7 +58,7 @@ inline struct Driver *read_driver(const char *driverFile)
     FILE *file = fopen(driverFile, "r");
     if (!file)
     {
-        cerr << "ERROR: Impossible to read the driver in " << driverFile << endl;
+        cerr << "ERROR: Impossible to open the driver at " << driverFile << endl;
         return nullptr;
     }
 

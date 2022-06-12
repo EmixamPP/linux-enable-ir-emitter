@@ -40,10 +40,27 @@ constexpr int CAMERA_TRIGER_TIME = 2; // triger the camera during how many secon
  * @param ctrl control value
  * @param len size of the control value
  */
-void print_ctrl(const uint8_t *ctrl, const uint16_t len)
+inline void print_ctrl(const uint8_t *control, const uint16_t len)
 {
     for (uint16_t i = 0; i < len; ++i)
-        cout << " " << (int)ctrl[i];
+        cout << " " << (int)control[i];
+}
+
+/**
+ * @brief Print debug information in case of error during control reseting
+ *
+ * @param unit extension unit ID
+ * @param selector control selector
+ * @param control control value
+ * @param ctrlSize size of the control
+ */
+inline void print_error_reset_debug(const uint8_t unit, const uint8_t selector, const uint8_t *control, const uint16_t ctrlSize)
+{
+    cout << "ERROR: Impossible to reset the control." << endl;
+    cout << "INFO: Please keep this debug in case of issue :" << endl;
+    cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector << ", control:";
+    print_ctrl(control, ctrlSize);
+    cout << endl;
 }
 
 /**
@@ -52,7 +69,7 @@ void print_ctrl(const uint8_t *ctrl, const uint16_t len)
  * @param cmd command
  * @return output
  */
-string *shell_exec(const string cmd)
+inline string *shell_exec(const string cmd)
 {
     char buffer[128];
     string *result = new string();
@@ -76,7 +93,7 @@ string *shell_exec(const string cmd)
  *
  * @return 1 if unable to open the device, otherwise 0
  */
-int triger_camera(const int deviceID)
+inline int triger_camera(const int deviceID)
 {
     VideoCapture cap;
     cap.open(deviceID);
@@ -98,7 +115,7 @@ int triger_camera(const int deviceID)
  *
  * @return 0 if the user inputed Yes, 1 if the user inputed No, 126 if unable to open the camera device
  */
-int is_emitter_working(const int deviceID)
+inline int is_emitter_working(const int deviceID)
 {
     if (triger_camera(deviceID))
         return 126;
@@ -121,7 +138,7 @@ int is_emitter_working(const int deviceID)
  *
  * @return vector<uint8_t>* list of units
  */
-const vector<uint8_t> *get_units(const char *device)
+inline const vector<uint8_t> *get_units(const char *device)
 {
     const string *vid = shell_exec("udevadm info " + string(device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
     const string *pid = shell_exec("udevadm info " + string(device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
@@ -150,9 +167,9 @@ const vector<uint8_t> *get_units(const char *device)
  * @param resCtrl resolution control value
  * @param maxCtrl maximum control value
  * @param ctrlSize len of the control value
- * @return non zero if there is no more possible control value
+ * @return 1 if there is no more possible control value, otherwise 0
  */
-int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
+inline int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
 {
     if (!memcmp(curCtrl, maxCtrl, ctrlSize * sizeof(uint8_t))) // curCtrl == maxCtrl
         return 1;
@@ -167,6 +184,32 @@ int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint8_t *ma
         }
     }
     return 0;
+}
+
+/**
+ * @brief Print debug information about drivers to test
+ *
+ * @param unit extension unit ID
+ * @param selector control selector
+ * @param curCtrl current control value
+ * @param nextCtrl first control value to test
+ * @param resCtrl resolution control value
+ * @param maxCtrl maximum control value
+ * @param ctrlSize size of the control
+ */
+inline void print_driver_debug(const uint8_t unit, const uint8_t selector, const uint8_t *curCtrl, const uint8_t *nextCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
+{
+
+    cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector;
+    cout << ", cur control:";
+    print_ctrl(curCtrl, ctrlSize);
+    cout << ", first control to test:";
+    print_ctrl(nextCtrl, ctrlSize);
+    cout << ", res control:";
+    print_ctrl(resCtrl, ctrlSize);
+    cout << ", max control:";
+    print_ctrl(maxCtrl, ctrlSize);
+    cout << endl;
 }
 
 /**
@@ -204,7 +247,7 @@ int main(int, const char *argv[])
     }
 
     result = is_emitter_working(deviceID);
-    if (result == 1)
+    if (!result)
     {
         cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
         close(fd);
@@ -218,7 +261,7 @@ int main(int, const char *argv[])
 
     // begin research
     const vector<uint8_t> *units = get_units(device);
-    for (const uint8_t &unit : *units)
+    for (const uint8_t unit : *units)
     {
         for (uint8_t selector = 0; selector < 255; ++selector) // it should be < 256, but it have no idea how to do it proprely (i.e. without cast)
         {
@@ -262,26 +305,14 @@ int main(int, const char *argv[])
             }
 
             if (debug)
-            {
-                cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector;
-                cout << ", cur control:";
-                print_ctrl(curCtrl, ctrlSize);
-                cout << ", first control to test:";
-                print_ctrl(nextCtrl, ctrlSize);
-                cout << ", res control:";
-                print_ctrl(resCtrl, ctrlSize);
-                cout << ", max control:";
-                print_ctrl(maxCtrl, ctrlSize);
-                cout << endl;
-            }
+                print_driver_debug(unit, selector, curCtrl, nextCtrl, resCtrl, maxCtrl, ctrlSize);
 
             // try to find the right control value
             int negAnswerCounter = 0;
             result = 0;
             while (!result && negAnswerCounter < negAnswerLimit)
-            {
+            {   
                 result = set_uvc_query(fd, unit, selector, ctrlSize, nextCtrl);
-
                 if (!result)
                 {
                     result = is_emitter_working(deviceID);
@@ -293,7 +324,8 @@ int main(int, const char *argv[])
                     }
                     else if (result == 126) // if unable to test the camera, reset the control and exit
                     {
-                        set_uvc_query(fd, unit, selector, ctrlSize, curCtrl);
+                        if (set_uvc_query(fd, unit, selector, ctrlSize, curCtrl))
+                            print_error_reset_debug(unit, selector, curCtrl, ctrlSize);
                         close(fd);
                         delete units;
                         return EXIT_FD_ERROR;
@@ -308,9 +340,8 @@ int main(int, const char *argv[])
                 cout << "DEBUG: Negative answer limit exceeded, skipping the pattern." << endl;
 
             // reset the control
-            result = set_uvc_query(fd, unit, selector, ctrlSize, curCtrl);
-            if (result)
-                cout << "ERROR: Impossible to reset the control." << endl;
+            if (set_uvc_query(fd, unit, selector, ctrlSize, curCtrl))
+                print_error_reset_debug(unit, selector, curCtrl, ctrlSize);
         }
     }
 

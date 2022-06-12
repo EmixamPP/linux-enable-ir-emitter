@@ -2,7 +2,7 @@ import os
 import logging
 
 from typing import NoReturn
-from globals import SAVE_DRIVER_FOLDER_PATH, ExitCode, driver_name
+from globals import ExitCode, get_drivers_path, get_driver_path
 
 
 def execute(device: str) -> NoReturn:
@@ -14,15 +14,15 @@ def execute(device: str) -> NoReturn:
                 None to execute all driver.
     """
     if device:
-        drivers = [driver_name(device)]
+        drivers = [get_driver_path(device)]
     else:
-        drivers = os.listdir(SAVE_DRIVER_FOLDER_PATH)
+        drivers = get_drivers_path()
 
     try:
         for driver in drivers:
-            os.remove(SAVE_DRIVER_FOLDER_PATH + driver)
+            os.remove(driver)
     except FileNotFoundError:
-        pass # no driver for device, but there is no need to send error message
+        pass # no driver for this device, but there is no need to send error message
 
     logging.info("The drivers have been deleted.")
     exit(ExitCode.SUCCESS)
