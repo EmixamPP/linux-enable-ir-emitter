@@ -55,9 +55,10 @@ mkdir -p %{buildroot}%{_sysconfdir}/%{name}/
 %post
 # if SELinux is installed, fix denied access to /dev/video
 which semanage &> /dev/null
-if [ "$?" -eq 0 ] && [ "$1" -eq 1 ]; then
-    semanage fcontext -a -t bin_t %{_libdir}/%{name}/driver/execute-driver
-    semanage fcontext -a -t bin_t %{_libdir}/%{name}/driver/driver-generator
+if [ "$?" -eq 0 ]; then
+    semanage fcontext -a -t bin_t %{_exec_prefix}/lib/%{name}/driver/execute-driver
+    semanage fcontext -a -t bin_t %{_exec_prefix}/lib/%{name}/driver/driver-generator
+    restorecon -v %{_libdir}/%{name}/driver/* 1> /dev/null
 fi
 
 # support update v3 to v4 
@@ -66,15 +67,15 @@ if [ "$1" -eq 2 ] && [ -f %{_sysconfdir}/%{name}.yaml ]; then
     rm -f %{_sysconfdir}/%{name}.yaml
 fi
 
-%preun
-which semanage &> /dev/null
-if [ "$?" -eq 0 ] && [ "$1" -eq 0 ]; then
-    semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/execute-driver
-    semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/driver-generator
-fi
-
 %postun
 if [ "$1" -eq 0 ]; then
+    # remove SeLinux permission
+    which semanage &> /dev/null
+    if [ "$?" -eq 0 ] && [ "$1" -eq 0 ]; then
+        semanage fcontext -d %{_exec_prefix}/lib//%{name}/driver/execute-driver
+        semanage fcontext -d %{_exec_prefix}/lib//%{name}/driver/driver-generator
+    fi
+
     # delete python cache
     rm -rf %{_libdir}/%{name}/
 
@@ -83,13 +84,13 @@ if [ "$1" -eq 0 ]; then
     rm -f %{_sysconfdir}/%{name}.yaml # v3
 
     # delete systemd service
-    systemctl disable linux-enable-ir-emitter
+    systemctl disable linux-enable-ir-emitter &> /dev/null
     rm -f /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 fi
 
 %changelog
-* Thu May 12 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
+* Sat Jun 19 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
 - Rework, optimization and improvement of driver generation 
 - Remove manual configuration commands
 - Remove option for integration into Howdy

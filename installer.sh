@@ -41,16 +41,25 @@ do_post_install() {
     if [ "$?" -eq 0 ]; then
         semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver
         semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+        restorecon -v /usr/lib/linux-enable-ir-emitter/driver/* 1> /dev/null
     fi
 }
 
 do_uninstall() {
     check_root
+    
+    which semanage &> /dev/null
+    if [ "$?" -eq 0 ]; then
+        semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/execute-driver
+        semanage fcontext -d /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+    fi
 
     rm -fv /usr/bin/linux-enable-ir-emitter 
     rm -fv /usr/share/bash-completion/completions/linux-enable-ir-emitter
     rm -rfv /usr/lib/linux-enable-ir-emitter/
     rm -rfv /etc/linux-enable-ir-emitter/
+
+    systemctl disable linux-enable-ir-emitter &> /dev/null
     rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 }

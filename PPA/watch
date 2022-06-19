@@ -1,0 +1,2 @@
+version=4.0.0
+https://github.com/EmixamPP/%{name}/archive/refs/tags/(.*).tar.gz

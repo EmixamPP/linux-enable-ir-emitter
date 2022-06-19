@@ -22,4 +22,5 @@ which semanage &> /dev/null
 if [ "$?" -eq 0 ]; then
     semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver
     semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/driver-generator
+    restorecon -v /usr/lib/linux-enable-ir-emitter/driver/* 1> /dev/null
 fi
