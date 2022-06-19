@@ -7,10 +7,8 @@ assignees: ''
 
 ---
 
-**Which device did you used ?**
-<!-- the default /dev/video2 or you used the "-d /dev/videoX" option) -->
-
-**Ouput of `linux-enable-ir-emitter --verbose configure`**
+**Ouput of `linux-enable-ir-emitter -v configure -d /dev/videoX`**
+<!-- replace /dev/videoX with your device (/dev/video2 for default)-->
 <details><summary>configure command output</summary>
 
 ```
@@ -40,4 +38,4 @@ replace /dev/videoX with your device and paste here
  - Distro: 
  - Version: 
  - Version of linux-enable-ir-emitter:
- - How did you install linux-enable-ir-emitter: <!--- bash or AUR or COPR -->
+ - How did you install linux-enable-ir-emitter: <!--- COPR, AUR, PPA or bash -->

@@ -26,4 +26,4 @@ paste here
  - Distro: 
  - Version: 
  - Version of linux-enable-ir-emitter:
- - How did you install linux-enable-ir-emitter: <!--- bash or AUR or COPR -->
+ - How did you install linux-enable-ir-emitter: <!--- COPR, AUR, PPA or bash -->
