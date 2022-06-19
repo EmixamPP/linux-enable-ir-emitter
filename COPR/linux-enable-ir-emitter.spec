@@ -10,7 +10,7 @@ License:  MIT
 Source0:  https://github.com/EmixamPP/%{name}/archive/refs/tags/%{version}.tar.gz
 
 BuildRequires: make
-BuildRequires: g++
+BuildRequires: gcc-g++
 BuildRequires: opencv-devel
 
 Requires: usbutils
