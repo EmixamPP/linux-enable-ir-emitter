@@ -176,9 +176,10 @@ inline int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint
 
     for (unsigned i = 0; i < ctrlSize; ++i)
     {
-        curCtrl[i] = curCtrl[i] + resCtrl[i];
-        if (curCtrl[i] > maxCtrl[i]) // resCtrl does not allow to reach maxCtrl
-        {
+        int nextCtrl = curCtrl[i] + resCtrl[i]; // int to avoid overflow
+        curCtrl[i] = (uint8_t) nextCtrl;
+        if (nextCtrl > maxCtrl[i]) // resCtrl does not allow to reach maxCtrl
+        {   
             memcpy(curCtrl, maxCtrl, ctrlSize * sizeof(uint8_t)); // set maxCtrl
             return 0;
         }
