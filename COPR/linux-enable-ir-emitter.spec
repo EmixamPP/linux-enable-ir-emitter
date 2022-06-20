@@ -11,10 +11,10 @@ Source0:  https://github.com/EmixamPP/%{name}/archive/refs/tags/%{version}.tar.g
 
 BuildRequires: make
 BuildRequires: gcc-c++ >= 5.5.0
-BuildRequires: opencv-devel  >= 4.5.1
+BuildRequires: opencv-devel  >= 3.4.6
 
 Requires: usbutils
-Requires: opencv >= 4.5.1
+Requires: opencv >= 3.4.6
 Requires: python3 >= 3.6.2
 
 %description

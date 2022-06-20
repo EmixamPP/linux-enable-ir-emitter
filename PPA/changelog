@@ -1,7 +1,7 @@
-linux-enable-ir-emitter (4.0.0-1) jammy; urgency=medium
+linux-enable-ir-emitter (4.0.0) impish; urgency=medium
 
     * Rework, optimization and improvement of driver generation 
     * Remove manual configuration commands
     * Remove option for integration into Howdy
 
- -- Maxime Dirksen <ppa@emixam.be>  Sun, 19 June 2022 12:00:00 +0200
+ -- Maxime Dirksen <ppa@emixam.be>  Mon, 20 June 2022 12:00:00 +0200
