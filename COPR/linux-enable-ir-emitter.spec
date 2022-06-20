@@ -10,12 +10,12 @@ License:  MIT
 Source0:  https://github.com/EmixamPP/%{name}/archive/refs/tags/%{version}.tar.gz
 
 BuildRequires: make
-BuildRequires: gcc-c++
-BuildRequires: opencv-devel
+BuildRequires: gcc-c++ >= 5.5.0
+BuildRequires: opencv-devel  >= 4.5.2
 
 Requires: usbutils
-Requires: opencv
-Requires: python3
+Requires: opencv >= 4.5.2
+Requires: python3 >= 3.6.2
 
 %description
 Enables infrared cameras that are not directly enabled out-of-the box.
@@ -72,8 +72,8 @@ if [ "$1" -eq 0 ]; then
     # remove SeLinux permission
     which semanage &> /dev/null
     if [ "$?" -eq 0 ] && [ "$1" -eq 0 ]; then
-        semanage fcontext -d %{_exec_prefix}/lib//%{name}/driver/execute-driver
-        semanage fcontext -d %{_exec_prefix}/lib//%{name}/driver/driver-generator
+        semanage fcontext -d %{_exec_prefix}/lib/%{name}/driver/execute-driver
+        semanage fcontext -d %{_exec_prefix}/lib/%{name}/driver/driver-generator
     fi
 
     # delete python cache
