@@ -4,7 +4,7 @@ linux-enable-ir-emitter (4.1.2) jammy; urgency=medium
     * Fix camera triggering issue
     * Fix device symlink boot service side effect
 
- -- Maxime Dirksen <ppa@emixam.be>  Mon, 4 July 2022 12:00:00 +0200
+ -- Maxime Dirksen <ppa@emixam.be>  Mon, 4 Jul 2022 12:00:00 +0200
 
 linux-enable-ir-emitter (4.0.0) impish; urgency=medium
 
@@ -12,4 +12,4 @@ linux-enable-ir-emitter (4.0.0) impish; urgency=medium
     * Remove manual configuration commands
     * Remove option for integration into Howdy
 
- -- Maxime Dirksen <ppa@emixam.be>  Mon, 20 June 2022 12:00:00 +0200
+ -- Maxime Dirksen <ppa@emixam.be>  Mon, 20 Jun 2022 12:00:00 +0200
