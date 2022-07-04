@@ -1,3 +1,11 @@
+linux-enable-ir-emitter (4.1.2) jammy; urgency=medium
+
+    * Asynchronous camera triggering
+    * Fix camera triggering issue
+    * Fix device symlink boot service side effect
+
+ -- Maxime Dirksen <ppa@emixam.be>  Mon, 4 July 2022 12:00:00 +0200
+
 linux-enable-ir-emitter (4.0.0) impish; urgency=medium
 
     * Rework, optimization and improvement of driver generation 

@@ -10,14 +10,14 @@ def execute(device: str, neg_answer_limit: int) -> NoReturn:
     """Find a driver for the infrared camera
 
     Args:
-        device: the infrared camera '/dev/videoX'
+        device: path to the infrared camera, /dev/videoX
         neg_answer_limit: after k negative answer the pattern will be skiped. Use 256 for unlimited
     """
-    log_level = int(logging.getLogger().level == logging.DEBUG)
-    driver_path = get_driver_path(device)
     logging.info("Ensure to not use the camera during the execution.")
     logging.info("Warning to do not kill the process !")
 
+    log_level = int(logging.getLogger().level == logging.DEBUG)
+    driver_path = get_driver_path(device)
     exit_code = subprocess.call([DRIVER_GENERATOR_PATH, device, str(neg_answer_limit), driver_path, str(log_level)])
 
     if exit_code != ExitCode.SUCCESS:

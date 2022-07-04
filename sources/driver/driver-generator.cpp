@@ -6,6 +6,7 @@
     info 1: selector is on 8 bits and since the manufacturer does not provide a driver, it is impossible to know which value it is.
 ***/
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -15,7 +16,7 @@
 #include <vector>
 using namespace std;
 
-// opencv (for triger_camera())
+// opencv (used in is_emitter_working())
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -31,8 +32,7 @@ using namespace cv::utils::logging;
 #include "executequery.h"
 #include "driver.hpp"
 
-#define EXIT_FD_ERROR 126;
-constexpr int CAMERA_TRIGER_TIME = 2; // triger the camera during how many seconds
+#define EXIT_FD_ERROR 126
 
 /**
  * @brief Print the control value in the standart output (without eol character)
@@ -87,27 +87,6 @@ inline string *shell_exec(const string cmd)
 }
 
 /**
- * @brief Trigger the infrared emitter
- *
- * @param deviceID id of the camera device
- *
- * @return 1 if unable to open the device, otherwise 0
- */
-inline int triger_camera(const int deviceID)
-{
-    VideoCapture cap;
-    cap.open(deviceID);
-    if (!cap.isOpened())
-    {
-        cerr << "CRITICAL: Cannot access to /dev/video" << deviceID << endl;
-        return 1;
-    }
-    this_thread::sleep_for(chrono::seconds(CAMERA_TRIGER_TIME));
-    cap.release();
-    return 0;
-}
-
-/**
  * @brief Trigger the infrared emitter and ask the question:
  *        "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? "
  *
@@ -117,17 +96,23 @@ inline int triger_camera(const int deviceID)
  */
 inline int is_emitter_working(const int deviceID)
 {
-    if (triger_camera(deviceID))
+    VideoCapture cap(deviceID);
+    if (!cap.isOpened())
+    {
+        cerr << "CRITICAL: Cannot access to /dev/video" << deviceID << endl;
         return 126;
+    }
 
     string answer;
-    cout << "Did you see the ir emitter flashing (not just turn on) ? Yes/No ? ";
+    cout << "Is the ir emitter flashing (not just turn on) ? Yes/No ? ";
     cin >> answer;
     while (answer != "yes" && answer != "y" && answer != "Yes" && answer != "no" && answer != "n" && answer != "No")
     {
         cout << "Yes/No ? ";
         cin >> answer;
     }
+
+    cap.release();
     return answer == "no" || answer == "n" || answer == "No";
 }
 
@@ -214,6 +199,24 @@ inline void print_driver_debug(const uint8_t unit, const uint8_t selector, const
 }
 
 /**
+ * @brief Open a file descriptor
+ * 
+ * @param device device to open a fd
+ * @return fd or -1 if unable to open
+ */
+inline int open_fd(const char *device) {
+    errno = 0;
+    int fd = open(device, O_WRONLY);
+    if (fd < 0 || errno)
+    {
+        cerr << "CRITICAL: Cannot access to " << device << endl;
+        return -1;
+    }
+    
+    return fd;
+}
+
+/**
  * Generate a driver for the infrared emitter
  *
  * usage: driver-generator [device] [negAnswerLimit] [driverFile] [debug]
@@ -237,28 +240,20 @@ int main(int, const char *argv[])
     const int negAnswerLimit = atoi(argv[2]);
     const char *driverFile = argv[3];
     const bool debug = atoi(argv[4]);
-    int result;
 
-    errno = 0;
-    const int fd = open(device, O_WRONLY);
-    if (fd < 0 || errno)
-    {
-        cerr << "CRITICAL: Cannot access to " << device << endl;
-        return EXIT_FD_ERROR;
-    }
-
-    result = is_emitter_working(deviceID);
+    int result = is_emitter_working(deviceID);
     if (!result)
     {
         cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
-        close(fd);
         return EXIT_FAILURE;
     }
-    else if (result == 126)
-    {
-        close(fd);
+    else if (result == 126)    
         return EXIT_FD_ERROR;
-    }
+    
+    int fd = open_fd(device);
+    if (fd < 0)
+        return EXIT_FD_ERROR;
+
 
     // begin research
     const vector<uint8_t> *units = get_units(device);
@@ -315,11 +310,11 @@ int main(int, const char *argv[])
             {   
                 result = set_uvc_query(fd, unit, selector, ctrlSize, nextCtrl);
                 if (!result)
-                {
+                {   
+                    close (fd);
                     result = is_emitter_working(deviceID);
                     if (!result) // found
                     {
-                        close(fd);
                         delete units;
                         return write_driver(driverFile, device, unit, selector, ctrlSize, nextCtrl);
                     }
@@ -327,7 +322,11 @@ int main(int, const char *argv[])
                     {
                         if (set_uvc_query(fd, unit, selector, ctrlSize, curCtrl))
                             print_error_reset_debug(unit, selector, curCtrl, ctrlSize);
-                        close(fd);
+                        delete units;
+                        return EXIT_FD_ERROR;
+                    }
+                    fd = open_fd(device);
+                    if (fd < 0) {
                         delete units;
                         return EXIT_FD_ERROR;
                     }

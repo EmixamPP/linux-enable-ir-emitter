@@ -42,9 +42,8 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 ## How to enable your infrared emitter ?
 1. Ensure to not use the camera during the execution.
 2. Be patient, do not kill the process, and whatever the reason.
-3. Be aware, you will have to look at the ir emitter.
-4. Execute `sudo linux-enable-ir-emitter configure`. You can specify your infrared camera with the option `-d /dev/videoX`, by default it is /dev/video2.
-5. Answer to the asked questions.
+3. Execute `sudo linux-enable-ir-emitter configure`. You can specify your infrared camera with the option `-d /dev/videoX`, by default it is /dev/video2.
+4. Answer to the asked questions.
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 

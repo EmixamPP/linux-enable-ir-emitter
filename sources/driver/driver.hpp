@@ -19,7 +19,7 @@ struct Driver
  * @brief Write the driver in a file
  *
  * @param driverFile path where the driver will be written
- * @param device path to the infrared camera, /dev/videoX
+ * @param device path to the infrared camera, /dev/v4l/by-path/X
  * @param unit extension unit ID
  * @param selector control selector
  * @param size size of the uvc control

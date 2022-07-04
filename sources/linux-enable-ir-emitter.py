@@ -2,12 +2,10 @@
 
 import argparse
 import logging
-import re
 import os
-import subprocess
 
 from command import boot, run, configure, delete
-from globals import ExitCode, check_root
+from globals import ExitCode, check_root, get_all_devices
 
 
 if __name__ == "__main__":
@@ -28,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version",
         action="version",
-        version="%(prog)s 4.0.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 4.2.1\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
     parser.add_argument(
@@ -61,18 +59,15 @@ if __name__ == "__main__":
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
        
-    device = args.device[0] if args.device else "/dev/video2"
-    if not re.fullmatch("/dev/video[0-9]+", device):
-        device = os.path.realpath(device) # try to get the path pattern /dev/videoX
-    
-    available_devices = subprocess.run(["ls /dev/video*"], shell=True, capture_output=True)
-    if available_devices.returncode:
+    device = os.path.realpath(args.device[0]) if args.device else "/dev/video2"
+
+    available_devices = get_all_devices()
+    if not len(available_devices):
         logging.critical("No camera device recognized by the system.")
         exit(ExitCode.FAILURE)
-    available_devices = available_devices.stdout.decode("utf-8").replace("\n", " ")
-    if device not in available_devices.split():
+    elif device not in available_devices:
         logging.critical("The device {} does not exists.".format(device))
-        logging.info("Please choose among this list: {}".format(available_devices))
+        logging.info("Please choose among this list: {}".format(' '.join(available_devices)))
         exit(ExitCode.FAILURE)
 
     if args.command == "run":

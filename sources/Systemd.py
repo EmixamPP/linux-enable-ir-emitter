@@ -4,7 +4,7 @@ import os
 from configparser import ConfigParser
 from typing import List
 
-from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
+from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME, get_kernels, get_index
 
 
 """DOCUMENTATION
@@ -12,42 +12,20 @@ from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME
     info 1: systemd service type
     info 2: systemctl exit code
     info 3: systemd service dependencies
-- https://github.com/EmixamPP/linux-enable-ir-emitter/issues/1
-    info 1: systemd wait for /dev/video
-    info 2: systemd service dependencies
 - https://stackoverflow.com/questions/47630139/camera-dev-video0-dependencies-in-systemd-service-ubuntu-16-04
     info 1: modprobe uvcvideo command
 - https://wiki.archlinux.org/title/udev
     info 1: udev rule run script
 """
 
-
-def get_vid(device: str):
-    """Get the vendor id of the camera device
-
-    Args:
-        device: the infrared camera '/dev/videoX'
-
-    Returns:
-        str: vendor id
-    """
-    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_VENDOR_ID=\\K.*'".format(device), shell=True).decode("utf-8").strip()
-
-
-def get_pid(device: str):
-    """Get the product id of the camera device
-
-    Args:
-        device: the infrared camera '/dev/videoX'
-
-    Returns:
-        str: product id
-    """
-    return subprocess.check_output("udevadm info {} | grep -oP 'E: ID_MODEL_ID=\\K.*'".format(device), shell=True).decode("utf-8").strip()
-
-
 class Systemd:
+    """Manage the boot service of linux-enable-ir-emitter"""
     def __init__(self, devices: List[str]) -> None:
+        """Create a boot service for run the drivers
+
+        Args:
+            devices : devices for which a driver will be run
+        """
         self.devices = devices
 
     @staticmethod
@@ -82,7 +60,7 @@ class Systemd:
         if exit_code:
             logging.error("Error with the udev boot service.")
 
-        exit_code = subprocess.run(["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True).returncode 
+        exit_code = subprocess.run(["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True).returncode
         if exit_code:
             logging.error("Error with the systemd boot service.")
 
@@ -113,11 +91,11 @@ class Systemd:
         """Create the rule file at UDEV_RULE_PATH"""
         with open(UDEV_RULE_PATH, 'w') as rule_file:
             for device in self.devices:
-                vid = get_vid(device)
-                pid = get_pid(device)
+                kernels = get_kernels(device)
+                index = get_index(device)
 
-                rule1 = 'KERNEL=="{}", SYMLINK="{}", TAG+="systemd"'.format(device[5:], device[5:])
-                rule2 = 'ACTION=="add|change", ATTRS{idVendor}=="%s", ATTRS{idProduct}=="%s", RUN+="/usr/bin/linux-enable-ir-emitter run"' %(vid, pid)
+                rule1 = 'ACTION=="add|change", KERNELS==%s, ATTR{index}==%s, RUN+="/usr/bin/linux-enable-ir-emitter run"'%(kernels, index)
+                rule2 = 'KERNELS==%s, ATTR{index}==%s, TAG+="systemd"'%(kernels, index) # create systemd .device for all device
 
                 rule_file.write(rule1 + "\n")
                 rule_file.write(rule2 + "\n")
@@ -135,10 +113,10 @@ class Systemd:
         service["Unit"]["Description"] = "enable the infrared emitter"
         service["Unit"]["Requires"] = ""
         service["Unit"]["After"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
-        for device in self.devices:
-            target = " dev-{}.device".format(device[5:])
-            service["Unit"]["After"] += target
-            service["Unit"]["Requires"] += target
+        for device in self.devices:  # wait for all device
+            dev = " dev-{}.device".format(device[5:])
+            service["Unit"]["After"] += dev
+            service["Unit"]["Requires"] += dev
 
         service["Service"] = {}
         service["Service"]["Type"] = "oneshot"

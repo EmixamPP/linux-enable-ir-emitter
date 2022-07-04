@@ -15,7 +15,7 @@ provides=(linux-enable-ir-emitter)
 conflicts=(linux-enable-ir-emitter chicony-ir-toggle)
 
 makedepends=(git)
-depends=(python opencv usbutils)
+depends=(python opencv usbutils fmt)
 
 install=linux-enable-ir-emitter.install
 

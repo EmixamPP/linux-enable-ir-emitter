@@ -1,3 +1,7 @@
+post_upgrade() {
+  post_intall
+}
+
 post_intall() {
   # support update v3 to v4 
   if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 

@@ -7,7 +7,7 @@ from globals import ExitCode, get_drivers_path, get_driver_path
 
 def execute(device: str) -> NoReturn:
     """Remove the driver associated to a device, 
-    without causing error if the driver deos not exists
+    without causing error if the driver does not exists
 
     Args:
         device: path to the infrared camera, /dev/videoX

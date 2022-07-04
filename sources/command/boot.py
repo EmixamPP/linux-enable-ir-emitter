@@ -11,8 +11,6 @@ def execute(boot_status: str) -> NoReturn:
 
         args:
             boot_status: "enable" or "disable" or "status"
-            device: path to the infrared camera, /dev/videoX
-                None to execute all driver.
 
         Raises:
             Exception: boot status arg can only be equal to 

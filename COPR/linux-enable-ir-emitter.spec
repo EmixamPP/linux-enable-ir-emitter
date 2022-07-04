@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  4.0.0
+Version:  4.1.2
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -71,7 +71,7 @@ fi
 if [ "$1" -eq 0 ]; then
     # remove SeLinux permission
     which semanage &> /dev/null
-    if [ "$?" -eq 0 ] && [ "$1" -eq 0 ]; then
+    if [ "$?" -eq 0 ]; then
         semanage fcontext -d %{_exec_prefix}/lib/%{name}/driver/execute-driver
         semanage fcontext -d %{_exec_prefix}/lib/%{name}/driver/driver-generator
     fi
@@ -90,6 +90,10 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %changelog
+* Mon Jul 4 2022 Maxime Dirksen <copr@emixam.be> - 4.1.2-1
+- Asynchronous camera triggering
+- Fix camera triggering issue
+- Fix device symlink boot service side effect
 * Sat Jun 19 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
 - Rework, optimization and improvement of driver generation 
 - Remove manual configuration commands
