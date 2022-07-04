@@ -7,12 +7,12 @@ assignees: ''
 
 ---
 
-<!--- Have you look at the wiki before open this issue ? -->
+<!--- Please look at the wiki before open an issue -->
 
 **Describe the bug**
 <!--- explain here  -->
 
-**Who to reproduce**
+**How to reproduce**
 <!--- explain here  -->
 
 **Additional info**

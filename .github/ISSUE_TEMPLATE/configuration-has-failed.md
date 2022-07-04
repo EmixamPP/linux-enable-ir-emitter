@@ -7,7 +7,14 @@ assignees: ''
 
 ---
 
-**Ouput of `linux-enable-ir-emitter -v configure -d /dev/videoX`**
+<!--- Please look at the wiki before open an issue -->
+
+**If you had 'ERROR: Impossible to reset the control' message, give the DEBUG info displayed**
+```
+DEBUG:
+```
+
+**Ouput of `linux-enable-ir-emitter -v -d /dev/videoX configure`**
 <!-- replace /dev/videoX with your device (/dev/video2 for default)-->
 <details><summary>configure command output</summary>
 
@@ -21,16 +28,12 @@ paste here
 paste here
 ```
 
-**Ouput of `v4l2-ctl --list-devices`**
-```
-paste here
-```
-
 **Ouput of `v4l2-ctl -d /dev/videoX --list-formats-ext`**
+<!-- replace /dev/videoX with your device (/dev/video2 for default)-->
 <details><summary>v4l2 device output</summary>
 
 ```
-replace /dev/videoX with your device and paste here
+paste here
 ```
 </details>
 

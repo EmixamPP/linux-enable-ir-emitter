@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+<!--- Please look at the wiki before open an issue -->
+
 **Describe your feature request**
 <!-- describe here -->
 
