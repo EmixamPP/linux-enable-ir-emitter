@@ -13,7 +13,6 @@ BuildRequires: make
 BuildRequires: gcc-c++ >= 5.5.0
 BuildRequires: opencv-devel  >= 3.4.6
 
-Requires: usbutils
 Requires: opencv >= 3.4.6
 Requires: python3 >= 3.6.2
 

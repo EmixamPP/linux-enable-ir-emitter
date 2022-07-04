@@ -16,7 +16,7 @@ arch=('x86_64')
 provides=(linux-enable-ir-emitter)
 conflicts=(linux-enable-ir-emitter-git chicony-ir-toggle)
 
-depends=(python opencv usbutils fmt)
+depends=(python opencv fmt)
 
 install=linux-enable-ir-emitter.install
 

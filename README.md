@@ -31,7 +31,7 @@ sudo apt install linux-enable-ir-emitter
 ```
 
 ### For other distro :
-The following dependencies are needed : python3, opencv (C++), usbutils
+The following dependencies are needed : python3, opencv (C++)
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
