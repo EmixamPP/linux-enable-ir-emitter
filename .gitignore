@@ -1,0 +1,12 @@
+# Python
+__pycache__
+
+# Compilation
+driver-generator
+execute-driver
+
+# AUR
+.SRCINFO
+
+# Others
+.vscode
