@@ -3,7 +3,7 @@
 usage() {
     columnPrint="%-20s%-s\n"
     printf "Simple tool to install/uninstall/update linux-enable-ir-emitter.\n"
-    printf "usage: bash installer.sh {install, uninstall, update}\n"
+    printf "usage: bash installer.sh {install, uninstall}\n"
 }
 
 do_install() {
@@ -64,19 +64,6 @@ do_uninstall() {
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 }
 
-do_update() {
-    check_root
-
-    mv /etc/linux-enable-ir-emitter/ /tmp/
-    do_uninstall
-    mv /tmp/linux-enable-ir-emitter/ /etc/
-
-    git fetch && git pull
-    do_install
-
-    linux-enable-ir-emitter boot enable &> /dev/null
-}
-
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo "Please run as root."
@@ -90,9 +77,6 @@ case "$1" in
     ;;
 "install")
     do_install
-    ;;
-"update")
-    do_update
     ;;
 *)
     usage

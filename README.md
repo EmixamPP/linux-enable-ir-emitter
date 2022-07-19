@@ -31,13 +31,13 @@ sudo apt install linux-enable-ir-emitter
 ```
 
 ### For other distro :
-The following dependencies are needed : python3, opencv (C++)
+The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : python3, opencv (C++)
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 sudo bash installer.sh install
 ```
-You can easily uninstall the software by executing `sudo bash installer.sh uninstall`. Or update it with `sudo bash installer.sh update`.
+You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
 
 ## How to enable your infrared emitter ?
 1. Ensure to not use the camera during the execution.

@@ -311,7 +311,7 @@ int main(int, const char *argv[])
                 result = set_uvc_query(fd, unit, selector, ctrlSize, nextCtrl);
                 if (!result)
                 {   
-                    close (fd);
+                    close(fd);
                     result = is_emitter_working(deviceID);
                     if (!result) // found
                     {
