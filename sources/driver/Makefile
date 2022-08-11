@@ -10,10 +10,10 @@ ifeq ($(opencv_flags),)
   opencv_flags = $(shell pkg-config opencv4 --cflags --libs)
 endif
 
-driver-generator: driver-generator.cpp getquery.h lenquery.h setquery.h executequery.h driver.hpp
+driver-generator: driver-generator.cpp query.h driver.hpp
 	g++ $^ ${flags} ${warning_flags} ${opencv_flags} -o $@ 
 
-execute-driver: execute-driver.cpp executequery.h driver.hpp
+execute-driver: execute-driver.cpp query.h driver.hpp
 	g++ $^ ${flags} ${warning_flags} -o $@
 
 clean:

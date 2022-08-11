@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-#include "setquery.h"
+#include "query.h"
 #include "driver.hpp"
 
 #define	EXIT_FD_ERROR 126;
