@@ -11,9 +11,9 @@ Source0:  https://github.com/EmixamPP/%{name}/archive/refs/tags/%{version}.tar.g
 
 BuildRequires: make
 BuildRequires: gcc-c++ >= 5.5.0
-BuildRequires: opencv-devel  >= 3.4.6
+BuildRequires: opencv-devel  >= 3.4.4
 
-Requires: opencv >= 3.4.6
+Requires: opencv >= 3.4.4
 Requires: python3 >= 3.6.2
 
 %description
