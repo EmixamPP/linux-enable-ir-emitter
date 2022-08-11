@@ -22,14 +22,9 @@ using namespace std;
 #pragma GCC diagnostic ignored "-Wconversion"
 #include <opencv2/videoio.hpp>
 #include <opencv2/core/utils/logger.hpp>
-using namespace cv;
-using namespace cv::utils::logging;
 #pragma GCC diagnostic pop
 
-#include "lenquery.h"
-#include "getquery.h"
-#include "setquery.h"
-#include "executequery.h"
+#include "query.h"
 #include "driver.hpp"
 
 #define EXIT_FD_ERROR 126
@@ -56,10 +51,36 @@ inline void print_ctrl(const uint8_t *control, const uint16_t len)
  */
 inline void print_error_reset_debug(const uint8_t unit, const uint8_t selector, const uint8_t *control, const uint16_t ctrlSize)
 {
-    cout << "ERROR: Impossible to reset the control." << endl;
+    cerr << "ERROR: Impossible to reset the control." << endl;
     cout << "INFO: Please keep this debug in case of issue :" << endl;
     cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector << ", control:";
     print_ctrl(control, ctrlSize);
+    cout << endl;
+}
+
+/**
+ * @brief Print debug information about drivers to test
+ *
+ * @param unit extension unit ID
+ * @param selector control selector
+ * @param curCtrl current control value
+ * @param nextCtrl first control value to test
+ * @param resCtrl resolution control value
+ * @param maxCtrl maximum control value
+ * @param ctrlSize size of the control
+ */
+inline void print_driver_debug(const uint8_t unit, const uint8_t selector, const uint8_t *curCtrl, const uint8_t *nextCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
+{
+
+    cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector;
+    cout << ", cur control:";
+    print_ctrl(curCtrl, ctrlSize);
+    cout << ", first control to test:";
+    print_ctrl(nextCtrl, ctrlSize);
+    cout << ", res control:";
+    print_ctrl(resCtrl, ctrlSize);
+    cout << ", max control:";
+    print_ctrl(maxCtrl, ctrlSize);
     cout << endl;
 }
 
@@ -96,8 +117,9 @@ inline string *shell_exec(const string cmd)
  */
 inline int is_emitter_working(const int deviceID)
 {
-    VideoCapture cap(deviceID);
-    if (!cap.isOpened())
+    cv::VideoCapture cap;
+    cv::Mat frame;
+    if (!cap.open(deviceID, cv::CAP_V4L2) || !cap.read(frame))
     {
         cerr << "CRITICAL: Cannot access to /dev/video" << deviceID << endl;
         return 126;
@@ -162,9 +184,9 @@ inline int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint
     for (unsigned i = 0; i < ctrlSize; ++i)
     {
         int nextCtrl = curCtrl[i] + resCtrl[i]; // int to avoid overflow
-        curCtrl[i] = (uint8_t) nextCtrl;
+        curCtrl[i] = (uint8_t)nextCtrl;
         if (nextCtrl > maxCtrl[i]) // resCtrl does not allow to reach maxCtrl
-        {   
+        {
             memcpy(curCtrl, maxCtrl, ctrlSize * sizeof(uint8_t)); // set maxCtrl
             return 0;
         }
@@ -173,38 +195,13 @@ inline int get_next_curCtrl(uint8_t *curCtrl, const uint8_t *resCtrl, const uint
 }
 
 /**
- * @brief Print debug information about drivers to test
- *
- * @param unit extension unit ID
- * @param selector control selector
- * @param curCtrl current control value
- * @param nextCtrl first control value to test
- * @param resCtrl resolution control value
- * @param maxCtrl maximum control value
- * @param ctrlSize size of the control
- */
-inline void print_driver_debug(const uint8_t unit, const uint8_t selector, const uint8_t *curCtrl, const uint8_t *nextCtrl, const uint8_t *resCtrl, const uint8_t *maxCtrl, const uint16_t ctrlSize)
-{
-
-    cout << "DEBUG: unit: " << (int)unit << ", selector: " << (int)selector;
-    cout << ", cur control:";
-    print_ctrl(curCtrl, ctrlSize);
-    cout << ", first control to test:";
-    print_ctrl(nextCtrl, ctrlSize);
-    cout << ", res control:";
-    print_ctrl(resCtrl, ctrlSize);
-    cout << ", max control:";
-    print_ctrl(maxCtrl, ctrlSize);
-    cout << endl;
-}
-
-/**
  * @brief Open a file descriptor
- * 
+ *
  * @param device device to open a fd
  * @return fd or -1 if unable to open
  */
-inline int open_fd(const char *device) {
+inline int open_fd(const char *device)
+{
     errno = 0;
     int fd = open(device, O_WRONLY);
     if (fd < 0 || errno)
@@ -212,7 +209,7 @@ inline int open_fd(const char *device) {
         cerr << "CRITICAL: Cannot access to " << device << endl;
         return -1;
     }
-    
+
     return fd;
 }
 
@@ -220,7 +217,7 @@ inline int open_fd(const char *device) {
  * Generate a driver for the infrared emitter
  *
  * usage: driver-generator [device] [negAnswerLimit] [driverFile] [debug]
- *        device           path to the infrared camera, /dev/videoX
+ *        device           path to the infrared camera, it must be of the form /dev/videoX
  *        negAnswerLimit   after k negative answer the pattern will be skiped. Use 256 for unlimited
  *        driverFile       path where the driver will be written
  *        debug            1 for print debug information, otherwise 0
@@ -233,34 +230,37 @@ inline int open_fd(const char *device) {
  */
 int main(int, const char *argv[])
 {
-    setLogLevel(LogLevel::LOG_LEVEL_SILENT);
+    cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
+
     const char *device = argv[1];
-    int deviceID;
-    sscanf(device, "/dev/video%d", &deviceID);
+    int result;
+    sscanf(device, "/dev/video%d", &result);
+    const int deviceID = result;
     const int negAnswerLimit = atoi(argv[2]);
     const char *driverFile = argv[3];
     const bool debug = atoi(argv[4]);
 
-    int result = is_emitter_working(deviceID);
+    result = is_emitter_working(deviceID);
     if (!result)
     {
         cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
         return EXIT_FAILURE;
     }
-    else if (result == 126)    
+    else if (result == 126)
         return EXIT_FD_ERROR;
-    
+
     int fd = open_fd(device);
     if (fd < 0)
         return EXIT_FD_ERROR;
-
 
     // begin research
     const vector<uint8_t> *units = get_units(device);
     for (const uint8_t unit : *units)
     {
-        for (uint8_t selector = 0; selector < 255; ++selector) // it should be < 256, but it have no idea how to do it proprely (i.e. without cast)
+        for (int __selector = 0; __selector < 256; ++__selector)
         {
+            const uint8_t selector = __selector; // safe: 0 <= __selector <= 255
+
             // get the control instruction lenght
             const uint16_t ctrlSize = len_uvc_query(fd, unit, selector);
             if (!ctrlSize)
@@ -307,10 +307,10 @@ int main(int, const char *argv[])
             int negAnswerCounter = 0;
             result = 0;
             while (!result && negAnswerCounter < negAnswerLimit)
-            {   
+            {
                 result = set_uvc_query(fd, unit, selector, ctrlSize, nextCtrl);
                 if (!result)
-                {   
+                {
                     close(fd);
                     result = is_emitter_working(deviceID);
                     if (!result) // found
@@ -326,7 +326,8 @@ int main(int, const char *argv[])
                         return EXIT_FD_ERROR;
                     }
                     fd = open_fd(device);
-                    if (fd < 0) {
+                    if (fd < 0)
+                    {
                         delete units;
                         return EXIT_FD_ERROR;
                     }
