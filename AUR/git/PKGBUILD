@@ -1,10 +1,10 @@
 # Maintainer: Maxime Dirksen <aur@emixam.be>
-# Co-Maintener: supdrewin <supdrewin@outlook.com>
+# Co-Maintener: supdrewin <supdrewin at outlook dot com>
 # Co-Maintainer: Fabio 'Lolix' Loli <fabio.loli@disroot.org>
-# Contributor: Nikolay Bryskin <nbryskin@gmail.com>
+# Co-Maintainer: Nikolay Bryskin <nbryskin@gmail.com>
 
 pkgname=linux-enable-ir-emitter-git
-pkgver=4.0.0.r7.g294ac8d
+pkgver=4.1.2.r3.ga6d606f
 pkgrel=1
 pkgdesc="Enables infrared cameras that are not directly enabled out-of-the box"
 url="https://github.com/EmixamPP/linux-enable-ir-emitter"
@@ -19,22 +19,20 @@ depends=(python opencv fmt)
 
 install=linux-enable-ir-emitter.install
 
-source=("git+https://github.com/EmixamPP/linux-enable-ir-emitter#branch=dev")
+source=("${pkgname}::git+${url}.git")
 sha256sums=('SKIP')
 
-name=${pkgname/-git}
-
 pkgver() {
-    cd "${srcdir}/${name}"
+    cd "${srcdir}/${pkgname}"
     git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
 build() {
-    make -C "${srcdir}/linux-enable-ir-emitter/sources/driver/"
+    make -C "${srcdir}/${pkgname}/sources/driver/"
 }
 
 package() {
-    cd "${srcdir}/${name}"
+    cd "${srcdir}/${pkgname}"
 
     install -Dm 644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}"
 
@@ -46,13 +44,13 @@ package() {
 
     # executable
     install -d "${pkgdir}"/usr/bin/
-    chmod 755 "${pkgdir}"/usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
+    chmod +x "${pkgdir}"/usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
     ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py \
-    "${pkgdir}"/usr/bin/linux-enable-ir-emitter
+        "${pkgdir}"/usr/bin/linux-enable-ir-emitter
 
     # auto complete for bash
-    install -Dm 644 sources/autocomplete/${name} -t "${pkgdir}"/usr/share/bash-completion/completions/
+    install -Dm 644 sources/autocomplete/${pkgname/-git/} -t "${pkgdir}"/usr/share/bash-completion/completions/
 
     # drivers folder
-    mkdir -p "${pkgdir}"/etc/${name}/
+    mkdir -p "${pkgdir}"/etc/${pkgname}/
 }

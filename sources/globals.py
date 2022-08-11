@@ -9,7 +9,7 @@ from typing import List
 
 SAVE_DRIVER_FOLDER_PATH = "/etc/linux-enable-ir-emitter/"
 
-LOCAL_PATH = path = os.path.dirname(os.path.abspath(__file__))
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 UVC_DIR_PATH = LOCAL_PATH + "/driver/"
 EXECUTE_DRIVER_PATH = UVC_DIR_PATH + "execute-driver"
 DRIVER_GENERATOR_PATH = UVC_DIR_PATH + "driver-generator"

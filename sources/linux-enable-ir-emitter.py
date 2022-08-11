@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version",
         action="version",
-        version="%(prog)s 4.2.1\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 4.1.4\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
     parser.add_argument(

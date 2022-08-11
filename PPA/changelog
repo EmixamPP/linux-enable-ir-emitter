@@ -1,3 +1,10 @@
+linux-enable-ir-emitter (4.1.4) kinetic; urgency=medium
+
+    * Force V4l2 backend in opencv
+    * Improvement of driver generation
+
+ -- Maxime Dirksen <ppa@emixam.be>  Thu, 11 Aug 2022 12:00:00 +0200
+
 linux-enable-ir-emitter (4.1.2) jammy; urgency=medium
 
     * Asynchronous camera triggering

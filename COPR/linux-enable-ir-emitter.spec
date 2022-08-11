@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  4.1.2
+Version:  4.1.4
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -89,6 +89,9 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %changelog
+* Thu Aug 11 2022 Maxime Dirksen <copr@emixam.be> - 4.1.4-1
+- Force V4l2 backend in opencv
+- Improvement of driver generation
 * Mon Jul 4 2022 Maxime Dirksen <copr@emixam.be> - 4.1.2-1
 - Asynchronous camera triggering
 - Fix camera triggering issue

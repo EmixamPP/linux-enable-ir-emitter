@@ -7,7 +7,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 This software was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
-### For Fedora distro based (.rpm) :  
+### For Fedora/openSUSE/Magia/CentOS distro based (.rpm) :  
 Page link : [COPR package](https://copr.fedorainfracloud.org/coprs/emixampp/linux-enable-ir-emitter/).
 ``` shell
 sudo dnf copr enable emixampp/linux-enable-ir-emitter
@@ -22,8 +22,8 @@ cd linux-enable-ir-emitter
 makepkg -csi
 ``` 
 
-### For Debian distro based (.deb) : 
-Page link : [PPA package](https://launchpad.net/~emixampp/+archive/ubuntu/linux-enable-ir-emitter).
+### For Ubuntu/Debian distro based (.deb) : 
+Page link : [PPA package](https://launchpad.net/~emixampp/+archive/ubuntu/linux-enable-ir-emitter). Looking for maintainers or contributors.
 ``` shell
 sudo add-apt-repository ppa:emixampp/linux-enable-ir-emitter
 sudo apt update
@@ -31,7 +31,7 @@ sudo apt install linux-enable-ir-emitter
 ```
 
 ### For other distro :
-The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : python3, opencv (C++)
+The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : python, opencv (C++)
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
@@ -47,7 +47,7 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 
-Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before open an issue.
+*Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before opening an issue.*
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
