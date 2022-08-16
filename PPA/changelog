@@ -1,4 +1,4 @@
-linux-enable-ir-emitter (4.1.4) kinetic; urgency=medium
+linux-enable-ir-emitter (4.1.4-1ppa1~kinetic) kinetic; urgency=medium
 
     * Force V4l2 backend in opencv
     * Improvement of driver generation

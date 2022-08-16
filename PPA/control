@@ -8,6 +8,6 @@ Homepage: https://github.com/EmixamPP/linux-enable-ir-emitter
 Vcs-Git: https://github.com/EmixamPP/linux-enable-ir-emitter
 
 Package: linux-enable-ir-emitter
-Architecture: amd64
+Architecture: any
 Depends: libopencv-dev (>= 3.4.4), python3 (>= 3.6.1)
 Description: Enables infrared cameras that are not directly enabled out-of-the box
