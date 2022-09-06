@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version",
         action="version",
-        version="%(prog)s 4.1.4\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 4.1.5\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
     parser.add_argument(
@@ -56,28 +56,30 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.verbose:
+    if args.verbose:  # enable verbosity
         logging.getLogger().setLevel(logging.DEBUG)
-       
-    device = os.path.realpath(args.device[0]) if args.device else "/dev/video2"
 
-    available_devices = get_all_devices()
-    if not len(available_devices):
-        logging.critical("No camera device recognized by the system.")
-        exit(ExitCode.FAILURE)
-    elif device not in available_devices:
-        logging.critical("The device {} does not exists.".format(device))
-        logging.info("Please choose among this list: {}".format(' '.join(available_devices)))
-        exit(ExitCode.FAILURE)
+    device = None
+    if args.command == "configure" or (args.device and args.command in ("run", "delete")):  # determine the device if needed
+        # In case of configuration: use the specified device otherwise the default one (i.e. /dev/video2)
+        # In case of run or delete: use the specified device
+        device = os.path.realpath(args.device[0]) if args.device else "/dev/video2"  
+        
+        # check if the device exists
+        available_devices = get_all_devices()
+        if not len(available_devices):
+            logging.critical("No camera device recognized by the system.")
+            exit(ExitCode.FAILURE)
+        elif device not in available_devices:
+            logging.critical("The device {} does not exists.".format(device))
+            logging.info("Please choose among this list: {}".format(' '.join(available_devices)))
+            exit(ExitCode.FAILURE)
 
+    # Execute the desired command
     if args.command == "run":
-        from command import run
-        if not args.device: # use specified device otherwise all(=None)
-            device = None
         run.execute(device)
 
     elif args.command == "configure":
-        from command import configure
         check_root()
         configure.execute(device, args.limit[0])
 
@@ -87,8 +89,6 @@ if __name__ == "__main__":
     
     elif args.command == "delete":
         check_root()
-        if not args.device: # use specified device otherwise all(=None)
-            device = None
         delete.execute(device)
 
     else:

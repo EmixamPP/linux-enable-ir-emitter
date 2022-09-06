@@ -30,7 +30,7 @@ sudo apt update
 sudo apt install linux-enable-ir-emitter
 ```
 
-### For other distro :
+### For other distro or manual build :
 The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : python, opencv (C++)
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
@@ -52,6 +52,6 @@ If you like the project, do not hesitate to star the repository to support me, t
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
 ## :hearts: Thanks to
-[@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@logicito](https://github.com/logicito) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun) [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 
+[@Bakunin-san](https://github.com/Bakunin-san) [@cchvuth](https://github.com/cchvuth) [@Diaoul](https://github.com/Diaoul) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@logicito](https://github.com/logicito) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun) [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin) 
 
 for having reported a bug, tested the version in development, contributed to the code or helped to maintain the distributions package.
