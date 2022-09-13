@@ -1,3 +1,9 @@
+linux-enable-ir-emitter (4.1.5-1ppa1~kinetic) kinetic; urgency=medium
+
+    * Fix boot service for custom device 
+
+ -- Maxime Dirksen <ppa@emixam.be>  Tue, 13 Sep 2022 12:00:00 +0200
+
 linux-enable-ir-emitter (4.1.4-1ppa1~kinetic) kinetic; urgency=medium
 
     * Force V4l2 backend in opencv
