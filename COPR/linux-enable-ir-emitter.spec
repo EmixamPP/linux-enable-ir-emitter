@@ -98,7 +98,7 @@ fi
 - Asynchronous camera triggering
 - Fix camera triggering issue
 - Fix device symlink boot service side effect
-* Sat Jun 19 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
+* Sun Jun 19 2022 Maxime Dirksen <copr@emixam.be> - 4.0.0-1
 - Rework, optimization and improvement of driver generation 
 - Remove manual configuration commands
 - Remove option for integration into Howdy
