@@ -135,6 +135,7 @@ inline int is_emitter_working(const int deviceID)
     }
 
     cap.release();
+    frame.release();
     return answer == "no" || answer == "n" || answer == "No";
 }
 
@@ -267,7 +268,7 @@ int main(int, const char *argv[])
                 continue;
 
             // get the current control value
-            uint8_t curCtrl[ctrlSize];
+            uint8_t curCtrl[ctrlSize] = {};
             if (get_uvc_query(UVC_GET_CUR, fd, unit, selector, ctrlSize, curCtrl))
                 continue;
 
@@ -276,12 +277,12 @@ int main(int, const char *argv[])
                 continue;
 
             // try to get the maximum control value (the value does not necessary exists)
-            uint8_t maxCtrl[ctrlSize];
+            uint8_t maxCtrl[ctrlSize] = {};
             if (get_uvc_query(UVC_GET_MAX, fd, unit, selector, ctrlSize, maxCtrl))
                 memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
 
             // try get the resolution control value (the value does not necessary exists)
-            uint8_t resCtrl[ctrlSize];
+            uint8_t resCtrl[ctrlSize] = {};
             if (get_uvc_query(UVC_GET_RES, fd, unit, selector, ctrlSize, resCtrl))
             {
                 if (debug)
@@ -291,7 +292,7 @@ int main(int, const char *argv[])
             }
 
             // try get the minimum control value (the value does not necessary exists) to start from it
-            uint8_t nextCtrl[ctrlSize];
+            uint8_t nextCtrl[ctrlSize] = {};
             result = get_uvc_query(UVC_GET_MIN, fd, unit, selector, ctrlSize, nextCtrl);
             if (result || !memcmp(curCtrl, nextCtrl, ctrlSize * sizeof(uint8_t))) // or: the min control value is the current control
             {
