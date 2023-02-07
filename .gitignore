@@ -5,8 +5,5 @@ __pycache__
 driver-generator
 execute-driver
 
-# AUR
-.SRCINFO
-
 # Others
 .vscode

@@ -1,3 +1,9 @@
+linux-enable-ir-emitter (4.1.6-1ppa1~kinetic) kinetic; urgency=medium
+
+    * Fix bad_alloc on some distributions
+
+ -- Maxime Dirksen <ppa@emixam.be>  Thu, 6 Oct 2022 12:00:00 +0200
+
 linux-enable-ir-emitter (4.1.5-1ppa1~kinetic) kinetic; urgency=medium
 
     * Fix boot service for custom device 

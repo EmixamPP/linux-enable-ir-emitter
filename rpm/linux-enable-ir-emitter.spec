@@ -1,7 +1,7 @@
 %global   debug_package %{nil}
 
 Name:     linux-enable-ir-emitter
-Version:  4.1.5
+Version:  4.1.6
 Release:  1%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
@@ -60,12 +60,6 @@ if [ "$?" -eq 0 ]; then
     restorecon -v %{_libdir}/%{name}/driver/* 1> /dev/null
 fi
 
-# support update v3 to v4 
-if [ "$1" -eq 2 ] && [ -f %{_sysconfdir}/%{name}.yaml ]; then 
-    python %{_libdir}/%{name}/migrate-v3.py
-    rm -f %{_sysconfdir}/%{name}.yaml
-fi
-
 %postun
 if [ "$1" -eq 0 ]; then
     # remove SeLinux permission
@@ -89,6 +83,8 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %changelog
+* Thu Oct 6 2022 Maxime Dirksen <copr@emixam.be> - 4.1.6-1
+- Fix bad_alloc on some distributions
 * Tue Sep 13 2022 Maxime Dirksen <copr@emixam.be> - 4.1.5-1
 - Fix boot service for custom device 
 * Thu Aug 11 2022 Maxime Dirksen <copr@emixam.be> - 4.1.4-1

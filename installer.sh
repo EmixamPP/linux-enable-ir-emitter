@@ -2,7 +2,7 @@
 
 usage() {
     columnPrint="%-20s%-s\n"
-    printf "Simple tool to install/uninstall/update linux-enable-ir-emitter.\n"
+    printf "Simple tool to install/uninstall linux-enable-ir-emitter.\n"
     printf "usage: bash installer.sh {install, uninstall}\n"
 }
 
@@ -11,14 +11,14 @@ do_install() {
     make -C sources/driver/
 
     # software
-    install -Dm 644 sources/*.py -t /usr/lib/linux-enable-ir-emitter/ -v
-    install -Dm 644 sources/command/*.py -t /usr/lib/linux-enable-ir-emitter/command/ -v
-    install -Dm 755 sources/driver/driver-generator -t /usr/lib/linux-enable-ir-emitter/driver/ -v
-    install -Dm 755 sources/driver/execute-driver -t /usr/lib/linux-enable-ir-emitter/driver/ -v
+    install -Dm 644 sources/*.py -t /usr/lib64/linux-enable-ir-emitter/ -v
+    install -Dm 644 sources/command/*.py -t /usr/lib64/linux-enable-ir-emitter/command/ -v
+    install -Dm 755 sources/driver/driver-generator -t /usr/lib64/linux-enable-ir-emitter/driver/ -v
+    install -Dm 755 sources/driver/execute-driver -t /usr/lib64/linux-enable-ir-emitter/driver/ -v
     
     # executable
-    chmod 755 /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py
-    ln -fs /usr/lib/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
+    chmod 755 /usr/lib64/linux-enable-ir-emitter/linux-enable-ir-emitter.py
+    ln -fs /usr/lib64/linux-enable-ir-emitter/linux-enable-ir-emitter.py /usr/bin/linux-enable-ir-emitter
 
     # auto complete for bash
     install -Dm 644 sources/autocomplete/linux-enable-ir-emitter -t /usr/share/bash-completion/completions/
@@ -30,18 +30,12 @@ do_install() {
 }
 
 do_post_install() {
-    # support update v3 to v4 
-    if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
-        python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
-        rm -fv /etc/linux-enable-ir-emitter.yaml
-    fi
-
-    # if SELinux is installed, fix denied access to /dev/video
+    # if SELinux is installed, fix denied access to camera
     which semanage &> /dev/null
     if [ "$?" -eq 0 ]; then
         semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/execute-driver
         semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/driver/driver-generator
-        restorecon -v /usr/lib/linux-enable-ir-emitter/driver/* 1> /dev/null
+        restorecon -v /usr/lib64/linux-enable-ir-emitter/driver/* 1> /dev/null
     fi
 }
 
@@ -56,11 +50,11 @@ do_uninstall() {
 
     rm -fv /usr/bin/linux-enable-ir-emitter 
     rm -fv /usr/share/bash-completion/completions/linux-enable-ir-emitter
-    rm -rfv /usr/lib/linux-enable-ir-emitter/
+    rm -rfv /usr/lib64/linux-enable-ir-emitter/
     rm -rfv /etc/linux-enable-ir-emitter/
 
     systemctl disable linux-enable-ir-emitter &> /dev/null
-    rm -fv /usr/lib/systemd/system/linux-enable-ir-emitter.service
+    rm -fv /usr/lib64/systemd/system/linux-enable-ir-emitter.service
     rm -fv /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
 }
 
