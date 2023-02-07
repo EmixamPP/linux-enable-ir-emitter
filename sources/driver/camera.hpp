@@ -57,6 +57,8 @@ private:
 
     static void logDebugCtrl(const char *prefixMsg, const uint8_t *const control, const uint16_t len) noexcept;
 
+    bool isMinConsistent() noexcept;
+
 public:
     CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector);
 

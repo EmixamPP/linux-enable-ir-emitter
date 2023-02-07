@@ -257,6 +257,23 @@ void CameraInstruction::logDebugCtrl(const char *prefixMsg, const uint8_t *const
 }
 
 /**
+ * @brief Check if minCtrl is coherent w.r.t. to maxCtrl
+ * 
+ * @return false if minCtrl is nullptr or not coherent, otherwise true
+ */
+bool CameraInstruction::isMinConsistent() noexcept
+{
+    if (minCtrl == nullptr)
+        return false;
+    
+    for (unsigned i = 0; i < ctrlSize; ++i)
+        if (minCtrl[i] > maxCtrl[i])
+            return false;
+    
+    return true;
+}
+
+/**
  * @brief Construct a new CameraInstruction object
  * And find the first control instruction as current one
  *
@@ -310,7 +327,13 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     {
         Logger::debug("Computing the resolution control.");
         for (unsigned i = 0; i < ctrlSize; ++i)
-            resCtrl[i] = curCtrl[i] != maxCtrl[i]; // step of 0 or 1
+        {   
+            // step of 0 or 1
+            if (isMinConsistent())
+                resCtrl[i] = (uint8_t) minCtrl[i] != maxCtrl[i];
+            else
+                resCtrl[i] = (uint8_t) curCtrl[i] != maxCtrl[i];
+        }
     }
     logDebugCtrl("resolution:", resCtrl, ctrlSize);
 }
@@ -444,20 +467,20 @@ uint8_t CameraInstruction::getSelector() const noexcept
 }
 
 /**
- * @brief If a minimun control instruction exists,
+ * @brief If a minimun control instruction exists and is consistent,
  * set the current control instruction with that value
  *
  * @return true if success, otherwise false
  */
 bool CameraInstruction::trySetMinAsCur() noexcept
 {
-    if (minCtrl != nullptr)
-    {
-        memcpy(curCtrl, minCtrl, ctrlSize * sizeof(uint8_t));
-        logDebugCtrl("new current:", curCtrl, ctrlSize);
-    }
+    if (!isMinConsistent())
+        return false;
 
-    return minCtrl != nullptr;
+    memcpy(curCtrl, minCtrl, ctrlSize * sizeof(uint8_t));
+    logDebugCtrl("new current:", curCtrl, ctrlSize);
+
+    return true;
 }
 
 CameraException::CameraException(string device) : message("CRITICAL: Cannot access to " + device) {}
