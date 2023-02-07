@@ -2,7 +2,7 @@ import os
 import logging
 
 from typing import NoReturn
-from globals import ExitCode, get_drivers_path, get_driver_path
+from globals import ExitCode, get_drivers_path
 
 
 def execute(device: str) -> NoReturn:
@@ -10,16 +10,11 @@ def execute(device: str) -> NoReturn:
     without causing error if the driver does not exists
 
     Args:
-        device: path to the infrared camera, /dev/videoX
+        device: path to the infrared camera
                 None to execute all driver.
     """
-    if device:
-        drivers = [get_driver_path(device)]
-    else:
-        drivers = get_drivers_path()
-
     try:
-        for driver in drivers:
+        for driver in get_drivers_path(device):
             os.remove(driver)
     except FileNotFoundError:
         pass # no driver for this device, but there is no need to send error message

@@ -2,7 +2,6 @@ import os
 import enum
 import logging
 import sys
-import re
 import subprocess
 import glob
 from typing import List
@@ -34,29 +33,30 @@ def check_root() -> None:
         sys.exit(ExitCode.ROOT_REQUIRED)
 
 
-def get_driver_path(device: str) -> str:
-    """Get the theoritical driver path (does not necessary exists)
-    corresponding to the device
+def get_drivers_path(device: str = None) -> str:
+    """Get the drivers path corresponding to all configured device
+    or just to one specific
 
     Args:
-        device (str): path to the infrared camera, /dev/videoX
+        device: path to the a specific infrared camera
+                None to get all drivers path.
 
     Returns:
-        str: theoritical path to the driver
+        str: path to the driver(s)
     """
-    assert(re.fullmatch("/dev/video[0-9]+", device))
-    return SAVE_DRIVER_FOLDER_PATH + device[5:]
-
-
-def get_drivers_path() -> List[str]:
-    """Return paths of all genereted drivers"""
-    return glob.glob(SAVE_DRIVER_FOLDER_PATH + "*")
+    driverName = "*"
+    if device is not None:
+        driverName = device[device.rfind("/") + 1:] + driverName
+    return glob.glob(SAVE_DRIVER_FOLDER_PATH + driverName + ".driver")
 
 
 def get_devices() -> List[str]:
-    """Return all configured devices"""
-    drivers_name = os.listdir(SAVE_DRIVER_FOLDER_PATH)
-    return ["/dev/" + driver for driver in drivers_name]
+    """Return all configured devices with the /dev/videoX form"""
+    devices_path = []
+    for driver in os.listdir(SAVE_DRIVER_FOLDER_PATH):
+        path = "/dev/v4l/by-path/" + driver[:driver.rfind("_emitter")]
+        devices_path.append(os.path.realpath(path))
+    return devices_path
 
 
 def get_index(device: str) -> str:
@@ -68,7 +68,7 @@ def get_index(device: str) -> str:
     Returns:
         device index (double quoted)
     """
-    return subprocess.check_output("udevadm info -a %s | grep -m 1 -oP 'ATTR{index}==\\K.*'"%(device), shell=True).decode("utf-8").strip()
+    return subprocess.check_output("udevadm info -a %s | grep -m 1 -oP 'ATTR{index}==\\K.*'" % (device), shell=True).decode("utf-8").strip()
 
 
 def get_kernels(device: str) -> str:
@@ -80,9 +80,4 @@ def get_kernels(device: str) -> str:
     Returns:
         device parent kernels (double quoted)
     """
-    return subprocess.check_output("udevadm info -a %s | grep -m 1 -oP 'KERNELS==\\K.*'"%(device), shell=True).decode("utf-8").strip()
-
-
-def get_all_devices() -> str:
-    """Return all devices /dev/videoX of the computer"""
-    return glob.glob("/dev/video*")
+    return subprocess.check_output("udevadm info -a %s | grep -m 1 -oP 'KERNELS==\\K.*'" % (device), shell=True).decode("utf-8").strip()

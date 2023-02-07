@@ -24,7 +24,7 @@ class Systemd:
         """Create a boot service for run the drivers
 
         Args:
-            devices : devices for which a driver will be run
+            devices : devices for which a driver will be run, /dev/videoX form required
         """
         self.devices = devices
 

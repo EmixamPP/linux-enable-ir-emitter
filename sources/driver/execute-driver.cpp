@@ -1,12 +1,10 @@
-#include <fcntl.h>
-#include <unistd.h>
 #include <iostream>
 using namespace std;
 
-#include "query.h"
 #include "driver.hpp"
+#include "camera.hpp"
 
-#define	EXIT_FD_ERROR 126;
+#define EXIT_FD_ERROR 126;
 
 /**
  * Execute a driver created by driver-generator
@@ -21,24 +19,21 @@ using namespace std;
  *            126 Unable to open the camera device
  */
 int main(int, const char **argv)
-{
-    const Driver *driver = read_driver(argv[1]);
-    if (!driver)
-        return EXIT_FAILURE;
-    
-
-    errno = 0;
-    const int fd = open(driver->device, O_WRONLY);
-    if (fd < 0 || errno)
+{   
+    const Driver *driver = readDriver(argv[1]);
+    bool result;
+    try
     {
-        fprintf(stderr, "ERROR: Cannot access to %s\n", driver->device);
-        delete driver;
+        Camera camera = Camera(driver->device);
+        CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control, driver->size);
+        result = camera.apply(instruction);
+    }
+    catch (CameraException &e)
+    {
+        cerr << e.what() << endl;
         return EXIT_FD_ERROR;
     }
 
-    int result = set_uvc_query(fd, driver->unit, driver->selector, driver->size, driver->control);
-
     delete driver;
-    close(fd);
-    return result;
+    return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
