@@ -3,12 +3,6 @@ post_upgrade() {
 }
 
 post_intall() {
-  # support update v3 to v4 
-  if [ -f /etc/linux-enable-ir-emitter.yaml ]; then 
-    python /usr/lib/linux-enable-ir-emitter/migrate-v3.py
-    rm -f /etc/linux-enable-ir-emitter.yaml
-  fi
-
   # if SELinux is installed, fix denied access to /dev/video
   which semanage &> /dev/null
   if [ "$?" -eq 0 ]; then

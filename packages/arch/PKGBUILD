@@ -16,7 +16,7 @@ arch=('x86_64' 'aarch64')
 provides=(linux-enable-ir-emitter)
 conflicts=(linux-enable-ir-emitter-git chicony-ir-toggle)
 
-depends=('python>=3.6.2' 'opencv>=3.4.4' 'fmt')
+depends=('python>=3.6.2' 'opencv>=3.4.4')
 
 install=linux-enable-ir-emitter.install
 
