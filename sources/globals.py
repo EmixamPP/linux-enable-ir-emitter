@@ -4,6 +4,7 @@ import logging
 import sys
 import subprocess
 import glob
+import re
 from typing import List
 
 SAVE_DRIVER_FOLDER_PATH = "/etc/linux-enable-ir-emitter/"
@@ -54,8 +55,9 @@ def get_devices() -> List[str]:
     """Return all configured devices with the /dev/videoX form"""
     devices_path = []
     for driver in os.listdir(SAVE_DRIVER_FOLDER_PATH):
-        path = "/dev/v4l/by-path/" + driver[:driver.rfind("_emitter")]
-        devices_path.append(os.path.realpath(path))
+        if re.match(r".*_emitter[0-9]+.driver", driver):
+            path = "/dev/v4l/by-path/" + driver[:driver.rfind("_emitter")]
+            devices_path.append(os.path.realpath(path))
     return devices_path
 
 
