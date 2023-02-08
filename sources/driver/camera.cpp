@@ -29,7 +29,9 @@ using namespace std;
  */
 int Camera::deviceId(const char *device) noexcept
 {
-    const char *devDevice = realpath(device, NULL);
+
+    char devDevice[16];
+    realpath(device, devDevice);
     int id;
     sscanf(devDevice, "/dev/video%d", &id);
     return id;
@@ -86,7 +88,7 @@ Camera::~Camera()
  */
 bool Camera::apply(CameraInstruction instruction) noexcept
 {
-    uint8_t control[instruction.getSize()];
+    uint8_t control[instruction.getSize()] = {};
     memcpy(control, instruction.getCurrent(), instruction.getSize() * sizeof(uint8_t));
     const struct uvc_xu_control_query query = {
         .unit = instruction.getUnit(),
@@ -248,28 +250,28 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
  * @param ctrl control value
  * @param len size of the control value
  */
-void CameraInstruction::logDebugCtrl(const char *prefixMsg, const uint8_t *const control, const uint16_t len) noexcept
+void CameraInstruction::logDebugCtrl(const char *prefixMsg, const uint8_t *control, const uint16_t len) noexcept
 {
     string text = prefixMsg;
     for (uint16_t i = 0; i < len; ++i)
-        text += " " + to_string(control[i]);
+        text += " " + to_string((int)control[i]);
     Logger::debug(text.c_str());
 }
 
 /**
  * @brief Check if minCtrl is coherent w.r.t. to maxCtrl
- * 
+ *
  * @return false if minCtrl is nullptr or not coherent, otherwise true
  */
 bool CameraInstruction::isMinConsistent() noexcept
 {
     if (minCtrl == nullptr)
         return false;
-    
+
     for (unsigned i = 0; i < ctrlSize; ++i)
         if (minCtrl[i] > maxCtrl[i])
             return false;
-    
+
     return true;
 }
 
@@ -297,18 +299,12 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     curCtrl = new uint8_t[ctrlSize];
     if (camera.getUvcQuery(UVC_GET_CUR, unit, selector, ctrlSize, curCtrl))
         throw CameraInstructionException(camera.device, unit, selector);
-
-    // check if the control value can be modified
-    if (camera.setUvcQuery(unit, selector, ctrlSize, curCtrl))
-        throw CameraInstructionException(camera.device, unit, selector);
-
     logDebugCtrl("current:", curCtrl, ctrlSize);
 
     // try to get the maximum control value (the value does not necessary exists)
     maxCtrl = new uint8_t[ctrlSize];
     if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, ctrlSize, maxCtrl))
         memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
-
     logDebugCtrl("maximum:", maxCtrl, ctrlSize);
 
     // try get the minimum control value (the value does not necessary exists)
@@ -327,12 +323,12 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     {
         Logger::debug("Computing the resolution control.");
         for (unsigned i = 0; i < ctrlSize; ++i)
-        {   
+        {
             // step of 0 or 1
             if (isMinConsistent())
-                resCtrl[i] = (uint8_t) minCtrl[i] != maxCtrl[i];
+                resCtrl[i] = (uint8_t)minCtrl[i] != maxCtrl[i];
             else
-                resCtrl[i] = (uint8_t) curCtrl[i] != maxCtrl[i];
+                resCtrl[i] = (uint8_t)curCtrl[i] != maxCtrl[i];
         }
     }
     logDebugCtrl("resolution:", resCtrl, ctrlSize);
@@ -346,14 +342,21 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
  * @param selector of the instruction
  * @param control instruction
  */
-CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, uint8_t *control, uint16_t size) : unit(unit), selector(selector), ctrlSize(size), curCtrl(control), maxCtrl(nullptr), minCtrl(nullptr), resCtrl(nullptr) {}
+CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, uint8_t *control, uint16_t size) : unit(unit), selector(selector), ctrlSize(size), maxCtrl(nullptr), minCtrl(nullptr), resCtrl(nullptr)
+{
+    curCtrl = new uint8_t[size];
+    memcpy(curCtrl, control, size * sizeof(uint8_t));
+}
 
 CameraInstruction::~CameraInstruction()
 {
     delete curCtrl;
-    delete maxCtrl;
-    delete minCtrl;
-    delete resCtrl;
+    if (maxCtrl != nullptr)
+        delete maxCtrl;
+    if (maxCtrl != nullptr)
+        delete minCtrl;
+    if (maxCtrl != nullptr)
+        delete resCtrl;
 }
 
 CameraInstruction &CameraInstruction::operator=(const CameraInstruction &other)
@@ -490,7 +493,7 @@ const char *CameraException::what()
     return message.c_str();
 }
 
-CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector) : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string(unit) + " selector:" + to_string(selector)) {}
+CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector) : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string((int)unit) + " selector:" + to_string((int)selector)) {}
 
 const char *CameraInstructionException::what()
 {

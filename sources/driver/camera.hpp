@@ -55,7 +55,7 @@ private:
     uint8_t *minCtrl;
     uint8_t *resCtrl;
 
-    static void logDebugCtrl(const char *prefixMsg, const uint8_t *const control, const uint16_t len) noexcept;
+    static void logDebugCtrl(const char *prefixMsg, const uint8_t *control, const uint16_t len) noexcept;
 
     bool isMinConsistent() noexcept;
 

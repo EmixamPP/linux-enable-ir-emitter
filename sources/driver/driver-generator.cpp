@@ -46,14 +46,13 @@ int main(int, const char *argv[])
     try
     {
         Camera camera(device.c_str());
-        Finder finder(camera, emitters, negAnswerLimit, excludedPath.c_str());
-
         if (camera.isEmitterWorking())
         {
-            cerr << "ERROR: Your emiter is already working, skipping the configuration." << endl;
+            Logger::error("Your emiter is already working, skipping the configuration.");
             return EXIT_FAILURE;
         }
         
+        Finder finder(camera, emitters, negAnswerLimit, excludedPath.c_str());
         Driver **driver = finder.find();
         if (driver == nullptr)
             return EXIT_FAILURE;
@@ -62,9 +61,10 @@ int main(int, const char *argv[])
         {
             string driverPath = workspace + deviceName + "_emitter" + to_string(i) + ".driver"; ;
             writeDriver(driverPath.c_str(), driver[i]);
+            delete driver[i]->control;
             delete driver[i];
         }
-        delete driver;
+        delete[] driver;
     }
     catch (CameraException &e)
     {

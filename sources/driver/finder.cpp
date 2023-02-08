@@ -174,12 +174,14 @@ Driver **Finder::find()
     for (const uint8_t unit : *units)
         for (int __selector = 0; __selector < 256; ++__selector)
         {
-            const uint8_t selector = (uint8_t) __selector; // safe: 0 <= __selector <= 255
+            const uint8_t selector = (uint8_t)__selector; // safe: 0 <= __selector <= 255
             if (isExcluded(unit, selector))
                 continue;
             try
             {
                 CameraInstruction instruction(camera, unit, selector);
+                // if (!camera.apply(instruction)) // ensure the instruction can be modified
+                //    continue;
                 CameraInstruction initInstruction = instruction; // copy for reset later
 
                 if (!instruction.trySetMinAsCur()) // if no min instruction exists
@@ -190,7 +192,7 @@ Driver **Finder::find()
                         continue;
                 }
 
-                Logger::debug(("unit: " + to_string(unit) + " selector: " + to_string(selector)).c_str());
+                Logger::debug(("unit: " + to_string((int)unit) + " selector: " + to_string((int)selector)).c_str());
 
                 unsigned negAnswerCounter = 0;
                 do
@@ -219,7 +221,7 @@ Driver **Finder::find()
             catch (CameraException &e)
             {
                 Logger::error("Impossible to reset the camera.");
-                Logger::info("Please shutdown your computer, boot and retry.");
+                Logger::info("Please shut down your computer, boot and retry.");
                 addToExclusion(unit, selector);
                 throw e; // propagate to exit
             }
