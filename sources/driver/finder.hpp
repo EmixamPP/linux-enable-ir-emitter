@@ -17,8 +17,8 @@ private:
     const vector<uint8_t> *units;
     const unsigned emitters;
     const unsigned negAnswerLimit;
+    const string excludedPath;
     const vector<pair<uint8_t, uint8_t>> *excluded;
-    const char *excludedPath;
 
     static string *shellExec(const string cmd) noexcept;
 
@@ -33,7 +33,7 @@ private:
     void addToExclusion(uint8_t unit, uint8_t selector) noexcept;
     
 public:
-    Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const char *excludedPath) noexcept;
+    Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept;
 
     ~Finder();
 

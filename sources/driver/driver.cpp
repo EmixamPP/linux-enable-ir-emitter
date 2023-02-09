@@ -3,8 +3,20 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
-#include <string>
+#include <cstring>
 using namespace std;
+
+
+Driver::Driver(string device, uint8_t unit, uint8_t selector, uint16_t size, const uint8_t *control)
+    : device(device), unit(unit), selector(selector), size(size), control(new uint8_t[size])
+{
+    memcpy(this->control, control, size * sizeof(uint8_t));
+}
+
+Driver::~Driver()
+{
+    delete[] control;
+}
 
 
 /**
@@ -15,11 +27,11 @@ using namespace std;
  *
  * @throw ifstream::failure Impossible to write the driver in driverFile
  */
-void writeDriver(const char *driverFile, const Driver *driver)
+void writeDriver(string driverFile, const Driver *driver)
 {
     ofstream file(driverFile);
     if (!file.is_open())
-        throw ifstream::failure("CRITICAL: Impossible to write the driver in " + string(driverFile));
+        throw ifstream::failure("CRITICAL: Impossible to write the driver in " + driverFile);
 
     file << "device=" << driver->device << endl;
     file << "unit=" << (int)driver->unit << endl;
@@ -40,24 +52,28 @@ void writeDriver(const char *driverFile, const Driver *driver)
  *
  * @return the driver
  */
-Driver *readDriver(const char *driverFile)
+Driver *readDriver(string driverFile)
 {
-    FILE *file = fopen(driverFile, "r");
+    FILE *file = fopen(driverFile.c_str(), "r");
     if (!file)
         throw ifstream::failure("CRITICAL: Impossible to open the driver at " + string(driverFile));
 
-    Driver *driver = new Driver();
-    fscanf(file, " device=%s", driver->device);
-    fscanf(file, " unit=%hhd", &(driver->unit));
-    fscanf(file, " selector=%hhd", &(driver->selector));
-    fscanf(file, " size=%hd", &(driver->size));
-    driver->control = (uint8_t *)malloc(driver->size * sizeof(uint8_t));
-    for (unsigned i = 0; i < driver->size; ++i)
+    char device[128];
+    uint8_t unit, selector;
+    uint16_t size;
+    fscanf(file, " device=%s*", device);
+    fscanf(file, " unit=%hhd", &unit);
+    fscanf(file, " selector=%hhd", &selector);
+    fscanf(file, " size=%hd", &size);
+    uint8_t *control = new uint8_t[size];
+    for (unsigned i = 0; i < size; ++i)
     {
-        const char *key = (" control" + to_string(i) + "=%d").c_str();
-        fscanf(file, key, &(driver->control[i]));
+        string key = " control" + to_string(i) + "=%d";
+        fscanf(file, key.c_str(), &control[i]);
     }
 
     fclose(file);
+    Driver *driver = new Driver(device, unit, selector, size, control);
+    delete[] control;
     return driver;
 }

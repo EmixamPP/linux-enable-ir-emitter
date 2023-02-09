@@ -74,14 +74,7 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
  */
 Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
 {
-    Driver *driver = new Driver();
-    strcpy(driver->device, camera.device);
-    driver->size = instruction.getSize();
-    driver->control = new uint8_t[driver->size];
-    memcpy(driver->control, instruction.getCurrent(), instruction.getSize() * sizeof(uint8_t));
-    driver->unit = unit;
-    driver->selector = selector;
-    return driver;
+    return new Driver(camera.device, unit, selector, instruction.getSize(), instruction.getCurrent());
 }
 
 /**
@@ -148,10 +141,9 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param negAnswerLimit skip a patern after negAnswerLimit negative answer
  * @param excludedPath path where write unit and selector to exclude from the search
  */
-Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const char *excludedPath) noexcept
-    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath)
+Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept
+    : camera(camera), units(Finder::getUnits(camera)), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr)
 {
-    units = Finder::getUnits(camera);
     excluded = getExcluded();
 };
 

@@ -2,19 +2,29 @@
 #define DRIVER_HPP
 
 #include <cstdint>
+#include <string>
 using namespace std;
 
-struct Driver
+class Driver
 {
-    char device[128];
+public:
+    string device;
     uint8_t unit;
     uint8_t selector;
     uint16_t size;
     uint8_t *control;
+
+    Driver(string device, uint8_t unit, uint8_t selector, uint16_t size, const uint8_t *control);
+
+    ~Driver();
+
+    Driver &operator=(const Driver &) = delete;
+    Driver(const Driver &) = delete;
+
 };
 
-void writeDriver(const char *driverFile, const Driver *driver);
+void writeDriver(string driverFile, const Driver *driver);
 
-Driver *readDriver(const char *driverFile);
+Driver *readDriver(string driverFile);
 
 #endif

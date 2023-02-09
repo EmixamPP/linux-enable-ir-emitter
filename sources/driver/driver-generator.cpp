@@ -60,8 +60,7 @@ int main(int, const char *argv[])
         for (unsigned i = 0; i < emitters; ++i)
         {
             string driverPath = workspace + deviceName + "_emitter" + to_string(i) + ".driver"; ;
-            writeDriver(driverPath.c_str(), driver[i]);
-            delete driver[i]->control;
+            writeDriver(driverPath, driver[i]);
             delete driver[i];
         }
         delete[] driver;

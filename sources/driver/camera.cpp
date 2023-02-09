@@ -47,7 +47,7 @@ void Camera::openFd()
     if (fd < 0)
     {
         errno = 0;
-        fd = open(device, O_WRONLY);
+        fd = open(device.c_str(), O_WRONLY);
         if (fd < 0 || errno)
             throw CameraException(device);
     }
@@ -66,9 +66,9 @@ void Camera::closeFd() noexcept
     }
 }
 
-Camera::Camera(const char *device) : device(device)
+Camera::Camera(string device)
+    : id(Camera::deviceId(device.c_str())), device(device)
 {
-    id = deviceId(device);
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
 
@@ -245,17 +245,17 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
 }
 
 /**
- * @brief Print the control value in the standart output (without eol character)
+ * @brief Print the control value in the debug log
  *
- * @param ctrl control value
+ * @param prefixMasg what show before the control
+ * @param control control value
  * @param len size of the control value
  */
-void CameraInstruction::logDebugCtrl(const char *prefixMsg, const uint8_t *control, const uint16_t len) noexcept
+void CameraInstruction::logDebugCtrl(string prefixMsg, const uint8_t *control, const uint16_t len) noexcept
 {
-    string text = prefixMsg;
     for (uint16_t i = 0; i < len; ++i)
-        text += " " + to_string((int)control[i]);
-    Logger::debug(text.c_str());
+        prefixMsg += " " + to_string((int)control[i]);
+    Logger::debug(prefixMsg.c_str());
 }
 
 /**
@@ -286,10 +286,8 @@ bool CameraInstruction::isMinConsistent() noexcept
  * @throw CameraInstructionException if unit + selector are invalid or if the instruction cannot be modfied
  */
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
+    : unit(unit), selector(selector)
 {
-    this->unit = unit;
-    this->selector = selector;
-
     // get the control instruction lenght
     ctrlSize = camera.lenUvcQuery(unit, selector);
     if (ctrlSize == 0)
@@ -313,7 +311,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
         logDebugCtrl("minimum:", minCtrl, ctrlSize);
     else
     {
-        delete minCtrl;
+        delete[] minCtrl;
         minCtrl = nullptr;
     }
 
@@ -342,21 +340,18 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
  * @param selector of the instruction
  * @param control instruction
  */
-CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, uint8_t *control, uint16_t size) : unit(unit), selector(selector), ctrlSize(size), maxCtrl(nullptr), minCtrl(nullptr), resCtrl(nullptr)
+CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, uint8_t *control, uint16_t size)
+    : unit(unit), selector(selector), ctrlSize(size), curCtrl(new uint8_t[size])
 {
-    curCtrl = new uint8_t[size];
     memcpy(curCtrl, control, size * sizeof(uint8_t));
 }
 
 CameraInstruction::~CameraInstruction()
 {
-    delete curCtrl;
-    if (maxCtrl != nullptr)
-        delete maxCtrl;
-    if (maxCtrl != nullptr)
-        delete minCtrl;
-    if (maxCtrl != nullptr)
-        delete resCtrl;
+    delete[] curCtrl;
+    delete[] maxCtrl;
+    delete[] minCtrl;
+    delete[] resCtrl;
 }
 
 CameraInstruction &CameraInstruction::operator=(const CameraInstruction &other)

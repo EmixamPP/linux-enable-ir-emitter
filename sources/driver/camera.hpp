@@ -21,9 +21,9 @@ private:
     void closeFd() noexcept;
 
 public:
-    const char *device;
+    string device;
 
-    Camera(const char *device);
+    Camera(string device);
 
     ~Camera();
 
@@ -50,12 +50,12 @@ private:
     uint8_t unit;
     uint8_t selector;
     uint16_t ctrlSize;
-    uint8_t *curCtrl;
-    uint8_t *maxCtrl;
-    uint8_t *minCtrl;
-    uint8_t *resCtrl;
+    uint8_t *curCtrl = nullptr;
+    uint8_t *maxCtrl = nullptr;
+    uint8_t *minCtrl = nullptr;
+    uint8_t *resCtrl = nullptr;
 
-    static void logDebugCtrl(const char *prefixMsg, const uint8_t *control, const uint16_t len) noexcept;
+    static void logDebugCtrl(string prefixMsg, const uint8_t *control, const uint16_t len) noexcept;
 
     bool isMinConsistent() noexcept;
 
