@@ -24,7 +24,7 @@ int main(int, const char **argv)
     bool result;
     try
     {
-        Camera camera = Camera(driver->device);
+        Camera camera(driver->device);
         CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control, driver->size);
         result = camera.apply(instruction);
     }
