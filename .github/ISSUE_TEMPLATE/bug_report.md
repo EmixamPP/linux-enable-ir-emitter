@@ -19,4 +19,4 @@ assignees: ''
  - Distro: 
  - Version: 
  - Version of linux-enable-ir-emitter:
- - How did you install linux-enable-ir-emitter: <!--- COPR, AUR, PPA or bash -->
+ - How did you install linux-enable-ir-emitter: <!--- rpm, deb, manual build -->

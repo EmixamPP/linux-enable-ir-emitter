@@ -9,11 +9,6 @@ assignees: ''
 
 <!--- Please look at the wiki before open an issue -->
 
-**If you had 'ERROR: Impossible to reset the control' message, give the DEBUG info displayed**
-```
-DEBUG:
-```
-
 **Ouput of `linux-enable-ir-emitter -v -d /dev/videoX configure`**
 <!-- replace /dev/videoX with your device (/dev/video2 for default)-->
 <details><summary>configure command output</summary>
@@ -41,4 +36,4 @@ paste here
  - Distro: 
  - Version: 
  - Version of linux-enable-ir-emitter:
- - How did you install linux-enable-ir-emitter: <!--- COPR, AUR, PPA or bash -->
+ - How did you install linux-enable-ir-emitter: <!--- rpm, deb, manual build -->
