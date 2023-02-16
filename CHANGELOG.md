@@ -1,4 +1,4 @@
-# Maxime Dirksen - 4.4.0-beta
+# Fri Feb 17 2023 Maxime Dirksen - 4.4.0
 - Total rework of the implementation
 - Support multiple emitters camera
 - Memorize broken instructions to skip them 

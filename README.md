@@ -7,6 +7,8 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 This software was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
+ARM architecture are supported, refer directly to the manual build section. 
+
 Distributions repository are no longer supported, and will never be supported again.
 For more information, please read this [post](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/About-distributions-repository). 
 ### rpm package :  
@@ -29,13 +31,18 @@ makepkg -csi
 ``` 
 
 ### Manual build :
-The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : Python, OpenCV C++ libraries
+The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : Meson, Python, OpenCV C++ libraries
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
-sudo bash installer.sh install
+meson setup build
+sudo meson install -C build
+
+# if you are under Fedora are any system with SELinux
+sudo shell fix_SELinux.sh apply
 ```
-You can easily uninstall the software by executing `sudo bash installer.sh uninstall`.
+You can uninstall the software by executing `sudo ninja uninstall -C build`. 
+Or `sudo find / -name "linux-enable-ir-emitter" -exec rm -r "{}" \;`.
 
 ## How to enable your infrared emitter ?
 1. Ensure to not use the camera during the execution.
@@ -44,6 +51,7 @@ You can easily uninstall the software by executing `sudo bash installer.sh unins
     * You can specify your infrared camera with the option `-d`, by default it is `-d /dev/video2`.
     * If you have many emitters on the camera, specify it using the option `-e`. E.g. `-e 2` if you have 2 emitters.
 4. Answer to the asked questions.
+5. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 
