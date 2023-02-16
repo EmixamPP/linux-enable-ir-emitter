@@ -7,7 +7,6 @@ import subprocess
 from command import boot, run, configure, delete
 from globals import ExitCode, check_root
 
-
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-V", "--version",
         action="version",
-        version="%(prog)s 4.4.0-beta\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 4.4.0\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit"
     )
     parser.add_argument(
@@ -77,25 +76,25 @@ if __name__ == "__main__":
         v4l_device = subprocess.run(f"find -L /dev/v4l/by-path -samefile {device}", shell=True, capture_output=True)
         v4l_device = v4l_device.stdout.decode('utf-8').strip()
         if (len(v4l_device) == 0):
-            logging.critical(f"The device {device} does not exists or is not a valid v4l camera.")
+            logging.critical(f"The device {device} does not exists or is not a supported v4l camera.")
             exit(ExitCode.FAILURE)
         device = v4l_device
         
     # Execute the desired command
     if args.command == "run":
-        run.execute(device)
+        run(device)
 
     elif args.command == "configure":
         check_root()
-        configure.execute(device, args.emitters[0], args.limit[0])
+        configure(device, args.emitters[0], args.limit[0])
 
     elif args.command == "boot":
         check_root()
-        boot.execute(args.boot_status)
+        boot(args.boot_status)
     
     elif args.command == "delete":
         check_root()
-        delete.execute(device)
+        delete(device)
 
     else:
         parser.print_help()

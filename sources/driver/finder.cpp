@@ -95,7 +95,7 @@ vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
         string line;
         getline(file, line);
         uint8_t unit, selector;
-        sscanf(line.c_str(), "%hhd %hhd", &unit, &selector);
+        sscanf(line.c_str(), "%hhu %hhu", &unit, &selector);
         excludedList->push_back(pair<uint8_t, uint8_t>(unit, selector));
     }
 
@@ -213,10 +213,12 @@ Driver **Finder::find()
             catch (CameraException &e)
             {
                 Logger::error("Impossible to reset the camera.");
-                Logger::info("Please shut down your computer, boot and retry.");
+                Logger::info("Please shut down your computer, then boot and retry.");
                 addToExclusion(unit, selector);
                 throw e; // propagate to exit
             }
         }
+
+    delete[] drivers;
     return nullptr;
 }

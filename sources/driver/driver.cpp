@@ -62,9 +62,9 @@ Driver *readDriver(string driverFile)
     uint8_t unit, selector;
     uint16_t size;
     fscanf(file, " device=%s*", device);
-    fscanf(file, " unit=%hhd", &unit);
-    fscanf(file, " selector=%hhd", &selector);
-    fscanf(file, " size=%hd", &size);
+    fscanf(file, " unit=%hhu", &unit);
+    fscanf(file, " selector=%hhu", &selector);
+    fscanf(file, " size=%hu", &size);
     uint8_t *control = new uint8_t[size];
     for (unsigned i = 0; i < size; ++i)
     {

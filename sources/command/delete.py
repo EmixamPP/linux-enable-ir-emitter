@@ -5,7 +5,7 @@ from typing import NoReturn
 from globals import ExitCode, get_drivers_path
 
 
-def execute(device: str) -> NoReturn:
+def delete(device: str) -> NoReturn:
     """Remove the driver associated to a device, 
     without causing error if the driver does not exists
 

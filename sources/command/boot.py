@@ -2,10 +2,9 @@ import logging
 from typing import NoReturn
 
 from globals import ExitCode, get_devices
-from Systemd import Systemd
+from systemd import Systemd
 
-
-def execute(boot_status: str) -> NoReturn:
+def boot(boot_status: str) -> NoReturn:
     """Enable or disable the systemd service which 
         activates the ir emitter for all configured device
 

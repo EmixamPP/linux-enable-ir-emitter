@@ -1,10 +1,9 @@
 import subprocess
 import logging
 import os
-from configparser import ConfigParser
 from typing import List
 
-from globals import SYSTEMD_PATH, UDEV_RULE_PATH, SYSTEMD_NAME, get_kernels, get_index
+from globals import UDEV_RULE_PATH, SYSTEMD_NAME, get_kernels, get_index
 
 
 """DOCUMENTATION
@@ -24,7 +23,7 @@ class Systemd:
         """Create a boot service for run the drivers
 
         Args:
-            devices : devices for which a driver will be run, /dev/videoX form required
+            devices : devices for which a driver will be run
         """
         self.devices = devices
 
@@ -40,7 +39,6 @@ class Systemd:
         if exit_code:
             logging.error("The boot service does not exists.")
         else:
-            os.remove(SYSTEMD_PATH)
             os.remove(UDEV_RULE_PATH)
 
         return exit_code
@@ -53,7 +51,6 @@ class Systemd:
             other value: Error with the boot service.
         """
         self._create_udev()
-        self._create_systemd()
 
         exit_code = subprocess.run(["udevadm", "control", "--reload-rules"], capture_output=True).returncode
         exit_code = exit_code + subprocess.run(["udevadm", "trigger"], capture_output=True).returncode
@@ -81,12 +78,6 @@ class Systemd:
             print(exec.stdout.decode('utf-8').strip())
         return exec.returncode
 
-    def _create_systemd(self) -> None:
-        """Create the service file at SYSTEMD_PATH"""
-        systemd = self._initialize_systemd()
-        with open(SYSTEMD_PATH, 'w') as service_file:
-            systemd.write(service_file)
-
     def _create_udev(self) -> None:
         """Create the rule file at UDEV_RULE_PATH"""
         with open(UDEV_RULE_PATH, 'w') as rule_file:
@@ -94,36 +85,5 @@ class Systemd:
                 kernels = get_kernels(device)
                 index = get_index(device)
 
-                rule1 = 'ACTION=="add|change", KERNELS==%s, ATTR{index}==%s, RUN+="/usr/bin/linux-enable-ir-emitter run"'%(kernels, index)
-                rule2 = 'KERNELS==%s, ATTR{index}==%s, TAG+="systemd"'%(kernels, index) # create systemd .device for all device
-
-                rule_file.write(rule1 + "\n")
-                rule_file.write(rule2 + "\n")
-
-    def _initialize_systemd(self) -> ConfigParser:
-        """Represent the systemd service file by a ConfigParser.
-
-        Returns:
-            ConfigParser: the systemd service 
-        """
-        service = ConfigParser()
-        service.optionxform = str
-
-        service["Unit"] = {}
-        service["Unit"]["Description"] = "enable the infrared emitter"
-        service["Unit"]["Requires"] = ""
-        service["Unit"]["After"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
-        for device in self.devices:  # wait for all device
-            dev = " dev-{}.device".format(device[5:])
-            service["Unit"]["After"] += dev
-            service["Unit"]["Requires"] += dev
-
-        service["Service"] = {}
-        service["Service"]["Type"] = "oneshot"
-        service["Service"]["ExecStartPre"] = "/sbin/modprobe uvcvideo"
-        service["Service"]["ExecStart"] = "/usr/bin/linux-enable-ir-emitter run"
-
-        service["Install"] = {}
-        service["Install"]["WantedBy"] = "multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target"
-
-        return service
+                rule = 'ACTION=="add|change", KERNELS==%s, ATTR{index}==%s, RUN+="/usr/bin/linux-enable-ir-emitter run"\n'%(kernels, index)
+                rule_file.write(rule)

@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string>
+#include <cstring>
 #include <errno.h>
 #include <vector>
 #include <sys/ioctl.h>
@@ -88,14 +89,14 @@ Camera::~Camera()
  */
 bool Camera::apply(CameraInstruction instruction) noexcept
 {
-    uint8_t control[instruction.getSize()] = {};
+    uint8_t *control = new uint8_t[instruction.getSize()];
     memcpy(control, instruction.getCurrent(), instruction.getSize() * sizeof(uint8_t));
     const struct uvc_xu_control_query query = {
-        .unit = instruction.getUnit(),
-        .selector = instruction.getSelector(),
-        .query = UVC_SET_CUR,
-        .size = instruction.getSize(),
-        .data = control,
+        instruction.getUnit(),
+        instruction.getSelector(),
+        UVC_SET_CUR,
+        instruction.getSize(),
+        control,
     };
     return executeUvcQuery(&query) == 0;
 }
@@ -185,11 +186,11 @@ int Camera::executeUvcQuery(const struct uvc_xu_control_query *query) noexcept
 int Camera::setUvcQuery(uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control) noexcept
 {
     const struct uvc_xu_control_query query = {
-        .unit = unit,
-        .selector = selector,
-        .query = UVC_SET_CUR,
-        .size = controlSize,
-        .data = control,
+        unit,
+        selector,
+        UVC_SET_CUR,
+        controlSize,
+        control,
     };
 
     return executeUvcQuery(&query);
@@ -209,11 +210,11 @@ int Camera::setUvcQuery(uint8_t unit, uint8_t selector, uint16_t controlSize, ui
 int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control) noexcept
 {
     const struct uvc_xu_control_query query = {
-        .unit = unit,
-        .selector = selector,
-        .query = query_type,
-        .size = controlSize,
-        .data = control,
+        unit,
+        selector,
+        query_type,
+        controlSize,
+        control,
     };
 
     return executeUvcQuery(&query);
@@ -231,11 +232,11 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
 {
     uint8_t len[2] = {0x00, 0x00};
     const struct uvc_xu_control_query query = {
-        .unit = unit,
-        .selector = selector,
-        .query = UVC_GET_LEN,
-        .size = 2,
-        .data = len,
+        unit,
+        selector,
+        UVC_GET_LEN,
+        2,
+        len,
     };
 
     if (executeUvcQuery(&query))
