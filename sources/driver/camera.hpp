@@ -14,7 +14,7 @@ private:
     int id;
     int fd = -1;
 
-    static int deviceId(const char *device) noexcept;
+    static int deviceId(const char *device);
 
     void openFd();
 

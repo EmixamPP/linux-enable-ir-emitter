@@ -43,8 +43,6 @@ int main(int, const char *argv[])
     if (atoi(argv[5]) == 1)
         Logger::enableDebug();
 
-    cout << "oki";
-
     try
     {
         Camera camera(device.c_str());

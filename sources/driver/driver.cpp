@@ -61,16 +61,20 @@ Driver *readDriver(string driverFile)
     char device[128];
     uint8_t unit, selector;
     uint16_t size;
-    fscanf(file, " device=%s*", device);
-    fscanf(file, " unit=%hhu", &unit);
-    fscanf(file, " selector=%hhu", &selector);
-    fscanf(file, " size=%hu", &size);
+    int count = 0;
+    count += fscanf(file, " device=%s*", device);
+    count += fscanf(file, " unit=%hhu", &unit);
+    count += fscanf(file, " selector=%hhu", &selector);
+    count += fscanf(file, " size=%hu", &size);
     uint8_t *control = new uint8_t[size];
     for (unsigned i = 0; i < size; ++i)
     {
         string key = " control" + to_string(i) + "=%d";
-        fscanf(file, key.c_str(), &control[i]);
+        count += fscanf(file, key.c_str(), &control[i]);
     }
+
+    if (count != 4 + size)
+        throw runtime_error("CRITICAL: The driver at " + string(driverFile) + " is corrupted");
 
     fclose(file);
     Driver *driver = new Driver(device, unit, selector, size, control);

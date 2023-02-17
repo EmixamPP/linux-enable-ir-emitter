@@ -28,13 +28,18 @@ using namespace std;
  * @param device path to the camera
  * @return the device id
  */
-int Camera::deviceId(const char *device) noexcept
+int Camera::deviceId(const char *device)
 {
 
-    char devDevice[16];
-    realpath(device, devDevice);
+    char *devDevice;
+    devDevice = realpath(device, NULL);
     int id;
-    sscanf(devDevice, "/dev/video%d", &id);
+    if (devDevice == NULL || sscanf(devDevice, "/dev/video%d", &id) != 1)
+    {
+        delete devDevice;
+        throw runtime_error("CRITICAL: Unable to obtain the /dev/videoX path");
+    }
+    delete devDevice;
     return id;
 }
 
@@ -260,7 +265,8 @@ void CameraInstruction::logDebugCtrl(string prefixMsg, const uint8_t *control, c
 }
 
 /**
- * @brief Check if minCtrl is coherent w.r.t. to maxCtrl
+ * @brief We remarked that sometimes the min instruction provided by the camera is not consistent
+ * i.e. its patern does not look right when compared to the current or max control.
  *
  * @return false if minCtrl is nullptr or not coherent, otherwise true
  */
@@ -270,7 +276,7 @@ bool CameraInstruction::isMinConsistent() noexcept
         return false;
 
     for (unsigned i = 0; i < ctrlSize; ++i)
-        if (minCtrl[i] > maxCtrl[i])
+        if (minCtrl[i] > curCtrl[i] || minCtrl[i] > maxCtrl[i])
             return false;
 
     return true;
@@ -300,13 +306,13 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
         throw CameraInstructionException(camera.device, unit, selector);
     logDebugCtrl("current:", curCtrl, ctrlSize);
 
-    // try to get the maximum control value (the value does not necessary exists)
+    // try to get the maximum control value (it does not necessary exists)
     maxCtrl = new uint8_t[ctrlSize];
     if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, ctrlSize, maxCtrl))
         memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
     logDebugCtrl("maximum:", maxCtrl, ctrlSize);
 
-    // try get the minimum control value (the value does not necessary exists)
+    // try get the minimum control value (it does not necessary exists)
     minCtrl = new uint8_t[ctrlSize];
     if (camera.getUvcQuery(UVC_GET_MIN, unit, selector, ctrlSize, minCtrl))
         logDebugCtrl("minimum:", minCtrl, ctrlSize);
@@ -316,19 +322,13 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
         minCtrl = nullptr;
     }
 
-    // try get the resolution control value (the value does not necessary exists)
+    // try to get the resolution control value (it does not necessary exists)
     resCtrl = new uint8_t[ctrlSize];
     if (camera.getUvcQuery(UVC_GET_RES, unit, selector, ctrlSize, resCtrl))
     {
         Logger::debug("Computing the resolution control.");
         for (unsigned i = 0; i < ctrlSize; ++i)
-        {
-            // step of 0 or 1
-            if (isMinConsistent())
-                resCtrl[i] = (uint8_t)minCtrl[i] != maxCtrl[i];
-            else
-                resCtrl[i] = (uint8_t)curCtrl[i] != maxCtrl[i];
-        }
+            resCtrl[i] = (uint8_t)curCtrl[i] != maxCtrl[i]; // step of 0 or 1
     }
     logDebugCtrl("resolution:", resCtrl, ctrlSize);
 }
