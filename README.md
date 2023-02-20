@@ -25,8 +25,9 @@ sudo dpkg -i linux-enable-ir-emitter-*.deb
 
 ### Arch distro based : 
 ``` shell
-git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
-cd linux-enable-ir-emitter/arch
+mkdir linux-enable-ir-emitter && cd linux-enable-ir-emitter
+curl -O https://raw.githubusercontent.com/EmixamPP/linux-enable-ir-emitter/master/packages/arch/PKGBUILD
+curl -O https://raw.githubusercontent.com/EmixamPP/linux-enable-ir-emitter/master/packages/arch/linux-enable-ir-emitter.install
 makepkg -csi
 ``` 
 
@@ -58,8 +59,3 @@ If you like the project, do not hesitate to star the repository to support me, t
 *Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before opening an issue.*
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
-
-## :hearts: Thanks to
-[@Bakunin-san](https://github.com/Bakunin-san) [@cchvuth](https://github.com/cchvuth) [@CharlesNRU](https://github.com/CharlesNRU) [@Diaoul](https://github.com/Diaoul) [@Eeems](https://github.com/Eeems) [@FabioLolix](https://github.com/FabioLolix) [@furcelay](https://github.com/furcelay) [@komex](https://github.com/komex) [@logicito](https://github.com/logicito) [@m4rtins](https://github.com/m4rtins) [@renyuneyun](https://github.com/renyuneyun) [@reolat](https://github.com/reolat) [@Stkai](https://github.com/Stkai) [@supdrewin](https://github.com/supdrewin)
-
-for having reported a bug, tested the version in development, contributed to the code or helped to maintain the distributions package.
