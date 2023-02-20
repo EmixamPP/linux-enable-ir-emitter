@@ -9,7 +9,7 @@ This software was created to use [Howdy](https://github.com/boltgolt/howdy), a W
 ## Installation
 ARM architecture are supported, refer directly to the manual build section. 
 
-Distributions repository are no longer supported, and will never be supported again.
+Distributions repository are no longer supported.
 For more information, please read this [post](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/About-distributions-repository). 
 ### rpm package :  
 Download the rpm package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
@@ -32,18 +32,18 @@ makepkg -csi
 ``` 
 
 ### Manual build :
-The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Issues#requirements) for further specification) : Meson, Python, OpenCV C++ libraries
+The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : Meson, Python, OpenCV C++ libraries
 ``` shell
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 meson setup build
 sudo meson install -C build
 
-# if you are under Fedora are any system with SELinux
+# if you are under Fedora or any system with SELinux
 sudo shell fix_SELinux.sh apply
 ```
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
-Or `sudo find / -name "linux-enable-ir-emitter" -exec rm -r "{}" \;`.
+Or `sudo find / -name "*linux-enable-ir-emitter*" -exec rm -r "{}" \;`.
 
 ## How to enable your infrared emitter ?
 1. Ensure to not use the camera during the execution.
