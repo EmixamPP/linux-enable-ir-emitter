@@ -8,10 +8,12 @@ project(
         'optimization=3',
         'warning_level=3',
         'prefix=/usr',
+        'prefer_static=true',
+        'default_library=static',
     ], 
 )
 
-opencv_dep = dependency('opencv4', version: ['>= 3.6.2'])
+opencv_dep = dependency('opencv4')
 
 executable(
     'driver-generator', 

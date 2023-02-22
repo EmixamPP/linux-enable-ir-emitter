@@ -1,6 +1,3 @@
-#include "camera.hpp"
-
-#include <iostream>
 #include <cstdint>
 #include <fcntl.h>
 #include <unistd.h>
@@ -16,11 +13,13 @@ using namespace std;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #include <opencv2/videoio.hpp>
 #include <opencv2/core/utils/logger.hpp>
 #pragma GCC diagnostic pop
 
 #include "logger.hpp"
+#include "camera.hpp"
 
 /**
  * @brief Obtain the id of any device path

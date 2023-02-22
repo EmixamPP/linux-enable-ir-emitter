@@ -1,34 +1,48 @@
 %global   debug_package %{nil}
+%global   opencv_version 4.7.0
 
 Name:     linux-enable-ir-emitter
 Version:  4.4.0
-Release:  1%{?dist}
+Release:  3%{?dist}
 Summary:  Enables infrared cameras that are not directly enabled out-of-the box
 URL:      https://github.com/EmixamPP/%{name}
 License:  MIT
 
-Source0: linux-enable-ir-emitter
-Source1: lib
+Source0: https://github.com/EmixamPP/%{name}/archive/refs/tags/%{version}.tar.gz
+Source1: https://github.com/opencv/opencv/archive/%{opencv_version}.zip
+Source2: lib
+
 
 BuildRequires: meson >= 0.61.0
-BuildRequires: gcc-c++ >= 5.5.0
-BuildRequires: opencv-devel >= 3.4.4
-BuildRequires: libgcc
-BuildRequires: libstdc++
-BuildRequires: glibc
+BuildRequires: cmake
 
 Requires: python3 >= 3.6.2
+
 
 %description
 Enables infrared cameras that are not directly enabled out-of-the box.
 
+%prep
+tar -xzf %{SOURCE0}
+unzip %{SOURCE1}
+
 %build
-cd %{SOURCE0}
-meson setup build
+# build minimal opencv
+mkdir -p %{_builddir}/opencv-%{opencv_version}/build && cd %{_builddir}/opencv-%{opencv_version}/build
+cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_LIST=videoio -DOPENCV_GENERATE_PKGCONFIG=YES -DCMAKE_INSTALL_PREFIX=./install_dir
+cmake --build .
+make install
+
+# build linux-enable-ir-emitter
+cd %{_builddir}/%{name}-%{version}
+meson setup build --pkg-config-path %{_builddir}/opencv-%{opencv_version}/build/install_dir/lib64/pkgconfig
 
 %install
-DESTDIR=%{buildroot} meson install -C %{SOURCE0}/build
-install -Dm 644 %{SOURCE1}/* -t %{buildroot}%{_libdir}/%{name}/lib
+# install linux-enable-ir-emitter
+DESTDIR=%{buildroot} meson install -C %{_builddir}/%{name}-%{version}/build
+
+# install lib non statically linked to linux-enable-ir-emitter
+install -Dm 644 %{SOURCE2}/* -t %{buildroot}%{_libdir}/%{name}/lib
 
 %files
 %{_libdir}/%{name}
