@@ -3,7 +3,7 @@ Maintainer: Maxime Dirksen (EmixamPP) <dev@emixam.be>
 Section: video
 Priority: important
 Standards-Version: 4.4.0
-Build-Depends: debhelper, dh-make, fakeroot, libopencv-dev (>= 3.4.4), meson (>= 0.61.0)
+Build-Depends: debhelper, dh-make, fakeroot, meson (>= 0.61.0), cmake
 Homepage: https://github.com/EmixamPP/linux-enable-ir-emitter
 
 Package: linux-enable-ir-emitter

@@ -18,7 +18,7 @@ sudo rpm -iv --nodeps linux-enable-ir-emitter-*.rpm
 ```
 
 ### deb package : 
-~~Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:~~ Temporarily unavaible, it will be fixed soon
+Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo dpkg -i linux-enable-ir-emitter-*.deb
 ```
