@@ -13,18 +13,18 @@ Distributions repository are no longer supported.
 For more information, please read this [post](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/About-distributions-repository). 
 ### rpm package :  
 Download the rpm package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
-``` shell
+```
 sudo rpm -iv --nodeps linux-enable-ir-emitter-*.rpm
 ```
 
 ### deb package : 
-Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
-``` shell
+~~Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:~~ Temporarily unavaible, it will be fixed soon
+```
 sudo dpkg -i linux-enable-ir-emitter-*.deb
 ```
 
 ### Arch distro based : 
-``` shell
+```
 mkdir linux-enable-ir-emitter && cd linux-enable-ir-emitter
 curl -O https://raw.githubusercontent.com/EmixamPP/linux-enable-ir-emitter/master/packages/arch/PKGBUILD
 curl -O https://raw.githubusercontent.com/EmixamPP/linux-enable-ir-emitter/master/packages/arch/linux-enable-ir-emitter.install
@@ -32,18 +32,37 @@ makepkg -csi
 ``` 
 
 ### Manual build :
-The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : Meson, Python, OpenCV C++ libraries
-``` shell
+The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : python, meson, cmake
+```
+# clone the git
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
-meson setup build
+
+# build a minimal version of opencv that will be staticaly linked 
+# not required you can use the shared opencv library package of your distro
+# but recommanded in order to do not have issues after distro updates
+wget -O opencv.zip https://github.com/opencv/opencv/archive/4.7.0.zip
+unzip opencv.zip
+mkdir -p opencv-4.7.0/build && cd opencv-4.7.0/build
+cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_LIST=videoio -DOPENCV_GENERATE_PKGCONFIG=YES -DCMAKE_INSTALL_PREFIX=./tmp_install
+cmake --build .
+make install
+cd ../../
+
+# build linux-enable-ir-emitter
+# remove the option --pkg-config-path if you didn't build opencv
+meson setup build --pkg-config-path opencv-4.7.0/build/tmp_install/lib*/pkgconfig
 sudo meson install -C build
 
 # if you are under Fedora or any system with SELinux
 sudo shell fix_SELinux.sh apply
+
+# clean all
+# if perhaps you wish to uninstall it,
+# just save the linux-enable-ir-emitter/build directory
+cd ../ && rm -r linux-enable-ir-emitter
 ```
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
-Or `sudo find / -name "*linux-enable-ir-emitter*" -exec rm -r "{}" \;`.
 
 ## How to enable your infrared emitter ?
 1. Ensure to not use the camera during the execution.
