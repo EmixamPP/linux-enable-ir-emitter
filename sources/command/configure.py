@@ -2,7 +2,7 @@ import logging
 from typing import NoReturn
 import subprocess
 
-from globals import ExitCode, BIN_DRIVER_GENERATOR_PATH, SAVE_DRIVER_FOLDER_PATH, BIN_ENV
+from globals import ExitCode, BIN_DRIVER_GENERATOR_PATH, SAVE_DRIVER_FOLDER_PATH
 from command import boot
 
 
@@ -18,7 +18,7 @@ def configure(device: str, emitters: int, neg_answer_limit: int) -> NoReturn:
     logging.info("Warning to do not kill the process !")
 
     log_level = int(logging.getLogger().level == logging.DEBUG)
-    exit_code = subprocess.call([BIN_DRIVER_GENERATOR_PATH, device, str(emitters), str(neg_answer_limit), SAVE_DRIVER_FOLDER_PATH, str(log_level)], env=BIN_ENV)
+    exit_code = subprocess.call([BIN_DRIVER_GENERATOR_PATH, device, str(emitters), str(neg_answer_limit), SAVE_DRIVER_FOLDER_PATH, str(log_level)])
 
     if exit_code != ExitCode.SUCCESS:
         logging.error("The configuration has failed.")

@@ -8,12 +8,10 @@ project(
         'optimization=3',
         'warning_level=3',
         'prefix=/usr',
-        'prefer_static=true',
-        'default_library=static',
     ], 
 )
 
-opencv_dep = dependency('opencv4')
+opencv_dep = dependency('opencv4', static: true)
 
 executable(
     'driver-generator', 
@@ -39,13 +37,16 @@ executable(
 )
 
 install_data(
-    [
-        'LICENSE',
-        'README.md',
-        'sources/globals.py', 
-        'sources/linux-enable-ir-emitter.py'
-    ],
+    'LICENSE',
+    'README.md',
+    'sources/globals.py', 
     install_dir : get_option('libdir') / meson.project_name(),
+)
+
+install_data(
+    'sources/linux-enable-ir-emitter.py',
+    install_dir : get_option('libdir') / meson.project_name(),
+    install_mode: 'rwxr-xr-x',
 )
 
 install_symlink(
@@ -55,28 +56,22 @@ install_symlink(
 )
 
 install_data(
-    [
-        'sources/command/__init__.py',
-        'sources/command/boot.py',
-        'sources/command/configure.py',
-        'sources/command/delete.py',
-        'sources/command/run.py',
-    ],
+    'sources/command/__init__.py',
+    'sources/command/boot.py',
+    'sources/command/configure.py',
+    'sources/command/delete.py',
+    'sources/command/run.py',
     install_dir : get_option('libdir') / meson.project_name() / 'command',
 )
 
 install_data(
-    [
-        'sources/systemd/__init__.py',
-        'sources/systemd/Systemd.py',
-    ],
+    'sources/systemd/__init__.py',
+    'sources/systemd/Systemd.py',
     install_dir : get_option('libdir') / meson.project_name() / 'systemd',
 )
 
 install_data(
-    [
-        'sources/systemd/linux-enable-ir-emitter.service',
-    ],
+    'sources/systemd/linux-enable-ir-emitter.service',
     install_dir : 'lib/systemd/system',
 )
 
@@ -86,8 +81,6 @@ install_subdir(
 )
 
 install_data(
-    [
-        'sources/autocomplete/linux-enable-ir-emitter',
-    ],
+    'sources/autocomplete/linux-enable-ir-emitter',
     install_dir : get_option('datadir') / 'bash-completion/completions',
 )

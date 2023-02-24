@@ -8,13 +8,7 @@ opencv_version = 4.7.0
 	dh $@
 
 build:
-	mkdir -p opencv-${opencv_version}/build
-	cd opencv-${opencv_version}/build
-	cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_LIST=videoio -DOPENCV_GENERATE_PKGCONFIG=YES -DCMAKE_INSTALL_PREFIX=./install_dir
-	cmake --build .
-	make install
-
-	cd ../../
+	sh build_opencv.sh
 	meson setup build --pkg-config-path opencv-${opencv_version}/build/install_dir/lib/pkgconfig/
 
 override_dh_auto_install:

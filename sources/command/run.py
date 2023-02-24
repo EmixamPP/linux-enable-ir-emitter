@@ -2,7 +2,7 @@ import logging
 import subprocess
 from typing import NoReturn
 
-from globals import ExitCode, BIN_EXECUTE_DRIVER_PATH, BIN_ENV, get_drivers_path
+from globals import ExitCode, BIN_EXECUTE_DRIVER_PATH, get_drivers_path
 
 
 def run(device: str) -> NoReturn:
@@ -20,7 +20,7 @@ def run(device: str) -> NoReturn:
 
     general_exit_code = ExitCode.SUCCESS
     for driver in paths:
-        exit_code = subprocess.call([BIN_EXECUTE_DRIVER_PATH, driver], env=BIN_ENV)
+        exit_code = subprocess.call([BIN_EXECUTE_DRIVER_PATH, driver])
         if exit_code != ExitCode.SUCCESS:
             general_exit_code = exit_code
             logging.error("Impossible to execute the driver at %s.", driver)

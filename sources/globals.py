@@ -15,13 +15,6 @@ BIN_DIR_PATH = LOCAL_PATH + "/bin/"
 BIN_EXECUTE_DRIVER_PATH = BIN_DIR_PATH + "execute-driver"
 BIN_DRIVER_GENERATOR_PATH = BIN_DIR_PATH + "driver-generator"
 
-LIB_DIR_PATH = LOCAL_PATH + "/lib/"
-BIN_ENV = os.environ.copy()
-if "LD_LIBRARY_PATH" in BIN_ENV:
-    BIN_ENV["LD_LIBRARY_PATH"] = LIB_DIR_PATH + BIN_ENV["LD_LIBRARY_PATH"]
-else:
-    BIN_ENV["LD_LIBRARY_PATH"] = LIB_DIR_PATH 
-
 SYSTEMD_NAME = "linux-enable-ir-emitter.service"
 UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
 UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME

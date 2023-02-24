@@ -1,3 +1,10 @@
+linux-enable-ir-emitter (4.4.2) jammy; urgency=medium
+
+    * Fix command not found
+    * Smaller size
+
+ -- Maxime Dirksen <dev@emixam.be>  Fri, 24 Feb 2023 12:00:00 +0200
+
 linux-enable-ir-emitter (4.4.0) jammy; urgency=medium
 
     * Total rework of the implementation

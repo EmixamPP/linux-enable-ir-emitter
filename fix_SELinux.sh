@@ -1,11 +1,9 @@
 #!/bin/sh
 
 apply() {
-    # equivalance rule between lib and lib64
     semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
     semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
-    # linux-enable-ir-emitter can be installed in lib or lib64
-    restorecon -v /usr/lib*/linux-enable-ir-emitter/bin/*
+    restorecon -v /usr/lib64/linux-enable-ir-emitter/bin/*
 }
 
 undo() {

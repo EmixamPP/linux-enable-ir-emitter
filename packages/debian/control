@@ -2,7 +2,7 @@ Source: linux-enable-ir-emitter
 Maintainer: Maxime Dirksen (EmixamPP) <dev@emixam.be>
 Section: video
 Priority: important
-Standards-Version: 4.4.0
+Standards-Version: 4.4.2
 Build-Depends: debhelper, dh-make, fakeroot, meson (>= 0.61.0), cmake
 Homepage: https://github.com/EmixamPP/linux-enable-ir-emitter
 

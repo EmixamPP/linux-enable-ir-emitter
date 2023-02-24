@@ -21,8 +21,6 @@ sudo rpm -iv --nodeps linux-enable-ir-emitter-*.rpm
 Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo dpkg -i linux-enable-ir-emitter-*.deb
-# "command not found" fix :
-sudo chmod +x /usr/lib/x86_64-linux-gnu/linux-enable-ir-emitter/linux-enable-ir-emitter.py
 ```
 
 ### Arch distro based : 
@@ -40,20 +38,15 @@ The following dependencies are needed (see [wiki](https://github.com/EmixamPP/li
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 
-# build a minimal version of opencv that will be staticaly linked 
-# not required you can use the shared opencv library package of your distro
+# build a tiny version of opencv that will be statically linked
+# not required, you can use the shared opencv library package of your distro
 # but recommanded in order to do not have issues after distro updates
-wget -O opencv.zip https://github.com/opencv/opencv/archive/4.7.0.zip
-unzip opencv.zip
-mkdir -p opencv-4.7.0/build && cd opencv-4.7.0/build
-cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_LIST=videoio -DOPENCV_GENERATE_PKGCONFIG=YES -DCMAKE_INSTALL_PREFIX=./tmp_install
-cmake --build .
-make install
-cd ../../
+# if you do not understand what that means, do it
+sh build_opencv.sh
 
 # build linux-enable-ir-emitter
-# remove the option --pkg-config-path if you didn't build opencv
-meson setup build --pkg-config-path opencv-4.7.0/build/tmp_install/lib*/pkgconfig
+# remove the option --pkg-config-path ... if you have not built opencv
+meson setup build --pkg-config-path opencv-*/build/install_dir/lib*/pkgconfig
 sudo meson install -C build
 
 # if you are under Fedora or any system with SELinux
