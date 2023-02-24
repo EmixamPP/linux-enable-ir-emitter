@@ -21,6 +21,8 @@ sudo rpm -iv --nodeps linux-enable-ir-emitter-*.rpm
 Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo dpkg -i linux-enable-ir-emitter-*.deb
+# "command not found" fix :
+sudo chmod +x /usr/lib/x86_64-linux-gnu/linux-enable-ir-emitter/linux-enable-ir-emitter.py
 ```
 
 ### Arch distro based : 
