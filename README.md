@@ -14,7 +14,7 @@ For more information, please read this [post](https://github.com/EmixamPP/linux-
 ### rpm package :  
 Download the rpm package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo rpm -iv --nodeps linux-enable-ir-emitter-*.rpm
+sudo rpm -iv linux-enable-ir-emitter-*.rpm
 ```
 
 ### deb package : 
