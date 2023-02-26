@@ -8,6 +8,7 @@ assignees: ''
 ---
 
 <!--- Please look at the wiki before open an issue -->
+<!--- https://github.com/EmixamPP/linux-enable-ir-emitter/wiki -->
 
 **Describe your feature request**
 <!-- describe here -->

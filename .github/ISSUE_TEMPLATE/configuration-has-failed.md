@@ -8,6 +8,7 @@ assignees: ''
 ---
 
 <!--- Please look at the wiki before open an issue -->
+<!--- https://github.com/EmixamPP/linux-enable-ir-emitter/wiki -->
 
 **Ouput of `linux-enable-ir-emitter -v -d /dev/videoX configure`**
 <!-- replace /dev/videoX with your device (/dev/video2 for default)-->
@@ -33,7 +34,5 @@ paste here
 </details>
 
 **Additional info**
- - Distro: 
- - Version: 
- - Version of linux-enable-ir-emitter:
- - How did you install linux-enable-ir-emitter: <!--- rpm, deb, manual build -->
+ - Computer (or camera) model: 
+ - Version of linux-enable-ir-emitter: <!--- linux-enable-ir-emitter -V -->
