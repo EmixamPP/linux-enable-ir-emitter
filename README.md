@@ -2,7 +2,7 @@
 
 Provides support for infrared cameras that are not directly enabled out-of-the box (at the very least, the kernel must recognise your infrared camera). The purpose of this repository is to activate the emitter when the infrared camera is called.
 
-`linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for any (UVC) infrared emitter.
+`linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for almost any (UVC) infrared emitter.
 
 This software was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
@@ -10,7 +10,7 @@ This software was created to use [Howdy](https://github.com/boltgolt/howdy), a W
 ARM architecture are supported, refer directly to the manual build section. Distributions repository and package are no longer supported.
 For more information, please read this [post](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/About-distributions-repository). 
  
-Download the last `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
 # if you are under Fedora or any system with SELinux
