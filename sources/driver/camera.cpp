@@ -5,6 +5,7 @@
 #include <cstring>
 #include <errno.h>
 #include <vector>
+#include <numeric>
 #include <sys/ioctl.h>
 #include <linux/usb/video.h>
 #include <linux/uvcvideo.h>
@@ -20,6 +21,18 @@ using namespace std;
 
 #include "logger.hpp"
 #include "camera.hpp"
+
+int array_gcd(const uint8_t *arr, uint16_t size)
+{
+    int result = arr[0];
+    for (int i = 1; i < size; ++i)
+    {
+        result = gcd(arr[i], result);
+        if (result == 1)
+            return 1;
+    }
+    return result;
+}
 
 /**
  * @brief Obtain the id of any device path
@@ -264,21 +277,51 @@ void CameraInstruction::logDebugCtrl(string prefixMsg, const uint8_t *control, c
 }
 
 /**
- * @brief We remarked that sometimes the min instruction provided by the camera is not consistent
- * i.e. its patern does not look right when compared to the current or max control.
+ * @brief Compute the resolution control instruction composed of 0 or 1
+ * by comparing two controls instruction
+ * we assume isReachable(first, res, second, size) is true
  *
- * @return false if minCtrl is nullptr or not coherent, otherwise true
+ * @param first the first instruction
+ * @param second the second instruction
+ * @param res the resolution instruction will be stored in it
+ * @param size of the instructions
  */
-bool CameraInstruction::isMinConsistent() noexcept
+void CameraInstruction::computeResCtrl(const uint8_t *first, const uint8_t *second, uint8_t *res, const uint16_t size) noexcept
 {
-    if (minCtrl == nullptr)
-        return false;
+    int secondGcd = array_gcd(second, size);
 
-    for (unsigned i = 0; i < ctrlSize; ++i)
-        if (minCtrl[i] > curCtrl[i] || minCtrl[i] > maxCtrl[i])
-            return false;
+    if (secondGcd > 1)
+        for (unsigned i = 0; i < size; ++i)
+            res[i] = (second[i] - first[i]) / secondGcd;
+    else
+        for (unsigned i = 0; i < size; ++i)
+            res[i] = (uint8_t)second[i] != first[i];
+}
 
-    return true;
+/**
+ * @brief Check if a resolution control allow to reach a control from another
+ *
+ * @param base instruction from which the resolution must be added
+ * @param res the resolution control
+ * @param toReach the instruction to reach
+ * @param size of the instructions
+ * @return true if reacheable, otherwise false
+ */
+bool CameraInstruction::isReachable(const uint8_t *base, const uint8_t *res, const uint8_t *toReach, const uint16_t size) noexcept
+{
+    int it = 256;
+    for (unsigned i = 0; i < size; ++i)
+    {
+        if (res[i] != 0)
+        {
+            int newit = (toReach[i] - base[i]) / res[i]; // # iterations required for that value
+            if (newit < 0 || (newit != it && it != 256)) // negative iteration or not all value have the same # iterations
+                return false;
+            it = newit;
+        }
+    }
+
+    return it != 256;
 }
 
 /**
@@ -301,35 +344,55 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
 
     // get the current control value
     curCtrl = new uint8_t[ctrlSize];
-    if (camera.getUvcQuery(UVC_GET_CUR, unit, selector, ctrlSize, curCtrl))
+    if (camera.getUvcQuery(UVC_GET_CUR, unit, selector, ctrlSize, curCtrl) == 1)
         throw CameraInstructionException(camera.device, unit, selector);
-    logDebugCtrl("current:", curCtrl, ctrlSize);
+
+    // ensure the control can be modified
+    if (camera.setUvcQuery(unit, selector, ctrlSize, curCtrl) == 1)
+        throw CameraInstructionException(camera.device, unit, selector);
 
     // try to get the maximum control value (it does not necessary exists)
     maxCtrl = new uint8_t[ctrlSize];
-    if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, ctrlSize, maxCtrl))
-        memset(maxCtrl, 255, ctrlSize * sizeof(uint8_t)); // use the 255 array
-    logDebugCtrl("maximum:", maxCtrl, ctrlSize);
+    if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, ctrlSize, maxCtrl) == 1)
+        throw CameraInstructionException(camera.device, unit, selector);
 
     // try get the minimum control value (it does not necessary exists)
     minCtrl = new uint8_t[ctrlSize];
-    if (camera.getUvcQuery(UVC_GET_MIN, unit, selector, ctrlSize, minCtrl))
-        logDebugCtrl("minimum:", minCtrl, ctrlSize);
-    else
+    if (camera.getUvcQuery(UVC_GET_MIN, unit, selector, ctrlSize, minCtrl) == 1)
     {
         delete[] minCtrl;
         minCtrl = nullptr;
     }
 
     // try to get the resolution control value (it does not necessary exists)
+    // and check if it is consistent
     resCtrl = new uint8_t[ctrlSize];
-    if (camera.getUvcQuery(UVC_GET_RES, unit, selector, ctrlSize, resCtrl))
+    if (camera.getUvcQuery(UVC_GET_RES, unit, selector, ctrlSize, resCtrl) == 1 ||
+        !isReachable(curCtrl, resCtrl, maxCtrl, ctrlSize))
     {
         Logger::debug("Computing the resolution control.");
-        for (unsigned i = 0; i < ctrlSize; ++i)
-            resCtrl[i] = (uint8_t)curCtrl[i] != maxCtrl[i]; // step of 0 or 1
+
+        if (minCtrl != nullptr)
+        {
+            computeResCtrl(minCtrl, curCtrl, resCtrl, ctrlSize);
+            if (!isReachable(minCtrl, resCtrl, curCtrl, ctrlSize))
+            {
+                Logger::debug("Minimum not consistent, it will be ignored.");
+                delete[] minCtrl;
+                minCtrl = nullptr;
+                computeResCtrl(curCtrl, maxCtrl, resCtrl, ctrlSize);
+            }
+        }
+        else
+            computeResCtrl(curCtrl, maxCtrl, resCtrl, ctrlSize);
     }
+
+    logDebugCtrl("current:", curCtrl, ctrlSize);
+    logDebugCtrl("maximum:", maxCtrl, ctrlSize);
+    if (minCtrl != nullptr)
+        logDebugCtrl("minimum:", minCtrl, ctrlSize);
     logDebugCtrl("resolution:", resCtrl, ctrlSize);
+    Logger::debug(("unit: " + to_string((int)unit) + " selector: " + to_string((int)selector)).c_str());
 }
 
 /**
@@ -465,14 +528,15 @@ uint8_t CameraInstruction::getSelector() const noexcept
 }
 
 /**
- * @brief If a minimun control instruction exists and is consistent,
+ * @brief If a minimun control instruction exists
+ * and is not already the current,
  * set the current control instruction with that value
  *
  * @return true if success, otherwise false
  */
 bool CameraInstruction::trySetMinAsCur() noexcept
 {
-    if (!isMinConsistent())
+    if (minCtrl == nullptr || memcmp(curCtrl, minCtrl, ctrlSize * sizeof(uint8_t)) == 0)
         return false;
 
     memcpy(curCtrl, minCtrl, ctrlSize * sizeof(uint8_t));
@@ -488,7 +552,8 @@ const char *CameraException::what()
     return message.c_str();
 }
 
-CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector) : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string((int)unit) + " selector:" + to_string((int)selector)) {}
+CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector)
+    : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string((int)unit) + " selector:" + to_string((int)selector)) {}
 
 const char *CameraInstructionException::what()
 {

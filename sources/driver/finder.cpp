@@ -170,10 +170,8 @@ Driver **Finder::find()
             if (isExcluded(unit, selector))
                 continue;
             try
-            {
+            {      
                 CameraInstruction instruction(camera, unit, selector);
-                // if (!camera.apply(instruction)) // ensure the instruction can be modified
-                //    continue;
                 CameraInstruction initInstruction = instruction; // copy for reset later
 
                 if (!instruction.trySetMinAsCur()) // if no min instruction exists
@@ -183,9 +181,7 @@ Driver **Finder::find()
                     else
                         continue;
                 }
-
-                Logger::debug(("unit: " + to_string((int)unit) + " selector: " + to_string((int)selector)).c_str());
-
+                
                 unsigned negAnswerCounter = 0;
                 do
                 {

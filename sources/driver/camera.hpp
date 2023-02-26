@@ -57,7 +57,9 @@ private:
 
     static void logDebugCtrl(string prefixMsg, const uint8_t *control, const uint16_t len) noexcept;
 
-    bool isMinConsistent() noexcept;
+    static void computeResCtrl(const uint8_t *first, const uint8_t *second, uint8_t *res, const uint16_t size) noexcept;
+
+    static bool isReachable(const uint8_t *base, const uint8_t *res, const uint8_t *toReach, const uint16_t size) noexcept;
 
 public:
     CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector);

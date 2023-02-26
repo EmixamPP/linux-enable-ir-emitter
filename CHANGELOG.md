@@ -1,3 +1,5 @@
+# Son Feb 26 2023 Maxime Dirksen - 4.5.0
+- Improvement of driver generation 
 # Fri Feb 24 2023 Maxime Dirksen - 4.4.2
 - Fix command not found
 - Smaller size
