@@ -4,5 +4,9 @@ __pycache__
 # Meson
 build
 
+# OpenCV
+opencv.zip
+opencv-*.*.*
+
 # Others
 .vscode

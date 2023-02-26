@@ -1,6 +1,0 @@
-#!/bin/bash
-
-# if last uninstallation (not after update)
-if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then    
-    systemctl disable linux-enable-ir-emitter &> /dev/null
-fi

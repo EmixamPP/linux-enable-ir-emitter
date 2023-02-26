@@ -7,41 +7,35 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 This software was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
-ARM architecture are supported, refer directly to the manual build section. 
-
-Distributions repository are no longer supported.
+ARM architecture are supported, refer directly to the manual build section. Distributions repository and package are no longer supported.
 For more information, please read this [post](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/About-distributions-repository). 
-### rpm package :  
-Download the rpm package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+ 
+Download the last `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo rpm -iv linux-enable-ir-emitter-*.rpm
-```
-
-### deb package : 
-Download the deb package [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
-```
-sudo dpkg -i linux-enable-ir-emitter-*.deb
+sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
+# if you are under Fedora or any system with SELinux
+sudo sh fix_SELinux.sh apply
 ```
 
-### Arch distro based : 
+It can be uninstalled by executing:
 ```
-mkdir linux-enable-ir-emitter && cd linux-enable-ir-emitter
-curl -O https://raw.githubusercontent.com/EmixamPP/linux-enable-ir-emitter/master/packages/arch/PKGBUILD
-curl -O https://raw.githubusercontent.com/EmixamPP/linux-enable-ir-emitter/master/packages/arch/linux-enable-ir-emitter.install
-makepkg -csi
-``` 
+sudo rm -r /usr/lib64/linux-enable-ir-emitter
+sudo rm -r /etc/linux-enable-ir-emitter
+sudo rm /usr/bin/linux-enable-ir-emitter
+sudo rm /usr/lib/systemd/system/linux-enable-ir-emitter.service
+sudo rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
+sudo rm /usr/share/bash-completition/completitions/linux-enable-ir-emitter
+```
 
 ### Manual build :
-The following dependencies are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : python, meson, cmake
+The following tools are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : meson, cmake
 ```
-# clone the git
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 
 # build a tiny version of opencv that will be statically linked
-# not required, you can use the shared opencv library package of your distro
+# not required, you can use the shared opencv library of your distro
 # but recommanded in order to do not have issues after distro updates
-# if you do not understand what that means, do it
 sh build_opencv.sh
 
 # build linux-enable-ir-emitter
@@ -50,12 +44,7 @@ meson setup build --pkg-config-path opencv-*/build/install_dir/lib*/pkgconfig
 sudo meson install -C build
 
 # if you are under Fedora or any system with SELinux
-sudo shell fix_SELinux.sh apply
-
-# clean all
-# if perhaps you wish to uninstall it,
-# just save the linux-enable-ir-emitter/build directory
-cd ../ && rm -r linux-enable-ir-emitter
+sudo sh fix_SELinux.sh apply
 ```
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
 
