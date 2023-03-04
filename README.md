@@ -13,8 +13,13 @@ For more information, please read this [post](https://github.com/EmixamPP/linux-
 Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
-# if you are under Fedora or any system with SELinux
-sudo sh fix_SELinux.sh apply
+```
+
+If you are under Fedora or any system with SELinux:, also execute: 
+```
+semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
+semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
+restorecon -v /usr/lib64/linux-enable-ir-emitter/bin/*
 ```
 
 It can be uninstalled by executing:
@@ -29,23 +34,31 @@ sudo rm /usr/share/bash-completition/completitions/linux-enable-ir-emitter
 
 ### Manual build :
 The following tools are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : meson, cmake
+
+Clone the git:
 ```
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
+```
 
-# build a tiny version of opencv that will be statically linked
-# not required, you can use the shared opencv library of your distro
-# but recommanded in order to do not have issues after distro updates
+Build a tiny version of opencv that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
+```
 sh build_opencv.sh
+```
 
-# build linux-enable-ir-emitter
-# remove the option --pkg-config-path ... if you have not built opencv
+Build linux-enable-ir-emitter (remove the option --pkg-config-path ... if you have not built opencv):
+```
 meson setup build --pkg-config-path opencv-*/build/install_dir/lib*/pkgconfig
 sudo meson install -C build
-
-# if you are under Fedora or any system with SELinux
-sudo sh fix_SELinux.sh apply
 ```
+
+If you are under Fedora or any system with SELinux:, also execute: 
+```
+semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
+semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
+restorecon -v /usr/lib64/linux-enable-ir-emitter/bin/*
+```
+
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
 
 ## How to enable your infrared emitter ?
