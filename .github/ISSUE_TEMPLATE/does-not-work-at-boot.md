@@ -25,4 +25,5 @@ paste here
 
 **Additional info**
  - Computer (or camera) model: 
+ - Linux distribution:
  - Version of linux-enable-ir-emitter: <!--- linux-enable-ir-emitter -V -->
