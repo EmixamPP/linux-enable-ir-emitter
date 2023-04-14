@@ -12,7 +12,7 @@ For more information, please read this [post](https://github.com/EmixamPP/linux-
  
 Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
+sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
 
 If you are under Fedora or any system with SELinux:, also execute: 
