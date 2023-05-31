@@ -16,6 +16,7 @@ BIN_EXECUTE_DRIVER_PATH = BIN_DIR_PATH + "execute-driver"
 BIN_DRIVER_GENERATOR_PATH = BIN_DIR_PATH + "driver-generator"
 
 SYSTEMD_NAME = "linux-enable-ir-emitter.service"
+OPENRC_NAME = "linux-enable-ir-emitter"
 UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
 UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME
 

@@ -75,6 +75,17 @@ install_data(
     install_dir : 'lib/systemd/system',
 )
 
+install_data(
+    'sources/openrc/__init__.py',
+    'sources/openrc/Openrc.py',
+    install_dir : get_option('libdir') / meson.project_name() / 'openrc',
+)
+
+install_data(
+    'sources/openrc/linux-enable-ir-emitter',
+    install_dir : 'etc/init.d',
+)
+
 install_subdir(
     meson.project_name(),
     install_dir: get_option('sysconfdir'),

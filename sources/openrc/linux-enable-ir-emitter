@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+
+description="enable the infrared emitter"
+
+start_pre() {
+    modprobe uvcvideo
+}
+
+start() {
+    /usr/bin/linux-enable-ir-emitter run
+}
+
+depend() {
+    need localmount
+    after bootmisc
+}
