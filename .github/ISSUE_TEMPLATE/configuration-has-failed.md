@@ -33,6 +33,10 @@ paste here
 ```
 </details>
 
+**Give more information if you have**
+<!-- describe here if you have -->
+
 **Additional info**
  - Computer (or camera) model: 
+ - Linux distribution:
  - Version of linux-enable-ir-emitter: <!--- linux-enable-ir-emitter -V -->
