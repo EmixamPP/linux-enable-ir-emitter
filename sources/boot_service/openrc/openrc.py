@@ -1,21 +1,10 @@
 import logging
-import os
 import subprocess
-from typing import List
 
-from globals import SYSTEMD_NAME
+from globals import BOOT_SERVICE_NAME
+from boot_service import BaseBootService
 
-from ..base_service_manager import BaseServiceManager
-
-"""DOCUMENTATION
-- https://www.freedesktop.org/software/systemd/man/systemd.unit.html
-    info 1: systemd service type
-    info 2: systemctl exit code
-    info 3: systemd service dependencies
-"""
-
-
-class Systemd(BaseServiceManager):
+class Openrc(BaseBootService):
     @staticmethod
     def _enable() -> int:
         """Enable the service
@@ -25,10 +14,16 @@ class Systemd(BaseServiceManager):
             other value: Error with the boot service.
         """
         exit_code = subprocess.run(
-            ["systemctl", "enable", "--now", SYSTEMD_NAME], capture_output=True
+            ["rc-update", "add", BOOT_SERVICE_NAME, "default"], capture_output=True
         ).returncode
+        exit_code = (
+            exit_code
+            + subprocess.run(
+                ["rc-service", BOOT_SERVICE_NAME, "start"], capture_output=True
+            ).returncode
+        )
         if exit_code:
-            logging.error("Error with the systemd boot service.")
+            logging.error("Error with the openrc boot service.")
 
         return exit_code
 
@@ -41,7 +36,7 @@ class Systemd(BaseServiceManager):
             other value: The boot service does not exists.
         """
         return subprocess.run(
-            ["systemctl", "disable", SYSTEMD_NAME], capture_output=True
+            ["rc-update", "del", BOOT_SERVICE_NAME, "default"], capture_output=True
         ).returncode
 
     @staticmethod
@@ -51,12 +46,14 @@ class Systemd(BaseServiceManager):
             0: the service works fine
             other value: error with the boot service
         """
-        exec = subprocess.run(
-            ["systemctl", "status", SYSTEMD_NAME], capture_output=True
-        )
 
-        if exec.returncode == 4:
-            logging.error("The boot service does not exists.")
-        else:
-            print(exec.stdout.decode("utf-8").strip())
+        service_name = "linux-enable-ir-emitter"
+        exec= subprocess.run(["rc-status", "-a"], stdout=subprocess.PIPE, text=True)
+        output = exec.stdout
+
+        for line in output.split("\n"):
+            if service_name in line:
+                return 0
+
+        logging.error("The boot service does not exists.")
         return exec.returncode

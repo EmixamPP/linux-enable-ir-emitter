@@ -1,20 +1,12 @@
 from abc import ABCMeta, abstractmethod
 from typing import List
+import subprocess
+import logging
+import os
 
 from globals import UDEV_RULE_PATH, get_index, get_kernels
 
-"""DOCUMENTATION
-- Boot service manager control
-    Systemd
-    Openrc
-- https://stackoverflow.com/questions/47630139/camera-dev-video0-dependencies-in-systemd-service-ubuntu-16-04
-    info 1: modprobe uvcvideo command
-- https://wiki.archlinux.org/title/udev
-    info 1: udev rule run script
-"""
-
-
-class BaseServiceManager(metaclass=ABCMeta):
+class BaseBootService(metaclass=ABCMeta):
     """Manage the boot service of linux-enable-ir-emitter"""
 
     def __init__(self, devices: List[str]) -> None:
@@ -26,7 +18,6 @@ class BaseServiceManager(metaclass=ABCMeta):
         self.devices = devices
 
     @abstractmethod
-    @staticmethod
     def _enable() -> int:
         """Enable the service
 
@@ -36,7 +27,6 @@ class BaseServiceManager(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    @staticmethod
     def _disable() -> int:
         """Disable the service
 
@@ -46,7 +36,6 @@ class BaseServiceManager(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    @staticmethod
     def status() -> int:
         """Print the service status
         Returns:
@@ -72,7 +61,7 @@ class BaseServiceManager(metaclass=ABCMeta):
 
     @staticmethod
     def disable() -> int:
-        exit_code = BaseServiceManager._disable()
+        exit_code = BaseBootService._disable()
         if exit_code:
             logging.error("The boot service does not exists.")
         else:
