@@ -16,7 +16,7 @@ opencv_dep = dependency('opencv4', static: true)
 version = '4.5.0'
 lib_dir = get_option('libdir') / meson.project_name()
 lib_bin_dir = lib_dir / 'bin'
-conf_dir = get_option('sysconfdir')
+sysconf_dir = get_option('sysconfdir')
 systemd_dir = 'lib/systemd/system'
 autocomplete_dir = get_option('datadir') / 'bash-completion/completions'
 
@@ -61,11 +61,12 @@ install_symlink(
 )
 
 configure_paths_data = configuration_data({
-    'SAVE_DRIVER_FOLDER_PATH': conf_dir / meson.project_name(),
+    'SAVE_DRIVER_FOLDER_PATH': sysconf_dir / meson.project_name(),
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_bin_dir / 'execute-driver',
     'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_bin_dir / 'driver-generator',
-    'SYSTEMD_NAME': 'linux-enable-ir-emitter.service',
-    'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules'
+    'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
+    'BOOT_SERVICE_NAME': 'linux-enable-ir-emitter.service',
+    'BOOT_SERVICE_MANAGER': 'systemd'
 })
 configure_file(
     input : 'sources/globals.py.in',
@@ -90,31 +91,26 @@ install_data(
     install_dir : lib_dir / 'command',
 )
 
-install_data(
-    'sources/systemd/__init__.py',
-    'sources/systemd/Systemd.py',
-    install_dir : lib_dir / 'systemd',
-)
-
-install_data(
-    'sources/systemd/linux-enable-ir-emitter.service',
-    install_dir : systemd_dir,
-)
-
-install_data(
-    'sources/openrc/__init__.py',
-    'sources/openrc/Openrc.py',
-    install_dir : get_option('libdir') / meson.project_name() / 'openrc',
-)
-
-install_data(
-    'sources/openrc/linux-enable-ir-emitter',
-    install_dir : 'etc/init.d',
-)
-
 install_subdir(
     meson.project_name(),
-    install_dir: conf_dir,
+    install_dir: sysconf_dir,
+)
+
+install_data(
+    'sources/boot_service/__init__.py',
+    'sources/boot_service/base_boot_service.py',
+    install_dir : lib_dir / 'boot_service',
+)
+
+install_data(
+    'sources/boot_service/systemd/__init__.py',
+    'sources/boot_service/systemd/systemd.py',
+    install_dir : lib_dir / 'boot_service/systemd',
+)
+
+install_data(
+    'sources/boot_service/systemd/linux-enable-ir-emitter.service',
+    install_dir : systemd_dir,
 )
 
 install_data(
