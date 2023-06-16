@@ -7,17 +7,13 @@ import glob
 import re
 from typing import List
 
-SAVE_DRIVER_FOLDER_PATH = "/etc/linux-enable-ir-emitter/"
+SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@"
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+BIN_EXECUTE_DRIVER_PATH = "@BIN_EXECUTE_DRIVER_PATH@"
+BIN_DRIVER_GENERATOR_PATH = "@BIN_DRIVER_GENERATOR_PATH@"
 
-BIN_DIR_PATH = LOCAL_PATH + "/bin/"
-BIN_EXECUTE_DRIVER_PATH = BIN_DIR_PATH + "execute-driver"
-BIN_DRIVER_GENERATOR_PATH = BIN_DIR_PATH + "driver-generator"
-
-SYSTEMD_NAME = "linux-enable-ir-emitter.service"
-UDEV_RULE_NAME = "99-linux-enable-ir-emitter.rules"
-UDEV_RULE_PATH = "/etc/udev/rules.d/" + UDEV_RULE_NAME
+SYSTEMD_NAME = "@SYSTEMD_NAME@"
+UDEV_RULE_PATH = "@UDEV_RULE_PATH@"
 
 
 class ExitCode(enum.IntEnum):
@@ -48,7 +44,8 @@ def get_drivers_path(device: str = None) -> str:
     driverName = "*"
     if device is not None:
         driverName = device[device.rfind("/") + 1:] + driverName
-    return glob.glob(SAVE_DRIVER_FOLDER_PATH + driverName + ".driver")
+    path = os.path.join(SAVE_DRIVER_FOLDER_PATH, driverName + ".driver")
+    return glob.glob(path)
 
 
 def get_devices() -> List[str]:
