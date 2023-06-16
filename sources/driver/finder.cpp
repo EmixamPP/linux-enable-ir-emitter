@@ -144,6 +144,11 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
 Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept
     : camera(camera), units(Finder::getUnits(camera)), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr)
 {
+    string unitsStr = "Extension units: ";
+    for (auto it = units->begin(); it != units->end(); ++it)
+        unitsStr += to_string(*it) + " ";
+    Logger::debug(unitsStr.c_str());
+
     excluded = getExcluded();
 };
 
@@ -170,7 +175,7 @@ Driver **Finder::find()
             if (isExcluded(unit, selector))
                 continue;
             try
-            {      
+            {
                 CameraInstruction instruction(camera, unit, selector);
                 CameraInstruction initInstruction = instruction; // copy for reset later
 
@@ -181,7 +186,7 @@ Driver **Finder::find()
                     else
                         continue;
                 }
-                
+
                 unsigned negAnswerCounter = 0;
                 do
                 {
