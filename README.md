@@ -7,7 +7,9 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
-ARM architecture are supported, refer directly to the manual build section. Distributions repository and package are no longer supported.
+Directly refer to the manual buid section if you have an ARM architecture or your boot service manager is not Systemd but OpenRC. Stay here if you don't know what I'm talking about.
+
+Distributions repository and package are no longer officialy supported here.
 For more information, please read this [post](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/About-distributions-repository). 
  
 Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
@@ -39,6 +41,11 @@ Clone the git:
 ```
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
+```
+
+Only if you do not have Systemd but OpenRC (it is not officially supported, so the version maybe oudated):
+```
+cp sources/boot_service/openrc/meson.build .
 ```
 
 Build a tiny version of opencv that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
