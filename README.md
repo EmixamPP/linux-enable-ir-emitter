@@ -4,7 +4,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 
 `linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for almost any (UVC) infrared emitter.
 
-This software was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
+This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
 ARM architecture are supported, refer directly to the manual build section. Distributions repository and package are no longer supported.
@@ -15,7 +15,7 @@ Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https:
 sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
 
-If you are under Fedora or any system with SELinux:, also execute: 
+If you are under Fedora or any system with SELinux, also execute: 
 ```
 semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
 semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
@@ -52,7 +52,7 @@ meson setup build --pkg-config-path opencv-*/build/install_dir/lib*/pkgconfig
 sudo meson install -C build
 ```
 
-If you are under Fedora or any system with SELinux:, also execute: 
+If you are under Fedora or any system with SELinux, also execute: 
 ```
 semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
 semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
