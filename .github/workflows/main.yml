@@ -12,12 +12,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: 3.6.7
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
           sudo apt-get install -y libopencv-dev meson clang-tidy
-          pip install pylint
+          pip install pyright
 
       - name: Run meson
         run: |
@@ -30,4 +30,4 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint $(git ls-files '*.py')
+          python3 -m pyright $(git ls-files '*.py')
