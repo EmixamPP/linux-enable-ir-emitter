@@ -16,7 +16,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -y libopencv-dev meson clang-tidy
+          sudo apt-get install -y libevdev-dev libopencv-dev meson clang-tidy
           pip install pyright
 
       - name: Run meson
