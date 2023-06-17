@@ -1,0 +1,33 @@
+name: Build and Lint
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.6.2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y libopencv-dev meson clang-tidy
+          pip install pylint
+
+      - name: Run meson
+        run: |
+          meson setup build
+          meson compile -C build
+
+      - name: Run clang-tidy
+        run: |
+          ninja clang-tidy -C build
+
+      - name: Run pylint
+        run: |
+          pylint $(git ls-files '*.py')
