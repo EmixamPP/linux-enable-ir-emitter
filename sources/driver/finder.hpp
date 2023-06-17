@@ -20,7 +20,7 @@ private:
     const string excludedPath;
     const vector<pair<uint8_t, uint8_t>> *excluded;
 
-    static string *shellExec(const string cmd) noexcept;
+    static string *shellExec(string cmd) noexcept;
 
     static vector<uint8_t> *getUnits(const Camera &camera) noexcept;
 

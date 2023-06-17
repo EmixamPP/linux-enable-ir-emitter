@@ -45,14 +45,14 @@ int main(int, const char *argv[])
 
     try
     {
-        Camera camera(device.c_str());
+        Camera camera(device);
         if (camera.isEmitterWorking())
         {
             Logger::error("Your emiter is already working, skipping the configuration.");
             return EXIT_FAILURE;
         }
         
-        Finder finder(camera, emitters, negAnswerLimit, excludedPath.c_str());
+        Finder finder(camera, emitters, negAnswerLimit, excludedPath);
         Driver **driver = finder.find();
         if (driver == nullptr)
             return EXIT_FAILURE;

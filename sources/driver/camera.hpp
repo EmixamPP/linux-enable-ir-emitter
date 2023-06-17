@@ -55,11 +55,11 @@ private:
     uint8_t *minCtrl = nullptr;
     uint8_t *resCtrl = nullptr;
 
-    static void logDebugCtrl(string prefixMsg, const uint8_t *control, const uint16_t len) noexcept;
+    static void logDebugCtrl(string prefixMsg, const uint8_t *control, uint16_t len) noexcept;
 
-    static void computeResCtrl(const uint8_t *first, const uint8_t *second, uint8_t *res, const uint16_t size) noexcept;
+    static void computeResCtrl(const uint8_t *first, const uint8_t *second, uint8_t *res, uint16_t size) noexcept;
 
-    static bool isReachable(const uint8_t *base, const uint8_t *res, const uint8_t *toReach, const uint16_t size) noexcept;
+    static bool isReachable(const uint8_t *base, const uint8_t *res, const uint8_t *toReach, uint16_t size) noexcept;
 
 public:
     CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector);
@@ -92,9 +92,9 @@ private:
     string message;
 
 public:
-    CameraException(string device);
+    explicit CameraException(string device);
 
-    const char *what();
+    const char *what() const noexcept override;
 };
 
 class CameraInstructionException : public exception
@@ -103,9 +103,9 @@ private:
     string message;
 
 public:
-    CameraInstructionException(string device, uint8_t unit, uint8_t selector);
+    explicit CameraInstructionException(string device, uint8_t unit, uint8_t selector);
 
-    const char *what();
+    const char *what() const noexcept override;
 };
 
 #endif
