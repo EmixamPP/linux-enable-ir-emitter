@@ -2,10 +2,6 @@ name: Build and Lint
 
 on: [pull_request, workflow_dispatch]
 
-
-env:
-  opencv-version: 4.7.0
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,13 +18,13 @@ jobs:
         run: |
           sudo apt-get install -y meson clang-tidy
           pip install pyright
-          curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-${opencv-version}.tar.xz | tar -xJ
-          sed -i "3s@^prefix=.*@prefix=${PWD}/opencv-${opencv-version}@" opencv-${opencv-version}/lib64/pkgconfig/opencv4.pc 
+          curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
+          sed -i "3s@^prefix=.*@prefix=${PWD}/opencv-4.7.0@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
 
       - name: Run meson
         id: meson
         run: |
-          meson setup build --pkg-config-path opencv-${opencv-version}/lib64/pkgconfig 
+          meson setup build --pkg-config-path opencv-4.7.0/lib64/pkgconfig 
           meson compile -C build
 
       - name: Run clang-tidy
