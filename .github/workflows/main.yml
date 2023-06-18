@@ -10,24 +10,25 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -y libevdev-dev libopencv-dev meson clang-tidy
+          sudo apt-get install -y meson clang-tidy
           pip install pyright
+          curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
 
       - name: Run meson
         run: |
-          meson setup build
+          meson setup build --pkg-config-path opencv-4.7.0/lib64/pkgconfig 
           meson compile -C build
 
       - name: Run clang-tidy
         run: |
           ninja clang-tidy -C build
 
-      - name: Run pylint
+      - name: Run pyright
         run: |
-          python3 -m pyright $(git ls-files '*.py')
+          pyright $(git ls-files '*.py')
