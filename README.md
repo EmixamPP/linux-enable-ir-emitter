@@ -51,7 +51,7 @@ cp sources/boot_service/openrc/meson.build .
 Download a tiny version of opencv that will be statically linked. If you are on ARM plateform, you have to build it yourself by executing the [script here](https://github.com/EmixamPP/opencv-tiny/blob/main/build_opencv.sh). This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
 curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
-sed -i "3s@^prefix=.*@prefix=${PWD}/opencv-4.7.0@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
+sed -i "3s@prefix=@&${PWD}/@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
 ```
 
 Build linux-enable-ir-emitter (remove `--pkg-config-path...` if you skipped the previous step, or change the path by `opencv-*/build/install_dir/lib*/pkgconfig` if you built it yourself):
