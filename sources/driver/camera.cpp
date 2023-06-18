@@ -200,7 +200,7 @@ int Camera::executeUvcQuery(const struct uvc_xu_control_query *query) noexcept
  *
  * @return 1 if error, otherwise 0
  **/
-int Camera::setUvcQuery(uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control) noexcept
+int Camera::setUvcQuery(uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control) noexcept /* NOLINT(readability-non-const-parameter) */
 {
     const struct uvc_xu_control_query query = {
         unit,
@@ -224,7 +224,7 @@ int Camera::setUvcQuery(uint8_t unit, uint8_t selector, uint16_t controlSize, ui
  *
  * @return 1 if error, otherwise 0
  **/
-int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control) noexcept
+int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, uint16_t controlSize, uint8_t *control) noexcept /* NOLINT(readability-non-const-parameter) */
 {
     const struct uvc_xu_control_query query = {
         unit,
@@ -269,7 +269,7 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
  * @param control control value
  * @param len size of the control value
  */
-void CameraInstruction::logDebugCtrl(string prefixMsg, const uint8_t *control, const uint16_t len) noexcept
+void CameraInstruction::logDebugCtrl(string prefixMsg, const uint8_t *control, uint16_t len) noexcept
 {
     for (uint16_t i = 0; i < len; ++i)
         prefixMsg += " " + to_string((int)control[i]);
@@ -286,7 +286,7 @@ void CameraInstruction::logDebugCtrl(string prefixMsg, const uint8_t *control, c
  * @param res the resolution instruction will be stored in it
  * @param size of the instructions
  */
-void CameraInstruction::computeResCtrl(const uint8_t *first, const uint8_t *second, uint8_t *res, const uint16_t size) noexcept
+void CameraInstruction::computeResCtrl(const uint8_t *first, const uint8_t *second, uint8_t *res, uint16_t size) noexcept
 {
     int secondGcd = array_gcd(second, size);
 
@@ -307,7 +307,7 @@ void CameraInstruction::computeResCtrl(const uint8_t *first, const uint8_t *seco
  * @param size of the instructions
  * @return true if reacheable, otherwise false
  */
-bool CameraInstruction::isReachable(const uint8_t *base, const uint8_t *res, const uint8_t *toReach, const uint16_t size) noexcept
+bool CameraInstruction::isReachable(const uint8_t *base, const uint8_t *res, const uint8_t *toReach, uint16_t size) noexcept
 {
     int it = 256;
     for (unsigned i = 0; i < size; ++i)
@@ -547,7 +547,7 @@ bool CameraInstruction::trySetMinAsCur() noexcept
 
 CameraException::CameraException(string device) : message("CRITICAL: Cannot access to " + device) {}
 
-const char *CameraException::what()
+const char *CameraException::what() const noexcept
 {
     return message.c_str();
 }
@@ -555,7 +555,7 @@ const char *CameraException::what()
 CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector)
     : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string((int)unit) + " selector:" + to_string((int)selector)) {}
 
-const char *CameraInstructionException::what()
+const char *CameraInstructionException::what() const noexcept
 {
     return message.c_str();
 }

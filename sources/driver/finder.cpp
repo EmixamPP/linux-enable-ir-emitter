@@ -20,7 +20,7 @@ using namespace std;
  * @param cmd command
  * @return output
  */
-string *Finder::shellExec(const string cmd) noexcept
+string *Finder::shellExec(string cmd) noexcept
 {
     char buffer[128];
     string *result = new string();
