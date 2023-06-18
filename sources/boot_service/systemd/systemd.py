@@ -6,8 +6,7 @@ from boot_service import BaseBootService
 
 
 class Systemd(BaseBootService):
-    @staticmethod
-    def _enable() -> int:
+    def _enable(self) -> int:
         """Enable the service
 
         Returns:
@@ -17,25 +16,29 @@ class Systemd(BaseBootService):
         exit_code = subprocess.run(
             ["systemctl", "enable", "--now", BOOT_SERVICE_NAME], capture_output=True
         ).returncode
+
         if exit_code:
             logging.error("Error with the systemd boot service.")
 
         return exit_code
 
-    @staticmethod
-    def _disable() -> int:
+    def _disable(self) -> int:
         """Disable the service
 
         Returns:
             0: the service have been disabled successfully
             other value: The boot service does not exists.
         """
-        return subprocess.run(
+        exit_code = subprocess.run(
             ["systemctl", "disable", BOOT_SERVICE_NAME], capture_output=True
         ).returncode
 
-    @staticmethod
-    def status() -> int:
+        if exit_code:
+            logging.error("The systemd boot service does not exists.")
+
+        return exit_code
+
+    def status(self) -> int:
         """Print the service status
         Returns:
             0: the service works fine
@@ -46,7 +49,8 @@ class Systemd(BaseBootService):
         )
 
         if exec.returncode == 4:
-            logging.error("The boot service does not exists.")
+            logging.error("The systemd boot service does not exists.")
         else:
             print(exec.stdout.decode("utf-8").strip())
+
         return exec.returncode

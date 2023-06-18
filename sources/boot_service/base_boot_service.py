@@ -6,6 +6,7 @@ import os
 
 from globals import UDEV_RULE_PATH, get_index, get_kernels
 
+
 class BaseBootService(metaclass=ABCMeta):
     """Manage the boot service of linux-enable-ir-emitter"""
 
@@ -18,7 +19,7 @@ class BaseBootService(metaclass=ABCMeta):
         self.devices = devices
 
     @abstractmethod
-    def _enable() -> int:
+    def _enable(self) -> int:
         """Enable the service
 
         Returns:
@@ -27,7 +28,7 @@ class BaseBootService(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def _disable() -> int:
+    def _disable(self) -> int:
         """Disable the service
 
         Returns:
@@ -36,7 +37,7 @@ class BaseBootService(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def status() -> int:
+    def status(self) -> int:
         """Print the service status
         Returns:
             0: the service works fine
@@ -44,34 +45,36 @@ class BaseBootService(metaclass=ABCMeta):
         """
 
     def enable(self) -> int:
-        self._create_udev(self.devices)
+        self._create_udev()
 
         exit_code = subprocess.run(
             ["udevadm", "control", "--reload-rules"], capture_output=True
         ).returncode
-        exit_code = (
-            exit_code
-            + subprocess.run(["udevadm", "trigger"], capture_output=True).returncode
-        )
+        exit_code += subprocess.run(
+            ["udevadm", "trigger"], capture_output=True
+        ).returncode
+
         if exit_code:
             logging.error("Error with the udev boot service.")
 
-        exit_code = self._enable()
+        exit_code += self._enable()
         return exit_code
 
-    @staticmethod
-    def disable() -> int:
-        exit_code = BaseBootService._disable()
-        if exit_code:
-            logging.error("The boot service does not exists.")
-        else:
+    def disable(self) -> int:
+        try:
             os.remove(UDEV_RULE_PATH)
+            exit_code = 0
+        except:
+            logging.error("The udev boot service does not exists.")
+            exit_code = 1
 
-    @staticmethod
-    def _create_udev(devices) -> None:
+        exit_code += self._disable()
+        return exit_code
+
+    def _create_udev(self) -> None:
         """Create the rule file at UDEV_RULE_PATH"""
         with open(UDEV_RULE_PATH, "w") as rule_file:
-            for device in devices:
+            for device in self.devices:
                 kernels = get_kernels(device)
                 index = get_index(device)
 
