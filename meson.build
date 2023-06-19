@@ -17,9 +17,10 @@ version = '4.5.0'
 lib_dir = get_option('libdir') / meson.project_name()
 lib_bin_dir = lib_dir / 'bin'
 sysconf_dir = get_option('sysconfdir')
-systemd_dir = 'lib/systemd/system'
 autocomplete_dir = get_option('datadir') / 'bash-completion/completions'
-
+boot_service = get_option('boot_service')
+systemd_dir = 'lib/systemd/system'
+openrc_dir = '/etc/init.d'
 
 executable(
     'driver-generator', 
@@ -46,7 +47,7 @@ executable(
 
 configure_version_data = configuration_data({'version': version})
 configure_file(
-    input : 'sources/linux-enable-ir-emitter.py.in',
+    input : 'sources/linux-enable-ir-emitter.py',
     output : 'linux-enable-ir-emitter.py',
     configuration : configure_version_data,
     install: true,
@@ -65,11 +66,16 @@ configure_paths_data = configuration_data({
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_bin_dir / 'execute-driver',
     'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_bin_dir / 'driver-generator',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
-    'BOOT_SERVICE_NAME': 'linux-enable-ir-emitter.service',
-    'BOOT_SERVICE_MANAGER': 'systemd'
 })
+if boot_service == 'systemd'
+    configure_paths_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter.service')
+    configure_paths_data.set('BOOT_SERVICE_MANAGER', 'systemd')
+elif boot_service == 'openrc'
+    configure_paths_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter')
+    configure_paths_data.set('BOOT_SERVICE_MANAGER', 'openrc')
+endif
 configure_file(
-    input : 'sources/globals.py.in',
+    input : 'sources/globals.py',
     output : 'globals.py',
     configuration : configure_paths_data,
     install: true,
@@ -102,16 +108,27 @@ install_data(
     install_dir : lib_dir / 'boot_service',
 )
 
-install_data(
-    'sources/boot_service/systemd/__init__.py',
-    'sources/boot_service/systemd/systemd.py',
-    install_dir : lib_dir / 'boot_service/systemd',
-)
-
-install_data(
-    'sources/boot_service/systemd/linux-enable-ir-emitter.service',
-    install_dir : systemd_dir,
-)
+if boot_service == 'systemd'
+    install_data(
+        'sources/boot_service/systemd/__init__.py',
+        'sources/boot_service/systemd/systemd.py',
+        install_dir : lib_dir / 'boot_service/systemd',
+    )
+    install_data(
+        'sources/boot_service/systemd/linux-enable-ir-emitter.service',
+        install_dir : systemd_dir,
+    )
+elif boot_service == 'openrc'
+    install_data(
+        'sources/boot_service/openrc/__init__.py',
+        'sources/boot_service/openrc/openrc.py',
+        install_dir : lib_dir / 'boot_service/openrc',
+    )
+    install_data(
+        'sources/boot_service/openrc/linux-enable-ir-emitter',
+        install_dir : openrc_dir,
+    )
+endif
 
 install_data(
     'sources/autocomplete/linux-enable-ir-emitter',
