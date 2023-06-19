@@ -5,15 +5,17 @@ import sys
 import subprocess
 import glob
 import re
-from typing import List
+import importlib
+from typing import List, Any
 
 SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@"
 
 BIN_EXECUTE_DRIVER_PATH = "@BIN_EXECUTE_DRIVER_PATH@"
 BIN_DRIVER_GENERATOR_PATH = "@BIN_DRIVER_GENERATOR_PATH@"
 
-SYSTEMD_NAME = "@SYSTEMD_NAME@"
 UDEV_RULE_PATH = "@UDEV_RULE_PATH@"
+BOOT_SERVICE_NAME = "@BOOT_SERVICE_NAME@"
+BOOT_SERVICE_MANAGER = "@BOOT_SERVICE_MANAGER@"
 
 
 class ExitCode(enum.IntEnum):
@@ -28,6 +30,22 @@ def check_root() -> None:
     if os.getuid():
         logging.critical("Please run as root.")
         sys.exit(ExitCode.ROOT_REQUIRED)
+
+
+def get_boot_service_constructor() -> Any:
+    """Get the installed boot service constructor
+
+    Returns:
+        Any: Systemd or Openrc
+        None: no boot service installed
+    """
+    try:
+        module = importlib.import_module(
+            f"boot_service.{BOOT_SERVICE_MANAGER}")
+        return getattr(module, BOOT_SERVICE_MANAGER)
+    except Exception as e:
+        print(e)
+        return None
 
 
 def get_drivers_path(device: str = None) -> str:

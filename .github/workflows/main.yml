@@ -19,7 +19,7 @@ jobs:
           sudo apt-get install -y meson clang-tidy
           pip install pyright
           curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
-          sed -i "3s@^prefix=.*@prefix=${PWD}/opencv-4.7.0@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
+          sed -i "3s@prefix=@&${PWD}/@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
 
       - name: Run meson
         id: meson
