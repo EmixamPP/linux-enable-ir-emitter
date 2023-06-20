@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '4.5.0', 
+    version: '4.6.0', 
     license: 'MIT',
     default_options: [
         'cpp_std=c++17',
@@ -13,7 +13,6 @@ project(
 
 opencv_dep = dependency('opencv4', static: true)
 
-version = '4.5.0'
 lib_dir = get_option('libdir') / meson.project_name()
 lib_bin_dir = lib_dir / 'bin'
 sysconf_dir = get_option('sysconfdir')
@@ -45,7 +44,7 @@ executable(
     install_dir: lib_bin_dir,
 )
 
-configure_version_data = configuration_data({'version': version})
+configure_version_data = configuration_data({'version': meson.project_version()})
 configure_file(
     input : 'sources/linux-enable-ir-emitter.py',
     output : 'linux-enable-ir-emitter.py',
@@ -66,13 +65,12 @@ configure_paths_data = configuration_data({
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_bin_dir / 'execute-driver',
     'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_bin_dir / 'driver-generator',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
+    'BOOT_SERVICE_MANAGER': boot_service,
 })
 if boot_service == 'systemd'
     configure_paths_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter.service')
-    configure_paths_data.set('BOOT_SERVICE_MANAGER', 'systemd')
 elif boot_service == 'openrc'
     configure_paths_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter')
-    configure_paths_data.set('BOOT_SERVICE_MANAGER', 'openrc')
 endif
 configure_file(
     input : 'sources/globals.py',
