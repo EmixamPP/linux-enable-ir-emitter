@@ -1,21 +1,17 @@
 import logging
 import subprocess
 
-from globals import BOOT_SERVICE_NAME
 from boot_service import BaseBootService
+from globals import BOOT_SERVICE_NAME
 
 
 class Systemd(BaseBootService):
     def _enable(self) -> int:
-        """Enable the service
-
-        Returns:
-            0: the service have been enabled successfully
-            other value: Error with the boot service.
-        """
-        exit_code = subprocess.run(
-            ["systemctl", "enable", "--now", BOOT_SERVICE_NAME], capture_output=True
-        ).returncode
+        exit_code = subprocess.call(
+            ["systemctl", "enable", "--now", BOOT_SERVICE_NAME],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
         if exit_code:
             logging.error("Error with the systemd boot service.")
@@ -23,15 +19,11 @@ class Systemd(BaseBootService):
         return exit_code
 
     def _disable(self) -> int:
-        """Disable the service
-
-        Returns:
-            0: the service have been disabled successfully
-            other value: The boot service does not exists.
-        """
-        exit_code = subprocess.run(
-            ["systemctl", "disable", BOOT_SERVICE_NAME], capture_output=True
-        ).returncode
+        exit_code = subprocess.call(
+            ["systemctl", "disable", BOOT_SERVICE_NAME],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
         if exit_code:
             logging.error("The systemd boot service does not exists.")
@@ -39,18 +31,15 @@ class Systemd(BaseBootService):
         return exit_code
 
     def status(self) -> int:
-        """Print the service status
-        Returns:
-            0: the service works fine
-            other value: error with the boot service
-        """
         exec = subprocess.run(
-            ["systemctl", "status", BOOT_SERVICE_NAME], capture_output=True
+            ["systemctl", "status", BOOT_SERVICE_NAME],
+            capture_output=True,
+            text=True,
         )
 
         if exec.returncode == 4:
             logging.error("The systemd boot service does not exists.")
         else:
-            print(exec.stdout.decode("utf-8").strip())
+            print(exec.stdout)
 
         return exec.returncode

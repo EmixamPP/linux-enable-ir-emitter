@@ -1,22 +1,23 @@
-import logging
-import subprocess
 from typing import NoReturn
 
-from globals import ExitCode, BIN_EXECUTE_DRIVER_PATH, get_drivers_path
+import logging
+import subprocess
+
+from globals import BIN_EXECUTE_DRIVER_PATH, ExitCode, get_drivers_path
 
 
-def run(device: str) -> NoReturn:
-    """Apply the driver associated to a device 
+def run(device: str | None) -> NoReturn:
+    """Apply the driver associated to a device and exit.
 
     Args:
-        device: path to the infrared camera
-                None to execute all driver.
+        device (str | None): path to the infrared camera. None to execute all driver.
     """
+
     paths = get_drivers_path(device)
 
     if len(paths) == 0:
         logging.critical("No driver for %s has been configured.", device)
-        exit(ExitCode.FAILURE)            
+        exit(ExitCode.FAILURE)
 
     general_exit_code = ExitCode.SUCCESS
     for driver in paths:

@@ -1,19 +1,20 @@
-import logging
 from typing import NoReturn
 
-from globals import ExitCode, get_devices, get_boot_service_constructor
+import logging
+
+from globals import ExitCode, get_boot_service_constructor, get_devices
 
 
 def boot(boot_status: str) -> NoReturn:
     """Enable or disable the boot service which
-    activates the ir emitter for all configured device
+    activates the ir emitter for all configured device,
+    and exit.
 
     args:
-        boot_status: "enable" or "disable" or "status"
+        boot_status (str): "enable" or "disable" or "status".
 
     Raises:
-        Exception: boot status arg can only be equal to
-        enable, disable or status
+        Exception (AssertionError): boot_status not in the proposition.
     """
     assert boot_status in ["enable", "disable", "status"]
 
