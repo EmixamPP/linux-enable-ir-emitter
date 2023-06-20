@@ -40,6 +40,6 @@ class Systemd(BaseBootService):
         if exec.returncode == 4:
             logging.error("The systemd boot service does not exists.")
         else:
-            print(exec.stdout)
+            print(exec.stdout.strip())
 
         return exec.returncode

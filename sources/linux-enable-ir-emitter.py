@@ -97,7 +97,7 @@ if __name__ == "__main__":
             shell=True,
             capture_output=True,
             text=True,
-        ).stdout
+        ).stdout.strip()
         if len(v4l_device) == 0:
             logging.critical(
                 f"The device {device} does not exists or is not a supported v4l camera."

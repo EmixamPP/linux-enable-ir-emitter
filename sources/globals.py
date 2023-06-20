@@ -93,7 +93,7 @@ def get_index(device: str) -> str:
         "udevadm info -a %s | grep -m 1 -oP 'ATTR{index}==\\K.*'" % (device),
         shell=True,
         text=True,
-    )
+    ).strip()
 
 
 def get_kernels(device: str) -> str:
@@ -109,4 +109,4 @@ def get_kernels(device: str) -> str:
         "udevadm info -a %s | grep -m 1 -oP 'KERNELS==\\K.*'" % (device),
         shell=True,
         text=True,
-    )
+    ).strip()
