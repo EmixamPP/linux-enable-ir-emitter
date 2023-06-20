@@ -6,7 +6,9 @@ jobs:
   comment-tarball:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/main.yml
+      - uses: actions/checkout@v3
+
+      - uses: .github/workflows/main.yml
    
       - name: Get tarball link
         id: tarball-link
