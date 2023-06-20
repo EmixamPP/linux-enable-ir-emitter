@@ -1,11 +1,11 @@
 # Python
 __pycache__
+env
 
 # Meson
 build
 
 # OpenCV
-opencv.zip
 opencv-*.*.*
 
 # Others
