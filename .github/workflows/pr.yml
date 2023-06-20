@@ -1,13 +1,16 @@
 name: Send artifact
 
-on: [pull_request]
+on: 
+  pull_request:
 
 jobs:         
+  ci:
+    uses: .github/workflows/main.yml
+  
   comment-tarball:
     runs-on: ubuntu-latest
-    steps:
-      - uses: ./.github/workflows/main.yml
-   
+    needs: ci
+    steps:   
       - name: Get tarball link
         id: tarball-link
         run: |
