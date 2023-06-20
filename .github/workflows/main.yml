@@ -1,12 +1,11 @@
 name: Build, Lint and Pack
 
-
 on:
   workflow_dispatch:
   workflow_call:
 
 jobs:
-  build-lint-pack:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
