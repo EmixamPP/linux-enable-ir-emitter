@@ -43,8 +43,7 @@ int array_gcd(const uint8_t *arr, uint16_t size)
 int Camera::deviceId(const char *device)
 {
 
-    char *devDevice;
-    devDevice = realpath(device, NULL);
+    char *devDevice = realpath(device, NULL);
     int id;
     if (devDevice == NULL || sscanf(devDevice, "/dev/video%d", &id) != 1)
     {

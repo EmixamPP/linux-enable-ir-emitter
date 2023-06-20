@@ -1,8 +1,7 @@
-from abc import ABCMeta, abstractmethod
-from typing import List
-import subprocess
 import logging
 import os
+import subprocess
+from abc import ABCMeta, abstractmethod
 
 from globals import UDEV_RULE_PATH, get_index, get_kernels
 
@@ -10,49 +9,60 @@ from globals import UDEV_RULE_PATH, get_index, get_kernels
 class BaseBootService(metaclass=ABCMeta):
     """Manage the boot service of linux-enable-ir-emitter"""
 
-    def __init__(self, devices: List[str]) -> None:
-        """Create a boot service for run the drivers
+    def __init__(self, devices: list[str]) -> None:
+        """Create a boot service for run the drivers.
 
         Args:
-            devices : devices for which a driver will be run
+            devices (list[str]): devices for which a driver will be run.
         """
-        self.devices = devices
+        self.devices: list[str] = devices
 
     @abstractmethod
     def _enable(self) -> int:
-        """Enable the service
+        """Enable the service.
 
         Returns:
-            0: the service have been enabled successfully
-            other value: Error with the boot service.
+            int: 0 if the service have been enabled successfully.
+            Otherwise, error with the boot service.
         """
 
     @abstractmethod
     def _disable(self) -> int:
-        """Disable the service
+        """Disable the service.
 
         Returns:
-            0: the service have been disabled successfully
-            other value: The boot service does not exists.
+            int: 0 if the service have been disabled successfully.
+            Otherwise, error with the boot service.
         """
 
     @abstractmethod
     def status(self) -> int:
         """Print the service status
+
         Returns:
-            0: the service works fine
-            other value: error with the boot service
+            int: 0 if the service works fine.
+            Otherwise, error with the boot service.
         """
 
     def enable(self) -> int:
+        """Enable the service.
+
+        Returns:
+            int: 0 if the service have been enabled successfully.
+            Otherwise, error with the boot service.
+        """
         self._create_udev()
 
-        exit_code = subprocess.run(
-            ["udevadm", "control", "--reload-rules"], capture_output=True
-        ).returncode
-        exit_code += subprocess.run(
-            ["udevadm", "trigger"], capture_output=True
-        ).returncode
+        exit_code = subprocess.call(
+            ["udevadm", "control", "--reload-rules"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        exit_code += subprocess.call(
+            ["udevadm", "trigger"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
         if exit_code:
             logging.error("Error with the udev boot service.")
@@ -61,6 +71,12 @@ class BaseBootService(metaclass=ABCMeta):
         return exit_code
 
     def disable(self) -> int:
+        """Disable the service.
+
+        Returns:
+            int: 0 if the service have been disabled successfully.
+            Otherwise, error with the boot service.
+        """
         try:
             os.remove(UDEV_RULE_PATH)
             exit_code = 0
