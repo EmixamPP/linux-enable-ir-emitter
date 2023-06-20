@@ -1,11 +1,11 @@
-name: Comment Pack
+name: Pull Request Comment
 
 on:
   workflow_run:
     types:
       - completed
     workflows:
-      - "Build, Lint, Pack"
+      - "Pull Request"
 
 jobs:           
   comment-success:
