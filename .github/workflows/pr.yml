@@ -5,7 +5,7 @@ on:
 
 jobs:         
   ci:
-    uses: .github/workflows/main.yml
+    uses: ./.github/workflows/main.yml
   
   comment-tarball:
     runs-on: ubuntu-latest
