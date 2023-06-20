@@ -6,7 +6,7 @@ on:
   
 jobs:         
   ci:
-    uses: ./.github/workflows/main.yml
+    uses: ./.github/workflows/ci.yml
 
   pack:
       needs: ci
