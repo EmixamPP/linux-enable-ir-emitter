@@ -17,21 +17,15 @@ Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https:
 sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
 
-If you are under Fedora or any system with SELinux, also execute: 
-```
-semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
-semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
-restorecon -v /usr/lib64/linux-enable-ir-emitter/bin/*
-```
-
 It can be uninstalled by executing:
 ```
-sudo rm -r /usr/lib64/linux-enable-ir-emitter
-sudo rm -r /etc/linux-enable-ir-emitter
-sudo rm /usr/bin/linux-enable-ir-emitter
-sudo rm /usr/lib/systemd/system/linux-enable-ir-emitter.service
-sudo rm -f /etc/udev/rules.d/99-linux-enable-ir-emitter.rules
-sudo rm /usr/share/bash-completition/completitions/linux-enable-ir-emitter
+sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
+/etc/linux-enable-ir-emitter \
+/usr/bin/liblinux-enable-ir-emitter \
+/usr/bin/linux-enable-ir-emitter \
+/usr/lib/systemd/system/linux-enable-ir-emitter.service \
+/etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
+/usr/share/bash-completition/completitions/linux-enable-ir-emitter
 ```
 
 ### Manual build :
@@ -62,13 +56,6 @@ meson configure build -Dboot_service=openrc
 Install linux-enable-ir-emitter:
 ```
 sudo meson install -C build
-```
-
-If you are under Fedora or any system with SELinux, also execute: 
-```
-semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/execute-driver
-semanage fcontext -a -t bin_t /usr/lib/linux-enable-ir-emitter/bin/driver-generator
-restorecon -v /usr/lib64/linux-enable-ir-emitter/bin/*
 ```
 
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
