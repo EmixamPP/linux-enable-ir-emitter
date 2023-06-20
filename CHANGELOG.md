@@ -1,3 +1,6 @@
+# Tue Jun 20 2023 Maxime Dirksen - 4.7.0
+- Add openrc support
+- Python >= 3.10
 # Son Feb 26 2023 Maxime Dirksen - 4.5.0
 - Improvement of driver generation 
 # Fri Feb 24 2023 Maxime Dirksen - 4.4.2
