@@ -1,4 +1,4 @@
-name: Build, Lint and Pack
+name: Build, Lint
 
 on:
   workflow_dispatch:
@@ -40,14 +40,3 @@ jobs:
         if: ${{ always() }}
         run: |
           pyright $(git ls-files '*.py')
-      
-      - name: Create tarball
-        run: |
-          DESTDIR=install_dir meson install -C build
-          tar -czvf build/linux-enable-ir-emitter.tar.gz -C build/install_dir .
-
-      - name: Upload tarball
-        uses: actions/upload-artifact@v3
-        with:
-          name: linux-enable-ir-emitter.tar.gz
-          path: build/linux-enable-ir-emitter.tar.gz
