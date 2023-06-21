@@ -60,7 +60,7 @@ sudo meson install -C build
 
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
 
-## How to enable your infrared emitter ?
+## How to enable your infrared emitter?
 1. Ensure to not use the camera during the execution.
 2. Be patient, do not kill the process, and whatever the reason. (Unless the execution is stuck for more than 10 minutes.)
 3. Execute `sudo linux-enable-ir-emitter configure`.
