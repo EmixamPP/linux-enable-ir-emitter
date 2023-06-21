@@ -13,13 +13,10 @@ project(
 
 opencv_dep = dependency('opencv4', static: true)
 
-lib_dir = get_option('libdir') / meson.project_name()
-lib_bin_dir = lib_dir / 'bin'
-sysconf_dir = get_option('sysconfdir')
-autocomplete_dir = get_option('datadir') / 'bash-completion/completions'
-boot_service = get_option('boot_service')
-systemd_dir = 'lib/systemd/system'
-openrc_dir = '/etc/init.d'
+################
+# Lib executable
+################
+lib_bin_dir = get_option('bindir')  / 'lib' + meson.project_name()
 
 executable(
     'driver-generator', 
@@ -44,6 +41,11 @@ executable(
     install_dir: lib_bin_dir,
 )
 
+#####
+# Lib
+#####
+lib_dir = get_option('libdir') / meson.project_name()
+
 configure_version_data = configuration_data({'version': meson.project_version()})
 configure_file(
     input : 'sources/linux-enable-ir-emitter.py',
@@ -54,14 +56,10 @@ configure_file(
     install_mode: 'rwxr-xr-x',
 )
 
-install_symlink(
-    meson.project_name(),
-    pointing_to: '../' / lib_dir / 'linux-enable-ir-emitter.py',
-    install_dir: get_option('bindir'),
-)
+boot_service = get_option('boot_service')
 
 configure_paths_data = configuration_data({
-    'SAVE_DRIVER_FOLDER_PATH': sysconf_dir / meson.project_name(),
+    'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_bin_dir / 'execute-driver',
     'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_bin_dir / 'driver-generator',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
@@ -81,6 +79,12 @@ configure_file(
 )
 
 install_data(
+    'sources/boot_service/__init__.py',
+    'sources/boot_service/base_boot_service.py',
+    install_dir : lib_dir / 'boot_service',
+)
+
+install_data(
     'LICENSE',
     'README.md',
     install_dir : lib_dir,
@@ -95,17 +99,18 @@ install_data(
     install_dir : lib_dir / 'command',
 )
 
-install_subdir(
+############
+# Executable
+############
+install_symlink(
     meson.project_name(),
-    install_dir: sysconf_dir,
+    pointing_to: '../' / lib_dir / 'linux-enable-ir-emitter.py',
+    install_dir: get_option('bindir'),
 )
 
-install_data(
-    'sources/boot_service/__init__.py',
-    'sources/boot_service/base_boot_service.py',
-    install_dir : lib_dir / 'boot_service',
-)
-
+##############
+# Boot service
+##############
 if boot_service == 'systemd'
     install_data(
         'sources/boot_service/systemd/__init__.py',
@@ -114,7 +119,7 @@ if boot_service == 'systemd'
     )
     install_data(
         'sources/boot_service/systemd/linux-enable-ir-emitter.service',
-        install_dir : systemd_dir,
+        install_dir : 'lib/systemd/system',
     )
 elif boot_service == 'openrc'
     install_data(
@@ -124,11 +129,22 @@ elif boot_service == 'openrc'
     )
     install_data(
         'sources/boot_service/openrc/linux-enable-ir-emitter',
-        install_dir : openrc_dir,
+        install_dir : '/etc/init.d',
     )
 endif
 
+######
+# Conf
+######
+install_subdir(
+    meson.project_name(),
+    install_dir: get_option('sysconfdir'),
+)
+
+##################
+# Shell completion
+##################
 install_data(
     'sources/autocomplete/linux-enable-ir-emitter',
-    install_dir : autocomplete_dir,
+    install_dir : get_option('datadir') / 'bash-completion/completions',
 )

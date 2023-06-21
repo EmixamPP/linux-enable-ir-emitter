@@ -1,4 +1,4 @@
-name: Build, Lint and Pack
+name: Build, Lint, Pack
 
 on:
   workflow_dispatch:
@@ -45,7 +45,7 @@ jobs:
         run: |
           DESTDIR=install_dir meson install -C build
           tar -czvf build/linux-enable-ir-emitter.tar.gz -C build/install_dir .
-
+  
       - name: Upload tarball
         uses: actions/upload-artifact@v3
         with:
