@@ -59,12 +59,12 @@ jobs:
           echo "HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
 
       - name: Find comment
-        uses: peter-evans/find-comment@v2.4.0
+        uses: peter-evans/find-comment@v2
         id: find-comment
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: 'github-actions[bot]'
-          body-includes: '<!-- build comment -->'
+          body-includes: '<!-- ci comment -->'
 
       - name: Create message
         id: message
@@ -75,7 +75,7 @@ jobs:
           ARTIFACT_EXPIRE_DATE: "${{ env.ARTIFACT_EXPIRE_DATE }}"
           HEAD_SHA: "${{ env.HEAD_SHA }}"
         with:
-          template: ${{ github.event.workflow_run.conclusion =='success' && './.github/comment/success_build.md' || './.github/comment/failed_build.md'}}
+          template: ${{ github.event.workflow_run.conclusion =='success' && './.github/bot_comment/ci_success.md' || './.github/bot_comment/ci_fail.md'}}
           timezone: Europe/Brussels
           vars: |
             commit: ${{ env.HEAD_SHA }}
@@ -84,7 +84,7 @@ jobs:
             expire: ${{ env.ARTIFACT_EXPIRE_DATE }}         
       
       - name: Update Comment
-        uses: peter-evans/create-or-update-comment@v3.0.2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}

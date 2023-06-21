@@ -1,5 +1,5 @@
-<!-- build comment -->
-![badge](https://img.shields.io/badge/CI-failed-red)
+<!-- ci comment -->
+![](https://img.shields.io/badge/CI-failed-red)
 
 Build or lint failed. Check the logs below.
 
