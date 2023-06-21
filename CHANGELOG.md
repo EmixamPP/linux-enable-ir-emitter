@@ -1,47 +1,49 @@
-# Tue Jun 20 2023 Maxime Dirksen - 4.7.0
+# Wed Jun 21 2023 - 4.8.0
+- Native SELinux compatibility
+# Tue Jun 20 2023 - 4.7.0
 - Add openrc support
 - Python >= 3.10
-# Son Feb 26 2023 Maxime Dirksen - 4.5.0
+# Son Feb 26 2023 - 4.5.0
 - Improvement of driver generation 
-# Fri Feb 24 2023 Maxime Dirksen - 4.4.2
+# Fri Feb 24 2023 - 4.4.2
 - Fix command not found
 - Smaller size
-# Fri Feb 17 2023 Maxime Dirksen - 4.4.0
+# Fri Feb 17 2023 - 4.4.0
 - Total rework of the implementation
 - Support multiple emitters camera
 - Memorize broken instructions to skip them 
 - Usage of /dev/v4l/by-path for persistence
 - Drop distribution repositories support
-# Tue Sep 13 2022 Maxime Dirksen - 4.1.5
+# Tue Sep 13 2022 - 4.1.5
 - Fix boot service for custom device 
-# Thu Aug 11 2022 Maxime Dirksen - 4.1.4
+# Thu Aug 11 2022 - 4.1.4
 - Force V4l2 backend in opencv
 - Improvement of driver generation
-# Mon Jul 4 2022 Maxime Dirksen - 4.1.2
+# Mon Jul 4 2022 - 4.1.2
 - Asynchronous camera triggering
 - Fix camera triggering issue
 - Fix device symlink boot service side effect
-# Sun Jun 19 2022 Maxime Dirksen - 4.0.0
+# Sun Jun 19 2022 - 4.0.0
 - Rework, optimization and improvement of driver generation 
 - Remove manual configuration commands
 - Remove option for integration into Howdy
-# Thu Dec 9 2021 Maxime Dirksen - 3.2.5
+# Thu Dec 9 2021 - 3.2.5
 - Tweak for integration into Howdy(https://github.com/boltgolt/howdy)  
 - Bash auto completion
 - Better systemd support
-# Thu Nov 4 2021 Maxime Dirksen - 3.2.2
+# Thu Nov 4 2021 - 3.2.2
 - Support any device path format
 - Improve systemd service
-# Sat Oct 23 2021 Maxime Dirksen - 3.2.0
+# Sat Oct 23 2021 - 3.2.0
 - Multiple device support
-# Thu Sep 23 2021 Maxime Dirksen - 3.1.1
+# Thu Sep 23 2021 - 3.1.1
 - Limit in negative answers for a same pattern
-# Wed Sep 22 2021 Maxime Dirksen - 3.1.0
+# Wed Sep 22 2021 - 3.1.0
 - New configuration system
 - Exit codes
 - Change configuration file location
-# Sun Aug 29 2021 Maxime Dirksen - 2.1.0
+# Sun Aug 29 2021 - 2.1.0
 - New fix command, to resolve well know problems
 - Systemd service file modified to prevent /dev/video file descriptor error
-# Thu Aug 12 2021 Maxime Dirksen - 2.0.1
+# Thu Aug 12 2021 - 2.0.1
 - Initial package
