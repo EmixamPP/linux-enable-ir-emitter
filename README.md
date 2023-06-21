@@ -29,7 +29,7 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 ```
 
 ### Manual build :
-The following tools are needed (see [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for further specification) : meson, cmake
+See [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for specification concerning build requirements.
 
 Clone the git:
 ```
@@ -37,7 +37,7 @@ git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 ```
 
-Download a tiny version of opencv that will be statically linked. If you are on ARM plateform, you have to build it yourself by executing the [script here](https://github.com/EmixamPP/opencv-tiny/blob/main/build_opencv.sh). This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
+Download a tiny version of opencv that will be statically linked. If you are on ARM plateform, you have to build it yourself by executing the script [here](https://github.com/EmixamPP/opencv-tiny/blob/main/build_opencv.sh). This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
 curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
 sed -i "3s@prefix=@&${PWD}/@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
@@ -60,7 +60,7 @@ sudo meson install -C build
 
 You can uninstall the software by executing `sudo ninja uninstall -C build`. 
 
-## How to enable your infrared emitter ?
+## How to enable your infrared emitter?
 1. Ensure to not use the camera during the execution.
 2. Be patient, do not kill the process, and whatever the reason. (Unless the execution is stuck for more than 10 minutes.)
 3. Execute `sudo linux-enable-ir-emitter configure`.
