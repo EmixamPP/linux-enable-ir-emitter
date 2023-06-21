@@ -31,7 +31,7 @@ int array_gcd(const uint8_t *arr, uint16_t size)
         if (result == 1)
             return 1;
     }
-    return result;
+    return resul;
 }
 
 /**
