@@ -5,14 +5,10 @@ on:
     types:
       - completed
     workflows:
-      - 'Pull Request'
-
-permissions:
-  issues: write
-  pull-requests: write
+      - Pull Request
 
 jobs:           
-  comment-success:
+  comment:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -94,5 +90,3 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
           body: ${{ steps.message.outputs.result }}
-
-# Adapted from https://github.com/Andre601/AdvancedServerList
