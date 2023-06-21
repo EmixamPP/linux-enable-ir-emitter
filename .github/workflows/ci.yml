@@ -51,4 +51,3 @@ jobs:
         with:
           name: linux-enable-ir-emitter.tar.gz
           path: build/linux-enable-ir-emitter.tar.gz
-          if-no-files-found: error
