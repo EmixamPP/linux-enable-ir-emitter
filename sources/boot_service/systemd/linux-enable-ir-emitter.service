@@ -1,6 +1,5 @@
 [Unit]
 Description = enable the infrared emitter
-After = multi-user.target suspend.target hybrid-sleep.target hibernate.target suspend-then-hibernate.target
 
 [Service]
 Type = oneshot
