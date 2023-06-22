@@ -7,7 +7,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
 
 ## Installation
-Directly refer to the manual buid [section](manual-build) if you have an ARM architecture or your boot service manager is not Systemd but OpenRC. Stay here if you don't know what all this means.
+Directly refer to the manual buid [section](#manual-build) if you have an ARM architecture or your boot service manager is not Systemd but OpenRC. Stay here if you don't know what all this means.
  
 Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
