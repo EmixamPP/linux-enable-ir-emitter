@@ -20,43 +20,28 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.event.repository.name }}
         run: |
-          PREVIOUS_JOB_ID=$(jq -r '.id' <<< "$WORKFLOW_RUN_EVENT_OBJ")
-          echo "Previous Job ID: $PREVIOUS_JOB_ID"
-          echo "PREVIOUS_JOB_ID=$PREVIOUS_JOB_ID" >> "$GITHUB_ENV"
-          
-          SUITE_ID=$(jq -r '.check_suite_id' <<< "$WORKFLOW_RUN_EVENT_OBJ")
-          echo "Previous Suite ID: $SUITE_ID"
-          echo "SUITE_ID=$SUITE_ID" >> "$GITHUB_ENV"
-          
-          ARTIFACT_ID=$(gh api "/repos/$OWNER/$REPO/actions/artifacts" \
-            --jq ".artifacts.[] |
-            select(.workflow_run.id==${PREVIOUS_JOB_ID}) |
-            select(.expired==false) |
-            .id")
-          
-          echo "Artifact ID: $ARTIFACT_ID"
-          echo "ARTIFACT_ID=$ARTIFACT_ID" >> "$GITHUB_ENV"
-          
-          ARTIFACT_EXPIRE_DATE=$(gh api "/repos/$OWNER/$REPO/actions/artifacts" \
-            --jq ".artifacts.[] |
-            select(.workflow_run.id==${PREVIOUS_JOB_ID}) |
-            select(.expired==false) |
-            .expires_at")
-          
-          echo "Artifact Expire Date: $ARTIFACT_EXPIRE_DATE"
-          echo "ARTIFACT_EXPIRE_DATE=$ARTIFACT_EXPIRE_DATE" >> "$GITHUB_ENV"
-          
-          PR_NUMBER=$(jq -r '.pull_requests[0].number' \
-            <<< "$WORKFLOW_RUN_EVENT_OBJ")
-          
-          echo "Pull request Number: $PR_NUMBER"
+          PR_NUMBER=$(jq -r '.pull_requests[0].number' <<< "$WORKFLOW_RUN_EVENT_OBJ")         
           echo "PR_NUMBER=$PR_NUMBER" >> "$GITHUB_ENV"
           
-          HEAD_SHA=$(jq -r '.pull_requests[0].head.sha' \
-            <<< "$WORKFLOW_RUN_EVENT_OBJ")
-          
-          echo "Head SHA: $HEAD_SHA"
+          HEAD_SHA=$(jq -r '.pull_requests[0].head.sha' <<< "$WORKFLOW_RUN_EVENT_OBJ")        
           echo "HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+
+          SUITE_ID=$(jq -r '.check_suite_id' <<< "$WORKFLOW_RUN_EVENT_OBJ")
+          echo "SUITE_ID=$SUITE_ID" >> "$GITHUB_ENV"
+
+          PREVIOUS_JOB_ID=$(jq -r '.id' <<< "$WORKFLOW_RUN_EVENT_OBJ")
+          echo "PREVIOUS_JOB_ID=$PREVIOUS_JOB_ID" >> "$GITHUB_ENV"
+
+          ARTIFACT=$(gh api "/repos/$OWNER/$REPO/actions/artifacts" \
+            --jq ".artifacts.[] |
+            select(.workflow_run.id==${PREVIOUS_JOB_ID}) |
+            select(.expired==false)")
+
+          ARTIFACT_ID=$(jq -r '.id' <<< ${ARTIFACT})
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> "$GITHUB_ENV"
+          
+          ARTIFACT_EXPIRE_DATE=$(jq -r '.expires_at' <<< ${ARTIFACT})
+          echo "ARTIFACT_EXPIRE_DATE=$ARTIFACT_EXPIRE_DATE" >> "$GITHUB_ENV"
 
       - name: Find comment
         uses: peter-evans/find-comment@v2
