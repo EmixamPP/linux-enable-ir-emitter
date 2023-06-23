@@ -1,3 +1,6 @@
+# Fri Jun 23 2023 - 4.8.2
+- Fix systemd hanging in some cases
+- More appropriate installation paths
 # Wed Jun 21 2023 - 4.8.0
 - Native SELinux compatibility
 # Tue Jun 20 2023 - 4.7.0
