@@ -18,7 +18,7 @@ It can be uninstalled by executing:
 ```
 sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 /etc/linux-enable-ir-emitter \
-/usr/bin/liblinux-enable-ir-emitter \
+/usr/libexec/linux-enable-ir-emitter \
 /usr/bin/linux-enable-ir-emitter \
 /usr/lib/systemd/system/linux-enable-ir-emitter.service \
 /etc/udev/rules.d/99-linux-enable-ir-emitter.rules \

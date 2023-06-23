@@ -16,7 +16,7 @@ opencv_dep = dependency('opencv4', static: true)
 ################
 # Lib executable
 ################
-lib_bin_dir = get_option('bindir')  / 'lib' + meson.project_name()
+lib_exec_dir = get_option('libexecdir')  / meson.project_name()
 
 executable(
     'driver-generator', 
@@ -27,7 +27,7 @@ executable(
     'sources/driver/finder.cpp',
     dependencies: opencv_dep,
     install: true,
-    install_dir: lib_bin_dir,
+    install_dir: lib_exec_dir,
 )
 
 executable(
@@ -38,7 +38,7 @@ executable(
     'sources/driver/driver.cpp',
     dependencies: opencv_dep,
     install: true,
-    install_dir: lib_bin_dir,
+    install_dir: lib_exec_dir,
 )
 
 #####
@@ -60,8 +60,8 @@ boot_service = get_option('boot_service')
 
 configure_paths_data = configuration_data({
     'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
-    'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_bin_dir / 'execute-driver',
-    'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_bin_dir / 'driver-generator',
+    'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_exec_dir / 'execute-driver',
+    'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_exec_dir / 'driver-generator',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
 })

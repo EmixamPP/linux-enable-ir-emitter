@@ -26,6 +26,7 @@ jobs:
         id: setup
         run: |
           meson setup build --pkg-config-path opencv-4.7.0/lib64/pkgconfig
+          meson configure build -Dlibdir=lib64 
       
       - name: Compile
         run: |
