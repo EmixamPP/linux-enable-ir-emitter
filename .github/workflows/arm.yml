@@ -1,0 +1,45 @@
+name: Build for aarch64
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env: 
+  OPENCV_TINY_VERSION: "4.7.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build + Create tarball
+      uses: uraimo/run-on-arch-action@v2
+      with:
+        arch: aarch64
+        distro: ubuntu_latest
+        setup: |
+          mkdir -p ${PWD}/artifacts
+        dockerRunArgs: |
+          --volume "${PWD}/artifacts:/artifacts"
+        install: |
+          apt-get update -q -y
+          apt-get install -q -y g++ meson curl
+        run: |
+          curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV_TINY_VERSION}/opencv-tiny-${OPENCV_TINY_VERSION}_aarch64.tar.gz | tar -xz
+          sed -i "s|=\(opencv-tiny-${OPENCV_TINY_VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
+
+          meson setup build --pkg-config-path opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig
+          meson configure build -Dlibdir=lib64 
+          meson compile -C build
+
+          DESTDIR=install_dir meson install -C build
+          tar -czvf build/linux-enable-ir-emitter.tar.gz -C build/install_dir .
+
+          mv build/linux-enable-ir-emitter.tar.gz /artifacts
+
+    - name: Upload tarball
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-enable-ir-emitter_aarch64.tar.gz
+        path: ${PWD}/artifacts/linux-enable-ir-emitter.tar.gz
