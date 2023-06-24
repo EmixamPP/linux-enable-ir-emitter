@@ -47,3 +47,4 @@ jobs:
       with:
         name: linux-enable-ir-emitter_aarch64.tar.gz
         path: linux-enable-ir-emitter_aarch64.tar.gz
+        if-no-files-found: error
