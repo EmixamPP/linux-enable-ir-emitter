@@ -6,7 +6,8 @@ env
 build
 
 # OpenCV
-opencv-*.*.*
+opencv*
+zlib*
 
 # Others
 .vscode
