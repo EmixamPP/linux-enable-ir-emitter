@@ -9,7 +9,7 @@ This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windo
 ## Installation
 Directly refer to the manual buid [section](#manual-build) if you have an ARM architecture or your boot service manager is not Systemd but OpenRC. Stay here if you don't know what all this means.
  
-Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` archive [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+Download the latest `linux-enable-ir-emitter-x.x.x.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
@@ -49,15 +49,15 @@ git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 ```
 
-Download a tiny version of opencv that will be statically linked. If you are on ARM plateform, you have to build it yourself by executing the script [here](https://github.com/EmixamPP/opencv-tiny/blob/main/build_opencv.sh). This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
+Download a tiny version of opencv that will be statically linked. If you are under ARM architecture, just replace `x86-64` by `aarch64` in the url. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
-curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
-sed -i "3s@prefix=@&${PWD}/@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
+curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/4.7.0/opencv-tiny-4.7.0_x86-64.tar.gz | tar -xJ
+sed -i sed -i "s|=\(opencv-tiny-4.7.0\)|=${PWD}/\1|g" opencv-tiny-4.7.0/lib/pkgconfig/{opencv4.pc,zlib.pc} 
 ```
 
-Setup build (remove `--pkg-config-path...` if you skipped the previous step, or change the path by `opencv-*/build/install_dir/lib*/pkgconfig` if you built it yourself):
+Setup build (remove `--pkg-config-path...` if you skipped the previous step):
 ```
-meson setup build --pkg-config-path opencv-4.7.0/lib64/pkgconfig
+meson setup build --pkg-config-path opencv-4.7.0/lib/pkgconfig
 ```
 
 Only if you do not have Systemd but OpenRC:
