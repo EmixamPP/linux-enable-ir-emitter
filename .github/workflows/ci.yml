@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 env: 
-  OPENCV-TINY-VERSION: "4.7.0"
+  OPENCV_TINY_VERSION: "4.7.0"
 
 jobs:
   ci:
@@ -22,13 +22,13 @@ jobs:
         run: |
           sudo apt-get install -y meson clang-tidy
           pip install pyright
-          curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV-TINY-VERSION}/opencv-tiny-${OPENCV-TINY-VERSION}_x86-64.tar.gz | tar -xz
-          sed -i "s|=\(opencv-tiny-${OPENCV-TINY-VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV-TINY-VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
+          curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV_TINY_VERSION}/opencv-tiny-${OPENCV_TINY_VERSION}_x86-64.tar.gz | tar -xz
+          sed -i "s|=\(opencv-tiny-${OPENCV_TINY_VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
 
       - name: Setup build
         id: setup
         run: |
-          meson setup build --pkg-config-path opencv-tiny-${OPENCV-TINY-VERSION}/lib/pkgconfig
+          meson setup build --pkg-config-path opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig
           meson configure build -Dlibdir=lib64 
       
       - name: Compile
