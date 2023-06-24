@@ -49,7 +49,7 @@ git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 ```
 
-Download a tiny version of opencv that will be statically linked. If you are under ARM architecture, just replace `x86-64` by `aarch64` in the url. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
+Download my minimal version of opencv that will be statically linked. If you are under ARM architecture, just replace `x86-64` by `aarch64` in the url. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
 curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/4.7.0/opencv-tiny-4.7.0_x86-64.tar.gz | tar -xJ
 sed -i sed -i "s|=\(opencv-tiny-4.7.0\)|=${PWD}/\1|g" opencv-tiny-4.7.0/lib/pkgconfig/{opencv4.pc,zlib.pc} 
