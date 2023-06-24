@@ -34,12 +34,10 @@ jobs:
           meson compile -C build
 
           DESTDIR=install_dir meson install -C build
-          tar -czvf build/linux-enable-ir-emitter.tar.gz -C build/install_dir .
-
-          mv build/linux-enable-ir-emitter.tar.gz /artifacts
+          tar -czvf /artifacts/linux-enable-ir-emitter_aarch64.tar.gz -C build/install_dir .
 
     - name: Upload tarball
       uses: actions/upload-artifact@v3
       with:
         name: linux-enable-ir-emitter_aarch64.tar.gz
-        path: ${PWD}/artifacts/linux-enable-ir-emitter.tar.gz
+        path: ${PWD}/artifacts/linux-enable-ir-emitter_aarch64.tar.gz
