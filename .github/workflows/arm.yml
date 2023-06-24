@@ -17,7 +17,7 @@ jobs:
       uses: uraimo/run-on-arch-action@v2
       with:
         env: |
-          OPENCV_TINY_VERSION: ${OPENCV_TINY_VERSION}
+          OPENCV_TINY_VERSION: ${{ env.OPENCV_TINY_VERSION }}
         arch: aarch64
         distro: ubuntu_latest
         setup: |
