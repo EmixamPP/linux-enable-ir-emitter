@@ -16,16 +16,18 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
+        env: 
+          OPENCV-TINY-VERSION: "4.7.0"
         run: |
           sudo apt-get install -y meson clang-tidy
           pip install pyright
-          curl -L https://github.com/EmixamPP/opencv-tiny/raw/main/opencv-4.7.0.tar.xz | tar -xJ
-          sed -i "3s@prefix=@&${PWD}/@" opencv-4.7.0/lib64/pkgconfig/opencv4.pc 
+          curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV-TINY-VERSION}/opencv-tiny-${OPENCV-TINY-VERSION}_x86-64.tar.gz | tar -xz
+          sed -i "s|=\(opencv-tiny-${OPENCV-TINY-VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV-TINY-VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
 
       - name: Setup build
         id: setup
         run: |
-          meson setup build --pkg-config-path opencv-4.7.0/lib64/pkgconfig
+          meson setup build --pkg-config-path opencv-tiny-${OPENCV-TINY-VERSION}/lib/pkgconfig
           meson configure build -Dlibdir=lib64 
       
       - name: Compile
