@@ -20,8 +20,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -y meson clang-tidy
-          pip install pyright
+          sudo apt-get update -y
+          sudo apt-get install -y meson clang-tidy curl
+          python -m pip install --upgrade pip
+          python -m pip install pyright
           curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV_TINY_VERSION}/opencv-tiny-${OPENCV_TINY_VERSION}_x86-64.tar.gz | tar -xz
           sed -i "s|=\(opencv-tiny-${OPENCV_TINY_VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
 
