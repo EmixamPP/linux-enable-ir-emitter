@@ -35,7 +35,7 @@ jobs:
           --volume "${PWD}/opencv-tiny:/opencv-tiny"
         install: |
           apt-get update -q -y
-          apt-get install -q -y g++ meson curl pkg-config cmake
+          apt-get install -q -y g++ meson pkg-config curl cmake
         run: |
           [ "$(ls /opencv-tiny)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 /opencv-tiny
           
