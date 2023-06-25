@@ -29,19 +29,19 @@ jobs:
         id: cache-opencv
         uses: actions/cache@v3
         with:
-          path: opencv-tiny-${{ env.OPENCV_TINY_VERSION }}
-          key: ${{ runner.os }}-opencv
+          path: opencv-tiny
+          key: opencv-tiny${{ env.OPENCV_TINY_VERSION }}_x86-64
 
       - name: Build OpenCV dependecy
         if: ${{ steps.cache-opencv.outputs.cache-hit != 'true' }}
         run: |
           sudo apt-get install -y cmake
-          curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 "${PWD}/opencv-tiny-${OPENCV_TINY_VERSION}"
+          curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 "${PWD}/opencv-tiny"
 
       - name: Setup build
         id: setup
         run: |
-          meson setup build --pkg-config-path opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig
+          meson setup build --pkg-config-path=$(find opencv-tiny -name pkgconfig | tr '\n' ':')
           meson configure build -Dlibdir=lib64 
       
       - name: Compile
