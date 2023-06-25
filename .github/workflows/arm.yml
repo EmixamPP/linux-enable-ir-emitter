@@ -27,6 +27,7 @@ jobs:
           OPENCV_TINY_VERSION: ${{ env.OPENCV_TINY_VERSION }}
         arch: aarch64
         distro: ubuntu_latest
+        githubToken: ${{ github.token }}
         setup: |
           mkdir -p "${PWD}/artifacts"
           mkdir -p "${PWD}/opencv-tiny"
