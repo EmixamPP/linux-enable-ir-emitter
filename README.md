@@ -14,15 +14,15 @@ Download the latest `linux-enable-ir-emitter-x.x.x_x86-64.tar.gz` [here](https:/
 sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
 
-It can be uninstalled by executing:
+It can be uninstalled by executing (remove the last line to keep the emitter configuration):
 ```
 sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
-/etc/linux-enable-ir-emitter \
 /usr/libexec/linux-enable-ir-emitter \
 /usr/bin/linux-enable-ir-emitter \
 /usr/lib/systemd/system/linux-enable-ir-emitter.service \
 /etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
-/usr/share/bash-completition/completitions/linux-enable-ir-emitter
+/usr/share/bash-completition/completitions/linux-enable-ir-emitter \
+/etc/linux-enable-ir-emitter
 ```
 
 ## How to enable your infrared emitter?
@@ -49,7 +49,7 @@ git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
 ```
 
-Build my minimal version of opencv that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
+Build my minimal version of OpenCV that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
 curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 "${PWD}/opencv-tiny"
 ```
