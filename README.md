@@ -51,7 +51,7 @@ cd linux-enable-ir-emitter
 
 Build my minimal version of opencv that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
-curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash 4.7.0 "${PWD}/opencv-tiny"
+curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 "${PWD}/opencv-tiny"
 ```
 
 Setup build (remove `--pkg-config-path=...` if you skipped the previous step):

@@ -13,6 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Cache OpenCV dependency
+      id: cache-opencv
+      uses: actions/cache@v3
+      with:
+        path: opencv-tiny
+        key: opencv-tiny-${{ env.OPENCV_TINY_VERSION }}_aarch64
+
     - name: Build + Create tarball
       uses: uraimo/run-on-arch-action@v2
       with:
@@ -20,31 +27,29 @@ jobs:
           OPENCV_TINY_VERSION: ${{ env.OPENCV_TINY_VERSION }}
         arch: aarch64
         distro: ubuntu_latest
+        githubToken: ${{ github.token }}
         setup: |
-          mkdir -p ${PWD}/artifacts
+          mkdir -p "${PWD}/artifacts"
+          mkdir -p "${PWD}/opencv-tiny"
         dockerRunArgs: |
           --volume "${PWD}/artifacts:/artifacts"
+          --volume "${PWD}/opencv-tiny:/opencv-tiny"
         install: |
           apt-get update -q -y
-          apt-get install -q -y g++ meson curl pkg-config
+          apt-get install -q -y g++ meson pkg-config curl cmake
         run: |
-          curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV_TINY_VERSION}/opencv-tiny-${OPENCV_TINY_VERSION}_aarch64.tar.gz | tar -xz
-          sed -i "s|=\(opencv-tiny-${OPENCV_TINY_VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
-
-          meson setup build --pkg-config-path opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig
+          [ "$(ls /opencv-tiny)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 /opencv-tiny
+          
+          meson setup build --pkg-config-path=$(find opencv-tiny -name pkgconfig | tr '\n' ':')
           meson configure build -Dlibdir=lib64 
           meson compile -C build
 
           DESTDIR=install_dir meson install -C build
           tar -czvf /artifacts/linux-enable-ir-emitter_aarch64.tar.gz -C build/install_dir .
-  
-    - name: Move tarball
-      run: | 
-        mv ${PWD}/artifacts/linux-enable-ir-emitter_aarch64.tar.gz .
 
     - name: Upload tarball
       uses: actions/upload-artifact@v3
       with:
         name: linux-enable-ir-emitter_aarch64.tar.gz
-        path: linux-enable-ir-emitter_aarch64.tar.gz
+        path: artifacts/linux-enable-ir-emitter_aarch64.tar.gz
         if-no-files-found: error
