@@ -24,8 +24,19 @@ jobs:
           sudo apt-get install -y meson clang-tidy curl
           python -m pip install --upgrade pip
           python -m pip install pyright
-          curl -L https://github.com/EmixamPP/opencv-tiny/releases/download/${OPENCV_TINY_VERSION}/opencv-tiny-${OPENCV_TINY_VERSION}_x86-64.tar.gz | tar -xz
-          sed -i "s|=\(opencv-tiny-${OPENCV_TINY_VERSION}\)|=${PWD}/\1|g" opencv-tiny-${OPENCV_TINY_VERSION}/lib/pkgconfig/{opencv4.pc,zlib.pc}
+      
+      - name: Cache OpenCV dependency
+        id: cache-opencv
+        uses: actions/cache@v3
+        with:
+          path: opencv-tiny-${{ env.OPENCV_TINY_VERSION }}
+          key: ${{ runner.os }}-opencv
+
+      - name: Build OpenCV dependecy
+        if: ${{ steps.cache-opencv.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get install -y cmake
+          curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash 4.7.0 "${PWD}/opencv-tiny-${OPENCV_TINY_VERSION}"
 
       - name: Setup build
         id: setup
