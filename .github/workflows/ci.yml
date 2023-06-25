@@ -36,7 +36,7 @@ jobs:
         if: ${{ steps.cache-opencv.outputs.cache-hit != 'true' }}
         run: |
           sudo apt-get install -y cmake
-          curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash 4.7.0 "${PWD}/opencv-tiny-${OPENCV_TINY_VERSION}"
+          curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 "${PWD}/opencv-tiny-${OPENCV_TINY_VERSION}"
 
       - name: Setup build
         id: setup
