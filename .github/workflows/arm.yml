@@ -38,7 +38,7 @@ jobs:
           apt-get update -q -y
           apt-get install -q -y g++ meson pkg-config curl cmake
         run: |
-          [ "$(ls /opencv-tiny)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 /opencv-tiny
+          [ "$(ls /opencv-tiny)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s ${OPENCV_TINY_VERSION} /opencv-tiny
           
           meson setup build --pkg-config-path=$(find opencv-tiny -name pkgconfig | tr '\n' ':')
           meson configure build -Dlibdir=lib64 
