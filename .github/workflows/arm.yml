@@ -18,7 +18,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: opencv-tiny
-        key: opencv-tiny${{ env.OPENCV_TINY_VERSION }}_aarch64
+        key: opencv-tiny-${{ env.OPENCV_TINY_VERSION }}_aarch64
 
     - name: Build + Create tarball
       uses: uraimo/run-on-arch-action@v2

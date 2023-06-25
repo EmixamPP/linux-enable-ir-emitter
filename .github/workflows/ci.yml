@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: opencv-tiny
-          key: opencv-tiny${{ env.OPENCV_TINY_VERSION }}_x86-64
+          key: opencv-tiny-${{ env.OPENCV_TINY_VERSION }}_x86-64
 
       - name: Build OpenCV dependecy
         if: ${{ steps.cache-opencv.outputs.cache-hit != 'true' }}
