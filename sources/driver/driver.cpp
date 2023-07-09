@@ -3,21 +3,11 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
-#include <cstring>
+#include <vector>
 using namespace std;
 
-
-Driver::Driver(string device, uint8_t unit, uint8_t selector, uint16_t size, const uint8_t *control)
-    : device(device), unit(unit), selector(selector), size(size), control(new uint8_t[size])
-{
-    memcpy(this->control, control, size * sizeof(uint8_t));
-}
-
-Driver::~Driver()
-{
-    delete[] control;
-}
-
+Driver::Driver(string device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
+    : device(device), unit(unit), selector(selector), control(control) {}
 
 /**
  * @brief Write the driver in a file
@@ -36,8 +26,7 @@ void writeDriver(string driverFile, const Driver *driver)
     file << "device=" << driver->device << endl;
     file << "unit=" << (int)driver->unit << endl;
     file << "selector=" << (int)driver->selector << endl;
-    file << "size=" << (int)driver->size << endl;
-    for (unsigned i = 0; i < driver->size; ++i)
+    for (unsigned i = 0; i < driver->control.size(); ++i)
         file << "control" << i << "=" << (int)driver->control[i] << endl;
 
     file.close();
@@ -66,7 +55,7 @@ Driver *readDriver(string driverFile)
     count += fscanf(file, " unit=%hhu", &unit);
     count += fscanf(file, " selector=%hhu", &selector);
     count += fscanf(file, " size=%hu", &size);
-    uint8_t *control = new uint8_t[size];
+    vector<uint8_t> control(size);
     for (unsigned i = 0; i < size; ++i)
     {
         string key = " control" + to_string(i) + "=%d";
@@ -77,7 +66,5 @@ Driver *readDriver(string driverFile)
         throw runtime_error("CRITICAL: The driver at " + string(driverFile) + " is corrupted");
 
     fclose(file);
-    Driver *driver = new Driver(device, unit, selector, size, control);
-    delete[] control;
-    return driver;
+    return new Driver(device, unit, selector, control);
 }

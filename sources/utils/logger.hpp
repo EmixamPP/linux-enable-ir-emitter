@@ -1,6 +1,9 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
+#include <string>
+using namespace std;
+
 class Logger
 {
 private:
@@ -13,13 +16,13 @@ public:
 
     static void enableDebug();
 
-    static void debug(const char *text);
+    static void debug(string text);
 
-    static void info(const char *text);
+    static void info(string text);
 
-    static void error(const char *text);
+    static void error(string text);
 
-    static void critical(const char *text);
+    static void critical(string text);
 };
 
 #endif

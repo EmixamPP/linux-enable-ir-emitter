@@ -13,14 +13,14 @@ using namespace std;
 #include "camera.hpp"
 #include "finder.hpp"
 #include "driver.hpp"
-#include "logger.hpp"
+#include "../utils/logger.hpp"
 
 #define EXIT_FD_ERROR 126
 
 /**
  * Generate a driver for the infrared emitter
  *
- * usage: driver-generator [device] [emitters] [negAnswerLimit] [workspace] [debug]
+ * usage: generate-driver [device] [emitters] [negAnswerLimit] [workspace] [debug]
  *        device           path to the infrared camera
  *        emitters         number of emitters on the device
  *        negAnswerLimit   the number of negative answer before the pattern is skiped. Use 256 for unlimited

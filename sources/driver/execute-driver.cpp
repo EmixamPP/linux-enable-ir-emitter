@@ -3,6 +3,7 @@ using namespace std;
 
 #include "driver.hpp"
 #include "camera.hpp"
+#include "camerainstruction.hpp"
 
 #define EXIT_FD_ERROR 126;
 
@@ -25,7 +26,7 @@ int main(int, const char **argv)
     try
     {
         Camera camera(driver->device);
-        CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control, driver->size);
+        CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control);
         result = camera.apply(instruction);
     }
     catch (CameraException &e)

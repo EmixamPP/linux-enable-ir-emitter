@@ -2,17 +2,14 @@
 
 #include <vector>
 #include <thread>
-#include <cstdlib>
 #include <fstream>
-#include <iostream>
-#include <cstdio>
 #include <string>
-#include <cstring>
 using namespace std;
 
 #include "camera.hpp"
-#include "logger.hpp"
+#include "camerainstruction.hpp"
 #include "driver.hpp"
+#include "../utils/logger.hpp"
 
 /**
  * @brief Execute shell command and return the ouput
@@ -74,7 +71,7 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
  */
 Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
 {
-    return new Driver(camera.device, unit, selector, instruction.getSize(), instruction.getCurrent());
+    return new Driver(camera.device, unit, selector, instruction.getCurrent());
 }
 
 /**
@@ -147,7 +144,7 @@ Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, strin
     string unitsStr = "Extension units: ";
     for (auto it = units->begin(); it != units->end(); ++it)
         unitsStr += to_string(*it) + " ";
-    Logger::debug(unitsStr.c_str());
+    Logger::debug(unitsStr);
 
     excluded = getExcluded();
 };
@@ -169,7 +166,7 @@ Driver **Finder::find()
     unsigned configuredEmitters = 0;
 
     for (const uint8_t unit : *units)
-        for (int __selector = 0; __selector < 256; ++__selector)
+        for (unsigned __selector = 0; __selector < 256; ++__selector)
         {
             const uint8_t selector = (uint8_t)__selector; // safe: 0 <= __selector <= 255
             if (isExcluded(unit, selector))

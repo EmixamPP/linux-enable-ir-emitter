@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 using namespace std;
 
 class Driver
@@ -11,12 +12,9 @@ public:
     string device;
     uint8_t unit;
     uint8_t selector;
-    uint16_t size;
-    uint8_t *control;
+    vector<uint8_t> control;
 
-    Driver(string device, uint8_t unit, uint8_t selector, uint16_t size, const uint8_t *control);
-
-    ~Driver();
+    Driver(string device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
 
     Driver &operator=(const Driver &) = delete;
     Driver(const Driver &) = delete;

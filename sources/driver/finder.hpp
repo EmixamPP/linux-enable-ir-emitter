@@ -9,7 +9,6 @@ using namespace std;
 #include "camera.hpp"
 #include "driver.hpp"
 
-
 class Finder
 {
 private:

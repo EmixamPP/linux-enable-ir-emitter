@@ -4,7 +4,7 @@ import logging
 import subprocess
 
 from command import boot
-from globals import (BIN_DRIVER_GENERATOR_PATH, SAVE_DRIVER_FOLDER_PATH,
+from globals import (BIN_GENERATE_DRIVER_PATH, SAVE_DRIVER_FOLDER_PATH,
                      ExitCode)
 
 
@@ -22,7 +22,7 @@ def configure(device: str, emitters: int, neg_answer_limit: int) -> NoReturn:
     log_level = int(logging.getLogger().level == logging.DEBUG)
     exit_code = subprocess.call(
         [
-            BIN_DRIVER_GENERATOR_PATH,
+            BIN_GENERATE_DRIVER_PATH,
             device,
             str(emitters),
             str(neg_answer_limit),
