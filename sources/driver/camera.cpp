@@ -69,7 +69,7 @@ void Camera::closeFd() noexcept
 }
 
 Camera::Camera(string device)
-    : id(Camera::deviceId(device.c_str())), device(device)
+    : id(Camera::deviceId(device)), device(device)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
@@ -94,7 +94,7 @@ bool Camera::apply(const CameraInstruction &instruction) noexcept
         instruction.getUnit(),
         instruction.getSelector(),
         UVC_SET_CUR,
-        instruction.getCurrent().size(),
+        (uint16_t) instruction.getCurrent().size(),
         const_cast<uint8_t*>(instruction.getCurrent().data()), // const_cast safe; this is a set query
     };
     return executeUvcQuery(query) == 0;
@@ -119,7 +119,7 @@ bool Camera::isEmitterWorking()
     cout << "Is the ir emitter flashing (not just turn on)? Yes/No? ";
     cin >> answer;
 
-    while (answer.empty() || answer[0] != 'y' && answer[0] != 'Y' && answer[0] != 'n' && answer[0] != 'N')
+    while (answer.empty() || (answer[0] != 'y' && answer[0] != 'Y' && answer[0] != 'n' && answer[0] != 'N'))
     {
         cout << "Yes/No? ";
         cin >> answer;
@@ -186,7 +186,7 @@ int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control
         unit,
         selector,
         UVC_SET_CUR,
-        control.size(),
+        (uint16_t) control.size(),
         control.data(),
     };
 
@@ -210,7 +210,7 @@ int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vect
         unit,
         selector,
         query_type,
-        control.size(),
+        (uint16_t) control.size(),
         control.data(),
     };
 

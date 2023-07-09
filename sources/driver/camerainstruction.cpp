@@ -24,7 +24,7 @@ void CameraInstruction::logDebugCtrl(string prefixMsg, const vector<uint8_t> &co
     for (auto &i : control)
         prefixMsg += " " + to_string((int)i);
     if (!prefixMsg.empty())
-        Logger::debug(prefixMsg.c_str());
+        Logger::debug(prefixMsg);
 }
 
 /**
@@ -137,7 +137,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     logDebugCtrl("maximum:", maxCtrl);
     logDebugCtrl("minimum:", minCtrl);
     logDebugCtrl("resolution:", resCtrl);
-    Logger::debug(("unit: " + to_string((int)unit) + " selector: " + to_string((int)selector)).c_str());
+    Logger::debug(("unit: " + to_string((int)unit) + " selector: " + to_string((int)selector)));
 }
 
 /**
