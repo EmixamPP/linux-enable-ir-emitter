@@ -1,7 +1,7 @@
 ### In this documentations you can find help for:
-* [Solve common problem and instruction for opening a new issue](docs/issues.md)
-* [System, manual build and hardware requirements](docs/requirements.md)
-* [Exit code meaning](docs/exit-code.md)
+* [Solve common problem and instruction for opening a new issue](issues.md)
+* [System, manual build and hardware requirements](requirements.md)
+* [Exit code meaning](exit-code.md)
 * [Command line usage](#linux-enable-ir-emitter-usage) 
 
 ### linux-enable-ir-emitter usage 

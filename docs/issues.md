@@ -1,8 +1,5 @@
 ### Please, first, ensure that you have the last version. Compare the [latest release](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest) with `linux-enable-ir-emitter -V`
 
-## System, manual build and hardware requirements
-See [requirements doc page](docs/requirements.md)
-
 ## Find which `/dev/videoX` path is your infrared camera
 1. Execute `v4l2-ctl --list-devices`
 2. For each `/dev/videoX` entry displayed:
@@ -26,7 +23,8 @@ Otherwise, open an issue using the "Configuration has failed" template.
 3. If none of the previous fix your problem, open an issue using the "Emitter does not work after successful configuration" template.
 
 ## Error with the systemd or udev boot service
-Open an issue using the "Emitter does not work after successful configuration" template.
+1. Ensure you have `systemd` or `openrc` (and the related version installed)
+2. Open an issue using the "Emitter does not work after successful configuration" template.
 
 ## Other bugs
 Open an issue using the "Bug report" template.
