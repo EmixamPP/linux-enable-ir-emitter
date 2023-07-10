@@ -11,6 +11,7 @@
 using namespace std;
 
 #include "camera.hpp"
+#include "autocamera.hpp"
 #include "finder.hpp"
 #include "driver.hpp"
 #include "../utils/logger.hpp"
@@ -20,12 +21,13 @@ using namespace std;
 /**
  * Generate a driver for the infrared emitter
  *
- * usage: generate-driver [device] [emitters] [negAnswerLimit] [workspace] [debug]
+ * usage: generate-driver [device] [emitters] [negAnswerLimit] [workspace] [debug] [auto]
  *        device           path to the infrared camera
  *        emitters         number of emitters on the device
  *        negAnswerLimit   the number of negative answer before the pattern is skiped. Use 256 for unlimited
  *        workspace        directory where store the driver
  *        debug            1 for print debug information, otherwise 0
+ *        auto             1 for fully automatic generation, otherwise 0
  *
  * Exit code: 0 Success
  *            1 Error
@@ -39,23 +41,29 @@ int main(int, const char *argv[])
     const unsigned negAnswerLimit = (unsigned) atoi(argv[3]);
     const string workspace = string(argv[4]) + "/";
     const string excludedPath = workspace + deviceName + ".excluded";
-
     if (atoi(argv[5]) == 1)
         Logger::enableDebug();
+    Camera *camera;
+    if (atoi(argv[5]) == 1)
+        camera = new Camera(device);
+    else
+        camera = new AutoCamera(device);
 
     try
-    {
-        Camera camera(device);
-        if (camera.isEmitterWorking())
+    {   
+        if (camera->isEmitterWorking())
         {
             Logger::error("Your emiter is already working, skipping the configuration.");
+            delete camera;
             return EXIT_FAILURE;
         }
         
-        Finder finder(camera, emitters, negAnswerLimit, excludedPath);
+        Finder finder(*camera, emitters, negAnswerLimit, excludedPath);
         Driver **driver = finder.find();
-        if (driver == nullptr)
+        if (driver == nullptr) {
+            delete camera;
             return EXIT_FAILURE;
+        }
 
         for (unsigned i = 0; i < emitters; ++i)
         {
@@ -66,9 +74,12 @@ int main(int, const char *argv[])
         delete[] driver;
     }
     catch (CameraException &e)
-    {
+    {   
         cerr << e.what() << endl;
+        delete camera;
         return EXIT_FD_ERROR;
     }
+
+    delete camera;
     return EXIT_SUCCESS;
 }
