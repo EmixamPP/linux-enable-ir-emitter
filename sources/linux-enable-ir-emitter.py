@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
         prog="linux-enable-ir-emitter",
-        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/wiki",
+        epilog="https://github.com/EmixamPP/linux-enable-ir-emitter",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
