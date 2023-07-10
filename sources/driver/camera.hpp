@@ -22,28 +22,28 @@ private:
 protected:
     static int deviceId(string device);
 
-    int executeUvcQuery(const struct uvc_xu_control_query &query) noexcept;
+    virtual int executeUvcQuery(const struct uvc_xu_control_query &query) noexcept;
 
 public:
     string device;
 
     Camera(string device);
 
-    ~Camera();
+    virtual ~Camera();
 
     Camera &operator=(const Camera &) = delete;
 
     Camera(const Camera &) = delete;
 
-    bool apply(const CameraInstruction &instruction) noexcept;
+    virtual bool apply(const CameraInstruction &instruction) noexcept;
 
-    bool isEmitterWorking();
+    virtual bool isEmitterWorking();
 
-    int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
+    virtual int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
 
-    int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
+    virtual int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
 
-    uint16_t lenUvcQuery(uint8_t unit, uint8_t selector) noexcept;
+    virtual uint16_t lenUvcQuery(uint8_t unit, uint8_t selector) noexcept;
 };
 
 class CameraException : public exception
@@ -54,7 +54,7 @@ protected:
 public:
     explicit CameraException(string device);
 
-    const char *what() const noexcept override;
+    virtual const char *what() const noexcept override;
 };
 
 #endif

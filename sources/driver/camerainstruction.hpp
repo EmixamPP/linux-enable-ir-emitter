@@ -32,17 +32,17 @@ public:
     CameraInstruction &operator=(const CameraInstruction &);
     CameraInstruction(const CameraInstruction &);
 
-    bool next();
+    virtual bool next();
 
-    bool hasNext() const noexcept;
+    virtual bool hasNext() const noexcept;
 
-    const vector<uint8_t> &getCurrent() const noexcept;
+    virtual const vector<uint8_t> &getCurrent() const noexcept;
 
-    uint8_t getUnit() const noexcept;
+    virtual uint8_t getUnit() const noexcept;
 
-    uint8_t getSelector() const noexcept;
+    virtual uint8_t getSelector() const noexcept;
 
-    bool trySetMinAsCur() noexcept;
+    virtual bool trySetMinAsCur() noexcept;
 };
 
 class CameraInstructionException : public exception
@@ -53,7 +53,7 @@ private:
 public:
     explicit CameraInstructionException(string device, uint8_t unit, uint8_t selector);
 
-    const char *what() const noexcept override;
+    virtual const char *what() const noexcept override;
 };
 
 #endif

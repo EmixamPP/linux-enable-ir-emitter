@@ -11,7 +11,7 @@ using namespace std;
 
 class Finder
 {
-private:
+protected:
     Camera &camera;
     const vector<uint8_t> *units;
     const unsigned emitters;
@@ -23,24 +23,24 @@ private:
 
     static vector<uint8_t> *getUnits(const Camera &camera) noexcept;
 
-    Driver* createDriverFromInstruction(const CameraInstruction& instruction, uint8_t unit, uint8_t selector) const noexcept;
+    virtual Driver *createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
 
-    vector<pair<uint8_t, uint8_t>> *getExcluded() noexcept;
+    virtual vector<pair<uint8_t, uint8_t>> *getExcluded() noexcept;
 
-    bool isExcluded(uint8_t unit, uint8_t selector) const noexcept;
+    virtual bool isExcluded(uint8_t unit, uint8_t selector) const noexcept;
 
-    void addToExclusion(uint8_t unit, uint8_t selector) noexcept;
-    
+    virtual void addToExclusion(uint8_t unit, uint8_t selector) noexcept;
+
 public:
     Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept;
 
-    ~Finder();
+    virtual ~Finder();
 
     Finder &operator=(const Finder &) = delete;
 
     Finder(const Finder &) = delete;
 
-    Driver **find();
+    virtual Driver **find();
 };
 
 #endif

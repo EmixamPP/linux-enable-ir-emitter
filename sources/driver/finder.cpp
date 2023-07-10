@@ -67,6 +67,7 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
  * @brief Create a Driver from Instruction object
  *
  * @param instruction from which the driver has to be create
+ *
  * @return the driver
  */
 Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
@@ -105,6 +106,7 @@ vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
  *
  * @param unit to check
  * @param selector to select
+ *
  * @return true if they are excluded, otherwise false
  */
 bool Finder::isExcluded(uint8_t unit, uint8_t selector) const noexcept
@@ -142,11 +144,11 @@ Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, strin
     : camera(camera), units(Finder::getUnits(camera)), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr)
 {
     string unitsStr = "Extension units: ";
-    for (auto it = units->begin(); it != units->end(); ++it)
-        unitsStr += to_string(*it) + " ";
+    for (auto it : *units)
+        unitsStr += to_string(it) + " ";
     Logger::debug(unitsStr);
 
-    excluded = getExcluded();
+    excluded = getExcluded(); /* NOLINT */
 };
 
 Finder::~Finder()
@@ -174,7 +176,7 @@ Driver **Finder::find()
             try
             {
                 CameraInstruction instruction(camera, unit, selector);
-                CameraInstruction initInstruction = instruction; // copy for reset later
+                const CameraInstruction initInstruction = instruction; // copy for reset later
 
                 if (!instruction.trySetMinAsCur()) // if no min instruction exists
                 {
