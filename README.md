@@ -36,7 +36,7 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 
-*Please consult the [docs](docs) before opening an issue.*
+*Please consult the [docs](docs/README.md) before opening an issue.*
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
