@@ -3,6 +3,13 @@
 ## System, manual build and hardware requirements
 See [requirements doc page](docs/requirements.md)
 
+## Find which `/dev/videoX` path is your infrared camera
+1. Execute `v4l2-ctl --list-devices`
+2. For each `/dev/videoX` entry displayed:
+   1. Execute  `v4l2-ctl -d /dev/videoX --list-formats-ext`
+   2. If displayed `'GREY' (8-bit Greyscale)`, this `/dev/videoX` path is your infrared camera
+3. Otherwise your ir camera is not reconized by your kernel; this tool cannot help you, sorry
+
 ## The configuration has failed 
 If you had the message `INFO: Please shut down your computer, then boot and retry.`, please follow these instructions first:
 1. Shutdown your computer, (not just rebooting)
