@@ -29,6 +29,8 @@ public:
 
     CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
 
+    virtual ~CameraInstruction();
+
     CameraInstruction &operator=(const CameraInstruction &);
     CameraInstruction(const CameraInstruction &);
 

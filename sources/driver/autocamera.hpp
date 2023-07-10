@@ -11,6 +11,8 @@ class AutoCamera : public Camera
 public:
     AutoCamera(string device);
 
+    virtual ~AutoCamera();
+
     virtual bool isEmitterWorking() override;
 
     AutoCamera &operator=(const AutoCamera &) = delete;

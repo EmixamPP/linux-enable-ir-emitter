@@ -154,6 +154,8 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
 CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
     : unit(unit), selector(selector), curCtrl(control){}
 
+CameraInstruction::~CameraInstruction() {}
+
 CameraInstruction &CameraInstruction::operator=(const CameraInstruction &other)
 {
     unit = other.unit;

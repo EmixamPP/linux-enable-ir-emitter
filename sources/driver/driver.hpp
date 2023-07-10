@@ -16,6 +16,8 @@ public:
 
     Driver(string device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
 
+    virtual ~Driver();
+
     Driver &operator=(const Driver &) = delete;
     Driver(const Driver &) = delete;
 

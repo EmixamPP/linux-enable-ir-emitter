@@ -8,3 +8,5 @@ bool AutoCamera::isEmitterWorking() {
 }
 
 AutoCamera::AutoCamera(string device) : Camera(device) {}
+
+AutoCamera::~AutoCamera() {}

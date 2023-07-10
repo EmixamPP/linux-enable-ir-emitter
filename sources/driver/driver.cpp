@@ -9,6 +9,8 @@ using namespace std;
 Driver::Driver(string device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
     : device(device), unit(unit), selector(selector), control(control) {}
 
+Driver::~Driver() {}
+
 /**
  * @brief Write the driver in a file
  *
