@@ -5,6 +5,7 @@
 #include "camera.hpp"
 
 #include <vector>
+#include <string>
 #include <cstring>
 #include <errno.h>
 #include <sys/ioctl.h>

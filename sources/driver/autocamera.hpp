@@ -8,8 +8,11 @@ using namespace std;
 
 class AutoCamera : public Camera
 {
+protected:
+    unsigned captureTime;
+    
 public:
-    AutoCamera(string device);
+    AutoCamera(string device, unsigned captureTime = 2);
 
     virtual ~AutoCamera();
 

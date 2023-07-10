@@ -11,7 +11,7 @@ class CameraInstruction;
 
 class Camera
 {
-private:
+protected:
     int id;
     int fd = -1;
 
@@ -19,7 +19,6 @@ private:
 
     void closeFd() noexcept;
 
-protected:
     static int deviceId(string device);
 
     virtual int executeUvcQuery(const struct uvc_xu_control_query &query) noexcept;
