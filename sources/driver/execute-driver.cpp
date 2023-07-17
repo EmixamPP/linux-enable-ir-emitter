@@ -2,8 +2,8 @@
 using namespace std;
 
 #include "driver.hpp"
-#include "camera.hpp"
-#include "camerainstruction.hpp"
+#include "../camera/camera.hpp"
+#include "../camera/camerainstruction.hpp"
 
 #define EXIT_FD_ERROR 126;
 
