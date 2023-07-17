@@ -6,8 +6,8 @@
 #include <string>
 using namespace std;
 
-#include "camera.hpp"
-#include "camerainstruction.hpp"
+#include "../camera/camera.hpp"
+#include "../camera/camerainstruction.hpp"
 #include "driver.hpp"
 #include "../utils/logger.hpp"
 
@@ -140,16 +140,8 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param negAnswerLimit skip a patern after negAnswerLimit negative answer
  * @param excludedPath path where write unit and selector to exclude from the search
  */
-Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept
-    : camera(camera), units(Finder::getUnits(camera)), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr)
-{
-    string unitsStr = "Extension units: ";
-    for (auto it : *units)
-        unitsStr += to_string(it) + " ";
-    Logger::debug(unitsStr);
-
-    excluded = getExcluded(); /* NOLINT */
-};
+Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath)
+    : camera(camera), units(nullptr), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr){};
 
 Finder::~Finder()
 {
@@ -164,6 +156,17 @@ Finder::~Finder()
  */
 Driver **Finder::find()
 {
+    if (units == nullptr)
+    {
+        units = getUnits(camera);
+        string unitsStr = "Extension units: ";
+        for (auto it : *units)
+            unitsStr += to_string(it) + " ";
+        Logger::debug(unitsStr);
+    }
+
+    excluded = getExcluded();
+
     Driver **drivers = new Driver *[emitters];
     unsigned configuredEmitters = 0;
 

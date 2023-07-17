@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '4.8.2', 
+    version: '5.0.0-pre', 
     license: 'MIT',
     default_options: [
         'cpp_std=c++20',
@@ -21,11 +21,12 @@ lib_exec_dir = get_option('libexecdir')  / meson.project_name()
 executable(
     'generate-driver', 
     'sources/driver/generate-driver.cpp',
-    'sources/driver/camera.cpp',
-    'sources/driver/autocamera.cpp',
-    'sources/driver/camerainstruction.cpp',
+    'sources/camera/camera.cpp',
+    'sources/camera/autocamera.cpp',
+    'sources/camera/camerainstruction.cpp',
     'sources/driver/driver.cpp',
     'sources/driver/finder.cpp',
+    'sources/driver/exhaustivefinder.cpp',
     'sources/utils/logger.cpp',
     dependencies: opencv_dep,
     install: true,
@@ -35,9 +36,9 @@ executable(
 executable(
     'execute-driver', 
     'sources/driver/execute-driver.cpp',
-    'sources/driver/camera.cpp',
-    'sources/driver/autocamera.cpp',
-    'sources/driver/camerainstruction.cpp',
+    'sources/camera/camera.cpp',
+    'sources/camera/autocamera.cpp',
+    'sources/camera/camerainstruction.cpp',
     'sources/driver/driver.cpp',
     'sources/utils/logger.cpp',
     dependencies: opencv_dep,

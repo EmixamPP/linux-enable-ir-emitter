@@ -6,7 +6,7 @@
 #include <string>
 using namespace std;
 
-#include "camera.hpp"
+#include "../camera/camera.hpp"
 #include "driver.hpp"
 
 class Finder
@@ -21,7 +21,7 @@ protected:
 
     static string *shellExec(string cmd) noexcept;
 
-    static vector<uint8_t> *getUnits(const Camera &camera) noexcept;
+    virtual vector<uint8_t> *getUnits(const Camera &camera) noexcept;
 
     virtual Driver *createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
 
@@ -32,7 +32,7 @@ protected:
     virtual void addToExclusion(uint8_t unit, uint8_t selector) noexcept;
 
 public:
-    Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept;
+    Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath);
 
     virtual ~Finder();
 

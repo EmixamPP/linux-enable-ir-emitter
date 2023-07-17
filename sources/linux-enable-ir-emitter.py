@@ -46,6 +46,20 @@ if __name__ == "__main__":
         "configure",
         help="generate ir emitter driver",
     )
+    parser.add_argument(
+        "-m",
+        "--manual",
+        help="activate manual configuration",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "-ex",
+        "--exhaustive",
+        help="activate exhaustive configuration",
+        action="store_true",
+        default=False,
+    )
     command_configure.add_argument(
         "-e",
         "--emitters",
@@ -112,7 +126,7 @@ if __name__ == "__main__":
     elif args.command == "configure":
         check_root()
         assert(device is not None)
-        configure(device, args.emitters[0], args.limit[0])
+        configure(device, args.manual, args.exhaustive, args.emitters[0], args.limit[0])
 
     elif args.command == "boot":
         check_root()

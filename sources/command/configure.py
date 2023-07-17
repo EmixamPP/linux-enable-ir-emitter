@@ -8,11 +8,13 @@ from globals import (BIN_GENERATE_DRIVER_PATH, SAVE_DRIVER_FOLDER_PATH,
                      ExitCode)
 
 
-def configure(device: str, emitters: int, neg_answer_limit: int) -> NoReturn:
+def configure(device: str, manual: bool, exhaustive: bool, emitters: int, neg_answer_limit: int) -> NoReturn:
     """Find a driver for the infrared camera and exit.
 
     Args:
-        device str: path to the infrared camera.
+        device (str): path to the infrared camera.
+        manual (bool): true for enabling the manual configuration
+        exhaustive (bool): true for enabling the exhaustive configuration
         emitters (int): number of emitters on the device.
         neg_answer_limit (int): after k negative answer the pattern will be skiped. Use 256 for unlimited.
     """
@@ -28,6 +30,8 @@ def configure(device: str, emitters: int, neg_answer_limit: int) -> NoReturn:
             str(neg_answer_limit),
             SAVE_DRIVER_FOLDER_PATH,
             str(log_level),
+            str(int(manual)),
+            str(int(exhaustive)),
         ]
     )
 
