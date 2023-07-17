@@ -46,15 +46,15 @@ if __name__ == "__main__":
         "configure",
         help="generate ir emitter driver",
     )
-    parser.add_argument(
+    command_configure.add_argument(
         "-m",
         "--manual",
         help="activate manual configuration",
         action="store_true",
         default=False,
     )
-    parser.add_argument(
-        "-ex",
+    command_configure.add_argument(
+        "-x",
         "--exhaustive",
         help="activate exhaustive configuration",
         action="store_true",
