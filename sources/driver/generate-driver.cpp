@@ -39,9 +39,9 @@ int main(int, const char *argv[])
         Logger::enableDebug();
     Camera *camera;
     if (atoi(argv[5]) == 1)
-        camera = new AutoCamera(device);
-    else
         camera = new Camera(device);
+    else
+        camera = new AutoCamera(device);
     Finder *finder;
     if (atoi(argv[6]) == 1)
         finder = new ExhaustiveFinder(*camera, emitters, negAnswerLimit, excludedPath);
