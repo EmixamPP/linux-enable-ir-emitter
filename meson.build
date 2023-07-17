@@ -4,12 +4,20 @@ project(
     version: '5.0.0-pre', 
     license: 'MIT',
     default_options: [
-        'cpp_std=c++20',
-        'optimization=3',
-        'warning_level=3',
         'prefix=/usr',
-    ], 
+        'cpp_std=c++17',
+        'optimization=3',
+        'warning_level=everything',
+        'werror=true',
+    ],
 )
+add_project_arguments(
+    '-Wno-abi-tag', '-Wno-suggest-attribute=pure', '-Wno-shadow', 
+    '-Wno-suggest-attribute=const', '-Wno-padded', '-Wformat-nonliteral',
+    '-Wno-suggest-final-types', '-Wno-suggest-final-methods', 
+    '-Wno-missing-declarations', '-Wno-sign-promo', '-Wno-format-nonliteral',
+    language: 'cpp'
+) 
 
 opencv_dep = dependency('opencv4', static: true)
 
