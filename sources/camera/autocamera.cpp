@@ -29,8 +29,8 @@ bool AutoCamera::isEmitterWorking() {
     }
 
     // TODO compare frames to determine if emitter is working
-    // cv::Mat doc: https://docs.opencv.org/4.7.0/d3/d63/classcv_1_1Mat.html
-    bool isWorking = true;
+    // cv::Mat doc: https://docs.opencv.org/4.8.0/d3/d63/classcv_1_1Mat.html
+    bool isWorking = false;
 
     for (auto frame: frames)
         delete frame;
