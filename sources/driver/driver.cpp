@@ -47,25 +47,31 @@ Driver *readDriver(string driverFile)
 {
     FILE *file = fopen(driverFile.c_str(), "r");
     if (!file)
-        throw ifstream::failure("CRITICAL: Impossible to open the driver at " + string(driverFile));
+        throw ifstream::failure("CRITICAL: Impossible to open the driver at " + driverFile);
 
     char device[128];
-    uint8_t unit, selector;
-    uint16_t size;
-    int count = 0;
-    count += fscanf(file, " device=%s*", device);
-    count += fscanf(file, " unit=%hhu", &unit);
-    count += fscanf(file, " selector=%hhu", &selector);
-    count += fscanf(file, " size=%hu", &size);
-    vector<uint8_t> control(size);
-    for (unsigned i = 0; i < size; ++i)
+    uint8_t unit, selector, controli;
+    vector<uint8_t> control;
+    int res = 0;
+    res = fscanf(file, " device=%s", device);
+    if (res == 0)
+        throw runtime_error("CRITICAL: device is missing in the driver at " + driverFile);
+    res = fscanf(file, " unit=%hhu", &unit);
+    if (res == 0)
+        throw runtime_error("CRITICAL: unit is missing in the driver at " + driverFile);
+    res = fscanf(file, " selector=%hhu", &selector);
+    if (res == 0)
+        throw runtime_error("CRITICAL: selector is missing in the driver at " + driverFile);
+    res = 1;
+    for (unsigned i = 0; res == 1; ++i)
     {
-        string key = " control" + to_string(i) + "=%d";
-        count += fscanf(file, key.c_str(), &control[i]);
+        string key = " control" + to_string(i) + "=%hhu";
+        res = fscanf(file, key.c_str(), &controli);
+        if (res == 1)
+            control.push_back(controli);
     }
-
-    if (count != 4 + size)
-        throw runtime_error("CRITICAL: The driver at " + string(driverFile) + " is corrupted");
+    if (control.size() == 0)
+        throw runtime_error("CRITICAL: control is missing in the driver at " + driverFile);
 
     fclose(file);
     return new Driver(device, unit, selector, control);
