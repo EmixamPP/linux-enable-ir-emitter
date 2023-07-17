@@ -13,11 +13,11 @@ class Finder
 {
 protected:
     Camera &camera;
-    const vector<uint8_t> *units;
+    vector<uint8_t> *units = nullptr;
     const unsigned emitters;
     const unsigned negAnswerLimit;
     const string excludedPath;
-    const vector<pair<uint8_t, uint8_t>> *excluded;
+    vector<pair<uint8_t, uint8_t>> *excluded = nullptr;
 
     static string *shellExec(string cmd) noexcept;
 

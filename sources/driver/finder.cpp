@@ -141,7 +141,7 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param excludedPath path where write unit and selector to exclude from the search
  */
 Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath)
-    : camera(camera), units(nullptr), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr){};
+    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath) {};
 
 Finder::~Finder()
 {
