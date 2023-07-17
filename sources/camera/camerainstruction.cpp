@@ -9,7 +9,6 @@ using namespace std;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #include <opencv2/videoio.hpp>
-#include <opencv2/core/utils/logger.hpp>
 #pragma GCC diagnostic pop
 
 #include "camera.hpp"
