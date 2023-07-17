@@ -31,8 +31,8 @@ int main(int, const char *argv[])
 {
     const string device = argv[1];
     const string deviceName = device.substr(device.find_last_of("/") + 1);
-    const unsigned emitters = (unsigned)atoi(argv[2]);
-    const unsigned negAnswerLimit = (unsigned)atoi(argv[3]);
+    const unsigned emitters = static_cast<unsigned>(atoi(argv[2]));
+    const unsigned negAnswerLimit = static_cast<unsigned>(atoi(argv[3]));
     const string workspace = string(argv[4]) + "/";
     const string excludedPath = workspace + deviceName + ".excluded";
     if (atoi(argv[5]) == 1)

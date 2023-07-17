@@ -7,10 +7,7 @@
 #include <linux/uvcvideo.h>
 using namespace std;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#include <opencv2/videoio.hpp>
-#pragma GCC diagnostic pop
+#include "opencv.hpp"
 
 class CameraInstruction;
 
@@ -22,9 +19,9 @@ private:
     cv::VideoCapture *cap = new cv::VideoCapture();
 
 protected:
-    int getFd() noexcept;
+    int getFd() const noexcept;
 
-    cv::VideoCapture *getCap() noexcept;
+    cv::VideoCapture *getCap() const noexcept;
 
     void openFd();
 
@@ -36,7 +33,7 @@ protected:
 
     static int deviceId(string device);
 
-    virtual int executeUvcQuery(const struct uvc_xu_control_query &query) noexcept;
+    int executeUvcQuery(const uvc_xu_control_query &query) noexcept;
 
 public:
     string device;
@@ -49,15 +46,15 @@ public:
 
     Camera(const Camera &) = delete;
 
-    virtual bool apply(const CameraInstruction &instruction) noexcept;
+    bool apply(const CameraInstruction &instruction) noexcept;
 
     virtual bool isEmitterWorking();
 
-    virtual int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
+    int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
 
-    virtual int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
+    int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
 
-    virtual uint16_t lenUvcQuery(uint8_t unit, uint8_t selector) noexcept;
+    uint16_t lenUvcQuery(uint8_t unit, uint8_t selector) noexcept;
 };
 
 class CameraException : public exception

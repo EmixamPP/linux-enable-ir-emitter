@@ -26,10 +26,10 @@ void writeDriver(string driverFile, const Driver *driver)
         throw ifstream::failure("CRITICAL: Impossible to write the driver in " + driverFile);
 
     file << "device=" << driver->device << endl;
-    file << "unit=" << (int)driver->unit << endl;
-    file << "selector=" << (int)driver->selector << endl;
+    file << "unit=" << static_cast<int>(driver->unit) << endl;
+    file << "selector=" << static_cast<int>(driver->selector) << endl;
     for (unsigned i = 0; i < driver->control.size(); ++i)
-        file << "control" << i << "=" << (int)driver->control[i] << endl;
+        file << "control" << i << "=" << static_cast<int>(driver->control[i]) << endl;
 
     file.close();
 }

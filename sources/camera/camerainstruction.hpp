@@ -29,22 +29,22 @@ public:
 
     CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
 
-    virtual ~CameraInstruction();
+    ~CameraInstruction();
 
     CameraInstruction &operator=(const CameraInstruction &);
     CameraInstruction(const CameraInstruction &);
 
-    virtual bool next();
+    bool next();
 
-    virtual bool hasNext() const noexcept;
+    bool hasNext() const noexcept;
 
-    virtual const vector<uint8_t> &getCurrent() const noexcept;
+    const vector<uint8_t> &getCurrent() const noexcept;
 
-    virtual uint8_t getUnit() const noexcept;
+    uint8_t getUnit() const noexcept;
 
-    virtual uint8_t getSelector() const noexcept;
+    uint8_t getSelector() const noexcept;
 
-    virtual bool trySetMinAsCur() noexcept;
+    bool trySetMinAsCur() noexcept;
 };
 
 class CameraInstructionException : public exception

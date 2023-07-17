@@ -5,17 +5,14 @@
 #include <chrono>
 using namespace std;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#include <opencv2/videoio.hpp>
-#pragma GCC diagnostic pop
+#include "opencv.hpp"
 
 bool AutoCamera::isEmitterWorking()
 {
     openCap();
     cv::VideoCapture *cap = getCap();
     vector<cv::Mat *> frames;
-    
+
     const auto stopTime = chrono::steady_clock::now() + chrono::seconds(captureTime);
     while (chrono::steady_clock::now() < stopTime)
     {

@@ -52,10 +52,10 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
     for (; j < units->length(); ++j)
         if (units->at(j) == '\n')
         {
-            unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
+            unitsList->push_back(static_cast<uint8_t>(stoi(units->substr(i, j - i))));
             i = j + 1;
         }
-    unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
+    unitsList->push_back(static_cast<uint8_t>(stoi(units->substr(i, j - i))));
 
     delete vid;
     delete pid;
@@ -128,7 +128,7 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
     ofstream file(excludedPath, std::ofstream::out | std::ofstream::app);
     if (!file.is_open())
         return;
-    file << (int)unit << " " << (int)selector << endl;
+    file << static_cast<int>(unit) << " " << static_cast<int>(selector) << endl;
     file.close();
 }
 
@@ -141,7 +141,7 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param excludedPath path where write unit and selector to exclude from the search
  */
 Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath)
-    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath) {};
+    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath){};
 
 Finder::~Finder()
 {
@@ -160,7 +160,7 @@ Driver **Finder::find()
     {
         units = getUnits(camera);
         string unitsStr = "Extension units: ";
-        for (auto it : *units)
+        for (auto &it : *units)
             unitsStr += to_string(it) + " ";
         Logger::debug(unitsStr);
     }
@@ -173,7 +173,7 @@ Driver **Finder::find()
     for (const uint8_t unit : *units)
         for (unsigned __selector = 0; __selector < 256; ++__selector)
         {
-            const uint8_t selector = (uint8_t)__selector; // safe: 0 <= __selector <= 255
+            const uint8_t selector = static_cast<uint8_t>(__selector); // safe: 0 <= __selector <= 255
             if (isExcluded(unit, selector))
                 continue;
             try

@@ -6,9 +6,9 @@
 #include <vector>
 using namespace std;
 
-int array_gcd(const vector<uint8_t> &arr) noexcept
+unsigned array_gcd(const vector<uint8_t> &arr) noexcept
 {
-    int result = arr[0];
+    unsigned result = arr[0];
     for (unsigned i = 1; i < arr.size(); ++i)
     {
         result = gcd(arr[i], result);

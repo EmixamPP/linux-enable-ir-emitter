@@ -6,10 +6,7 @@
 #include <linux/usb/video.h>
 using namespace std;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#include <opencv2/videoio.hpp>
-#pragma GCC diagnostic pop
+#include "opencv.hpp"
 
 #include "camera.hpp"
 #include "../utils/math.hpp"
@@ -24,7 +21,7 @@ using namespace std;
 void CameraInstruction::logDebugCtrl(string prefixMsg, const vector<uint8_t> &control) noexcept
 {
     for (auto &i : control)
-        prefixMsg += " " + to_string((int)i);
+        prefixMsg += " " + to_string(static_cast<int>(i));
     if (!prefixMsg.empty())
         Logger::debug(prefixMsg);
 }
@@ -40,14 +37,14 @@ void CameraInstruction::logDebugCtrl(string prefixMsg, const vector<uint8_t> &co
  */
 void CameraInstruction::computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept
 {
-    int secondGcd = array_gcd(second);
+    unsigned secondGcd = array_gcd(second);
 
     if (secondGcd > 1)
         for (unsigned i = 0; i < first.size(); ++i)
-            res[i] = (second[i] - first[i]) / secondGcd;
+            res[i] = static_cast<uint8_t>((second[i] - first[i]) / secondGcd);
     else
         for (unsigned i = 0; i < first.size(); ++i)
-            res[i] = (uint8_t)second[i] != first[i];
+            res[i] = static_cast<uint8_t>(second[i] != first[i]);
 }
 
 /**
@@ -87,7 +84,7 @@ bool CameraInstruction::isReachable(const vector<uint8_t> &base, const vector<ui
  * @throw CameraInstructionException if unit + selector are invalid or if the instruction cannot be modfied
  */
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
-    : unit(unit), selector(selector)
+    : unit(unit), selector(selector), curCtrl(), maxCtrl(), minCtrl(), resCtrl()
 {
     // get the control instruction lenght
     uint16_t ctrlSize = camera.lenUvcQuery(unit, selector);
@@ -139,7 +136,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     logDebugCtrl("maximum:", maxCtrl);
     logDebugCtrl("minimum:", minCtrl);
     logDebugCtrl("resolution:", resCtrl);
-    Logger::debug(("unit: " + to_string((int)unit) + " selector: " + to_string((int)selector)));
+    Logger::debug(("unit: " + to_string(static_cast<int>(unit)) + " selector: " + to_string(static_cast<int>(selector))));
 }
 
 /**
@@ -151,7 +148,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
  * @param control instruction
  */
 CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
-    : unit(unit), selector(selector), curCtrl(control){}
+    : unit(unit), selector(selector), curCtrl(control), maxCtrl(), minCtrl(), resCtrl() {}
 
 CameraInstruction::~CameraInstruction() {}
 
@@ -167,9 +164,7 @@ CameraInstruction &CameraInstruction::operator=(const CameraInstruction &other)
 }
 
 CameraInstruction::CameraInstruction(const CameraInstruction &other)
-{
-    operator=(other);
-}
+    : unit(other.unit), selector(other.selector), curCtrl(other.curCtrl), maxCtrl(other.maxCtrl), minCtrl(other.minCtrl), resCtrl(other.resCtrl) {}
 
 /**
  * @brief Compute the next possible control value
@@ -183,7 +178,7 @@ bool CameraInstruction::next()
     for (unsigned i = 0; i < curCtrl.size(); ++i)
     {
         int nextCtrl = curCtrl[i] + resCtrl[i]; // int to avoid overflow
-        curCtrl[i] = (uint8_t)nextCtrl;
+        curCtrl[i] = static_cast<uint8_t>(nextCtrl);
         if (nextCtrl > maxCtrl[i]) // not allow to exceed maxCtrl
         {
             curCtrl.assign(maxCtrl.begin(), maxCtrl.end());
@@ -254,7 +249,7 @@ bool CameraInstruction::trySetMinAsCur() noexcept
 }
 
 CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector)
-    : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string((int)unit) + " selector:" + to_string((int)selector)) {}
+    : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string(static_cast<int>(unit)) + " selector:" + to_string(static_cast<int>(selector))) {}
 
 const char *CameraInstructionException::what() const noexcept
 {

@@ -12,7 +12,7 @@ vector<uint8_t> *ExhaustiveFinder::getUnits(const Camera &) noexcept
 {
     auto *units = new vector<uint8_t>();
     for (unsigned unit = 0; unit < 256; ++unit)
-        units->push_back((uint8_t)unit);
+        units->push_back(static_cast<uint8_t>(unit));
     return units;
 }
 

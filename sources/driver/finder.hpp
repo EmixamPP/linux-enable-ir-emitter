@@ -23,13 +23,13 @@ protected:
 
     virtual vector<uint8_t> *getUnits(const Camera &camera) noexcept;
 
-    virtual Driver *createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
+    Driver *createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
 
-    virtual vector<pair<uint8_t, uint8_t>> *getExcluded() noexcept;
+    vector<pair<uint8_t, uint8_t>> *getExcluded() noexcept;
 
-    virtual bool isExcluded(uint8_t unit, uint8_t selector) const noexcept;
+    bool isExcluded(uint8_t unit, uint8_t selector) const noexcept;
 
-    virtual void addToExclusion(uint8_t unit, uint8_t selector) noexcept;
+    void addToExclusion(uint8_t unit, uint8_t selector) noexcept;
 
 public:
     Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath);
@@ -40,7 +40,7 @@ public:
 
     Finder(const Finder &) = delete;
 
-    virtual Driver **find();
+    Driver **find();
 };
 
 #endif

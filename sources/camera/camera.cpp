@@ -13,11 +13,7 @@
 #include <linux/uvcvideo.h>
 using namespace std;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#include <opencv2/videoio.hpp>
-#include <opencv2/core/utils/logger.hpp>
-#pragma GCC diagnostic pop
+#include "opencv.hpp"
 
 #include "camerainstruction.hpp"
 #include "../utils/logger.hpp"
@@ -27,7 +23,7 @@ using namespace std;
  *
  * @return the fd
  */
-int Camera::getFd() noexcept
+int Camera::getFd() const noexcept
 {
     return fd;
 }
@@ -37,7 +33,7 @@ int Camera::getFd() noexcept
  *
  * @return the cap
  */
-cv::VideoCapture *Camera::getCap() noexcept
+cv::VideoCapture *Camera::getCap() const noexcept
 {
     return cap;
 }
@@ -144,11 +140,11 @@ Camera::~Camera()
  */
 bool Camera::apply(const CameraInstruction &instruction) noexcept
 {
-    const struct uvc_xu_control_query query = {
+    const uvc_xu_control_query query = {
         instruction.getUnit(),
         instruction.getSelector(),
         UVC_SET_CUR,
-        (uint16_t)instruction.getCurrent().size(),
+        static_cast<uint16_t>(instruction.getCurrent().size()),
         const_cast<uint8_t *>(instruction.getCurrent().data()), // const_cast safe; this is a set query
     };
     return executeUvcQuery(query) == 0;
@@ -188,7 +184,7 @@ bool Camera::isEmitterWorking()
  *
  * @return 1 if error, otherwise 0
  **/
-int Camera::executeUvcQuery(const struct uvc_xu_control_query &query) noexcept
+int Camera::executeUvcQuery(const uvc_xu_control_query &query) noexcept
 {
     openFd();
     errno = 0;
@@ -233,11 +229,11 @@ int Camera::executeUvcQuery(const struct uvc_xu_control_query &query) noexcept
  **/
 int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept
 {
-    const struct uvc_xu_control_query query = {
+    const uvc_xu_control_query query = {
         unit,
         selector,
         UVC_SET_CUR,
-        (uint16_t)control.size(),
+        static_cast<uint16_t>(control.size()),
         control.data(),
     };
 
@@ -257,11 +253,11 @@ int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control
  **/
 int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept
 {
-    const struct uvc_xu_control_query query = {
+    const uvc_xu_control_query query = {
         unit,
         selector,
         query_type,
-        (uint16_t)control.size(),
+        static_cast<uint16_t>(control.size()),
         control.data(),
     };
 
@@ -279,7 +275,7 @@ int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vect
 uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
 {
     uint8_t len[2] = {0x00, 0x00};
-    const struct uvc_xu_control_query query = {
+    const uvc_xu_control_query query = {
         unit,
         selector,
         UVC_GET_LEN,
@@ -291,7 +287,7 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
         return 0;
 
     // UVC_GET_LEN is in little-endian
-    return (uint16_t)(len[0] + len[1] * 16);
+    return static_cast<uint16_t>(len[0] + len[1] * 16);
 }
 
 CameraException::CameraException(string device) : message("CRITICAL: Cannot access to " + device) {}
