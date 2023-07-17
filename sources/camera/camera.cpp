@@ -23,6 +23,26 @@ using namespace std;
 #include "../utils/logger.hpp"
 
 /**
+ * @brief Get the file descriptor previously opened
+ *
+ * @return the fd
+ */
+int Camera::getFd() noexcept
+{
+    return fd;
+}
+
+/**
+ * @brief Get the VideoCapture previsouly opened
+ *
+ * @return the cap
+ */
+cv::VideoCapture *Camera::getCap() noexcept
+{
+    return cap;
+}
+
+/**
  * @brief Obtain the id of any device path
  *
  * @param device path to the camera
@@ -51,6 +71,8 @@ int Camera::deviceId(string device)
  */
 void Camera::openFd()
 {
+    closeCap();
+
     if (fd < 0)
     {
         errno = 0;
@@ -72,6 +94,32 @@ void Camera::closeFd() noexcept
     }
 }
 
+/**
+ * @brief Open a VideoCapture if not yet open
+ *
+ * @throw CameraException if unable to open the camera device
+ */
+void Camera::openCap()
+{
+    closeFd();
+
+    if (!cap->isOpened())
+    {
+        bool isOpened = cap->open(id, cv::CAP_V4L2);
+        if (!isOpened)
+            throw CameraException(device);
+    }
+}
+
+/**
+ * @brief Close the current VideoCapture
+ */
+void Camera::closeCap() noexcept
+{
+    if (cap->isOpened())
+        cap->release();
+}
+
 Camera::Camera(string device)
     : id(Camera::deviceId(device)), device(device)
 {
@@ -81,6 +129,8 @@ Camera::Camera(string device)
 Camera::~Camera()
 {
     closeFd();
+    closeCap();
+    delete cap;
 }
 
 /**
@@ -98,8 +148,8 @@ bool Camera::apply(const CameraInstruction &instruction) noexcept
         instruction.getUnit(),
         instruction.getSelector(),
         UVC_SET_CUR,
-        (uint16_t) instruction.getCurrent().size(),
-        const_cast<uint8_t*>(instruction.getCurrent().data()), // const_cast safe; this is a set query
+        (uint16_t)instruction.getCurrent().size(),
+        const_cast<uint8_t *>(instruction.getCurrent().data()), // const_cast safe; this is a set query
     };
     return executeUvcQuery(query) == 0;
 }
@@ -113,11 +163,9 @@ bool Camera::apply(const CameraInstruction &instruction) noexcept
  */
 bool Camera::isEmitterWorking()
 {
-    closeFd();
-    cv::VideoCapture cap;
+    openCap();
     cv::Mat frame;
-    if (!cap.open(id, cv::CAP_V4L2) || !cap.read(frame))
-        throw CameraException(device);
+    cap->read(frame);
 
     string answer;
     cout << "Is the ir emitter flashing (not just turn on)? Yes/No? ";
@@ -129,8 +177,7 @@ bool Camera::isEmitterWorking()
         cin >> answer;
     }
 
-    cap.release();
-    frame.release();
+    closeCap();
     return answer[0] == 'y' || answer[0] == 'Y';
 }
 
@@ -190,7 +237,7 @@ int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control
         unit,
         selector,
         UVC_SET_CUR,
-        (uint16_t) control.size(),
+        (uint16_t)control.size(),
         control.data(),
     };
 
@@ -214,7 +261,7 @@ int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vect
         unit,
         selector,
         query_type,
-        (uint16_t) control.size(),
+        (uint16_t)control.size(),
         control.data(),
     };
 

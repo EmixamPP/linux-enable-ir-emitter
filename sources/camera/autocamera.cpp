@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <chrono>
-
 using namespace std;
 
 #pragma GCC diagnostic push
@@ -11,18 +10,17 @@ using namespace std;
 #include <opencv2/videoio.hpp>
 #pragma GCC diagnostic pop
 
-bool AutoCamera::isEmitterWorking() {
-    closeFd();
-    cv::VideoCapture cap;
-    vector<cv::Mat*> frames;
-
-    if (!cap.open(id, cv::CAP_V4L2))
-        throw CameraException(device);
-
+bool AutoCamera::isEmitterWorking()
+{
+    openCap();
+    cv::VideoCapture *cap = getCap();
+    vector<cv::Mat *> frames;
+    
     const auto stopTime = chrono::steady_clock::now() + chrono::seconds(captureTime);
-    while (chrono::steady_clock::now() < stopTime) {
+    while (chrono::steady_clock::now() < stopTime)
+    {
         auto *frame = new cv::Mat();
-        cap.read(*frame);
+        cap->read(*frame);
         if (!frame->empty())
             frames.push_back(frame);
     }
@@ -31,7 +29,7 @@ bool AutoCamera::isEmitterWorking() {
     // cv::Mat doc: https://docs.opencv.org/4.8.0/d3/d63/classcv_1_1Mat.html
     bool isWorking = false;
 
-    for (auto frame: frames)
+    for (auto frame : frames)
         delete frame;
 
     return isWorking;

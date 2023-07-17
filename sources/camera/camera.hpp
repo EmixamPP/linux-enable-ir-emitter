@@ -7,17 +7,32 @@
 #include <linux/uvcvideo.h>
 using namespace std;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#include <opencv2/videoio.hpp>
+#pragma GCC diagnostic pop
+
 class CameraInstruction;
 
 class Camera
 {
-protected:
+private:
     int id;
     int fd = -1;
+    cv::VideoCapture *cap = new cv::VideoCapture();
+
+protected:
+    int getFd() noexcept;
+
+    cv::VideoCapture *getCap() noexcept;
 
     void openFd();
 
     void closeFd() noexcept;
+
+    void openCap();
+
+    void closeCap() noexcept;
 
     static int deviceId(string device);
 
