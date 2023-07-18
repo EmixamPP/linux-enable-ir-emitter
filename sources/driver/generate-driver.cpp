@@ -38,12 +38,12 @@ int main(int, const char *argv[])
     if (atoi(argv[5]) == 1)
         Logger::enableDebug();
     Camera *camera;
-    if (atoi(argv[5]) == 1)
+    if (atoi(argv[6]) == 1)
         camera = new Camera(device);
     else
         camera = new AutoCamera(device);
     Finder *finder;
-    if (atoi(argv[6]) == 1)
+    if (atoi(argv[7]) == 1)
         finder = new ExhaustiveFinder(*camera, emitters, negAnswerLimit, excludedPath);
     else
         finder = new Finder(*camera, emitters, negAnswerLimit, excludedPath);
