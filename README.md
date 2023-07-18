@@ -36,7 +36,10 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 
-*Please consult the [docs](docs/README.md) before opening an issue.*
+If the configuration failed:
+1. But you saw the ir emitter flashing, switch to manual configuration mode by adding the `-m` option
+2. Also, try the exhaustive configuration by adding the `-x` option
+3. Otherwise, *please consult the [docs](docs/README.md) before opening an issue*
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
@@ -51,7 +54,7 @@ cd linux-enable-ir-emitter
 
 Build my minimal version of OpenCV that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
 ```
-curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.7.0 "${PWD}/opencv-tiny"
+curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.8.0 "${PWD}/opencv-tiny"
 ```
 
 Setup build (remove `--pkg-config-path=...` if you skipped the previous step):
