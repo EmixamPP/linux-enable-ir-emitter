@@ -16,6 +16,6 @@ unsigned array_gcd(const vector<uint8_t> &arr) noexcept
             return 1;
     }
     return result;
-};
+}
 
 #endif
