@@ -9,21 +9,28 @@ using namespace std;
 class Driver
 {
 public:
-    string device;
-    uint8_t unit;
-    uint8_t selector;
-    vector<uint8_t> control;
+    const string device;
+    const uint8_t unit;
+    const uint8_t selector;
+    const vector<uint8_t> control;
 
-    Driver(string device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
+    Driver() = delete;
 
-    ~Driver();
+    explicit Driver(const string &device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
+
+    ~Driver() = default;
 
     Driver &operator=(const Driver &) = delete;
+
     Driver(const Driver &) = delete;
+
+    Driver &operator=(Driver &&other) = delete;
+
+    Driver(Driver && other) = delete;
 };
 
-void writeDriver(string driverFile, const Driver *driver);
+void writeDriver(const string &driverFile, const Driver *driver);
 
-Driver *readDriver(string driverFile);
+Driver *readDriver(const string &driverFile);
 
 #endif

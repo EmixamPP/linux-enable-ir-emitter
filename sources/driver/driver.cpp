@@ -6,10 +6,8 @@
 #include <vector>
 using namespace std;
 
-Driver::Driver(string device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
+Driver::Driver(const string &device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
     : device(device), unit(unit), selector(selector), control(control) {}
-
-Driver::~Driver() {}
 
 /**
  * @brief Write the driver in a file
@@ -19,7 +17,7 @@ Driver::~Driver() {}
  *
  * @throw ifstream::failure Impossible to write the driver in driverFile
  */
-void writeDriver(string driverFile, const Driver *driver)
+void writeDriver(const string &driverFile, const Driver *driver)
 {
     ofstream file(driverFile);
     if (!file.is_open())
@@ -40,17 +38,19 @@ void writeDriver(string driverFile, const Driver *driver)
  * @param driverFile path where the driver is store
  *
  * @throw ifstream::failure Impossible to open the driver at driverFile
- *
+ 
  * @return the driver
  */
-Driver *readDriver(string driverFile)
+Driver *readDriver(const string &driverFile)
 {
     FILE *file = fopen(driverFile.c_str(), "r");
-    if (!file)
+    if (file == nullptr)
         throw ifstream::failure("CRITICAL: Impossible to open the driver at " + driverFile);
 
     char device[128];
-    uint8_t unit, selector, controli;
+    uint8_t unit;
+    uint8_t selector;
+    uint8_t controli;
     vector<uint8_t> control;
     int res = 0;
     res = fscanf(file, " device=%s", device);
@@ -70,7 +70,7 @@ Driver *readDriver(string driverFile)
         if (res == 1)
             control.push_back(controli);
     }
-    if (control.size() == 0)
+    if (control.empty())
         throw runtime_error("CRITICAL: control is missing in the driver at " + driverFile);
 
     fclose(file);

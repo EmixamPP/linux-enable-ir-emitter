@@ -16,7 +16,5 @@ vector<uint8_t> *ExhaustiveFinder::getUnits(const Camera &) noexcept
     return units;
 }
 
-ExhaustiveFinder::ExhaustiveFinder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath)
+ExhaustiveFinder::ExhaustiveFinder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath)
     : Finder(camera, emitters, negAnswerLimit, excludedPath) {}
-
-ExhaustiveFinder::~ExhaustiveFinder() {}

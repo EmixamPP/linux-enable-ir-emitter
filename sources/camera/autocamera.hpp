@@ -8,19 +8,25 @@ using namespace std;
 
 class AutoCamera : public Camera
 {
-protected:
+private:
     unsigned captureTime;
-    
+
 public:
-    AutoCamera(string device, unsigned captureTime = 2);
+    AutoCamera() = delete;
 
-    virtual ~AutoCamera();
+    explicit AutoCamera(const string &device, unsigned captureTime = 2);
 
-    virtual bool isEmitterWorking() override;
+    ~AutoCamera() override = default;
+
+    bool isEmitterWorking() override;
 
     AutoCamera &operator=(const AutoCamera &) = delete;
 
     AutoCamera(const AutoCamera &) = delete;
+
+    AutoCamera &operator=(AutoCamera &&other) = delete;
+
+    AutoCamera(AutoCamera && other) = delete;
 };
 
 #endif

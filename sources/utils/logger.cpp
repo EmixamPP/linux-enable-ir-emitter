@@ -11,23 +11,23 @@ void Logger::enableDebug()
     Logger::isDebugEnabled = true;
 }
 
-void Logger::debug(string text)
+void Logger::debug(const string &text)
 {
     if (Logger::isDebugEnabled)
         cout << "DEBUG: " << text << endl;
 }
 
-void Logger::info(string text)
+void Logger::info(const string &text)
 {
     cout << "INFO: " << text << endl;
 }
 
-void Logger::error(string text)
+void Logger::error(const string &text)
 {
     cerr << "ERROR: " << text << endl;
 }
 
-void Logger::critical(string text)
+void Logger::critical(const string &text)
 {
     cerr << "CRITICAL: " << text << endl;
 }

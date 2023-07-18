@@ -2,9 +2,9 @@
 #define CAMERA_HPP
 
 #include <cstdint>
-#include <vector>
-#include <string>
 #include <linux/uvcvideo.h>
+#include <string>
+#include <vector>
 using namespace std;
 
 #include "opencv.hpp"
@@ -31,14 +31,16 @@ protected:
 
     void closeCap() noexcept;
 
-    static int deviceId(string device);
+    static int deviceId(const string &device);
 
-    int executeUvcQuery(const uvc_xu_control_query &query) noexcept;
+    int executeUvcQuery(const uvc_xu_control_query &query);
 
 public:
-    string device;
+    const string device;
 
-    Camera(string device);
+    Camera() = delete;
+
+    explicit Camera(const string &device);
 
     virtual ~Camera();
 
@@ -46,26 +48,30 @@ public:
 
     Camera(const Camera &) = delete;
 
-    bool apply(const CameraInstruction &instruction) noexcept;
+    Camera &operator=(Camera &&other) = delete;
+
+    Camera(Camera &&other) = delete;
+
+    bool apply(const CameraInstruction &instruction);
 
     virtual bool isEmitterWorking();
 
-    int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
+    int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
-    int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
+    int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
-    uint16_t lenUvcQuery(uint8_t unit, uint8_t selector) noexcept;
+    uint16_t lenUvcQuery(uint8_t unit, uint8_t selector);
 };
 
 class CameraException : public exception
 {
-protected:
+private:
     string message;
 
 public:
-    explicit CameraException(string device);
+    CameraException(const string &device);
 
-    virtual const char *what() const noexcept override;
+    const char *what() const noexcept override;
 };
 
 #endif

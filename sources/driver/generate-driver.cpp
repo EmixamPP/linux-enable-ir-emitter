@@ -9,7 +9,7 @@ using namespace std;
 #include "driver.hpp"
 #include "../utils/logger.hpp"
 
-#define EXIT_FD_ERROR 126
+constexpr unsigned EXIT_FD_ERROR  = 126;
 
 /**
  * Generate a driver for the infrared emitter

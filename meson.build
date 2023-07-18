@@ -12,10 +12,12 @@ project(
     ],
 )
 add_project_arguments(
+    '-Wno-unknown-warning-option', '-Wno-unused-macros', # clang-tidy bug related
     '-Wno-pragmas', '-Wno-abi-tag', '-Wno-suggest-attribute=pure',
-    '-Wno-suggest-attribute=const', '-Wno-padded', '-Wformat-nonliteral',
-    '-Wno-suggest-final-types', '-Wno-suggest-final-methods', '-Wno-shadow',
-    '-Wno-missing-declarations', '-Wno-sign-promo', '-Wno-format-nonliteral',
+    '-Wno-effc++','-Wno-suggest-attribute=const', '-Wno-padded', 
+    '-Wformat-nonliteral',  '-Wno-suggest-final-types', '-Wno-inline',
+    '-Wno-shadow', '-Wno-missing-declarations', '-Wno-sign-promo', 
+    '-Wno-format-nonliteral', '-Wno-suggest-final-methods',
     language: 'cpp'
 ) 
 

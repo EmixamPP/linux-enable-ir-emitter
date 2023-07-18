@@ -10,16 +10,22 @@ using namespace std;
 class ExhaustiveFinder: public Finder
 {
 protected:
-    virtual vector<uint8_t> *getUnits(const Camera &camera) noexcept override;
+    vector<uint8_t> *getUnits(const Camera &camera) noexcept override;
 
 public:
-    ExhaustiveFinder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath);
+    ExhaustiveFinder() = delete;
 
-    virtual ~ExhaustiveFinder();
+    explicit ExhaustiveFinder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath);
+
+    ~ExhaustiveFinder() override = default;
 
     ExhaustiveFinder &operator=(const ExhaustiveFinder &) = delete;
 
     ExhaustiveFinder(const ExhaustiveFinder &) = delete;
+
+    ExhaustiveFinder &operator=(ExhaustiveFinder &&other) = delete;
+
+    ExhaustiveFinder(ExhaustiveFinder && other) = delete;
 };
 
 #endif

@@ -1,9 +1,9 @@
 #include "finder.hpp"
 
-#include <vector>
-#include <thread>
 #include <fstream>
 #include <string>
+#include <thread>
+#include <vector>
 using namespace std;
 
 #include "../camera/camera.hpp"
@@ -17,7 +17,7 @@ using namespace std;
  * @param cmd command
  * @return output
  */
-string *Finder::shellExec(string cmd) noexcept
+string *Finder::shellExec(const string &cmd) noexcept
 {
     char buffer[128];
     string *result = new string();
@@ -48,7 +48,8 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
     const string *units = Finder::shellExec("lsusb -d" + *vid + ":" + *pid + " -v | grep bUnitID | grep -Eo '[0-9]+'");
     auto *unitsList = new vector<uint8_t>;
 
-    unsigned i = 0, j = 0;
+    unsigned i = 0;
+    unsigned j = 0;
     for (; j < units->length(); ++j)
         if (units->at(j) == '\n')
         {
@@ -88,11 +89,12 @@ vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
     if (!file.is_open())
         return excludedList;
 
-    while (file)
+    while (!file.eof())
     {
         string line;
         getline(file, line);
-        uint8_t unit, selector;
+        uint8_t unit;
+        uint8_t selector;
         sscanf(line.c_str(), "%hhu %hhu", &unit, &selector);
         excludedList->push_back(pair<uint8_t, uint8_t>(unit, selector));
     }
@@ -110,7 +112,7 @@ vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
  * @return true if they are excluded, otherwise false
  */
 bool Finder::isExcluded(uint8_t unit, uint8_t selector) const noexcept
-{
+{   
     for (auto unitSelector : *excluded)
         if (unitSelector.first == unit && unitSelector.second == selector)
             return true;
@@ -140,8 +142,8 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param negAnswerLimit skip a patern after negAnswerLimit negative answer
  * @param excludedPath path where write unit and selector to exclude from the search
  */
-Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath)
-    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath){}
+Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath)
+    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath) {}
 
 Finder::~Finder()
 {
@@ -150,11 +152,9 @@ Finder::~Finder()
 }
 
 /**
- * @brief Find a driver which enable the ir emitter
- *
- * @return the driver if success otherwise nullptr
+ * @brief Initialize the units and excluded attributes
  */
-Driver **Finder::find()
+void Finder::initialize() noexcept
 {
     if (units == nullptr)
     {
@@ -166,6 +166,16 @@ Driver **Finder::find()
     }
 
     excluded = getExcluded();
+}
+
+/**
+ * @brief Find a driver which enable the ir emitter
+ *
+ * @return the driver if success otherwise nullptr
+ */
+Driver **Finder::find()
+{
+    initialize();
 
     Driver **drivers = new Driver *[emitters];
     unsigned configuredEmitters = 0;

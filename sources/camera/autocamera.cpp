@@ -1,8 +1,8 @@
 #include "autocamera.hpp"
 
-#include <vector>
-#include <string>
 #include <chrono>
+#include <string>
+#include <vector>
 using namespace std;
 
 #include "opencv.hpp"
@@ -24,14 +24,12 @@ bool AutoCamera::isEmitterWorking()
 
     // TODO compare frames to determine if emitter is working
     // cv::Mat doc: https://docs.opencv.org/4.8.0/d3/d63/classcv_1_1Mat.html
-    bool isWorking = false;
+    const bool isWorking = false;
 
-    for (auto frame : frames)
+    for (auto *frame : frames)
         delete frame;
 
     return isWorking;
 }
 
-AutoCamera::AutoCamera(string device, unsigned captureTime) : Camera(device), captureTime(captureTime) {}
-
-AutoCamera::~AutoCamera() {}
+AutoCamera::AutoCamera(const string &device, unsigned captureTime) : Camera(device), captureTime(captureTime) {}

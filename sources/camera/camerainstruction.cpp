@@ -18,12 +18,13 @@ using namespace std;
  * @param prefixMasg what show before the control
  * @param control control value
  */
-void CameraInstruction::logDebugCtrl(string prefixMsg, const vector<uint8_t> &control) noexcept
-{
-    for (auto &i : control)
-        prefixMsg += " " + to_string(static_cast<int>(i));
-    if (!prefixMsg.empty())
-        Logger::debug(prefixMsg);
+void CameraInstruction::logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept
+{   
+    string msg = prefixMsg;
+    for (const uint8_t &i : control)
+        msg += " " + to_string(static_cast<int>(i));
+    if (!msg.empty())
+        Logger::debug(msg);
 }
 
 /**
@@ -84,7 +85,7 @@ bool CameraInstruction::isReachable(const vector<uint8_t> &base, const vector<ui
  * @throw CameraInstructionException if unit + selector are invalid or if the instruction cannot be modfied
  */
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
-    : unit(unit), selector(selector), curCtrl(), maxCtrl(), minCtrl(), resCtrl()
+    : unit(unit), selector(selector)
 {
     // get the control instruction lenght
     uint16_t ctrlSize = camera.lenUvcQuery(unit, selector);
@@ -148,23 +149,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
  * @param control instruction
  */
 CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
-    : unit(unit), selector(selector), curCtrl(control), maxCtrl(), minCtrl(), resCtrl() {}
-
-CameraInstruction::~CameraInstruction() {}
-
-CameraInstruction &CameraInstruction::operator=(const CameraInstruction &other)
-{
-    unit = other.unit;
-    selector = other.selector;
-    curCtrl = other.curCtrl;
-    maxCtrl = other.maxCtrl;
-    resCtrl = other.resCtrl;
-    minCtrl = other.minCtrl;
-    return *this;
-}
-
-CameraInstruction::CameraInstruction(const CameraInstruction &other)
-    : unit(other.unit), selector(other.selector), curCtrl(other.curCtrl), maxCtrl(other.maxCtrl), minCtrl(other.minCtrl), resCtrl(other.resCtrl) {}
+    : unit(unit), selector(selector), curCtrl(control) {}
 
 /**
  * @brief Compute the next possible control value
@@ -248,7 +233,7 @@ bool CameraInstruction::trySetMinAsCur() noexcept
     return true;
 }
 
-CameraInstructionException::CameraInstructionException(string device, uint8_t unit, uint8_t selector)
+CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit, uint8_t selector)
     : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string(static_cast<int>(unit)) + " selector:" + to_string(static_cast<int>(selector))) {}
 
 const char *CameraInstructionException::what() const noexcept

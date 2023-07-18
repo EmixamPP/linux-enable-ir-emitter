@@ -10,7 +10,7 @@ class Camera;
 
 class CameraInstruction
 {
-protected:
+private:
     uint8_t unit;
     uint8_t selector;
     vector<uint8_t> curCtrl;
@@ -18,21 +18,29 @@ protected:
     vector<uint8_t> minCtrl;
     vector<uint8_t> resCtrl;
 
-    static void logDebugCtrl(string prefixMsg, const vector<uint8_t> &control) noexcept;
+protected:
+    static void logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept;
 
     static void computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept;
 
     static bool isReachable(const vector<uint8_t> &base, const vector<uint8_t> &res, const vector<uint8_t> &toReach) noexcept;
 
 public:
-    CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector);
+    CameraInstruction() = delete;
 
-    CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
+    explicit CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector);
 
-    ~CameraInstruction();
+    explicit CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control);
 
-    CameraInstruction &operator=(const CameraInstruction &);
-    CameraInstruction(const CameraInstruction &);
+    ~CameraInstruction() = default;
+
+    CameraInstruction &operator=(const CameraInstruction &) = default;
+
+    CameraInstruction(const CameraInstruction &) = default;
+
+    CameraInstruction &operator=(CameraInstruction &&other) = delete;
+
+    CameraInstruction(CameraInstruction && other) = delete;
 
     bool next();
 
@@ -53,9 +61,9 @@ private:
     string message;
 
 public:
-    explicit CameraInstructionException(string device, uint8_t unit, uint8_t selector);
+    explicit CameraInstructionException(const string &device, uint8_t unit, uint8_t selector);
 
-    virtual const char *what() const noexcept override;
+    const char *what() const noexcept override;
 };
 
 #endif

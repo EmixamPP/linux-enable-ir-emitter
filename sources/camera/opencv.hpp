@@ -1,5 +1,7 @@
-/* NOLINTBEGIN */
+#ifndef OPENCV_HPP
+#define OPENCV_HPP
 
+// NOLINTBEGIN
 #pragma GCC diagnostic push
 
 #pragma GCC diagnostic ignored "-Wall"
@@ -99,5 +101,6 @@
 #include <opencv2/core/utils/logger.hpp>
 
 #pragma GCC diagnostic pop
+// NOLINTEND
 
-/* NOLINTEND */
+#endif

@@ -1,16 +1,15 @@
-#include <cstdint>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string>
 #include "camera.hpp"
 
-#include <vector>
-#include <string>
+#include <cstdint>
 #include <cstring>
-#include <errno.h>
-#include <sys/ioctl.h>
+#include <cerrno>
+#include <fcntl.h>
 #include <linux/usb/video.h>
 #include <linux/uvcvideo.h>
+#include <string>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <vector>
 using namespace std;
 
 #include "opencv.hpp"
@@ -47,11 +46,11 @@ cv::VideoCapture *Camera::getCap() const noexcept
  *
  * @return the device id
  */
-int Camera::deviceId(string device)
+int Camera::deviceId(const string &device)
 {
-    char *devDevice = realpath(device.c_str(), NULL);
+    char *devDevice = realpath(device.c_str(), nullptr);
     int id;
-    if (devDevice == NULL || sscanf(devDevice, "/dev/video%d", &id) != 1)
+    if (devDevice == nullptr || sscanf(devDevice, "/dev/video%d", &id) != 1)
     {
         delete devDevice;
         throw runtime_error("CRITICAL: Unable to obtain the /dev/videoX path");
@@ -116,7 +115,7 @@ void Camera::closeCap() noexcept
         cap->release();
 }
 
-Camera::Camera(string device)
+Camera::Camera(const string &device)
     : id(Camera::deviceId(device)), device(device)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
@@ -138,7 +137,7 @@ Camera::~Camera()
  *
  * @return true if success, otherwise false
  */
-bool Camera::apply(const CameraInstruction &instruction) noexcept
+bool Camera::apply(const CameraInstruction &instruction)
 {
     const uvc_xu_control_query query = {
         instruction.getUnit(),
@@ -182,14 +181,16 @@ bool Camera::isEmitterWorking()
  *
  * @param query uvc query to execute
  *
+ * @throw CameraException if unable to open the camera device
+ *
  * @return 1 if error, otherwise 0
  **/
-int Camera::executeUvcQuery(const uvc_xu_control_query &query) noexcept
+int Camera::executeUvcQuery(const uvc_xu_control_query &query)
 {
     openFd();
     errno = 0;
-    int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
-    if (result || errno)
+    const int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
+    if (result == 1 || errno)
     {
         /* // ioctl debug not really useful for automated driver generation since linux-enable-ir-emitter v3
         fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
@@ -225,9 +226,11 @@ int Camera::executeUvcQuery(const uvc_xu_control_query &query) noexcept
  * @param selector control selector
  * @param control control value
  *
+ * @throw CameraException if unable to open the camera device
+ *
  * @return 1 if error, otherwise 0
  **/
-int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept
+int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control)
 {
     const uvc_xu_control_query query = {
         unit,
@@ -249,9 +252,11 @@ int Camera::setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control
  * @param controlSize size of the uvc control
  * @param control control value
  *
+ * @throw CameraException if unable to open the camera device
+ *
  * @return 1 if error, otherwise 0
  **/
-int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept
+int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control)
 {
     const uvc_xu_control_query query = {
         unit,
@@ -270,9 +275,11 @@ int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vect
  * @param unit extension unit ID
  * @param selector control selector
  *
+ * @throw CameraException if unable to open the camera device
+ *
  * @return size of the control, 0 if error
  **/
-uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
+uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
 {
     uint8_t len[2] = {0x00, 0x00};
     const uvc_xu_control_query query = {
@@ -283,14 +290,14 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector) noexcept
         len,
     };
 
-    if (executeUvcQuery(query))
+    if (executeUvcQuery(query) == 1)
         return 0;
 
     // UVC_GET_LEN is in little-endian
     return static_cast<uint16_t>(len[0] + len[1] * 16);
 }
 
-CameraException::CameraException(string device) : message("CRITICAL: Cannot access to " + device) {}
+CameraException::CameraException(const string &device) : message("CRITICAL: Cannot access to " + device) {}
 
 const char *CameraException::what() const noexcept
 {
