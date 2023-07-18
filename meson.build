@@ -12,9 +12,9 @@ project(
     ],
 )
 add_project_arguments(
-    '-Wno-abi-tag', '-Wno-suggest-attribute=pure', '-Wno-shadow', 
+    '-Wno-pragmas', '-Wno-abi-tag', '-Wno-suggest-attribute=pure',
     '-Wno-suggest-attribute=const', '-Wno-padded', '-Wformat-nonliteral',
-    '-Wno-suggest-final-types', '-Wno-suggest-final-methods', 
+    '-Wno-suggest-final-types', '-Wno-suggest-final-methods', '-Wno-shadow',
     '-Wno-missing-declarations', '-Wno-sign-promo', '-Wno-format-nonliteral',
     language: 'cpp'
 ) 
