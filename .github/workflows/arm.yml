@@ -35,8 +35,11 @@ jobs:
           --volume "${PWD}/artifacts:/artifacts"
           --volume "${PWD}/opencv-tiny:/opencv-tiny"
         install: |
-          apt-get update -q -y
-          apt-get install -q -y g++ meson pkg-config curl cmake
+          apt-get update -y
+          apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config curl cmake
+          python -m pip install --upgrade pip
+          python -m pip install meson
+
         run: |
           [ "$(ls /opencv-tiny)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s ${OPENCV_TINY_VERSION} /opencv-tiny
           

@@ -21,9 +21,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y g++ meson pkg-config curl clang-tidy
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config clang-tidy
           python -m pip install --upgrade pip
-          python -m pip install pyright
+          python -m pip install meson pyright
       
       - name: Cache OpenCV dependency
         id: cache-opencv
