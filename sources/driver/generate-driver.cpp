@@ -1,5 +1,6 @@
-#include <iostream>
 #include <cstring>
+#include <iostream>
+#include <memory>
 using namespace std;
 
 #include "../camera/camera.hpp"
@@ -37,52 +38,41 @@ int main(int, const char *argv[])
     const string excludedPath = workspace + deviceName + ".excluded";
     if (atoi(argv[5]) == 1)
         Logger::enableDebug();
-    Camera *camera;
+    shared_ptr<Camera> camera;
     if (atoi(argv[6]) == 1)
-        camera = new Camera(device);
+        camera = make_shared<Camera>(device);
     else
-        camera = new AutoCamera(device);
-    Finder *finder;
+        camera = make_shared<AutoCamera>(device);
+    shared_ptr<Finder> finder;
     if (atoi(argv[7]) == 1)
-        finder = new ExhaustiveFinder(*camera, emitters, negAnswerLimit, excludedPath);
+        finder = make_unique<ExhaustiveFinder>(*camera, emitters, negAnswerLimit, excludedPath);
     else
-        finder = new Finder(*camera, emitters, negAnswerLimit, excludedPath);
+        finder = make_unique<Finder>(*camera, emitters, negAnswerLimit, excludedPath);
 
     try
     {
         if (camera->isEmitterWorking())
         {
             Logger::error("Your emiter is already working, skipping the configuration.");
-            delete camera;
-            delete finder;
             return EXIT_FAILURE;
         }
 
-        Driver **driver = finder->find();
-        if (driver == nullptr)
-        {
-            delete camera;
-            delete finder;
+        auto drivers = finder->find();
+        if (drivers->empty())
             return EXIT_FAILURE;
-        }
 
-        for (unsigned i = 0; i < emitters; ++i)
+        for (unsigned i = 0; i < drivers->size(); ++i)
         {
             string driverPath = workspace + deviceName + "_emitter" + to_string(i) + ".driver";
-            writeDriver(driverPath, driver[i]);
-            delete driver[i];
+            auto &driver = drivers->at(i);
+            Driver::writeDriver(driverPath, driver);
         }
-        delete[] driver;
     }
     catch (CameraException &e)
     {
         cerr << e.what() << endl;
-        delete finder;
-        delete camera;
         return EXIT_FD_ERROR;
     }
 
-    delete camera;
-    delete finder;
     return EXIT_SUCCESS;
 }

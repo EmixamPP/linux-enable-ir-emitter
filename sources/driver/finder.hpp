@@ -2,6 +2,7 @@
 #define FINDER_HPP
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 using namespace std;
@@ -16,19 +17,19 @@ private:
     const unsigned emitters;
     const unsigned negAnswerLimit;
     const string excludedPath;
-    vector<pair<uint8_t, uint8_t>> *excluded = nullptr;
+    unique_ptr<vector<pair<uint8_t, uint8_t>>> excluded = nullptr;
     void initialize() noexcept;
 
 protected:
-    vector<uint8_t> *units = nullptr;
+    unique_ptr<vector<uint8_t>> units = nullptr;
 
-    static string *shellExec(const string &cmd) noexcept;
+    static unique_ptr<string> shellExec(const string &cmd) noexcept;
 
-    virtual vector<uint8_t> *getUnits(const Camera &camera) noexcept;
+    virtual unique_ptr<vector<uint8_t>> getUnits(const Camera &camera) noexcept;
 
-    Driver *createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
+    unique_ptr<Driver> createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
 
-    vector<pair<uint8_t, uint8_t>> *getExcluded() noexcept;
+    unique_ptr<vector<pair<uint8_t, uint8_t>>> getExcluded() noexcept;
 
     bool isExcluded(uint8_t unit, uint8_t selector) const noexcept;
 
@@ -39,7 +40,7 @@ public:
 
     explicit Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath);
 
-    virtual ~Finder();
+    virtual ~Finder() = default;
 
     Finder &operator=(const Finder &) = delete;
 
@@ -49,7 +50,7 @@ public:
 
     Finder(Finder && other) = delete;
 
-    Driver **find();
+    unique_ptr<vector<unique_ptr<Driver>>> find();
 };
 
 #endif

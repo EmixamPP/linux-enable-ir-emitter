@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <linux/usb/video.h>
 #include <linux/uvcvideo.h>
+#include <memory>
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -48,14 +49,10 @@ cv::VideoCapture *Camera::getCap() const noexcept
  */
 int Camera::deviceId(const string &device)
 {
-    char *devDevice = realpath(device.c_str(), nullptr);
+    std::unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
     int id;
-    if (devDevice == nullptr || sscanf(devDevice, "/dev/video%d", &id) != 1)
-    {
-        delete devDevice;
+    if (devDevice == nullptr || sscanf(devDevice.get(), "/dev/video%d", &id) != 1)
         throw runtime_error("CRITICAL: Unable to obtain the /dev/videoX path");
-    }
-    delete devDevice;
     return id;
 }
 
@@ -147,6 +144,22 @@ bool Camera::apply(const CameraInstruction &instruction)
         const_cast<uint8_t *>(instruction.getCurrent().data()), // const_cast safe; this is a set query
     };
     return executeUvcQuery(query) == 0;
+}
+
+/**
+ * @brief Read one frame
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return the frame
+ */
+unique_ptr<cv::Mat> Camera::read1()
+{
+    openCap();
+    auto frame = make_unique<cv::Mat>();
+    cap->read(*frame);
+    closeCap();
+    return frame;
 }
 
 /**

@@ -1,3 +1,4 @@
+#include <memory>
 #include <iostream>
 using namespace std;
 
@@ -21,7 +22,7 @@ using namespace std;
  */
 int main(int, const char **argv)
 {   
-    const Driver *driver = readDriver(argv[1]);
+    const unique_ptr<Driver> driver = Driver::readDriver(argv[1]);
     bool result;
     try
     {
@@ -35,6 +36,5 @@ int main(int, const char **argv)
         return EXIT_FD_ERROR;
     }
 
-    delete driver;
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

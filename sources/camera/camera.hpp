@@ -56,6 +56,8 @@ public:
 
     virtual bool isEmitterWorking();
 
+    unique_ptr<cv::Mat> read1();
+
     int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
     int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);

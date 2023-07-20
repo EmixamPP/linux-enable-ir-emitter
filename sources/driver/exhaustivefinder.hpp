@@ -1,6 +1,7 @@
 #ifndef EXHAUSTIVEFINDER_HPP
 #define EXHAUSTIVEFINDER_HPP
 
+#include <memory>
 #include <vector>
 using namespace std;
 
@@ -10,7 +11,7 @@ using namespace std;
 class ExhaustiveFinder: public Finder
 {
 protected:
-    vector<uint8_t> *getUnits(const Camera &camera) noexcept override;
+    unique_ptr<vector<uint8_t>> getUnits(const Camera &camera) noexcept override;
 
 public:
     ExhaustiveFinder() = delete;

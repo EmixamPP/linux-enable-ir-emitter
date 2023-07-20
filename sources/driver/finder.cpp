@@ -1,6 +1,7 @@
 #include "finder.hpp"
 
 #include <fstream>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -17,10 +18,10 @@ using namespace std;
  * @param cmd command
  * @return output
  */
-string *Finder::shellExec(const string &cmd) noexcept
+unique_ptr<string> Finder::shellExec(const string &cmd) noexcept
 {
     char buffer[128];
-    string *result = new string();
+    auto result = make_unique<string>();
     unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe)
     {
@@ -41,12 +42,12 @@ string *Finder::shellExec(const string &cmd) noexcept
  *
  * @return list of units
  */
-vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
+unique_ptr<vector<uint8_t>> Finder::getUnits(const Camera &camera) noexcept
 {
-    const string *vid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
-    const string *pid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
-    const string *units = Finder::shellExec("lsusb -d" + *vid + ":" + *pid + " -v | grep bUnitID | grep -Eo '[0-9]+'");
-    auto *unitsList = new vector<uint8_t>;
+    const unique_ptr<string> vid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
+    const unique_ptr<string> pid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
+    const unique_ptr<string> units = Finder::shellExec("lsusb -d" + *vid + ":" + *pid + " -v | grep bUnitID | grep -Eo '[0-9]+'");
+    auto unitsList = make_unique<vector<uint8_t>>();
 
     unsigned i = 0;
     unsigned j = 0;
@@ -58,9 +59,6 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
         }
     unitsList->push_back(static_cast<uint8_t>(stoi(units->substr(i, j - i))));
 
-    delete vid;
-    delete pid;
-    delete units;
     return unitsList;
 }
 
@@ -71,9 +69,9 @@ vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
  *
  * @return the driver
  */
-Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
+unique_ptr<Driver> Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
 {
-    return new Driver(camera.device, unit, selector, instruction.getCurrent());
+    return make_unique<Driver>(camera.device, unit, selector, instruction.getCurrent());
 }
 
 /**
@@ -81,9 +79,9 @@ Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction
  *
  * @return exclude list
  */
-vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
+unique_ptr<vector<pair<uint8_t, uint8_t>>> Finder::getExcluded() noexcept
 {
-    auto *excludedList = new vector<pair<uint8_t, uint8_t>>;
+    auto excludedList = make_unique<vector<pair<uint8_t, uint8_t>>>();
 
     ifstream file(excludedPath);
     if (!file.is_open())
@@ -112,7 +110,7 @@ vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
  * @return true if they are excluded, otherwise false
  */
 bool Finder::isExcluded(uint8_t unit, uint8_t selector) const noexcept
-{   
+{
     for (auto unitSelector : *excluded)
         if (unitSelector.first == unit && unitSelector.second == selector)
             return true;
@@ -145,12 +143,6 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
 Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath)
     : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath) {}
 
-Finder::~Finder()
-{
-    delete units;
-    delete excluded;
-}
-
 /**
  * @brief Initialize the units and excluded attributes
  */
@@ -169,16 +161,16 @@ void Finder::initialize() noexcept
 }
 
 /**
- * @brief Find a driver which enable the ir emitter
+ * @brief Find a driver which enable the ir emitter(s)
  *
- * @return the driver if success otherwise nullptr
+ * @return a vector containing the driver(s),
+ * empty if the configuration failed
  */
-Driver **Finder::find()
+unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
 {
     initialize();
 
-    Driver **drivers = new Driver *[emitters];
-    unsigned configuredEmitters = 0;
+    auto drivers = make_unique<vector<unique_ptr<Driver>>>();
 
     for (const uint8_t unit : *units)
         for (unsigned __selector = 0; __selector < 256; ++__selector)
@@ -206,8 +198,8 @@ Driver **Finder::find()
                     {
                         if (camera.isEmitterWorking())
                         {
-                            drivers[configuredEmitters++] = createDriverFromInstruction(instruction, unit, selector);
-                            if (configuredEmitters == emitters) // all emitters are configured
+                            drivers->push_back(createDriverFromInstruction(instruction, unit, selector));
+                            if (drivers->size() == emitters) // all emitters are configured
                                 return drivers;
                         }
                         else
@@ -232,6 +224,5 @@ Driver **Finder::find()
             }
         }
 
-    delete[] drivers;
-    return nullptr;
+    return drivers;
 }

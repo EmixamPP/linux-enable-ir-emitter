@@ -2,6 +2,7 @@
 #define DRIVER_HPP
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 using namespace std;
@@ -27,10 +28,12 @@ public:
     Driver &operator=(Driver &&other) = delete;
 
     Driver(Driver && other) = delete;
+
+    static void writeDriver(const string &driverFile, const unique_ptr<Driver> &driver);
+
+    static unique_ptr<Driver> readDriver(const string &driverFile);
 };
 
-void writeDriver(const string &driverFile, const Driver *driver);
 
-Driver *readDriver(const string &driverFile);
 
 #endif
