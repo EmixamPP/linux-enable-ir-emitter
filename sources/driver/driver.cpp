@@ -4,7 +4,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 using namespace std;
@@ -48,30 +47,35 @@ unique_ptr<Driver> Driver::readDriver(const string &driverFile)
     if (!file.is_open())
         throw ifstream::failure("CRITICAL: Impossible to open the driver at " + driverFile);
 
-    stringstream contentstream;
-    contentstream << file.rdbuf();
-    string content = contentstream.str();  
-    
+    string line;  
     char device[128];
     uint8_t unit;
     uint8_t selector;
     uint8_t controli;
     vector<uint8_t> control;
     int res = 0;
-    res = sscanf(content.c_str(), "device=%s", device);
+
+    getline(file, line);
+    res = sscanf(line.c_str(), "device=%s", device);
     if (res == 0)
         throw runtime_error("CRITICAL: device is missing in the driver at " + driverFile);
-    res = sscanf(content.c_str(), "unit=%hhu", &unit);
+
+    getline(file, line);
+    res = sscanf(line.c_str(), "unit=%hhu", &unit);
     if (res == 0)
         throw runtime_error("CRITICAL: unit is missing in the driver at " + driverFile);
-    res = sscanf(content.c_str(), "selector=%hhu", &selector);
+
+    getline(file, line);
+    res = sscanf(line.c_str(), "selector=%hhu", &selector);
     if (res == 0)
         throw runtime_error("CRITICAL: selector is missing in the driver at " + driverFile);
+    
     res = 1;
     for (unsigned i = 0; res == 1; ++i)
     {
-        string key = "control" + to_string(i) + "=%hhu";
-        res = sscanf(content.c_str(), key.c_str(), &controli);
+        getline(file, line);
+        string key = " control" + to_string(i) + "=%hhu";
+        res = sscanf(line.c_str(), key.c_str(), &controli);
         if (res == 1)
             control.push_back(controli);
     }
