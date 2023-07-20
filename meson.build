@@ -56,6 +56,18 @@ executable(
     install_dir: lib_exec_dir,
 )
 
+executable(
+    'is-ir-camera', 
+    'sources/camera/is-ir-camera.cpp',
+    'sources/camera/camera.cpp',
+    'sources/camera/camerainstruction.cpp',
+    'sources/driver/driver.cpp',
+    'sources/utils/logger.cpp',
+    dependencies: opencv_dep,
+    install: true,
+    install_dir: lib_exec_dir,
+)
+
 #####
 # Lib
 #####
@@ -77,6 +89,7 @@ configure_paths_data = configuration_data({
     'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_exec_dir / 'execute-driver',
     'BIN_GENERATE_DRIVER_PATH': '/usr' / lib_exec_dir / 'generate-driver',
+    'BIN_IS_CAMERA_PATH': '/usr' / lib_exec_dir / 'is-ir-camera',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
 })

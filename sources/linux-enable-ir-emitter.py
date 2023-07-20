@@ -8,7 +8,8 @@ from command import boot, configure, delete, run
 from globals import ExitCode, check_root
 
 if __name__ == "__main__":
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s", level=logging.INFO)
 
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
@@ -98,13 +99,9 @@ if __name__ == "__main__":
         logging.getLogger().setLevel(logging.DEBUG)
 
     device: str | None = None
-    # Determine the device if needed
-    # In case of configuration: use the specified device otherwise the default one (i.e. /dev/video2)
-    # In case of run or delete: use the specified device
-    if args.command == "configure" or (
-        args.device and args.command in ("run", "delete")
-    ):
-        device = args.device[0] if args.device else "/dev/video2"
+    # Determine the device path if needed
+    if args.device and args.command in ("configure", "run", "delete"):
+        device = args.device[0]
         # Find the v4l path
         v4l_device = subprocess.run(
             f"find -L /dev/v4l/by-path -samefile {device}",
@@ -125,8 +122,8 @@ if __name__ == "__main__":
 
     elif args.command == "configure":
         check_root()
-        assert(device is not None)
-        configure(device, args.manual, args.exhaustive, args.emitters[0], args.limit[0])
+        configure(device, args.manual, args.exhaustive,
+                  args.emitters[0], args.limit[0])
 
     elif args.command == "boot":
         check_root()
