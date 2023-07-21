@@ -15,7 +15,7 @@ int main(int, const char **argv)
     for (int r = 0; r < frame->rows; ++r)
         for (int c = 0; c < frame->cols; ++c)
         {
-            cv::Vec3b pixel = frame->at<cv::Vec3b>(r, c);
+            const cv::Vec3b &pixel = frame->at<cv::Vec3b>(r, c);
             if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
                 return 1;
         }

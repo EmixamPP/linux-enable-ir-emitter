@@ -152,7 +152,7 @@ void Finder::initialize() noexcept
     {
         units = getUnits(camera);
         string unitsStr = "Extension units: ";
-        for (auto &it : *units)
+        for (uint8_t &it : *units)
             unitsStr += to_string(it) + " ";
         Logger::debug(unitsStr);
     }
