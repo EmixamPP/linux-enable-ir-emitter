@@ -61,7 +61,6 @@ executable(
     'sources/camera/is-ir-camera.cpp',
     'sources/camera/camera.cpp',
     'sources/camera/camerainstruction.cpp',
-    'sources/driver/driver.cpp',
     'sources/utils/logger.cpp',
     dependencies: opencv_dep,
     install: true,
