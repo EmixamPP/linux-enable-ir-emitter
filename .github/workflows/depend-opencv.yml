@@ -12,6 +12,7 @@ jobs:
 
       - name: Fetch release version
         env:
+            GITHUB_TOKEN: ${{ github.token }}
             OWNER: opencv
             REPO: opencv
         run: |
