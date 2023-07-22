@@ -6,15 +6,21 @@ using namespace std;
 
 #include "camera.hpp"
 
+constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 10;
+constexpr int MAGIC_INTENSITY_VAR_THRESHOLD = 5;
+
 class AutoCamera : public Camera
 {
 private:
     unsigned captureTime;
+    int refMaxIntesityVar;
+
+    int maxIntensityVariation(bool nbrAboveRef = false);
 
 public:
     AutoCamera() = delete;
 
-    explicit AutoCamera(const string &device, unsigned captureTime = 2);
+    explicit AutoCamera(const string &device, unsigned captureTime = 1);
 
     ~AutoCamera() override = default;
 

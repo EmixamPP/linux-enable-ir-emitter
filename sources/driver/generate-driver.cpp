@@ -51,7 +51,7 @@ int main(int, const char *argv[])
 
     try
     {
-        if (camera->isEmitterWorking())
+        if (camera->Camera::isEmitterWorking())
         {
             Logger::error("Your emiter is already working, skipping the configuration.");
             return EXIT_FAILURE;
