@@ -1,6 +1,5 @@
 name: OpenCV dependency
 on:
-  workflow_dispatch:
   schedule:
     - cron:  '0 7 * * *'
 
@@ -37,8 +36,11 @@ jobs:
             title: "chore(deps): update opencv version"
             branch: "opencv-${{ env.VERSION }}"
             commit-message: "chore(deps): update opencv version"
-            body: "update opencv to ${{ env.VERSION }}. This PR has been created automatically."
-            committer: GitHub <noreply@github.com>
-            author: GitHub <noreply@github.com>
+            body: |
+              Update OpenCV to ${{ env.VERSION }}.
+
+              This PR has been created automatically.
             assignees: "EmixamPP"
+            reviewers: "EmixamPP"
+            delete-branch: true
      
