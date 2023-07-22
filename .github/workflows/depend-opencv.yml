@@ -12,7 +12,6 @@ jobs:
 
       - name: Fetch release version
         env:
-            GITHUB_TOKEN: ${{ github.token }}
             OWNER: opencv
             REPO: opencv
         run: |
@@ -33,6 +32,7 @@ jobs:
         if: ${{ env.VERSION != env.CURRENT }}
         uses: peter-evans/create-pull-request@v5
         with:
+            token: ${{ secrets.PAT }}
             title: "chore(deps): update opencv version"
             branch: "opencv-${{ env.VERSION }}"
             commit-message: "chore(deps): update opencv version"
