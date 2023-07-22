@@ -6,6 +6,7 @@ on:
 
 permissions:
   actions: write
+  contents: write
 
 jobs:
   depend-opencv:
@@ -40,7 +41,6 @@ jobs:
             branch: "opencv-${{ env.VERSION }}"
             commit-message: "chore(deps): update opencv version"
             body: "update opencv to ${{ env.VERSION }}. This PR has been created automatically."
-            signoff: true
             delete-branch: true
             assignees: "EmixamPP"
             reviewers: "EmixamPP"
