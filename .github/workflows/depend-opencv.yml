@@ -38,6 +38,7 @@ jobs:
             branch: "opencv-${{ env.VERSION }}"
             commit-message: "chore(deps): update opencv version"
             body: "update opencv to ${{ env.VERSION }}. This PR has been created automatically."
-            delete-branch: true
+            committer: GitHub <noreply@github.com>
+            author: GitHub <noreply@github.com>
             assignees: "EmixamPP"
      
