@@ -41,6 +41,5 @@ jobs:
 
               This PR has been created automatically.
             assignees: "EmixamPP"
-            reviewers: "EmixamPP"
             delete-branch: true
      
