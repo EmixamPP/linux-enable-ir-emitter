@@ -11,13 +11,18 @@ project(
         'werror=true',
     ],
 )
+
+# flag ajustement because of warning_level=everything
 add_project_arguments(
-    '-Wno-unknown-warning-option', '-Wno-unused-macros', # clang-tidy bug related
+    # fix clang-tidy
+    '-Wno-unknown-warning-option', '-Wno-unused-macros',
+    # ignored bugged or boring gcc flags
     '-Wno-pragmas', '-Wno-abi-tag', '-Wno-suggest-attribute=pure',
     '-Wno-effc++','-Wno-suggest-attribute=const', '-Wno-padded', 
     '-Wformat-nonliteral',  '-Wno-suggest-final-types', '-Wno-inline',
     '-Wno-shadow', '-Wno-missing-declarations', '-Wno-sign-promo', 
     '-Wno-format-nonliteral', '-Wno-suggest-final-methods',
+    '-Wno-unused-const-variable',
     language: 'cpp'
 ) 
 
