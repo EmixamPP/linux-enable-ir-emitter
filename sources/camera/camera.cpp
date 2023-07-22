@@ -33,7 +33,7 @@ int Camera::getFd() const noexcept
  *
  * @return the cap
  */
-cv::VideoCapture *Camera::getCap() const noexcept
+shared_ptr<cv::VideoCapture> Camera::getCap() const noexcept
 {
     return cap;
 }
@@ -122,7 +122,6 @@ Camera::~Camera()
 {
     closeFd();
     closeCap();
-    delete cap;
 }
 
 /**

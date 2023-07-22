@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <linux/uvcvideo.h>
+#include <memory>
 #include <string>
 #include <vector>
 using namespace std;
@@ -16,12 +17,12 @@ class Camera
 private:
     int id;
     int fd = -1;
-    cv::VideoCapture *cap = new cv::VideoCapture();
+    const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
 
 protected:
     int getFd() const noexcept;
 
-    cv::VideoCapture *getCap() const noexcept;
+    shared_ptr<cv::VideoCapture> getCap() const noexcept;
 
     void openFd();
 

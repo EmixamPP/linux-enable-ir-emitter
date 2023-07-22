@@ -12,7 +12,7 @@ using namespace std;
 bool AutoCamera::isEmitterWorking()
 {
     openCap();
-    cv::VideoCapture *cap = getCap();
+    shared_ptr<cv::VideoCapture> cap = getCap();
     vector<unique_ptr<cv::Mat>> frames;
 
     const auto stopTime = chrono::steady_clock::now() + chrono::seconds(captureTime);
@@ -25,7 +25,6 @@ bool AutoCamera::isEmitterWorking()
     }
 
     // TODO compare frames to determine if emitter is working
-    // cv::Mat doc: https://docs.opencv.org/4.8.0/d3/d63/classcv_1_1Mat.html
     const bool isWorking = false;
 
     return isWorking;
