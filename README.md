@@ -11,7 +11,7 @@ Directly refer to the manual buid [section](#manual-build) if your boot service 
  
 Download the latest `linux-enable-ir-emitter-x.x.x.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
+sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
 
 It can be uninstalled by executing (remove the last line to keep the emitter configuration):

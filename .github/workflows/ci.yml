@@ -60,7 +60,7 @@ jobs:
       
       - name: Create tarball
         run: |
-          DESTDIR=install_dir meson install -C build
+          sudo DESTDIR=install_dir meson install -C build
           tar -czvf build/linux-enable-ir-emitter.x86-64.tar.gz -C build/install_dir .
   
       - name: Upload tarball
