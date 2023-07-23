@@ -9,7 +9,7 @@ This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windo
 ## Installation
 Directly refer to the manual buid [section](#manual-build) if your boot service manager is not Systemd but OpenRC. Stay here if you don't know. We support ARM architectures, just download the `aarch64` variant.
  
-Download the latest `linux-enable-ir-emitter-x.x.x_x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+Download the latest `linux-enable-ir-emitter-x.x.x.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
 sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
