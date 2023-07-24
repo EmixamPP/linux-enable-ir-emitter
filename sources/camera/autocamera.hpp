@@ -6,7 +6,7 @@ using namespace std;
 
 #include "camera.hpp"
 
-constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 10;
+constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 20;
 constexpr int MAGIC_INTENSITY_VAR_THRESHOLD = 5;
 
 class AutoCamera : public Camera
