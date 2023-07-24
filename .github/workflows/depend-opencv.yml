@@ -34,6 +34,8 @@ jobs:
               Update OpenCV to ${{ env.VERSION }}.
 
               This PR has been created automatically.
+            committer: github-actions[bot] <noreply@github.com>
+            author: github-actions[bot] <noreply@github.com>
             assignees: "EmixamPP"
             delete-branch: true
      
