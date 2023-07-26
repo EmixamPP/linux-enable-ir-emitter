@@ -11,14 +11,11 @@ using namespace std;
 #include "opencv.hpp"
 
 /**
- * @brief Obtain the maximum intensity variation of camera captures
- * or the number of time where the intensity varation is above refMaxIntesityVar
+ * @brief Obtain the intensity variation sum of camera captures
  *
- * @param nbrAboveRef true to get the number of time above refMaxIntesityVar
- *
- * @return either the maximum intensity variation or number of time above refMaxIntesityVar
+ * @return the intensity variation sum
  */
-int AutoCamera::maxIntensityVariation(bool nbrAboveRef)
+long long unsigned AutoCamera::intensityVariationSum()
 {
     openCap();
     shared_ptr<cv::VideoCapture> cap = getCap();
@@ -64,25 +61,18 @@ int AutoCamera::maxIntensityVariation(bool nbrAboveRef)
 
     // compute difference between each consecutive intensity difference
     // this is the variation in the lighting intensity of the fames
-    // and keep the maximum in res if nbrAboveRef = false
-    // otherwise count the number of time above the reference value
-    int res = 0;
+    // and sum them all
+    long long unsigned sum = 0;
     for (unsigned i = 0; i < diffs.size() - 1; ++i)
-    {
-        int variation = abs(diffs[i] - diffs[i + 1]);
-        if (!nbrAboveRef && variation > res)
-            res = variation;
-        else if (nbrAboveRef && variation > refMaxIntesityVar * MAGIC_REF_INTENSITY_VAR_COEF)
-            ++res;
-    }
-
+        sum += static_cast<long long unsigned>(abs(diffs[i] - diffs[i + 1]));
+   
     closeCap();
-    return res;
+    return sum;
 }
 
 bool AutoCamera::isEmitterWorking()
 {
-    return maxIntensityVariation(true) > MAGIC_INTENSITY_VAR_THRESHOLD;
+    return intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
 }
 
-AutoCamera::AutoCamera(const string &device, unsigned captureTime) : Camera(device), captureTime(captureTime), refMaxIntesityVar(maxIntensityVariation()) {}
+AutoCamera::AutoCamera(const string &device, unsigned captureTime) : Camera(device), captureTime(captureTime), refIntesityVarSum(intensityVariationSum()) {}
