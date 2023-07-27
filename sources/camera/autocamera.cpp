@@ -72,7 +72,8 @@ long long unsigned AutoCamera::intensityVariationSum()
 
 bool AutoCamera::isEmitterWorking()
 {
-    return intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
+    bool isWorking = intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
+    return isWorking && Camera::isEmitterWorking();
 }
 
 AutoCamera::AutoCamera(const string &device, unsigned captureTime) : Camera(device), captureTime(captureTime), refIntesityVarSum(intensityVariationSum()) {}
