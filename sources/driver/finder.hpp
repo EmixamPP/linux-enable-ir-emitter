@@ -25,7 +25,7 @@ protected:
 
     static unique_ptr<string> shellExec(const string &cmd) noexcept;
 
-    virtual unique_ptr<vector<uint8_t>> getUnits(const Camera &camera) noexcept;
+    virtual unique_ptr<vector<uint8_t>> getUnits() noexcept;
 
     unique_ptr<Driver> createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
 

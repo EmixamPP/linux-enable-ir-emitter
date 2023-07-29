@@ -11,7 +11,7 @@ using namespace std;
 class ExhaustiveFinder: public Finder
 {
 protected:
-    unique_ptr<vector<uint8_t>> getUnits(const Camera &camera) noexcept override;
+    unique_ptr<vector<uint8_t>> getUnits() noexcept override;
 
 public:
     ExhaustiveFinder() = delete;

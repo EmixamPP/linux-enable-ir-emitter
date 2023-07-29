@@ -38,11 +38,9 @@ unique_ptr<string> Finder::shellExec(const string &cmd) noexcept
 /**
  * @brief Get all the extension unit ID of the camera device
  *
- * @param Camera the camera device
- *
  * @return list of units
  */
-unique_ptr<vector<uint8_t>> Finder::getUnits(const Camera &camera) noexcept
+unique_ptr<vector<uint8_t>> Finder::getUnits() noexcept
 {
     const unique_ptr<string> vid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
     const unique_ptr<string> pid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
@@ -150,10 +148,10 @@ void Finder::initialize() noexcept
 {
     if (units == nullptr)
     {
-        units = getUnits(camera);
+        units = getUnits();
         string unitsStr = "Extension units: ";
-        for (uint8_t &it : *units)
-            unitsStr += to_string(it) + " ";
+        for (const uint8_t i : *units)
+            unitsStr += to_string(i) + " ";
         Logger::debug(unitsStr);
     }
 
@@ -183,13 +181,9 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                 CameraInstruction instruction(camera, unit, selector);
                 const CameraInstruction initInstruction = instruction; // copy for reset later
 
-                if (!instruction.trySetMinAsCur()) // if no min instruction exists
-                {
-                    if (instruction.hasNext()) // start from the next one
-                        instruction.next();
-                    else
-                        continue;
-                }
+                if (!instruction.setMinAsCur()) // if no min instruction exists
+                    if (!instruction.next())       // start from the next one
+                        continue;                  // if no next, skip
 
                 unsigned negAnswerCounter = 0;
                 do
@@ -206,7 +200,7 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                             camera.apply(initInstruction); // reset
                     }
                     ++negAnswerCounter;
-                } while (negAnswerCounter < negAnswerLimit && instruction.hasNext() && instruction.next());
+                } while (negAnswerCounter < negAnswerLimit && instruction.next());
 
                 if (negAnswerCounter >= negAnswerLimit)
                     Logger::debug("Negative answer limit exceeded, skipping the pattern.");

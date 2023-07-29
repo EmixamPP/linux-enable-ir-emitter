@@ -9,7 +9,6 @@ using namespace std;
 #include "opencv.hpp"
 
 #include "camera.hpp"
-#include "../utils/math.hpp"
 #include "../utils/logger.hpp"
 
 /**
@@ -19,59 +18,11 @@ using namespace std;
  * @param control control value
  */
 void CameraInstruction::logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept
-{   
+{
     string msg = prefixMsg;
     for (const uint8_t &i : control)
         msg += " " + to_string(static_cast<int>(i));
-    if (!msg.empty())
-        Logger::debug(msg);
-}
-
-/**
- * @brief Compute the resolution control instruction composed of 0 or 1
- * by comparing two controls instruction
- * we assume isReachable(first, res, second, size) is true
- *
- * @param first the first instruction
- * @param second the second instruction
- * @param res the resolution instruction will be stored in it
- */
-void CameraInstruction::computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept
-{
-    unsigned secondGcd = array_gcd(second);
-
-    if (secondGcd > 1)
-        for (unsigned i = 0; i < first.size(); ++i)
-            res[i] = static_cast<uint8_t>((second[i] - first[i]) / secondGcd);
-    else
-        for (unsigned i = 0; i < first.size(); ++i)
-            res[i] = static_cast<uint8_t>(second[i] != first[i]);
-}
-
-/**
- * @brief Check if a resolution control allow to reach a control from another
- *
- * @param base instruction from which the resolution must be added
- * @param res the resolution control
- * @param toReach the instruction to reach
- *
- * @return true if reacheable, otherwise false
- */
-bool CameraInstruction::isReachable(const vector<uint8_t> &base, const vector<uint8_t> &res, const vector<uint8_t> &toReach) noexcept
-{
-    int it = 256;
-    for (unsigned i = 0; i < base.size(); ++i)
-    {
-        if (res[i] != 0)
-        {
-            int newit = (toReach[i] - base[i]) / res[i]; // # iterations required for that value
-            if (newit < 0 || (newit != it && it != 256)) // negative iteration or not all value have the same # iterations
-                return false;
-            it = newit;
-        }
-    }
-
-    return it != 256;
+    Logger::debug(msg);
 }
 
 /**
@@ -104,7 +55,8 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     // try to get the maximum control value (it does not necessary exists)
     maxCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, maxCtrl) == 1)
-        throw CameraInstructionException(camera.device, unit, selector);
+        for (uint8_t &i : maxCtrl)
+            i = 255;
 
     // try get the minimum control value (it does not necessary exists)
     minCtrl.resize(ctrlSize);
@@ -112,25 +64,11 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
         minCtrl.resize(0);
 
     // try to get the resolution control value (it does not necessary exists)
-    // and check if it is consistent
     resCtrl.resize(ctrlSize);
-    if (camera.getUvcQuery(UVC_GET_RES, unit, selector, resCtrl) == 1 ||
-        !isReachable(curCtrl, resCtrl, maxCtrl))
+    if (camera.getUvcQuery(UVC_GET_RES, unit, selector, resCtrl) == 1)
     {
-        Logger::debug("Computing the resolution control.");
-
-        if (!minCtrl.empty())
-        {
-            computeResCtrl(minCtrl, curCtrl, resCtrl);
-            if (!isReachable(minCtrl, resCtrl, curCtrl))
-            {
-                Logger::debug("Minimum not consistent, it will be ignored.");
-                minCtrl.resize(0);
-                computeResCtrl(curCtrl, maxCtrl, resCtrl);
-            }
-        }
-        else
-            computeResCtrl(curCtrl, maxCtrl, resCtrl);
+        Logger::debug("Using default resolution control.");
+        resCtrl[0] = 1;
     }
 
     logDebugCtrl("current:", curCtrl);
@@ -153,36 +91,36 @@ CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vecto
 
 /**
  * @brief Compute the next possible control value
- * @return true
+ *
+ * @return true if the next value has been set,
+ * false if the maximum control has already been set
  */
-bool CameraInstruction::next()
+bool CameraInstruction::next() noexcept
 {
-    if (!hasNext())
-        throw range_error("CRITICAL: Maximal instruction already reached.");
-
-    for (unsigned i = 0; i < curCtrl.size(); ++i)
-    {
-        int nextCtrl = curCtrl[i] + resCtrl[i]; // int to avoid overflow
-        curCtrl[i] = static_cast<uint8_t>(nextCtrl);
-        if (nextCtrl > maxCtrl[i]) // not allow to exceed maxCtrl
+    unsigned carry = 0;
+    for (int __i = static_cast<int>(curCtrl.size()); __i > -1; --__i)
+    {   
+        size_t i = static_cast<size_t>(__i);
+        unsigned nextCtrl = curCtrl[i] + resCtrl[i] + carry; // unsigned to avoid uncontrolled overflow
+        carry = 0;
+        if (nextCtrl > maxCtrl[i]) // detect maximum exceed
         {
-            curCtrl.assign(maxCtrl.begin(), maxCtrl.end());
-            break;
+            carry = nextCtrl - maxCtrl[i];
+            nextCtrl = maxCtrl[i];
+        } else if (nextCtrl > 255) // detect overflow
+        {
+            carry = nextCtrl - 255;
+            nextCtrl = 255;
         }
+
+        curCtrl[i] = static_cast<uint8_t>(nextCtrl);
     }
+
+    if (carry != 0) // maximum control reached
+        return false;
 
     logDebugCtrl("new current:", curCtrl);
     return true;
-}
-
-/**
- * @brief Check if a next control value can be computed
- *
- * @return true yes, otherwise false
- */
-bool CameraInstruction::hasNext() const noexcept
-{
-    return curCtrl != maxCtrl;
 }
 
 /**
@@ -222,7 +160,7 @@ uint8_t CameraInstruction::getSelector() const noexcept
  *
  * @return true if success, otherwise false
  */
-bool CameraInstruction::trySetMinAsCur() noexcept
+bool CameraInstruction::setMinAsCur() noexcept
 {
     if (minCtrl.empty() || curCtrl == minCtrl)
         return false;

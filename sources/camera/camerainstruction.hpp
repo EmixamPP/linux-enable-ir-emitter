@@ -21,10 +21,6 @@ private:
 protected:
     static void logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept;
 
-    static void computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept;
-
-    static bool isReachable(const vector<uint8_t> &base, const vector<uint8_t> &res, const vector<uint8_t> &toReach) noexcept;
-
 public:
     CameraInstruction() = delete;
 
@@ -42,9 +38,7 @@ public:
 
     CameraInstruction(CameraInstruction && other) = delete;
 
-    bool next();
-
-    bool hasNext() const noexcept;
+    bool next() noexcept;
 
     const vector<uint8_t> &getCurrent() const noexcept;
 
@@ -52,7 +46,7 @@ public:
 
     uint8_t getSelector() const noexcept;
 
-    bool trySetMinAsCur() noexcept;
+    bool setMinAsCur() noexcept;
 };
 
 class CameraInstructionException : public exception

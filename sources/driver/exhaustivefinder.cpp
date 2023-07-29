@@ -9,7 +9,7 @@ using namespace std;
 #include "finder.hpp"
 #include "../camera/camera.hpp"
 
-unique_ptr<vector<uint8_t>> ExhaustiveFinder::getUnits(const Camera &) noexcept
+unique_ptr<vector<uint8_t>> ExhaustiveFinder::getUnits() noexcept
 {
     auto units = make_unique<vector<uint8_t>>();
     for (unsigned unit = 0; unit < 256; ++unit)
