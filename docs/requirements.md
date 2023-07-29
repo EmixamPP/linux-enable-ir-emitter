@@ -8,7 +8,7 @@
 ## Manual build requirements
 * `meson >= 1.0.0`, `ninja-build`, `pkg-config`
 * `cmake` only if you build OpenCV
-* `g++`, `libstdc++-devel` (for `C++20`)
+* `g++`, `libstdc++-devel` (for `C++17`)
 * `curl`
 
 ## Hardware requirements
