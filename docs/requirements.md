@@ -6,7 +6,7 @@
 * `glibc`, `libstdc++`, `libgcc`
 
 ## Manual build requirements
-* `meson >= 0.63.0`, `ninja-build`, `pkg-config`
+* `meson >= 1.0.0`, `ninja-build`, `pkg-config`
 * `cmake` only if you build OpenCV
 * `g++`, `libstdc++-devel` (for `C++20`)
 * `curl`
