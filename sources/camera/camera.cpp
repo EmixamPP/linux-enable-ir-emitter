@@ -293,20 +293,21 @@ int Camera::getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vect
  **/
 uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
 {
-    uint8_t len[2] = {0x00, 0x00};
+    uint8_t data[2] = {0x00, 0x00};
     const uvc_xu_control_query query = {
         unit,
         selector,
         UVC_GET_LEN,
         2,
-        len,
+        data,
     };
 
     if (executeUvcQuery(query) == 1)
         return 0;
-
-    // UVC_GET_LEN is in little-endian
-    return static_cast<uint16_t>(len[0] + len[1] * 16);
+    
+    uint16_t len = 0;
+    memcpy(&len, query.data, 2);
+    return len;
 }
 
 CameraException::CameraException(const string &device) : message("CRITICAL: Cannot access to " + device) {}
