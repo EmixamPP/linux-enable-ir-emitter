@@ -22,7 +22,7 @@ long long unsigned AutoCamera::intensityVariationSum()
     vector<unique_ptr<cv::Mat>> frames;
 
     // capture frames
-    const auto stopTime = chrono::steady_clock::now() + chrono::seconds(captureTime);
+    const auto stopTime = chrono::steady_clock::now() + chrono::milliseconds(captureTimeMs);
     while (chrono::steady_clock::now() < stopTime)
     {
         auto frame = make_unique<cv::Mat>();
@@ -76,4 +76,4 @@ bool AutoCamera::isEmitterWorking()
     return isWorking && Camera::isEmitterWorking();
 }
 
-AutoCamera::AutoCamera(const string &device, unsigned captureTime) : Camera(device), captureTime(captureTime), refIntesityVarSum(intensityVariationSum()) {}
+AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(device), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}

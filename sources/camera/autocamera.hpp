@@ -11,7 +11,7 @@ constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 50;
 class AutoCamera : public Camera
 {
 private:
-    unsigned captureTime;
+    unsigned captureTimeMs;
     long long unsigned refIntesityVarSum;
 
     long long unsigned intensityVariationSum();
@@ -19,7 +19,7 @@ private:
 public:
     AutoCamera() = delete;
 
-    explicit AutoCamera(const string &device, unsigned captureTime = 1);
+    explicit AutoCamera(const string &device, unsigned captureTimeMs = 1000);
 
     ~AutoCamera() override = default;
 
