@@ -21,6 +21,8 @@ private:
 protected:
     static void logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept;
 
+    static void computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept;
+
 public:
     CameraInstruction() = delete;
 
@@ -36,7 +38,7 @@ public:
 
     CameraInstruction &operator=(CameraInstruction &&other) = delete;
 
-    CameraInstruction(CameraInstruction && other) = delete;
+    CameraInstruction(CameraInstruction &&other) = delete;
 
     bool next() noexcept;
 
@@ -47,6 +49,8 @@ public:
     uint8_t getSelector() const noexcept;
 
     bool setMinAsCur() noexcept;
+
+    bool setMaxAsCur() noexcept;
 };
 
 class CameraInstructionException : public exception

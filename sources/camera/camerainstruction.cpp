@@ -21,8 +21,22 @@ void CameraInstruction::logDebugCtrl(const string &prefixMsg, const vector<uint8
 {
     string msg = prefixMsg;
     for (const uint8_t &i : control)
-        msg += " " + to_string(static_cast<int>(i));
+        msg += " " + to_string(i);
     Logger::debug(msg);
+}
+
+/**
+ * @brief Compute the resolution control instruction composed of 0 or 1
+ * by comparing two controls instruction
+ *
+ * @param first the first instruction
+ * @param second the second instruction
+ * @param res the resolution instruction will be stored in it
+ */
+void CameraInstruction::computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept
+{
+    for (unsigned i = 0; i < first.size(); ++i)
+        res[i] = static_cast<uint8_t>(second[i] != first[i]);
 }
 
 /**
@@ -55,8 +69,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     // try to get the maximum control value (it does not necessary exists)
     maxCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, maxCtrl) == 1)
-        for (uint8_t &i : maxCtrl)
-            i = 255;
+        throw CameraInstructionException(camera.device, unit, selector);
 
     // try get the minimum control value (it does not necessary exists)
     minCtrl.resize(ctrlSize);
@@ -67,15 +80,15 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     resCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_RES, unit, selector, resCtrl) == 1)
     {
-        Logger::debug("Using default resolution control.");
-        resCtrl[0] = 1;
+        Logger::debug("Computing resolution control.");
+        computeResCtrl(minCtrl.empty() ? curCtrl : minCtrl, maxCtrl, resCtrl);
     }
 
+    Logger::debug(("unit: " + to_string(unit) + " selector: " + to_string(selector)));
     logDebugCtrl("current:", curCtrl);
     logDebugCtrl("maximum:", maxCtrl);
     logDebugCtrl("minimum:", minCtrl);
     logDebugCtrl("resolution:", resCtrl);
-    Logger::debug(("unit: " + to_string(static_cast<int>(unit)) + " selector: " + to_string(static_cast<int>(selector))));
 }
 
 /**
@@ -97,26 +110,21 @@ CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vecto
  */
 bool CameraInstruction::next() noexcept
 {
-    unsigned carry = 0;
-    for (int __i = static_cast<int>(curCtrl.size()); __i > -1; --__i)
-    {   
-        size_t i = static_cast<size_t>(__i);
-        unsigned nextCtrl = curCtrl[i] + resCtrl[i] + carry; // unsigned to avoid uncontrolled overflow
-        carry = 0;
-        if (nextCtrl > maxCtrl[i]) // detect maximum exceed
+    bool alreadyMax = true;
+    for (unsigned i = 0; i < curCtrl.size(); ++i)
+    {
+        if (!(curCtrl[i] == maxCtrl[i]))
         {
-            carry = nextCtrl - maxCtrl[i];
-            nextCtrl = maxCtrl[i];
-        } else if (nextCtrl > 255) // detect overflow
-        {
-            carry = nextCtrl - 255;
-            nextCtrl = 255;
-        }
+            uint16_t nextCtrl = static_cast<uint16_t>(curCtrl[i] + resCtrl[i]);
+            if (nextCtrl > maxCtrl[i])
+                nextCtrl = maxCtrl[i];
 
-        curCtrl[i] = static_cast<uint8_t>(nextCtrl);
+            curCtrl[i] = static_cast<uint8_t>(nextCtrl);
+            alreadyMax = false;
+        }
     }
 
-    if (carry != 0) // maximum control reached
+    if (alreadyMax)
         return false;
 
     logDebugCtrl("new current:", curCtrl);
@@ -171,8 +179,26 @@ bool CameraInstruction::setMinAsCur() noexcept
     return true;
 }
 
+/**
+ * @brief If a maximum control instruction 
+ * is not already the current,
+ * set the current control instruction with that value
+ *
+ * @return true if success, otherwise false
+ */
+bool CameraInstruction::setMaxAsCur() noexcept
+{
+    if (curCtrl == maxCtrl)
+        return false;
+
+    curCtrl.assign(maxCtrl.begin(), maxCtrl.end());
+    logDebugCtrl("new current:", curCtrl);
+
+    return true;
+}
+
 CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit, uint8_t selector)
-    : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string(static_cast<int>(unit)) + " selector:" + to_string(static_cast<int>(selector))) {}
+    : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string(unit) + " selector:" + to_string(selector)) {}
 
 const char *CameraInstructionException::what() const noexcept
 {

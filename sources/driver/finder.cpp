@@ -182,8 +182,8 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                 const CameraInstruction initInstruction = instruction; // copy for reset later
 
                 if (!instruction.setMinAsCur()) // if no min instruction exists
-                    if (!instruction.next())       // start from the next one
-                        continue;                  // if no next, skip
+                    if (!instruction.next())    // start from the next one
+                        continue;               // if no next, skip
 
                 unsigned negAnswerCounter = 0;
                 do
@@ -197,13 +197,25 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                                 return drivers;
                         }
                     }
+                    else // instruction refused
+                    {
+                        if (instruction.setMaxAsCur())
+                        {
+                            Logger::debug("Instruction refused, setting maximum.");
+                            continue;
+                        }
+                        else // maximum already set
+                            break;
+                    }
+
                     ++negAnswerCounter;
                 } while (instruction.next() && negAnswerCounter < negAnswerLimit);
 
                 if (negAnswerCounter >= negAnswerLimit)
                     Logger::debug("Negative answer limit exceeded, skipping the pattern.");
 
-                camera.apply(initInstruction); // reset
+                camera.apply(initInstruction);
+                Logger::debug("");
             }
             catch (CameraInstructionException &e)
             {
