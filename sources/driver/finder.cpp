@@ -204,8 +204,7 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                             Logger::debug("Instruction refused, setting maximum.");
                             continue;
                         }
-                        else // maximum already set
-                            break;
+                        break; // maximum already set, skip
                     }
 
                     ++negAnswerCounter;
