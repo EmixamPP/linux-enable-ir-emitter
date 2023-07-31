@@ -196,14 +196,14 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                             if (drivers->size() == emitters) // all emitters are configured
                                 return drivers;
                         }
-                        else
-                            camera.apply(initInstruction); // reset
                     }
                     ++negAnswerCounter;
-                } while (negAnswerCounter < negAnswerLimit && instruction.next());
+                } while (instruction.next() && negAnswerCounter < negAnswerLimit);
 
                 if (negAnswerCounter >= negAnswerLimit)
                     Logger::debug("Negative answer limit exceeded, skipping the pattern.");
+
+                camera.apply(initInstruction); // reset
             }
             catch (CameraInstructionException &e)
             {
