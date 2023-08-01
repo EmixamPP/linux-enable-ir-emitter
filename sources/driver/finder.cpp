@@ -127,14 +127,11 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                 unsigned negAnswerCounter = 0;
                 do
                 {
-                    if (camera.apply(instruction))
+                    if (camera.apply(instruction) && camera.isEmitterWorking())
                     {
-                        if (camera.isEmitterWorking())
-                        {
-                            drivers->push_back(createDriverFromInstruction(instruction, unit, selector));
-                            if (drivers->size() == emitters) // all emitters are configured
-                                return drivers;
-                        }
+                        drivers->push_back(createDriverFromInstruction(instruction, unit, selector));
+                        if (drivers->size() == emitters) // all emitters are configured
+                            return drivers;
                     }
                     ++negAnswerCounter;
                 } while (instruction.next() && negAnswerCounter < negAnswerLimit);

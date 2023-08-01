@@ -35,7 +35,7 @@ if __name__ == "__main__":
         "-d",
         "--device",
         metavar="device",
-        help="specify the infrared camera, by default is '/dev/video2'",
+        help="specify the infrared camera, automatic detection by default",
         nargs=1,
     )
     command_subparser = parser.add_subparsers(dest="command")
@@ -72,10 +72,6 @@ if __name__ == "__main__":
         type=int,
         nargs=1,
     )
-    command_delete = command_subparser.add_parser(
-        "delete",
-        help="delete drivers",
-    )
     command_boot = command_subparser.add_parser(
         "boot",
         help="enable ir at boot",
@@ -84,6 +80,10 @@ if __name__ == "__main__":
         "boot_status",
         choices=["enable", "disable", "status"],
         help="specify the boot action to perform",
+    )
+    command_delete = command_subparser.add_parser(
+        "delete",
+        help="delete drivers",
     )
 
     args = parser.parse_args()

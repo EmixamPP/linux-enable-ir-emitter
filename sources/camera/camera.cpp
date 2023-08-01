@@ -175,7 +175,7 @@ bool Camera::isEmitterWorking()
     cap->read(frame);
 
     string answer;
-    cout << "Is the ir emitter flashing (not just turn on)? Yes/No? ";
+    cout << "Is the ir emitter flashing (not just on)? Yes/No? ";
     cin >> answer;
 
     while (answer.empty() || (answer[0] != 'y' && answer[0] != 'Y' && answer[0] != 'n' && answer[0] != 'N'))
