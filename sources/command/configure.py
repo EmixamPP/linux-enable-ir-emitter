@@ -45,7 +45,6 @@ def configure(device: str | None, manual: bool, exhaustive: bool, emitters: int,
             "Please specify your infrared camera path using the -d option."
         )
         exit(ExitCode.FAILURE)
-
     logging.info(f"Configuring the camera: {device}.")
     log_level = int(logging.getLogger().level == logging.DEBUG)
     exit_code = subprocess.call(
@@ -53,7 +52,7 @@ def configure(device: str | None, manual: bool, exhaustive: bool, emitters: int,
             BIN_GENERATE_DRIVER_PATH,
             device,
             str(emitters),
-            str(neg_answer_limit if manual else 256),
+            str(neg_answer_limit),
             SAVE_DRIVER_FOLDER_PATH,
             str(log_level),
             str(int(manual)),
