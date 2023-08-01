@@ -1,12 +1,5 @@
 ### Please, first, ensure that you have the last version. Compare the [latest release](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest) with `linux-enable-ir-emitter -V`
 
-## Find which `/dev/videoX` path is your infrared camera
-1. Execute `v4l2-ctl --list-devices`
-2. For each `/dev/videoX` entry displayed:
-   1. Execute  `v4l2-ctl -d /dev/videoX --list-formats-ext`
-   2. If displayed `'GREY' (8-bit Greyscale)`, this `/dev/videoX` path is your infrared camera
-3. Otherwise your ir camera is not reconized by your kernel; this tool cannot help you, sorry
-
 ## The configuration has failed 
 If you had the message `INFO: Please shut down your computer, then boot and retry.`, please follow these instructions first:
 1. Shutdown your computer, (not just rebooting)
@@ -18,11 +11,11 @@ If you had the message `INFO: Please shut down your computer, then boot and retr
 Otherwise, open an issue using the "Configuration has failed" template.
 
 ## The emitter does not work after successful configuration or after update.
-1. If you use Howdy, be sure it uses the camera that you configured (/dev/video2 by default).
+1. If you use Howdy, be sure it uses the infrared camera configured; the path is printed after the message `INFO: Configuring the camera:`.
 2. Execute `sudo linux-enable-ir-emitter boot enable`.
 3. If none of the previous fix your problem, open an issue using the "Emitter does not work after successful configuration" template.
 
-## Error with the systemd or udev boot service
+## Error with the systemd/openrc or udev boot service
 1. Ensure you have `systemd` or `openrc` (and the related version installed)
 2. Open an issue using the "Emitter does not work after successful configuration" template.
 

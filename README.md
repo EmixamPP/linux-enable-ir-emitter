@@ -4,8 +4,6 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 
 `linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for almost any (UVC) infrared emitter.
 
-This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
-
 ## Installation
 Directly refer to the manual buid [section](#manual-build) if your boot service manager is not Systemd but OpenRC. Stay here if you don't know. We support ARM architectures, just download the `aarch64` variant.
  
@@ -26,20 +24,19 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 ```
 
 ## How to enable your infrared emitter?
-1. To improve configuration speed, stand in front of the camera and make sure the room is well lit.
-1. Ensure to not use the camera during the execution.
-2. Be patient, do not kill the process, and whatever the reason. (Unless the execution is stuck for more than 10 minutes.)
-3. Execute `sudo linux-enable-ir-emitter configure`.
-    * You can specify your infrared camera with the option `-d`, by default it is `-d /dev/video2`.
+1. Stand in front of the camera and make sure the room is well lit.
+2. Ensure to not use the camera during the execution.
+3. Be patient, do not kill the process.
+4. Execute `sudo linux-enable-ir-emitter configure`.
     * If you have many emitters on the camera, specify it using the option `-e`. E.g. `-e 2` if you have 2 emitters.
-4. Answer to the asked questions.
-5. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
+5. Answer to the asked questions.
+6. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
 
 If you like the project, do not hesitate to star the repository to support me, thank you !
 
 If the configuration failed:
-1. But you saw the ir emitter flashing, switch to manual configuration mode by adding the `-m` option
-2. Also, try the exhaustive configuration by adding the `-x` option
+1. But you saw the ir emitter flashing, switch to manual mode by using the `-m` option
+2. Also, try the exhaustive search by using the `-l -1` option
 3. Otherwise, *please consult the [docs](docs/README.md) before opening an issue*
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
