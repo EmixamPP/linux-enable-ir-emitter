@@ -13,54 +13,6 @@ using namespace std;
 #include "../utils/logger.hpp"
 
 /**
- * @brief Execute shell command and return the ouput
- *
- * @param cmd command
- * @return output
- */
-unique_ptr<string> Finder::shellExec(const string &cmd) noexcept
-{
-    char buffer[128];
-    auto result = make_unique<string>();
-    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe)
-    {
-        *result = "error";
-        return result;
-    }
-
-    while (fgets(buffer, 128 * sizeof(char), pipe.get()) != nullptr)
-        *result += buffer;
-    result->erase(result->end() - 1); // remove last \n
-    return result;
-}
-
-/**
- * @brief Get all the extension unit ID of the camera device
- *
- * @return list of units
- */
-unique_ptr<vector<uint8_t>> Finder::getUnits() noexcept
-{
-    const unique_ptr<string> vid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
-    const unique_ptr<string> pid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
-    const unique_ptr<string> units = Finder::shellExec("lsusb -d" + *vid + ":" + *pid + " -v | grep bUnitID | grep -Eo '[0-9]+'");
-    auto unitsList = make_unique<vector<uint8_t>>();
-
-    unsigned i = 0;
-    unsigned j = 0;
-    for (; j < units->length(); ++j)
-        if (units->at(j) == '\n')
-        {
-            unitsList->push_back(static_cast<uint8_t>(stoi(units->substr(i, j - i))));
-            i = j + 1;
-        }
-    unitsList->push_back(static_cast<uint8_t>(stoi(units->substr(i, j - i))));
-
-    return unitsList;
-}
-
-/**
  * @brief Create a Driver from Instruction object
  *
  * @param instruction from which the driver has to be create
@@ -139,21 +91,10 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param excludedPath path where write unit and selector to exclude from the search
  */
 Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath)
-    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath) {}
-
-/**
- * @brief Initialize the units and excluded attributes
- */
-void Finder::initialize() noexcept
+    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath)
 {
-    if (units == nullptr)
-    {
-        units = getUnits();
-        string unitsStr = "Extension units: ";
-        for (const uint8_t i : *units)
-            unitsStr += to_string(i) + " ";
-        Logger::debug(unitsStr);
-    }
+    for (unsigned unit = 0; unit < 256; ++unit)
+        units.push_back(static_cast<uint8_t>(unit));
 
     excluded = getExcluded();
 }
@@ -166,11 +107,9 @@ void Finder::initialize() noexcept
  */
 unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
 {
-    initialize();
-
     auto drivers = make_unique<vector<unique_ptr<Driver>>>();
 
-    for (const uint8_t unit : *units)
+    for (const uint8_t unit : units)
         for (unsigned __selector = 0; __selector < 256; ++__selector)
         {
             const uint8_t selector = static_cast<uint8_t>(__selector); // safe: 0 <= __selector <= 255
@@ -197,16 +136,6 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                                 return drivers;
                         }
                     }
-                    else // instruction refused
-                    {
-                        if (instruction.setMaxAsCur())
-                        {
-                            Logger::debug("Instruction refused, setting maximum.");
-                            continue;
-                        }
-                        break; // maximum already set, skip
-                    }
-
                     ++negAnswerCounter;
                 } while (instruction.next() && negAnswerCounter < negAnswerLimit);
 

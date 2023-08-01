@@ -41,7 +41,6 @@ executable(
     'sources/camera/camerainstruction.cpp',
     'sources/driver/driver.cpp',
     'sources/driver/finder.cpp',
-    'sources/driver/exhaustivefinder.cpp',
     'sources/utils/logger.cpp',
     dependencies: opencv_dep,
     install: true,

@@ -13,15 +13,13 @@ class CameraInstruction
 private:
     uint8_t unit;
     uint8_t selector;
+
+protected:
     vector<uint8_t> curCtrl;
     vector<uint8_t> maxCtrl;
     vector<uint8_t> minCtrl;
-    vector<uint8_t> resCtrl;
 
-protected:
     static void logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept;
-
-    static void computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept;
 
 public:
     CameraInstruction() = delete;
@@ -36,9 +34,9 @@ public:
 
     CameraInstruction(const CameraInstruction &) = default;
 
-    CameraInstruction &operator=(CameraInstruction &&other) = delete;
+    CameraInstruction &operator=(CameraInstruction &&other) = default;
 
-    CameraInstruction(CameraInstruction &&other) = delete;
+    CameraInstruction(CameraInstruction &&other) = default;
 
     bool next() noexcept;
 

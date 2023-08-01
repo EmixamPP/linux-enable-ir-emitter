@@ -55,13 +55,6 @@ if __name__ == "__main__":
         default=False,
     )
     command_configure.add_argument(
-        "-x",
-        "--exhaustive",
-        help="activate exhaustive configuration",
-        action="store_true",
-        default=False,
-    )
-    command_configure.add_argument(
         "-e",
         "--emitters",
         metavar="<count>",
@@ -74,7 +67,7 @@ if __name__ == "__main__":
         "-l",
         "--limit",
         metavar="<count>",
-        help="the number of negative answer before the pattern is skiped, by default is 5. Use 256 for unlimited",
+        help="the number of negative answer before the pattern is skipped, by default is 5. Use -1 for unlimited",
         default=[5],
         type=int,
         nargs=1,
@@ -122,8 +115,7 @@ if __name__ == "__main__":
 
     elif args.command == "configure":
         check_root()
-        configure(device, args.manual, args.exhaustive,
-                  args.emitters[0], args.limit[0])
+        configure(device, args.manual, args.emitters[0], args.limit[0])
 
     elif args.command == "boot":
         check_root()

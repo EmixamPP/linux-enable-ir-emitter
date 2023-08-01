@@ -18,15 +18,9 @@ private:
     const unsigned negAnswerLimit;
     const string excludedPath;
     unique_ptr<vector<pair<uint8_t, uint8_t>>> excluded = nullptr;
-    void initialize() noexcept;
+    vector<uint8_t> units;
 
 protected:
-    unique_ptr<vector<uint8_t>> units = nullptr;
-
-    static unique_ptr<string> shellExec(const string &cmd) noexcept;
-
-    virtual unique_ptr<vector<uint8_t>> getUnits() noexcept;
-
     unique_ptr<Driver> createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept;
 
     unique_ptr<vector<pair<uint8_t, uint8_t>>> getExcluded() noexcept;
@@ -40,7 +34,7 @@ public:
 
     explicit Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath);
 
-    virtual ~Finder() = default;
+    ~Finder() = default;
 
     Finder &operator=(const Finder &) = delete;
 
@@ -48,7 +42,7 @@ public:
 
     Finder &operator=(Finder &&other) = delete;
 
-    Finder(Finder && other) = delete;
+    Finder(Finder &&other) = delete;
 
     unique_ptr<vector<unique_ptr<Driver>>> find();
 };

@@ -6,7 +6,6 @@ using namespace std;
 #include "../camera/camera.hpp"
 #include "../camera/autocamera.hpp"
 #include "finder.hpp"
-#include "exhaustivefinder.hpp"
 #include "driver.hpp"
 #include "../utils/logger.hpp"
 
@@ -15,14 +14,13 @@ constexpr unsigned EXIT_FD_ERROR  = 126;
 /**
  * Generate a driver for the infrared emitter
  *
- * usage: generate-driver [device] [emitters] [negAnswerLimit] [workspace] [debug] [manual] [exhaustive]
+ * usage: generate-driver [device] [emitters] [negAnswerLimit] [workspace] [debug] [manual]
  *        device           path to the infrared camera
  *        emitters         number of emitters on the device
- *        negAnswerLimit   the number of negative answer before the pattern is skiped. Use 256 for unlimited
+ *        negAnswerLimit   the number of negative answer before the pattern is skiped. Use -1 for unlimited
  *        workspace        directory where store the driver
  *        debug            1 for print debug information, otherwise 0
  *        manual           1 for manual configuration, 0 for automatic
- *        exhaustive       1 for exhaustive configuration, otherwise 0
  *
  * Exit code: 0 Success
  *            1 Error
@@ -43,11 +41,7 @@ int main(int, const char *argv[])
         camera = make_shared<Camera>(device);
     else
         camera = make_shared<AutoCamera>(device);
-    shared_ptr<Finder> finder;
-    if (atoi(argv[7]) == 1)
-        finder = make_unique<ExhaustiveFinder>(*camera, emitters, negAnswerLimit, excludedPath);
-    else
-        finder = make_unique<Finder>(*camera, emitters, negAnswerLimit, excludedPath);
+    Finder finder(*camera, emitters, negAnswerLimit, excludedPath);
 
     try
     {
@@ -57,7 +51,7 @@ int main(int, const char *argv[])
             return EXIT_FAILURE;
         }
 
-        auto drivers = finder->find();
+        auto drivers = finder.find();
         if (drivers->empty())
             return EXIT_FAILURE;
 

@@ -26,28 +26,13 @@ void CameraInstruction::logDebugCtrl(const string &prefixMsg, const vector<uint8
 }
 
 /**
- * @brief Compute the resolution control instruction composed of 0 or 1
- * by comparing two controls instruction
- *
- * @param first the first instruction
- * @param second the second instruction
- * @param res the resolution instruction will be stored in it
- */
-void CameraInstruction::computeResCtrl(const vector<uint8_t> &first, const vector<uint8_t> &second, vector<uint8_t> &res) noexcept
-{
-    for (unsigned i = 0; i < first.size(); ++i)
-        res[i] = static_cast<uint8_t>(second[i] != first[i]);
-}
-
-/**
  * @brief Construct a new CameraInstruction object
- * And find the first control instruction as current one
  *
  * @param camera on which find the control instruction
  * @param unit of the instruction
  * @param selector of the instruction
  *
- * @throw CameraInstructionException if unit + selector are invalid or if the instruction cannot be modfied
+ * @throw CameraInstructionException if information are missing for controlling the device
  */
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
     : unit(unit), selector(selector)
@@ -69,26 +54,23 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     // try to get the maximum control value (it does not necessary exists)
     maxCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, maxCtrl) == 1)
-        throw CameraInstructionException(camera.device, unit, selector);
+    {
+        Logger::debug("Using default maximum control.");
+        maxCtrl.assign(ctrlSize, 255);
+    }
 
     // try get the minimum control value (it does not necessary exists)
     minCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_MIN, unit, selector, minCtrl) == 1)
-        minCtrl.resize(0);
-
-    // try to get the resolution control value (it does not necessary exists)
-    resCtrl.resize(ctrlSize);
-    if (camera.getUvcQuery(UVC_GET_RES, unit, selector, resCtrl) == 1)
     {
-        Logger::debug("Computing resolution control.");
-        computeResCtrl(minCtrl.empty() ? curCtrl : minCtrl, maxCtrl, resCtrl);
+        Logger::debug("Using current as minimum control.");
+        minCtrl.assign(curCtrl.begin(), curCtrl.end());
     }
 
     Logger::debug(("unit: " + to_string(unit) + " selector: " + to_string(selector)));
     logDebugCtrl("current:", curCtrl);
     logDebugCtrl("maximum:", maxCtrl);
     logDebugCtrl("minimum:", minCtrl);
-    logDebugCtrl("resolution:", resCtrl);
 }
 
 /**
@@ -110,25 +92,22 @@ CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vecto
  */
 bool CameraInstruction::next() noexcept
 {
-    bool alreadyMax = true;
     for (unsigned i = 0; i < curCtrl.size(); ++i)
     {
-        if (!(curCtrl[i] == maxCtrl[i]))
+        uint16_t nextCtrli = static_cast<uint16_t>(curCtrl[i] + 1);
+        if (nextCtrli > maxCtrl[i])
+            curCtrl[i] = minCtrl[i]; // simulate "overflow"
+        else 
         {
-            uint16_t nextCtrl = static_cast<uint16_t>(curCtrl[i] + resCtrl[i]);
-            if (nextCtrl > maxCtrl[i])
-                nextCtrl = maxCtrl[i];
-
-            curCtrl[i] = static_cast<uint8_t>(nextCtrl);
-            alreadyMax = false;
-        }
+            curCtrl[i] = static_cast<uint8_t>(nextCtrli);
+            logDebugCtrl("new current:", curCtrl);
+            return true;
+        }   
     }
 
-    if (alreadyMax)
-        return false;
+    setMaxAsCur();
 
-    logDebugCtrl("new current:", curCtrl);
-    return true;
+    return false;
 }
 
 /**
@@ -180,7 +159,7 @@ bool CameraInstruction::setMinAsCur() noexcept
 }
 
 /**
- * @brief If a maximum control instruction 
+ * @brief If a maximum control instruction
  * is not already the current,
  * set the current control instruction with that value
  *
