@@ -19,7 +19,7 @@ private:
 public:
     AutoCamera() = delete;
 
-    explicit AutoCamera(const string &device, unsigned captureTimeMs = 500);
+    explicit AutoCamera(const string &device, unsigned captureTimeMs = 1000);
 
     ~AutoCamera() override = default;
 
