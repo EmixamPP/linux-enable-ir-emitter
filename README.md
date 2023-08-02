@@ -36,7 +36,7 @@ If you like the project, do not hesitate to star the repository to support me, t
 
 If the configuration failed:
 1. But you saw the ir emitter flashing, switch to manual mode by using the `-m` option
-2. Also, try the exhaustive search by using the `-l -1` option
+2. Also, try the exhaustive search by using the `-l -1` option (caution: this may take several hours; do not combine it `-m`)
 3. Otherwise, *please consult the [docs](docs/README.md) before opening an issue*
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
