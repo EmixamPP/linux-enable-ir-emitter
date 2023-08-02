@@ -36,7 +36,7 @@ jobs:
           --volume "${PWD}/opencv-tiny:/opencv-tiny"
         install: |
           apt-get update -y
-          apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config curl cmake
+          apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config curl cmake libgtk-3-dev
           python -m pip install --upgrade pip
           python -m pip install meson
 

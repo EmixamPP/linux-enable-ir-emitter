@@ -3,10 +3,10 @@
 * `python3 >= 3.10`
 * `video4linux` as video capture devices framework
 * `systemd` or `openrc` as service manager
-* `glibc`, `libstdc++`, `libgcc`
+* `glibc`, `libstdc++`, `libgcc`, `gtk3`
 
 ## Manual build requirements
-* `meson >= 1.0.0`, `ninja-build`, `pkg-config`
+* `meson >= 1.0.0`, `ninja-build`, `pkg-config`, `gtk3 devel`
 * `cmake` only if you build OpenCV
 * `g++`, `libstdc++-devel` (for `C++17`)
 * `curl`
