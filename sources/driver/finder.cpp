@@ -78,7 +78,7 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
     ofstream file(excludedPath, std::ofstream::out | std::ofstream::app);
     if (!file.is_open())
         return;
-    file << static_cast<int>(unit) << " " << static_cast<int>(selector) << endl;
+    file << unit << " " << selector << endl;
     file.close();
 }
 
