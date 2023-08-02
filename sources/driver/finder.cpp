@@ -134,7 +134,14 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                             return drivers;
                     }
                     ++negAnswerCounter;
-                } while (instruction.next() && negAnswerCounter < negAnswerLimit);
+                    
+                    if (negAnswerCounter == negAnswerLimit - 1)
+                    {
+                        instruction.setMaxAsCur();
+                        continue;
+                    }
+
+                } while (negAnswerCounter < negAnswerLimit && instruction.next());
 
                 if (negAnswerCounter >= negAnswerLimit)
                     Logger::debug("Negative answer limit exceeded, skipping the pattern.");
