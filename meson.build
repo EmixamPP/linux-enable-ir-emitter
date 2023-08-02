@@ -27,6 +27,7 @@ add_project_arguments(
 ) 
 
 opencv_dep = dependency('opencv4', static: true)
+gtk_dep = dependency('gtk+-3.0')
 
 ################
 # Lib executable
@@ -42,7 +43,7 @@ executable(
     'sources/driver/driver.cpp',
     'sources/driver/finder.cpp',
     'sources/utils/logger.cpp',
-    dependencies: opencv_dep,
+    dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
 )
@@ -55,7 +56,7 @@ executable(
     'sources/camera/camerainstruction.cpp',
     'sources/driver/driver.cpp',
     'sources/utils/logger.cpp',
-    dependencies: opencv_dep,
+    dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
 )
@@ -66,7 +67,7 @@ executable(
     'sources/camera/camera.cpp',
     'sources/camera/camerainstruction.cpp',
     'sources/utils/logger.cpp',
-    dependencies: opencv_dep,
+    dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
 )

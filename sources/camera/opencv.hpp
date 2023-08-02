@@ -98,6 +98,7 @@
 #pragma GCC diagnostic ignored "-Winvalid-imported-macros"
 
 #include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
 #include <opencv2/core/utils/logger.hpp>
 
 #pragma GCC diagnostic pop

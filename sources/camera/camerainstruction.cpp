@@ -69,8 +69,8 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
 
     Logger::debug(("unit: " + to_string(unit) + " selector: " + to_string(selector)));
     logDebugCtrl("current:", curCtrl);
-    logDebugCtrl("maximum:", maxCtrl);
     logDebugCtrl("minimum:", minCtrl);
+    logDebugCtrl("maximum:", maxCtrl);
 }
 
 /**

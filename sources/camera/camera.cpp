@@ -18,6 +18,9 @@ using namespace std;
 #include "camerainstruction.hpp"
 #include "../utils/logger.hpp"
 
+constexpr int OK_KEY = 121;
+constexpr int NOK_KEY = 110;
+
 /**
  * @brief Get the file descriptor previously opened
  *
@@ -172,20 +175,21 @@ bool Camera::isEmitterWorking()
 {
     openCap();
     cv::Mat frame;
-    cap->read(frame);
+    int key = -1;
 
-    string answer;
-    cout << "Is the ir emitter flashing (not just on)? Yes/No? ";
-    cin >> answer;
+    cout << "Is the video flashing? Press Y or N" << endl;
 
-    while (answer.empty() || (answer[0] != 'y' && answer[0] != 'Y' && answer[0] != 'n' && answer[0] != 'N'))
+    while (key != OK_KEY && key != NOK_KEY)
     {
-        cout << "Yes/No? ";
-        cin >> answer;
+        cap->read(frame);
+        cv::imshow("linux-enable-ir-emitter", frame);
+        key = cv::waitKey(5);
     }
 
+    cout << (key == OK_KEY ? "Y pressed" : "N pressed") << endl;
+
     closeCap();
-    return answer[0] == 'y' || answer[0] == 'Y';
+    return key == OK_KEY;
 }
 
 /**
@@ -304,7 +308,7 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
 
     if (executeUvcQuery(query) == 1)
         return 0;
-    
+
     uint16_t len = 0;
     memcpy(&len, query.data, 2);
     return len;
