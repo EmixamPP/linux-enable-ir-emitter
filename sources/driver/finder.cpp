@@ -143,9 +143,6 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
 
                 } while (negAnswerCounter < negAnswerLimit && instruction.next());
 
-                if (negAnswerCounter >= negAnswerLimit)
-                    Logger::debug("Negative answer limit exceeded, skipping the pattern.");
-
                 camera.apply(initInstruction);
                 Logger::debug("");
             }
