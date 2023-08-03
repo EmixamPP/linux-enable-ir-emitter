@@ -189,6 +189,8 @@ bool Camera::isEmitterWorking()
     cout << (key == OK_KEY ? "Y pressed" : "N pressed") << endl;
 
     closeCap();
+    cv::destroyAllWindows();
+    
     return key == OK_KEY;
 }
 
