@@ -32,6 +32,11 @@ paste here
 ```
 </details>
 
+**Output of `ls -l /dev/v4l/by-path`**
+```
+paste here
+```
+
 **Give more information if you have**
 <!-- describe here if you have -->
 
