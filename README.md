@@ -32,12 +32,14 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 5. Answer to the asked questions.
 6. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
 
-If you like the project, do not hesitate to star the repository to support me, thank you !
+If you like the project, do not hesitate to star the repository to support me, thank you!
+
+Any criticims, ideas and contributions are welcome.
 
 If the configuration failed:
-1. But you saw the ir emitter flashing, switch to manual mode by using the `-m` option
-2. Also, try the exhaustive search by using the `-l -1` option (caution: this may take several hours; do not combine it `-m`)
-3. Otherwise, *please consult the [docs](docs/README.md) before opening an issue*
+1. But you saw the ir emitter flashing, switch to manual mode by using the `-m` option.
+2. Also, try the exhaustive search by using the `-l -1` option (caution: this may take several hours; do not combine it `-m`).
+3. Otherwise, feel free to open an issue, *but please consult the [docs](docs/README.md) first*.
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
