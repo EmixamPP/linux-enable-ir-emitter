@@ -1,3 +1,8 @@
+# ? Aug ? 2023 - 5.0.0
+- Automatic ir camera detection
+- Automatic ir emitter configuration
+- Exhaustive search
+- Video feedback
 # Fri Jun 23 2023 - 4.8.2
 - Fix systemd hanging in some cases
 - More appropriate installation paths
@@ -16,7 +21,6 @@
 - Support multiple emitters camera
 - Memorize broken instructions to skip them 
 - Usage of /dev/v4l/by-path for persistence
-- Drop distribution repositories support
 # Tue Sep 13 2022 - 4.1.5
 - Fix boot service for custom device 
 # Thu Aug 11 2022 - 4.1.4
@@ -49,4 +53,4 @@
 - New fix command, to resolve well know problems
 - Systemd service file modified to prevent /dev/video file descriptor error
 # Thu Aug 12 2021 - 2.0.1
-- Initial package
+- Initial release
