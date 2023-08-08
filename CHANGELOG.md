@@ -1,4 +1,4 @@
-# ? Aug ? 2023 - 5.0.0
+# Tue Aug 8 2023 - 5.0.0
 - Automatic ir camera detection
 - Automatic ir emitter configuration
 - Exhaustive search
