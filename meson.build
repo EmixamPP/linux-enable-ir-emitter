@@ -1,17 +1,33 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '4.8.2', 
+    version: '5.0.0', 
     license: 'MIT',
     default_options: [
+        'prefix=/usr',
         'cpp_std=c++17',
         'optimization=3',
-        'warning_level=3',
-        'prefix=/usr',
-    ], 
+        'warning_level=everything',
+        'werror=true',
+    ],
 )
 
+# flag ajustement because of warning_level=everything
+add_project_arguments(
+    # fix clang-tidy
+    '-Wno-unknown-warning-option', '-Wno-unused-macros',
+    # ignored bugged or boring gcc flags
+    '-Wno-pragmas', '-Wno-abi-tag', '-Wno-suggest-attribute=pure',
+    '-Wno-effc++','-Wno-suggest-attribute=const', '-Wno-padded', 
+    '-Wformat-nonliteral',  '-Wno-suggest-final-types', '-Wno-inline',
+    '-Wno-shadow', '-Wno-missing-declarations', '-Wno-sign-promo', 
+    '-Wno-format-nonliteral', '-Wno-suggest-final-methods',
+    '-Wno-unused-const-variable',
+    language: 'cpp'
+) 
+
 opencv_dep = dependency('opencv4', static: true)
+gtk_dep = dependency('gtk+-3.0')
 
 ################
 # Lib executable
@@ -19,13 +35,15 @@ opencv_dep = dependency('opencv4', static: true)
 lib_exec_dir = get_option('libexecdir')  / meson.project_name()
 
 executable(
-    'driver-generator', 
-    'sources/driver/driver-generator.cpp',
-    'sources/driver/camera.cpp',
-    'sources/driver/logger.cpp',
+    'generate-driver', 
+    'sources/driver/generate-driver.cpp',
+    'sources/camera/camera.cpp',
+    'sources/camera/autocamera.cpp',
+    'sources/camera/camerainstruction.cpp',
     'sources/driver/driver.cpp',
     'sources/driver/finder.cpp',
-    dependencies: opencv_dep,
+    'sources/utils/logger.cpp',
+    dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
 )
@@ -33,10 +51,23 @@ executable(
 executable(
     'execute-driver', 
     'sources/driver/execute-driver.cpp',
-    'sources/driver/camera.cpp',
-    'sources/driver/logger.cpp',
+    'sources/camera/camera.cpp',
+    'sources/camera/autocamera.cpp',
+    'sources/camera/camerainstruction.cpp',
     'sources/driver/driver.cpp',
-    dependencies: opencv_dep,
+    'sources/utils/logger.cpp',
+    dependencies: [opencv_dep, gtk_dep],
+    install: true,
+    install_dir: lib_exec_dir,
+)
+
+executable(
+    'is-ir-camera', 
+    'sources/camera/is-ir-camera.cpp',
+    'sources/camera/camera.cpp',
+    'sources/camera/camerainstruction.cpp',
+    'sources/utils/logger.cpp',
+    dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
 )
@@ -61,7 +92,8 @@ boot_service = get_option('boot_service')
 configure_paths_data = configuration_data({
     'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_exec_dir / 'execute-driver',
-    'BIN_DRIVER_GENERATOR_PATH': '/usr' / lib_exec_dir / 'driver-generator',
+    'BIN_GENERATE_DRIVER_PATH': '/usr' / lib_exec_dir / 'generate-driver',
+    'BIN_IS_CAMERA_PATH': '/usr' / lib_exec_dir / 'is-ir-camera',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
 })

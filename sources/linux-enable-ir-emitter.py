@@ -8,12 +8,13 @@ from command import boot, configure, delete, run
 from globals import ExitCode, check_root
 
 if __name__ == "__main__":
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s", level=logging.INFO)
 
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
         prog="linux-enable-ir-emitter",
-        epilog="For support visit https://github.com/EmixamPP/linux-enable-ir-emitter/wiki",
+        epilog="https://github.com/EmixamPP/linux-enable-ir-emitter",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -34,7 +35,7 @@ if __name__ == "__main__":
         "-d",
         "--device",
         metavar="device",
-        help="specify the infrared camera, by default is '/dev/video2'",
+        help="specify the infrared camera, automatic detection by default",
         nargs=1,
     )
     command_subparser = parser.add_subparsers(dest="command")
@@ -45,6 +46,13 @@ if __name__ == "__main__":
     command_configure = command_subparser.add_parser(
         "configure",
         help="generate ir emitter driver",
+    )
+    command_configure.add_argument(
+        "-m",
+        "--manual",
+        help="activate manual configuration",
+        action="store_true",
+        default=False,
     )
     command_configure.add_argument(
         "-e",
@@ -59,14 +67,10 @@ if __name__ == "__main__":
         "-l",
         "--limit",
         metavar="<count>",
-        help="the number of negative answer before the pattern is skiped, by default is 5. Use 256 for unlimited",
+        help="the number of negative answer before the pattern is skipped, by default is 5. Use -1 for unlimited",
         default=[5],
         type=int,
         nargs=1,
-    )
-    command_delete = command_subparser.add_parser(
-        "delete",
-        help="delete drivers",
     )
     command_boot = command_subparser.add_parser(
         "boot",
@@ -77,6 +81,10 @@ if __name__ == "__main__":
         choices=["enable", "disable", "status"],
         help="specify the boot action to perform",
     )
+    command_delete = command_subparser.add_parser(
+        "delete",
+        help="delete drivers",
+    )
 
     args = parser.parse_args()
 
@@ -84,13 +92,9 @@ if __name__ == "__main__":
         logging.getLogger().setLevel(logging.DEBUG)
 
     device: str | None = None
-    # Determine the device if needed
-    # In case of configuration: use the specified device otherwise the default one (i.e. /dev/video2)
-    # In case of run or delete: use the specified device
-    if args.command == "configure" or (
-        args.device and args.command in ("run", "delete")
-    ):
-        device = args.device[0] if args.device else "/dev/video2"
+    # Determine the device path if needed
+    if args.device and args.command in ("configure", "run", "delete"):
+        device = args.device[0]
         # Find the v4l path
         v4l_device = subprocess.run(
             f"find -L /dev/v4l/by-path -samefile {device}",
@@ -111,8 +115,7 @@ if __name__ == "__main__":
 
     elif args.command == "configure":
         check_root()
-        assert(device is not None)
-        configure(device, args.emitters[0], args.limit[0])
+        configure(device, args.manual, args.emitters[0], args.limit[0])
 
     elif args.command == "boot":
         check_root()

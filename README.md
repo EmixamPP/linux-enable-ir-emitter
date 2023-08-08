@@ -4,14 +4,12 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 
 `linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for almost any (UVC) infrared emitter.
 
-This tool was created to use [Howdy](https://github.com/boltgolt/howdy), a Windows Hello for linux.
-
 ## Installation
 Directly refer to the manual buid [section](#manual-build) if your boot service manager is not Systemd but OpenRC. Stay here if you don't know. We support ARM architectures, just download the `aarch64` variant.
  
-Download the latest `linux-enable-ir-emitter-x.x.x_x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+Download the latest `linux-enable-ir-emitter-x.x.x.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter-*.tar.gz
+sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
 ```
 
 It can be uninstalled by executing (remove the last line to keep the emitter configuration):
@@ -26,22 +24,27 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 ```
 
 ## How to enable your infrared emitter?
-1. Ensure to not use the camera during the execution.
-2. Be patient, do not kill the process, and whatever the reason. (Unless the execution is stuck for more than 10 minutes.)
-3. Execute `sudo linux-enable-ir-emitter configure`.
-    * You can specify your infrared camera with the option `-d`, by default it is `-d /dev/video2`.
+1. Stand in front of the camera and make sure the room is well lit.
+2. Ensure to not use the camera during the execution.
+3. Be patient, do not kill the process.
+4. Execute `sudo linux-enable-ir-emitter configure`.
     * If you have many emitters on the camera, specify it using the option `-e`. E.g. `-e 2` if you have 2 emitters.
-4. Answer to the asked questions.
-5. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
+5. Answer to the asked questions.
+6. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
 
-If you like the project, do not hesitate to star the repository to support me, thank you !
+If you like the project, do not hesitate to star the repository to support me, thank you!
 
-*Please consult the [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki) before opening an issue.*
+Any criticims, ideas and contributions are welcome.
+
+If the configuration failed:
+1. But you saw the ir emitter flashing, switch to manual mode by using the `-m` option.
+2. Also, try the exhaustive search by using the `-l -1` option (caution: this may take several hours; do not combine it `-m`).
+3. Otherwise, feel free to open an issue, *but please consult the [docs](docs/README.md) first*.
 
 The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
 
 ## Manual build
-See [wiki](https://github.com/EmixamPP/linux-enable-ir-emitter/wiki/Requirements) for specification concerning build requirements.
+See [docs](docs/requirements.md) for specification concerning build requirements.
 
 Clone the git:
 ```

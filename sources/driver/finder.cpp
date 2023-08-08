@@ -1,80 +1,27 @@
 #include "finder.hpp"
 
-#include <vector>
-#include <thread>
-#include <cstdlib>
 #include <fstream>
-#include <iostream>
-#include <cstdio>
+#include <memory>
 #include <string>
-#include <cstring>
+#include <thread>
+#include <vector>
 using namespace std;
 
-#include "camera.hpp"
-#include "logger.hpp"
+#include "../camera/camera.hpp"
+#include "../camera/camerainstruction.hpp"
 #include "driver.hpp"
-
-/**
- * @brief Execute shell command and return the ouput
- *
- * @param cmd command
- * @return output
- */
-string *Finder::shellExec(string cmd) noexcept
-{
-    char buffer[128];
-    string *result = new string();
-    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe)
-    {
-        *result = "error";
-        return result;
-    }
-
-    while (fgets(buffer, 128 * sizeof(char), pipe.get()) != nullptr)
-        *result += buffer;
-    result->erase(result->end() - 1); // remove last \n
-    return result;
-}
-
-/**
- * @brief Get all the extension unit ID of the camera device
- *
- * @param Camera the camera device
- *
- * @return list of units
- */
-vector<uint8_t> *Finder::getUnits(const Camera &camera) noexcept
-{
-    const string *vid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_VENDOR_ID=\\K.*'");
-    const string *pid = Finder::shellExec("udevadm info " + string(camera.device) + " | grep -oP 'E: ID_MODEL_ID=\\K.*'");
-    const string *units = Finder::shellExec("lsusb -d" + *vid + ":" + *pid + " -v | grep bUnitID | grep -Eo '[0-9]+'");
-    auto *unitsList = new vector<uint8_t>;
-
-    unsigned i = 0, j = 0;
-    for (; j < units->length(); ++j)
-        if (units->at(j) == '\n')
-        {
-            unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
-            i = j + 1;
-        }
-    unitsList->push_back((uint8_t)stoi(units->substr(i, j - i)));
-
-    delete vid;
-    delete pid;
-    delete units;
-    return unitsList;
-}
+#include "../utils/logger.hpp"
 
 /**
  * @brief Create a Driver from Instruction object
  *
  * @param instruction from which the driver has to be create
+ *
  * @return the driver
  */
-Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
+unique_ptr<Driver> Finder::createDriverFromInstruction(const CameraInstruction &instruction, uint8_t unit, uint8_t selector) const noexcept
 {
-    return new Driver(camera.device, unit, selector, instruction.getSize(), instruction.getCurrent());
+    return make_unique<Driver>(camera.device, unit, selector, instruction.getCurrent());
 }
 
 /**
@@ -82,19 +29,20 @@ Driver *Finder::createDriverFromInstruction(const CameraInstruction &instruction
  *
  * @return exclude list
  */
-vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
+unique_ptr<vector<pair<uint8_t, uint8_t>>> Finder::getExcluded() noexcept
 {
-    auto *excludedList = new vector<pair<uint8_t, uint8_t>>;
+    auto excludedList = make_unique<vector<pair<uint8_t, uint8_t>>>();
 
     ifstream file(excludedPath);
     if (!file.is_open())
         return excludedList;
 
-    while (file)
+    while (!file.eof())
     {
         string line;
         getline(file, line);
-        uint8_t unit, selector;
+        uint8_t unit;
+        uint8_t selector;
         sscanf(line.c_str(), "%hhu %hhu", &unit, &selector);
         excludedList->push_back(pair<uint8_t, uint8_t>(unit, selector));
     }
@@ -108,6 +56,7 @@ vector<pair<uint8_t, uint8_t>> *Finder::getExcluded() noexcept
  *
  * @param unit to check
  * @param selector to select
+ *
  * @return true if they are excluded, otherwise false
  */
 bool Finder::isExcluded(uint8_t unit, uint8_t selector) const noexcept
@@ -129,7 +78,7 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
     ofstream file(excludedPath, std::ofstream::out | std::ofstream::app);
     if (!file.is_open())
         return;
-    file << (int)unit << " " << (int)selector << endl;
+    file << unit << " " << selector << endl;
     file.close();
 }
 
@@ -141,71 +90,61 @@ void Finder::addToExclusion(uint8_t unit, uint8_t selector) noexcept
  * @param negAnswerLimit skip a patern after negAnswerLimit negative answer
  * @param excludedPath path where write unit and selector to exclude from the search
  */
-Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, string excludedPath) noexcept
-    : camera(camera), units(Finder::getUnits(camera)), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath), excluded(nullptr)
+Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, const string &excludedPath)
+    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit), excludedPath(excludedPath)
 {
-    string unitsStr = "Extension units: ";
-    for (auto it = units->begin(); it != units->end(); ++it)
-        unitsStr += to_string(*it) + " ";
-    Logger::debug(unitsStr.c_str());
+    for (unsigned unit = 0; unit < 256; ++unit)
+        units.push_back(static_cast<uint8_t>(unit));
 
     excluded = getExcluded();
-};
-
-Finder::~Finder()
-{
-    delete units;
-    delete excluded;
 }
 
 /**
- * @brief Find a driver which enable the ir emitter
+ * @brief Find a driver which enable the ir emitter(s)
  *
- * @return the driver if success otherwise nullptr
+ * @return a vector containing the driver(s),
+ * empty if the configuration failed
  */
-Driver **Finder::find()
+unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
 {
-    Driver **drivers = new Driver *[emitters];
-    unsigned configuredEmitters = 0;
+    auto drivers = make_unique<vector<unique_ptr<Driver>>>();
 
-    for (const uint8_t unit : *units)
-        for (int __selector = 0; __selector < 256; ++__selector)
+    for (const uint8_t unit : units)
+        for (unsigned __selector = 0; __selector < 256; ++__selector)
         {
-            const uint8_t selector = (uint8_t)__selector; // safe: 0 <= __selector <= 255
+            const uint8_t selector = static_cast<uint8_t>(__selector); // safe: 0 <= __selector <= 255
             if (isExcluded(unit, selector))
                 continue;
             try
             {
                 CameraInstruction instruction(camera, unit, selector);
-                CameraInstruction initInstruction = instruction; // copy for reset later
+                const CameraInstruction initInstruction = instruction; // copy for reset later
 
-                if (!instruction.trySetMinAsCur()) // if no min instruction exists
-                {
-                    if (instruction.hasNext()) // start from the next one
-                        instruction.next();
-                    else
-                        continue;
-                }
+                if (!instruction.setMinAsCur()) // if no min instruction exists
+                    if (!instruction.next())    // start from the next one
+                        continue;               // if no next, skip
 
                 unsigned negAnswerCounter = 0;
                 do
                 {
-                    if (camera.apply(instruction))
+                    if (camera.apply(instruction) && camera.isEmitterWorking())
                     {
-                        if (camera.isEmitterWorking())
-                        {
-                            drivers[configuredEmitters++] = createDriverFromInstruction(instruction, unit, selector);
-                            if (configuredEmitters == emitters) // all emitters are configured
-                                return drivers;
-                        }
-                        else
-                            camera.apply(initInstruction); // reset
+                        drivers->push_back(createDriverFromInstruction(instruction, unit, selector));
+                        if (drivers->size() == emitters) // all emitters are configured
+                            return drivers;
                     }
                     ++negAnswerCounter;
-                } while (negAnswerCounter < negAnswerLimit && instruction.hasNext() && instruction.next());
+                    
+                    if (negAnswerCounter == negAnswerLimit - 1)
+                    {
+                        instruction.setMaxAsCur();
+                        continue;
+                    }
 
-                if (negAnswerCounter >= negAnswerLimit)
-                    Logger::debug("Negative answer limit exceeded, skipping the pattern.");
+                } while (negAnswerCounter < negAnswerLimit && instruction.next());
+
+                camera.apply(initInstruction);
+                Logger::debug("");
             }
             catch (CameraInstructionException &e)
             {
@@ -220,6 +159,5 @@ Driver **Finder::find()
             }
         }
 
-    delete[] drivers;
-    return nullptr;
+    return drivers;
 }

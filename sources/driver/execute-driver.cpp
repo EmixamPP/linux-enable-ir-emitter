@@ -1,8 +1,10 @@
+#include <memory>
 #include <iostream>
 using namespace std;
 
 #include "driver.hpp"
-#include "camera.hpp"
+#include "../camera/camera.hpp"
+#include "../camera/camerainstruction.hpp"
 
 #define EXIT_FD_ERROR 126;
 
@@ -20,12 +22,12 @@ using namespace std;
  */
 int main(int, const char **argv)
 {   
-    const Driver *driver = readDriver(argv[1]);
+    const unique_ptr<Driver> driver = Driver::readDriver(argv[1]);
     bool result;
     try
     {
         Camera camera(driver->device);
-        CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control, driver->size);
+        CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control);
         result = camera.apply(instruction);
     }
     catch (CameraException &e)
@@ -34,6 +36,5 @@ int main(int, const char **argv)
         return EXIT_FD_ERROR;
     }
 
-    delete driver;
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

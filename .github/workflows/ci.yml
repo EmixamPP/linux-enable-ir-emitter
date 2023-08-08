@@ -21,9 +21,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y g++ meson pkg-config curl clang-tidy
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config clang-tidy libgtk-3-dev
           python -m pip install --upgrade pip
-          python -m pip install pyright
+          python -m pip install meson pyright
       
       - name: Cache OpenCV dependency
         id: cache-opencv
@@ -61,11 +61,12 @@ jobs:
       - name: Create tarball
         run: |
           DESTDIR=install_dir meson install -C build
-          tar -czvf build/linux-enable-ir-emitter_x86-64.tar.gz -C build/install_dir .
+          sudo chown -R root:root build/install_dir
+          tar -czvf build/linux-enable-ir-emitter.x86-64.tar.gz -C build/install_dir .
   
       - name: Upload tarball
         uses: actions/upload-artifact@v3
         with:
-          name: linux-enable-ir-emitter_x86-64.tar.gz
-          path: build/linux-enable-ir-emitter_x86-64.tar.gz
+          name: linux-enable-ir-emitter.x86-64.tar.gz
+          path: build/linux-enable-ir-emitter.x86-64.tar.gz
           if-no-files-found: error

@@ -7,11 +7,10 @@ assignees: ''
 
 ---
 
-<!--- Please look at the wiki before open an issue -->
-<!--- https://github.com/EmixamPP/linux-enable-ir-emitter/wiki -->
+<!--- Please look at the docs before open an issue -->
+<!--- https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md -->
 
-**Ouput of `linux-enable-ir-emitter -v -d /dev/videoX configure`**
-<!-- replace /dev/videoX with your device (/dev/video2 for default)-->
+**Ouput of `linux-enable-ir-emitter -v configure`**
 <details><summary>configure command output</summary>
 
 ```
@@ -25,13 +24,18 @@ paste here
 ```
 
 **Ouput of `v4l2-ctl -d /dev/videoX --list-formats-ext`**
-<!-- replace /dev/videoX with your device (/dev/video2 for default)-->
+<!-- replace /dev/videoX for each device shown by the previous command-->
 <details><summary>v4l2 device output</summary>
 
 ```
 paste here
 ```
 </details>
+
+**Output of `ls -l /dev/v4l/by-path`**
+```
+paste here
+```
 
 **Give more information if you have**
 <!-- describe here if you have -->

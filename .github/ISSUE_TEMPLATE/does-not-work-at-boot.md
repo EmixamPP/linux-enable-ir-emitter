@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-<!--- Please look at the wiki before open an issue -->
-<!--- https://github.com/EmixamPP/linux-enable-ir-emitter/wiki -->
+<!--- Please look at the docs before open an issue -->
+<!--- https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md -->
 
 **Output of `linux-enable-ir-emitter boot status`**
 ```
