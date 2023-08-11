@@ -5,6 +5,7 @@ env:
   ZLIB_VERSION: "1.2.13"
 
 runs:
+  using: composite
   steps:
     - name: Check cache
       id: cache
