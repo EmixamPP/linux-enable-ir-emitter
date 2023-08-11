@@ -5,11 +5,11 @@ env:
   ZLIB_VERSION: "1.2.13"
 
 runs:
-  using: 'node16'
+  using: composite
   steps:
     - name: Check cache
       id: cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: opencv_build
         key: opencv-${{ env.OPENCV_VERSION }}
