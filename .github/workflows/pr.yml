@@ -5,22 +5,16 @@ on:
   
 jobs:
   py-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Python linting
-        uses: ./.github/workflows/py-lint.yml
+    name: Python linting
+    uses: ./.github/workflows/py-lint.yml
   
   cpp-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: C++ linting
-        uses: ./.github/workflows/cpp-lint.yml
+    name: C++ linting
+    uses: ./.github/workflows/cpp-lint.yml
 
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: ./.github/workflows/build.yml
+    name: Build
+    uses: ./.github/workflows/build.yml
   
   comment:
     needs: 
