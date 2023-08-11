@@ -58,8 +58,8 @@ jobs:
           
       - name: Install OpenCV
         run: |
-          ninja install -C opencv_build/opencv
-          ninja install -C opencv_build/zlib
+          sudo ninja install -C opencv_build/opencv
+          sudo ninja install -C opencv_build/zlib
 
       - name: Setup build
         run: |
