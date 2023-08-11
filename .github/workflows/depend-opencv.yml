@@ -1,11 +1,11 @@
-name: OpenCV dependency
+name: Update OpenCV
 on:
   workflow_dispatch:
   schedule:
     - cron:  '0 7 * * *'
 
 jobs:
-  depend-opencv:
+  update-opencv:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -21,7 +21,8 @@ jobs:
 
       - name: Modify files if new version
         run: |
-            sed -E -i "s@(OPENCV_TINY_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/{ci,arm}.yml
+            sed -E -i "s@(OPENCV_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/actions/install-opencv.yml
+            sed -E -i "s@(OPENCV_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/arm.yml
             sed -E -i "s@(curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s )[0-9]+\.[0-9]+\.[0-9]+(.*)@\1$VERSION\2@" README.md
             
       - name: Create PR if new version
@@ -39,4 +40,5 @@ jobs:
             author: github-actions[bot] <noreply@github.com>
             assignees: "EmixamPP"
             delete-branch: true
+      
      

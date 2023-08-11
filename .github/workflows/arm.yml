@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 env: 
-  OPENCV_TINY_VERSION: "4.8.0"
+  OPENCV_VERSION: "4.8.0"
 
 jobs:
   build:
@@ -17,23 +17,23 @@ jobs:
       id: cache-opencv
       uses: actions/cache@v3
       with:
-        path: opencv-tiny
-        key: opencv-tiny-${{ env.OPENCV_TINY_VERSION }}_aarch64
+        path: opencv_build
+        key: opencv-${{ env.OPENCV_VERSION }}_aarch64
 
     - name: Build + Create tarball
       uses: uraimo/run-on-arch-action@v2
       with:
         env: |
-          OPENCV_TINY_VERSION: ${{ env.OPENCV_TINY_VERSION }}
+          OPENCV_VERSION: ${{ env.OPENCV_VERSION }}
         arch: aarch64
         distro: ubuntu_latest
         githubToken: ${{ github.token }}
         setup: |
           mkdir -p "${PWD}/artifacts"
-          mkdir -p "${PWD}/opencv-tiny"
+          mkdir -p "${PWD}/opencv_build"
         dockerRunArgs: |
           --volume "${PWD}/artifacts:/artifacts"
-          --volume "${PWD}/opencv-tiny:/opencv-tiny"
+          --volume "${PWD}/opencv_build:/opencv_build"
         install: |
           apt-get update -y
           apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build g++ pkg-config curl cmake libgtk-3-dev
@@ -41,9 +41,9 @@ jobs:
           python3 -m pip install meson
 
         run: |
-          [ "$(ls /opencv-tiny)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s ${OPENCV_TINY_VERSION} /opencv-tiny
+          [ "$(ls /opencv_build)" ] || curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s ${OPENCV_TINY_VERSION} /opencv-tiny
           
-          meson setup build --pkg-config-path=$(find opencv-tiny -name pkgconfig | tr '\n' ':')
+          meson setup build
           meson configure build -Dlibdir=lib64
           meson compile -C build
 

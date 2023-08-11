@@ -1,0 +1,45 @@
+name: "Build and Install Static OpenCV"
+
+env: 
+  OPENCV_VERSION: "4.8.0"
+  ZLIB_VERSION: "1.2.13"
+
+runs:
+  steps:
+    - name: Check cache
+      id: cache
+      uses: actions/cache@v2
+      with:
+        path: opencv_build
+        key: opencv-${{ env.OPENCV_VERSION }}
+
+    - name: Build
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        sudo apt-get install -y curl g++ cmake ninja-build libgtk-3-dev
+
+        mkdir -p opencv_build/{opencv,zlib}
+
+        # OpenCV
+        curl -L "https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz" | tar -xz
+        cmake -B opencv_build/opencv -S "opencv-${OPENCV_VERSION}" -GNinja \
+            -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
+            -DBUILD_LIST=videoio -WITH_V4L=ON \
+            -DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_IMGCODEC_HDR=OFF -DWITH_IMGCODEC_SUNRASTER=OFF -DWITH_IMGCODEC_PXM=OFF -DWITH_IMGCODEC_PFM=OFF \
+            -DWITH_FFMPEG=FALSE -DWITH_GSTREAMER=OFF -DWITH_1394=OFF -DDVIDEOIO_ENABLE_PLUGINS=OFF -DWITH_ANDROID_MEDIANDK=OFF \
+            -DWITH_GTK=OFF -DHIGHGUI_ENABLE_PLUGINS=OFF -DWITH_VTK=OFF \
+            -DWITH_PROTOBUF=OFF -DOPENCV_DNN_OPENCL=OFF \
+            -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
+            -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
+        ninja -C opencv_build/opencv
+        
+        # zlib
+        curl -L "https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz" | tar -xz
+        cmake -B opencv_build/zlib -S "zlib-${ZLIB_VERSION}" -GNinja
+        ninja -C opencv_build/zlib
+        
+    - name: Install
+      run: |
+        ninja install -C opencv_build/opencv
+        ninja install -C opencv_build/zlib
+

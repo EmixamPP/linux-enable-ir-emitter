@@ -1,11 +1,51 @@
-name: Pull Request
+name: "Pull Request"
 
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
   
-jobs:         
-  ci:
-    uses: ./.github/workflows/ci.yml
+jobs:
+  py-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Python linting
+        uses: ./.github/workflows/py-lint.yml
+  
+  cpp-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: C++ linting
+        uses: ./.github/workflows/cpp-lint.yml
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: ./.github/workflows/build.yml
+  
+  comment:
+    needs: 
+      - py-lint
+      - cpp-lint
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create/Update comment
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: bot_comment
+          mode: recreate
+          GITHUB_TOKEN: ${{ github.token }}
+          message: |
+            # Commit ${{ github.event.pull_request.head.sha }}
+
+            ## CI results:
+            ${{ needs.py-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} Python Linting
+
+            ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} C++ Linting
+
+            ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
+
+            ## Builds:
+            If the building step was successfull, you can download the tarball you want in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            Unzip and then execute `sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter*.tar.gz`. 
