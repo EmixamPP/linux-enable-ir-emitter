@@ -15,6 +15,7 @@ runs:
 
     - name: Build
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
       run: |
         sudo apt-get install -y curl g++ cmake ninja-build libgtk-3-dev
 
@@ -39,6 +40,7 @@ runs:
         ninja -C opencv_build/zlib
         
     - name: Install
+      shell: bash
       run: |
         ninja install -C opencv_build/opencv
         ninja install -C opencv_build/zlib
