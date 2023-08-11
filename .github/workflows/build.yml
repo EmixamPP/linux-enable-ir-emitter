@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    name: Building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,7 +24,7 @@ jobs:
           python -m pip install meson
       
       - name: Install OpenCV
-        uses: ./.github/actions/install-opencv.yml
+        uses: ./.github/actions/opencv
 
       - name: Setup build
         run: |

@@ -5,26 +5,24 @@ on:
   
 jobs:
   py-lint:
-    name: Python linting
     uses: ./.github/workflows/py-lint.yml
   
   cpp-lint:
-    name: C++ linting
     uses: ./.github/workflows/cpp-lint.yml
 
   build:
-    name: Build
     uses: ./.github/workflows/build.yml
   
   comment:
+    name: Create/Update bot comment
     needs: 
       - py-lint
       - cpp-lint
       - build
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - name: Create/Update comment
-        uses: thollander/actions-comment-pull-request@v2
+      - uses: thollander/actions-comment-pull-request@v2
         with:
           comment_tag: bot_comment
           mode: recreate

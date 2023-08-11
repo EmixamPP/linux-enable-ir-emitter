@@ -8,6 +8,7 @@ build
 # OpenCV
 opencv*
 !sources/camera/opencv.hpp
+!.github/actions/opencv
 zlib*
 
 # Others

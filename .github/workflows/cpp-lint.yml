@@ -6,13 +6,14 @@ on:
 
 jobs:
   lint:
+    name: C++ linting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ clang-tidy libgtk-3-dev libopencv-video-dev libopencv-video-dev
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config clang-tidy libopencv-dev
           python -m pip install --upgrade pip
           python -m pip install meson
 
