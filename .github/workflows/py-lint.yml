@@ -3,11 +3,16 @@ name: "Python Lint"
 on:
   workflow_dispatch:
   workflow_call:
+    outputs:
+      id: 
+        value: ${{ jobs.lint.outputs.id }}
 
 jobs:
   lint:
     name: Python linting
     runs-on: ubuntu-latest
+    outputs:
+      id: ${{ job.container.id }}
     steps:
       - uses: actions/checkout@v3
 
@@ -24,5 +29,3 @@ jobs:
       - name: Lint
         run: |
           pyright $(git ls-files '*.py')
-    outputs:
-      id: ${{ job.container.id }}

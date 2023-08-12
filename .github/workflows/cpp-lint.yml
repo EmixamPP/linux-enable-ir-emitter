@@ -3,11 +3,16 @@ name: "C++ Lint"
 on:
   workflow_dispatch:
   workflow_call:
+    outputs:
+      id: 
+        value: ${{ jobs.lint.outputs.id }}
 
 jobs:
   lint:
     name: C++ linting
     runs-on: ubuntu-latest
+    outputs:
+      id: ${{ job.container.id }}
     steps:
       - uses: actions/checkout@v3
 
@@ -24,6 +29,4 @@ jobs:
       - name: Lint
         run: |
           ninja clang-tidy -C build
-    outputs:
-      id: ${{ job.container.id }}
       
