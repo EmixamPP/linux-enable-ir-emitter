@@ -74,7 +74,7 @@ jobs:
         run: |
           DESTDIR=install_dir_systemd meson install -C build
           sudo chown -R root:root build/install_dir_systemd
-          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir .
+          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir_systemd .
       
       - name: Upload tarball - Systemd
         uses: actions/upload-artifact@v3
@@ -91,7 +91,7 @@ jobs:
         run: |
           DESTDIR=install_dir_openrc meson install -C build
           sudo chown -R root:root build/install_dir_openrc
-          tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir .
+          tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir_openrc .
       
       - name: Upload tarball - OpenRC
         uses: actions/upload-artifact@v3

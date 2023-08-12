@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/build.yml
   
   comment:
-    name: Create/Update bot comment
+    name: Bot comment
     needs: 
       - py-lint
       - cpp-lint
@@ -38,6 +38,6 @@ jobs:
             ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
 
             ## Builds:
-            If the building step was successfull, you can download the tarball you want in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            If the building step was successfull, you can download the appropriate tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
 
             Unzip and then execute `sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter*.tar.gz`. 
