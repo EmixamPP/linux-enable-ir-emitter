@@ -38,7 +38,7 @@ jobs:
         run: |
           sudo apt-get install -y curl
           mkdir -p opencv/build
-          curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz
+          curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz -C opencv
           cmake -B opencv/build -S opencv/opencv-${{ env.OPENCV_VERSION }} -GNinja \
               -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
               -DBUILD_LIST=videoio,highgui -WITH_V4L=ON -DWITH_GTK=ON \
