@@ -28,16 +28,17 @@ jobs:
           mode: recreate
           GITHUB_TOKEN: ${{ github.token }}
           message: |
-            ## Commit ${{ github.event.pull_request.head.sha }}
+            ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
-            ## CI results:
+            ## :mag: Linting results:
             ${{ needs.py-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} Python Linting
 
             ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} C++ Linting
 
+            ## :hammer_and_wrench: Building result:
             ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
 
-            ## Builds:
+            ## :package: Tarballs:
             If the building step was successfull, you can download the appropriate tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
 
             Unzip and then execute `sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter*.tar.gz`. 
