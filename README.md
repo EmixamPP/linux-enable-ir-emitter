@@ -7,11 +7,12 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 ## Installation
 Download the latest `linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
+sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter*.tar.gz
 ```
 
 We also support OpenRC, just download the `.openrc` variant.
 
+### Uninstallation
 It can be uninstalled by executing (remove the last line to keep the emitter configuration):
 ```
 sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
@@ -46,14 +47,10 @@ The software supports the configuration of multiple devices, execute the configu
 ## Manual build
 See [docs](docs/requirements.md) for specification concerning build requirements.
 
-Clone the git:
+Setup build:
 ```
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
-```
-
-Setup build:
-```
 meson setup build
 ```
 
@@ -68,4 +65,4 @@ meson compile -C build
 meson install -C build
 ```
 
-You can uninstall the software by executing `sudo ninja uninstall -C build`. 
+You can uninstall the tool by executing `sudo ninja uninstall -C build`. 
