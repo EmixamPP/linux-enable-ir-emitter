@@ -6,7 +6,6 @@ on:
 
 env: 
   OPENCV_VERSION: "4.8.0"
-  ZLIB_VERSION: "1.2.13"
 
 jobs:
   build:
@@ -23,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev zlib1g-dev
           python -m pip install --upgrade pip
           python -m pip install meson
       
@@ -38,10 +37,9 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           sudo apt-get install -y curl cmake
-          mkdir -p opencv_build/{opencv,zlib}
-
+          mkdir opencv_build
           curl -L "https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz" | tar -xz
-          cmake -B opencv_build/opencv -S "opencv-${{ env.OPENCV_VERSION }}" -GNinja \
+          cmake -B opencv_build -S "opencv-${{ env.OPENCV_VERSION }}" -GNinja \
               -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
               -DBUILD_LIST=videoio,highgui -WITH_V4L=ON -DWITH_GTK=ON \
               -DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_IMGCODEC_HDR=OFF -DWITH_IMGCODEC_SUNRASTER=OFF -DWITH_IMGCODEC_PXM=OFF -DWITH_IMGCODEC_PFM=OFF \
@@ -50,16 +48,11 @@ jobs:
               -DWITH_PROTOBUF=OFF -DOPENCV_DNN_OPENCL=OFF \
               -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
               -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
-          ninja -C opencv_build/opencv
-          
-          curl -L "https://github.com/madler/zlib/archive/refs/tags/v${{ env.ZLIB_VERSION }}.tar.gz" | tar -xz
-          cmake -B opencv_build/zlib -S "zlib-${{ env.ZLIB_VERSION }}" -GNinja
-          ninja -C opencv_build/zlib
+          ninja -C opencv_build
           
       - name: Install OpenCV
         run: |
-          sudo ninja install -C opencv_build/opencv
-          sudo ninja install -C opencv_build/zlib
+          sudo ninja install -C opencv_build
 
       - name: Setup build
         run: |
@@ -73,7 +66,6 @@ jobs:
       - name: Create tarball - Systemd
         run: |
           DESTDIR=install_dir_systemd meson install -C build
-          sudo chown -R root:root build/install_dir_systemd
           tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir_systemd .
       
       - name: Upload tarball - Systemd
@@ -90,7 +82,6 @@ jobs:
       - name: Create tarball - OpenRC
         run: |
           DESTDIR=install_dir_openrc meson install -C build
-          sudo chown -R root:root build/install_dir_openrc
           tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir_openrc .
       
       - name: Upload tarball - OpenRC
