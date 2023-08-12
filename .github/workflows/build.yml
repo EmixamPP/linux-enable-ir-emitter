@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev zlib1g-dev
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev zlib1g-dev cmake
           python -m pip install --upgrade pip
           python -m pip install meson
       
@@ -30,16 +30,16 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
-          path: opencv_build
+          path: opencv
           key: opencv-${{ env.OPENCV_VERSION }}
 
       - name: Build tiny static OpenCV
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          sudo apt-get install -y curl cmake
-          mkdir opencv_build
-          curl -L "https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz" | tar -xz
-          cmake -B opencv_build -S "opencv-${{ env.OPENCV_VERSION }}" -GNinja \
+          sudo apt-get install -y curl
+          mkdir -p opencv/build
+          curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz
+          cmake -B opencv/build -S opencv/opencv-${{ env.OPENCV_VERSION }} -GNinja \
               -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
               -DBUILD_LIST=videoio,highgui -WITH_V4L=ON -DWITH_GTK=ON \
               -DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_IMGCODEC_HDR=OFF -DWITH_IMGCODEC_SUNRASTER=OFF -DWITH_IMGCODEC_PXM=OFF -DWITH_IMGCODEC_PFM=OFF \
@@ -48,11 +48,11 @@ jobs:
               -DWITH_PROTOBUF=OFF -DOPENCV_DNN_OPENCL=OFF \
               -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
               -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
-          ninja -C opencv_build
+          ninja -C opencv/build
           
       - name: Install OpenCV
         run: |
-          sudo ninja install -C opencv_build
+          sudo ninja install -C opencv/build
 
       - name: Setup build
         run: |
