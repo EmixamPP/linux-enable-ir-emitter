@@ -24,6 +24,4 @@ jobs:
       - name: Lint
         run: |
           ninja clang-tidy -C build
-    outputs:
-      id: ${{ job.container.id }}
       

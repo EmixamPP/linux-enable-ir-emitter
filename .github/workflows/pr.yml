@@ -5,7 +5,7 @@ on:
   
 jobs:
   py-lint:
-    uses: ./.github/workflows/py-lint.yml      
+    uses: ./.github/workflows/py-lint.yml
   
   cpp-lint:
     uses: ./.github/workflows/cpp-lint.yml
@@ -31,12 +31,12 @@ jobs:
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
             ## :mag: Linting results:
-            ${{ needs.py-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} [Python Linting](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ needs.py-lint.outputs.id }})
+            ${{ needs.py-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} Python Linting
 
-            ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} [C++ Linting](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ needs.cpp-lint.outputs.id }})
+            ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} C++ Linting
 
             ## :hammer_and_wrench: Building result:
-            ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} [Building](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ needs.build.outputs.id }})
+            ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
 
             ## :package: Tarballs:
             If the building step was successfull, you can download the appropriate tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
