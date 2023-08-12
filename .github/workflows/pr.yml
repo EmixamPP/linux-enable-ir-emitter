@@ -30,6 +30,8 @@ jobs:
           message: |
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
+            ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
             ## :mag: Linting results:
             ${{ needs.py-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} Python Linting
 
