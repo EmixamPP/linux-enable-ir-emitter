@@ -24,4 +24,5 @@ jobs:
       - name: Lint
         run: |
           pyright $(git ls-files '*.py')
-      
+    outputs:
+      id: ${{ job.container.id }}
