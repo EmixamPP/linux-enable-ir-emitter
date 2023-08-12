@@ -6,9 +6,13 @@
 * `glibc`, `libstdc++`, `libgcc`, `gtk3`
 
 ## Manual build requirements
-* `meson >= 1.0.0`, `ninja-build`, `pkg-config`, `gtk3 devel`
+* `meson >= 1.0.0`
+* `ninja-build`
+* `pkg-config`
+* `gtk3 devel`
+* `opencv devel`
 * `cmake` only if you build OpenCV
-* `g++`, `libstdc++-devel` (for `C++17`)
+* `g++` (for `C++17`)
 * `curl`
 
 ## Hardware requirements

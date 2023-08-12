@@ -5,7 +5,8 @@ on:
   workflow_call:
 
 jobs:
-  py-lint:
+  lint:
+    name: Python linting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

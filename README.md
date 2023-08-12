@@ -5,13 +5,14 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 `linux-enable-ir-emitter` can automatically generate a lightweight driver (located in user space) for almost any (UVC) infrared emitter.
 
 ## Installation
-Directly refer to the manual buid [section](#manual-build) if your boot service manager is not Systemd but OpenRC. Stay here if you don't know. We support ARM architectures, just download the `aarch64` variant.
- 
-Download the latest `linux-enable-ir-emitter-x.x.x.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+Download the latest `linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
 ```
-sudo tar -C / -h -xzf linux-enable-ir-emitter-*.tar.gz
+sudo tar -C / --no-same-owner -h -xzf linux-enable-ir-emitter*.tar.gz
 ```
 
+We also support OpenRC, just download the `.openrc` variant.
+
+### Uninstallation
 It can be uninstalled by executing (remove the last line to keep the emitter configuration):
 ```
 sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
@@ -46,20 +47,11 @@ The software supports the configuration of multiple devices, execute the configu
 ## Manual build
 See [docs](docs/requirements.md) for specification concerning build requirements.
 
-Clone the git:
+Setup build:
 ```
 git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
 cd linux-enable-ir-emitter
-```
-
-Build my minimal version of OpenCV that will be statically linked. This is not required, you can use the shared opencv library of your distro. But it is recommanded in order to do not have issues after distro updates:
-```
-curl https://raw.githubusercontent.com/EmixamPP/opencv-tiny/main/build.sh | bash -s 4.8.0 "${PWD}/opencv-tiny"
-```
-
-Setup build (remove `--pkg-config-path=...` if you skipped the previous step):
-```
-meson setup build --pkg-config-path=$(find opencv-tiny -name pkgconfig | tr '\n' ':')
+meson setup build
 ```
 
 Only if you do not have Systemd but OpenRC:
@@ -67,9 +59,10 @@ Only if you do not have Systemd but OpenRC:
 meson configure build -Dboot_service=openrc
 ```
 
-Build and install linux-enable-ir-emitter:
+Compile and install:
 ```
-sudo meson install -C build
+meson compile -C build
+meson install -C build
 ```
 
-You can uninstall the software by executing `sudo ninja uninstall -C build`. 
+You can uninstall the tool by executing `sudo ninja uninstall -C build`. 

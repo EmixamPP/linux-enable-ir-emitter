@@ -4,8 +4,12 @@ on:
   workflow_dispatch:
   workflow_call:
 
+env: 
+  OPENCV_VERSION: "4.8.0"
+
 jobs:
   build:
+    name: Building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -18,12 +22,37 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev zlib1g-dev cmake
           python -m pip install --upgrade pip
           python -m pip install meson
       
+      - name: Cache OpenCV
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: opencv
+          key: opencv-${{ env.OPENCV_VERSION }}
+
+      - name: Build tiny static OpenCV
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get install -y curl
+          mkdir -p opencv/build
+          curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz -C opencv
+          cmake -B opencv/build -S opencv/opencv-${{ env.OPENCV_VERSION }} -GNinja \
+              -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
+              -DBUILD_LIST=videoio,highgui -WITH_V4L=ON -DWITH_GTK=ON \
+              -DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_IMGCODEC_HDR=OFF -DWITH_IMGCODEC_SUNRASTER=OFF -DWITH_IMGCODEC_PXM=OFF -DWITH_IMGCODEC_PFM=OFF \
+              -DWITH_FFMPEG=FALSE -DWITH_GSTREAMER=OFF -DWITH_1394=OFF -DDVIDEOIO_ENABLE_PLUGINS=OFF -DWITH_ANDROID_MEDIANDK=OFF \
+              -DHIGHGUI_ENABLE_PLUGINS=OFF -DWITH_VTK=OFF \
+              -DWITH_PROTOBUF=OFF -DOPENCV_DNN_OPENCL=OFF \
+              -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
+              -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
+          ninja -C opencv/build
+          
       - name: Install OpenCV
-        uses: ./.github/actions/install-opencv.yml
+        run: |
+          sudo ninja install -C opencv/build
 
       - name: Setup build
         run: |
@@ -37,8 +66,7 @@ jobs:
       - name: Create tarball - Systemd
         run: |
           DESTDIR=install_dir_systemd meson install -C build
-          sudo chown -R root:root build/install_dir_systemd
-          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir .
+          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir_systemd .
       
       - name: Upload tarball - Systemd
         uses: actions/upload-artifact@v3
@@ -54,8 +82,7 @@ jobs:
       - name: Create tarball - OpenRC
         run: |
           DESTDIR=install_dir_openrc meson install -C build
-          sudo chown -R root:root build/install_dir_openrc
-          tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir .
+          tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir_openrc .
       
       - name: Upload tarball - OpenRC
         uses: actions/upload-artifact@v3

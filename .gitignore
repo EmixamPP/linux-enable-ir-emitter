@@ -1,14 +1,12 @@
 # Python
-__pycache__
-env
+__pycache__/
+env/
 
 # Meson
-build
+build/
 
 # OpenCV
-opencv*
-!sources/camera/opencv.hpp
-zlib*
+opencv/
 
 # Others
-.vscode
+.vscode/
