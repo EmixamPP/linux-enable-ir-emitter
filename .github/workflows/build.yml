@@ -73,6 +73,7 @@ jobs:
         with:
           name: linux-enable-ir-emitter.systemd.x86-64.tar.gz
           path: build/linux-enable-ir-emitter.systemd.x86-64.tar.gz
+          if-no-files-found: error
       
       - name: Compile - OpenRC
         run: |
@@ -89,5 +90,6 @@ jobs:
         with:
           name: linux-enable-ir-emitter.openrc.x86-64.tar.gz
           path: build/linux-enable-ir-emitter.openrc.x86-64.tar.gz
+          if-no-files-found: error
   
 

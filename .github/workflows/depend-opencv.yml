@@ -19,9 +19,9 @@ jobs:
             VERSION=$(gh api "/repos/$OWNER/$REPO/releases/latest" --jq ".tag_name")
             echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
-      - name: Modify file if new version
+      - name: Modify files if new version
         run: |
-            sed -E -i "s@(OPENCV_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/build.yml
+            sed -E -i "s@(OPENCV_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/{,arm-}build.yml
             
       - name: Create PR if new version
         uses: peter-evans/create-pull-request@v5

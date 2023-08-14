@@ -1,0 +1,88 @@
+name: Build for aarch64
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env: 
+  OPENCV_VERSION: "4.8.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Cache OpenCV
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: opencv
+        key: opencv-${{ env.OPENCV_VERSION }}_aarch64
+
+    - name: Build + Create tarball
+      uses: uraimo/run-on-arch-action@v2
+      with:
+        env: |
+          OPENCV_VERSION: ${{ env.OPENCV_VERSION }}
+        arch: aarch64
+        distro: ubuntu_latest
+        githubToken: ${{ github.token }}
+        setup: |
+          mkdir -p "${PWD}/build"
+          mkdir -p "${PWD}/opencv"
+        dockerRunArgs: |
+          --volume "${PWD}/build:/build"
+          --volume "${PWD}/opencv:/opencv"
+        install: |
+          apt-get update -y
+          apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev zlib1g-dev cmake curl
+          python3 -m pip install --upgrade pip
+          python3 -m pip install meson
+        run: |
+            cd /
+
+            if [ -z "$(ls opencv)" ] ; then
+                curl -L https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz | tar -xz -C opencv
+                cmake -B opencv/build -S opencv/opencv-${OPENCV_VERSION} -GNinja \
+                    -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
+                    -DBUILD_LIST=videoio,highgui -WITH_V4L=ON -DWITH_GTK=ON \
+                    -DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_IMGCODEC_HDR=OFF -DWITH_IMGCODEC_SUNRASTER=OFF -DWITH_IMGCODEC_PXM=OFF -DWITH_IMGCODEC_PFM=OFF \
+                    -DWITH_FFMPEG=FALSE -DWITH_GSTREAMER=OFF -DWITH_1394=OFF -DDVIDEOIO_ENABLE_PLUGINS=OFF -DWITH_ANDROID_MEDIANDK=OFF \
+                    -DHIGHGUI_ENABLE_PLUGINS=OFF -DWITH_VTK=OFF \
+                    -DWITH_PROTOBUF=OFF -DOPENCV_DNN_OPENCL=OFF \
+                    -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
+                    -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
+                ninja -C opencv/build
+            fi
+
+            sudo ninja install -C opencv/build
+
+            meson setup build
+            meson configure build -Dlibdir=lib64 
+
+            meson compile -C build
+
+            DESTDIR=install_dir_systemd meson install -C build
+            tar -czvf build/linux-enable-ir-emitter.systemd.aarch64.tar.gz -C build/install_dir_systemd .
+        
+            meson configure build -Dboot_service=openrc
+
+            meson compile -C build
+            
+            DESTDIR=install_dir_openrc meson install -C build
+            tar -czvf build/linux-enable-ir-emitter.openrc.aarch64.tar.gz -C build/install_dir_openrc .
+
+    - name: Upload tarball - Systemd
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-enable-ir-emitter.systemd.aarch64.tar.gz
+        path: build/linux-enable-ir-emitter.systemd.aarch64.tar.gz
+        if-no-files-found: error
+    
+    - name: Upload tarball - OpenRC
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-enable-ir-emitter.openrc.aarch64.tar.gz
+        path: build/linux-enable-ir-emitter.openrc.aarch64.tar.gz
+        if-no-files-found: error
