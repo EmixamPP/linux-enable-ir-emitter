@@ -15,7 +15,7 @@ def configure(device: str | None, manual: bool, emitters: int, neg_answer_limit:
         device (str | None): path to the infrared camera, None for automatic detection
         manual (bool): true for enabling the manual configuration
         emitters (int): number of emitters on the device
-        neg_answer_limit (int): after k negative answer the pattern will be skiped, use 256 for unlimited
+        neg_answer_limit (int): number of negative answer before the pattern is skiped. Use -1 for unlimited
     """
     logging.info("Ensure to not use the camera during the execution.")
     logging.info("Warning to do not kill the process !")

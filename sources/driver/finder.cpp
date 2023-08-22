@@ -119,14 +119,14 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
             {
                 CameraInstruction instruction(camera, unit, selector);
                 const CameraInstruction initInstruction = instruction; // copy for reset later
-
-                if (!instruction.setMinAsCur()) // if no min instruction exists
-                    if (!instruction.next())    // start from the next one
-                        continue;               // if no next, skip
-
+                
+                instruction.setMinAsCur();
                 unsigned negAnswerCounter = 0;
-                do
-                {
+                while (negAnswerCounter < negAnswerLimit && instruction.next())
+                {   
+                    if (negAnswerCounter == negAnswerLimit - 1)
+                        instruction.setMaxAsCur();
+
                     if (camera.apply(instruction) && camera.isEmitterWorking())
                     {
                         drivers->push_back(createDriverFromInstruction(instruction, unit, selector));
@@ -134,14 +134,7 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
                             return drivers;
                     }
                     ++negAnswerCounter;
-                    
-                    if (negAnswerCounter == negAnswerLimit - 1)
-                    {
-                        instruction.setMaxAsCur();
-                        continue;
-                    }
-
-                } while (negAnswerCounter < negAnswerLimit && instruction.next());
+                }
 
                 camera.apply(initInstruction);
                 Logger::debug("");
