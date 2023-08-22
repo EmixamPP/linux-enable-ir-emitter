@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '5.0.0', 
+    version: '5.0.2', 
     license: 'MIT',
     default_options: [
         'prefix=/usr',
@@ -118,7 +118,6 @@ install_data(
 
 install_data(
     'LICENSE',
-    'README.md',
     install_dir : lib_dir,
 )
 

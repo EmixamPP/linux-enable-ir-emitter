@@ -91,22 +91,25 @@ CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vecto
  * false if the maximum control has already been set
  */
 bool CameraInstruction::next() noexcept
-{
+{   
+    if (curCtrl == maxCtrl)
+        return false;
+        
     for (unsigned i = 0; i < curCtrl.size(); ++i)
     {
         uint16_t nextCtrli = static_cast<uint16_t>(curCtrl[i] + 1);
         if (nextCtrli > maxCtrl[i])
             curCtrl[i] = minCtrl[i]; // simulate "overflow"
-        else 
+        else
         {
             curCtrl[i] = static_cast<uint8_t>(nextCtrli);
             logDebugCtrl("new current:", curCtrl);
             return true;
-        }   
+        }
     }
 
+    // all are in overflow (should never arrive!)
     setMaxAsCur();
-
     return false;
 }
 
