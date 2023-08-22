@@ -67,8 +67,8 @@ if __name__ == "__main__":
         "-l",
         "--limit",
         metavar="<count>",
-        help="the number of negative answer before the pattern is skipped, by default is 5. Use -1 for unlimited",
-        default=[5],
+        help="the number of negative answer before the pattern is skipped, by default is 40. Use -1 for unlimited",
+        default=[40],
         type=int,
         nargs=1,
     )
