@@ -1,3 +1,6 @@
+# Wed Aug 23 2023 - 5.0.2
+- Minor search fix
+- Longer search by default
 # Tue Aug 8 2023 - 5.0.0
 - Automatic ir camera detection
 - Automatic ir emitter configuration
