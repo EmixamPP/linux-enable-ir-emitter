@@ -36,13 +36,13 @@ lib_exec_dir = get_option('libexecdir')  / meson.project_name()
 
 executable(
     'generate-driver', 
-    'sources/driver/generate-driver.cpp',
-    'sources/camera/camera.cpp',
-    'sources/camera/autocamera.cpp',
-    'sources/camera/camerainstruction.cpp',
-    'sources/driver/driver.cpp',
-    'sources/driver/finder.cpp',
-    'sources/utils/logger.cpp',
+    'driver/generate-driver.cpp',
+    'camera/camera.cpp',
+    'camera/autocamera.cpp',
+    'camera/camerainstruction.cpp',
+    'driver/driver.cpp',
+    'driver/finder.cpp',
+    'utils/logger.cpp',
     dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
@@ -50,12 +50,12 @@ executable(
 
 executable(
     'execute-driver', 
-    'sources/driver/execute-driver.cpp',
-    'sources/camera/camera.cpp',
-    'sources/camera/autocamera.cpp',
-    'sources/camera/camerainstruction.cpp',
-    'sources/driver/driver.cpp',
-    'sources/utils/logger.cpp',
+    'driver/execute-driver.cpp',
+    'camera/camera.cpp',
+    'camera/autocamera.cpp',
+    'camera/camerainstruction.cpp',
+    'driver/driver.cpp',
+    'utils/logger.cpp',
     dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
@@ -63,10 +63,10 @@ executable(
 
 executable(
     'is-ir-camera', 
-    'sources/camera/is-ir-camera.cpp',
-    'sources/camera/camera.cpp',
-    'sources/camera/camerainstruction.cpp',
-    'sources/utils/logger.cpp',
+    'camera/is-ir-camera.cpp',
+    'camera/camera.cpp',
+    'camera/camerainstruction.cpp',
+    'utils/logger.cpp',
     dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_exec_dir,
@@ -79,7 +79,7 @@ lib_dir = get_option('libdir') / meson.project_name()
 
 configure_version_data = configuration_data({'version': meson.project_version()})
 configure_file(
-    input : 'sources/linux-enable-ir-emitter.py',
+    input : 'linux-enable-ir-emitter.py',
     output : 'linux-enable-ir-emitter.py',
     configuration : configure_version_data,
     install: true,
@@ -103,7 +103,7 @@ elif boot_service == 'openrc'
     configure_paths_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter')
 endif
 configure_file(
-    input : 'sources/globals.py',
+    input : 'globals.py',
     output : 'globals.py',
     configuration : configure_paths_data,
     install: true,
@@ -111,8 +111,8 @@ configure_file(
 )
 
 install_data(
-    'sources/boot_service/__init__.py',
-    'sources/boot_service/base_boot_service.py',
+    'boot_service/__init__.py',
+    'boot_service/base_boot_service.py',
     install_dir : lib_dir / 'boot_service',
 )
 
@@ -122,11 +122,11 @@ install_data(
 )
 
 install_data(
-    'sources/command/__init__.py',
-    'sources/command/boot.py',
-    'sources/command/configure.py',
-    'sources/command/delete.py',
-    'sources/command/run.py',
+    'command/__init__.py',
+    'command/boot.py',
+    'command/configure.py',
+    'command/delete.py',
+    'command/run.py',
     install_dir : lib_dir / 'command',
 )
 
@@ -144,22 +144,22 @@ install_symlink(
 ##############
 if boot_service == 'systemd'
     install_data(
-        'sources/boot_service/systemd/__init__.py',
-        'sources/boot_service/systemd/systemd.py',
+        'boot_service/systemd/__init__.py',
+        'boot_service/systemd/systemd.py',
         install_dir : lib_dir / 'boot_service/systemd',
     )
     install_data(
-        'sources/boot_service/systemd/linux-enable-ir-emitter.service',
+        'boot_service/systemd/linux-enable-ir-emitter.service',
         install_dir : 'lib/systemd/system',
     )
 elif boot_service == 'openrc'
     install_data(
-        'sources/boot_service/openrc/__init__.py',
-        'sources/boot_service/openrc/openrc.py',
+        'boot_service/openrc/__init__.py',
+        'boot_service/openrc/openrc.py',
         install_dir : lib_dir / 'boot_service/openrc',
     )
     install_data(
-        'sources/boot_service/openrc/linux-enable-ir-emitter',
+        'boot_service/openrc/linux-enable-ir-emitter',
         install_dir : '/etc/init.d',
     )
 endif
@@ -176,6 +176,6 @@ install_subdir(
 # Shell completion
 ##################
 install_data(
-    'sources/autocomplete/linux-enable-ir-emitter',
+    'autocomplete/linux-enable-ir-emitter',
     install_dir : get_option('datadir') / 'bash-completion/completions',
 )
