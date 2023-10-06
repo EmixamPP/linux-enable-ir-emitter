@@ -60,6 +60,7 @@ def configure(device: str | None, manual: bool, emitters: int, neg_answer_limit:
 
     if exit_code != ExitCode.SUCCESS:
         logging.error("The configuration has failed.")
+        logging.error("Please retry in manual mode by adding the '-m' option.")
         logging.info("Do not hesitate to visit the GitHub !")
         logging.info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md")
     else:
