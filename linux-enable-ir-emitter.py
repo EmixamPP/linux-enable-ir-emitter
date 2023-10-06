@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "-V",
         "--version",
         action="version",
-        version="%(prog)s @version@\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s 5.0.2\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit",
     )
     parser.add_argument(
@@ -36,7 +36,6 @@ if __name__ == "__main__":
         "--device",
         metavar="device",
         help="specify the infrared camera, automatic detection by default",
-        nargs=1,
     )
     command_subparser = parser.add_subparsers(dest="command")
     command_run = command_subparser.add_parser(
@@ -59,18 +58,16 @@ if __name__ == "__main__":
         "--emitters",
         metavar="<count>",
         help="the number of emitters on the device, by default is 1",
-        default=[1],
+        default=1,
         type=int,
-        nargs=1,
     )
     command_configure.add_argument(
         "-l",
         "--limit",
         metavar="<count>",
         help="the number of negative answer before the pattern is skipped, by default is 40. Use -1 for unlimited",
-        default=[40],
+        default=40,
         type=int,
-        nargs=1,
     )
     command_boot = command_subparser.add_parser(
         "boot",
@@ -94,7 +91,7 @@ if __name__ == "__main__":
     device: str | None = None
     # Determine the device path if needed
     if args.device and args.command in ("configure", "run", "delete"):
-        device = args.device[0]
+        device = args.device
         # Find the v4l path
         v4l_device = subprocess.run(
             f"find -L /dev/v4l/by-path -samefile {device}",
@@ -115,7 +112,7 @@ if __name__ == "__main__":
 
     elif args.command == "configure":
         check_root()
-        configure(device, args.manual, args.emitters[0], args.limit[0])
+        configure(device, args.manual, args.emitters, args.limit)
 
     elif args.command == "boot":
         check_root()
