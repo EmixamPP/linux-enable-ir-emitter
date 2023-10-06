@@ -8,6 +8,10 @@ If you had the message `INFO: Please shut down your computer, then boot and retr
 4. Boot
 5. Retry
 
+If the configuration failed:
+1. if you saw the ir emitter flashing, reboot and switch to manual mode by using the -m option.
+2. Also, try the exhaustive search by using the -l -1 option (caution: this may take several hours; do not combine it -m).
+
 Otherwise, open an issue using the "Configuration has failed" template.
 
 ## The emitter does not work after successful configuration or after update.

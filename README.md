@@ -38,7 +38,7 @@ If you like the project, do not hesitate to star the repository to support me, t
 Any criticims, ideas and contributions are welcome.
 
 If the configuration failed:
-1. But you saw the ir emitter flashing, switch to manual mode by using the `-m` option.
+1. But you saw the ir emitter flashing, reboot and switch to manual mode by using the `-m` option.
 2. Also, try the exhaustive search by using the `-l -1` option (caution: this may take several hours; do not combine it `-m`).
 3. Otherwise, feel free to open an issue, *but please consult the [docs](docs/README.md) first*.
 
