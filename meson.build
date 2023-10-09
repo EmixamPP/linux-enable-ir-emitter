@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '5.0.3', 
+    version: '5.0.4', 
     license: 'MIT',
     default_options: [
         'prefix=/usr',
