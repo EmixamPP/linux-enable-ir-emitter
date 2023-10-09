@@ -1,5 +1,6 @@
-# Fri Oct 6 2023 - 5.0.3
+# Mon Oct 9 2023 - 5.0.4
 - New advice and hint messages
+- Update OpenCV to v4.8.1
 # Wed Aug 23 2023 - 5.0.2
 - Minor search fix
 - Longer search by default
