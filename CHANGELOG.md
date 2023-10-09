@@ -1,3 +1,5 @@
+# Fri Oct 6 2023 - 5.0.3
+- New advice and hint messages
 # Wed Aug 23 2023 - 5.0.2
 - Minor search fix
 - Longer search by default

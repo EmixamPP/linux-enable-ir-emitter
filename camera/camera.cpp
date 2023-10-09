@@ -177,7 +177,7 @@ bool Camera::isEmitterWorking()
     cv::Mat frame;
     int key = -1;
 
-    cout << "Is the video flashing? Press Y or N" << endl;
+    cout << "Is the video flashing? Press Y or N in the window" << endl;
 
     while (key != OK_KEY && key != NOK_KEY)
     {
