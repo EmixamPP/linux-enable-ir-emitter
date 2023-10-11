@@ -4,6 +4,16 @@ using namespace std;
 #include "camera.hpp"
 #include "opencv.hpp"
 
+/**
+ * Check if a camera is in gray scale
+ *
+ * usage: is-gray-camera [device]
+ *        device           path to the camera
+ *
+ * Exit code: 0 Success
+ *            1 Error
+ *            126 Unable to open the camera device
+ */
 int main(int, const char **argv)
 {
     Camera camera(argv[1]);

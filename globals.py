@@ -18,7 +18,8 @@ SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@"
 
 BIN_EXECUTE_DRIVER_PATH = "@BIN_EXECUTE_DRIVER_PATH@"
 BIN_GENERATE_DRIVER_PATH = "@BIN_GENERATE_DRIVER_PATH@"
-BIN_IS_CAMERA_PATH = "@BIN_IS_CAMERA_PATH@"
+BIN_IS_GREY_CAMERA_PATH = "@BIN_IS_CAMERA_PATH@"
+BIN_GENERATE_DRIVER_PATH = "@BIN_GENERATE_DRIVER_PATH@"
 
 UDEV_RULE_PATH = "@UDEV_RULE_PATH@"
 BOOT_SERVICE_NAME = "@BOOT_SERVICE_NAME@"
@@ -50,7 +51,7 @@ def get_boot_service_constructor() -> Type[Systemd] | Type[Openrc] | None:
         module = importlib.import_module(f"boot_service.{BOOT_SERVICE_MANAGER}")
         return getattr(module, BOOT_SERVICE_MANAGER)
     except:
-        return None
+        return None>
 
 
 def get_drivers_path(device: str | None) -> list[str]:
