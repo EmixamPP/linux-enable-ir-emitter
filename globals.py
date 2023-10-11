@@ -51,7 +51,7 @@ def get_boot_service_constructor() -> Type[Systemd] | Type[Openrc] | None:
         module = importlib.import_module(f"boot_service.{BOOT_SERVICE_MANAGER}")
         return getattr(module, BOOT_SERVICE_MANAGER)
     except:
-        return None>
+        return None
 
 
 def get_drivers_path(device: str | None) -> list[str]:
