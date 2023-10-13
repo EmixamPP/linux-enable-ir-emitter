@@ -65,15 +65,32 @@ long long unsigned AutoCamera::intensityVariationSum()
     long long unsigned sum = 0;
     for (unsigned i = 0; i < diffs.size() - 1; ++i)
         sum += static_cast<long long unsigned>(abs(diffs[i] - diffs[i + 1]));
-   
+
     closeCap();
     return sum;
 }
 
+
+/**
+ * @brief Check if the emitter is working,
+ * without asking for manual confirmation
+ *
+ * @return true if yes, false if not
+ */
+bool AutoCamera::isEmitterWorkingNoConfirm()
+{
+    return intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
+}
+
+/**
+ * @brief Check if the emitter is working,
+ * if so, ask for manual confirmation
+ *
+ * @return true if yes, false if not
+ */
 bool AutoCamera::isEmitterWorking()
 {
-    bool isWorking = intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
-    return isWorking && Camera::isEmitterWorking();
+    return isEmitterWorkingNoConfirm() && Camera::isEmitterWorking();
 }
 
 AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(device), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}

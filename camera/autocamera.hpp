@@ -25,6 +25,8 @@ public:
 
     bool isEmitterWorking() override;
 
+    bool isEmitterWorkingNoConfirm();
+
     AutoCamera &operator=(const AutoCamera &) = delete;
 
     AutoCamera(const AutoCamera &) = delete;

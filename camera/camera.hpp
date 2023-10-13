@@ -53,6 +53,8 @@ public:
 
     Camera(Camera &&other) = delete;
 
+    void play();
+
     bool apply(const CameraInstruction &instruction);
 
     virtual bool isEmitterWorking();

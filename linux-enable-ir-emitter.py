@@ -4,7 +4,7 @@ import argparse
 import logging
 import subprocess
 
-from command import boot, configure, delete, run
+from command import boot, configure, delete, run, test
 from globals import ExitCode, check_root
 
 if __name__ == "__main__":
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "-V",
         "--version",
         action="version",
-        version="%(prog)s 5.0.2\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        version="%(prog)s @version@\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
         help="show version information and exit",
     )
     parser.add_argument(
@@ -68,6 +68,10 @@ if __name__ == "__main__":
         help="the number of negative answer before the pattern is skipped, by default is 40. Use -1 for unlimited",
         default=40,
         type=int,
+    )
+    command_test = command_subparser.add_parser(
+        "test",
+        help="test a camera",
     )
     command_boot = command_subparser.add_parser(
         "boot",
@@ -113,6 +117,9 @@ if __name__ == "__main__":
     elif args.command == "configure":
         check_root()
         configure(device, args.manual, args.emitters, args.limit)
+
+    elif args.command == "test":
+        test(device)
 
     elif args.command == "boot":
         check_root()
