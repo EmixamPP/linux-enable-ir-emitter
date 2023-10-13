@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '5.0.4', 
+    version: '5.1.0', 
     license: 'MIT',
     default_options: [
         'prefix=/usr',
@@ -62,8 +62,31 @@ executable(
 )
 
 executable(
-    'is-ir-camera', 
-    'camera/is-ir-camera.cpp',
+    'is-gray-camera', 
+    'camera/is-gray-camera.cpp',
+    'camera/camera.cpp',
+    'camera/camerainstruction.cpp',
+    'utils/logger.cpp',
+    dependencies: [opencv_dep, gtk_dep],
+    install: true,
+    install_dir: lib_exec_dir,
+)
+
+executable(
+    'is-emitter-working', 
+    'camera/is-emitter-working.cpp',
+    'camera/camera.cpp',
+    'camera/autocamera.cpp',
+    'camera/camerainstruction.cpp',
+    'utils/logger.cpp',
+    dependencies: [opencv_dep, gtk_dep],
+    install: true,
+    install_dir: lib_exec_dir,
+)
+
+executable(
+    'video-feedback', 
+    'camera/video-feedback.cpp',
     'camera/camera.cpp',
     'camera/camerainstruction.cpp',
     'utils/logger.cpp',
@@ -93,7 +116,9 @@ configure_paths_data = configuration_data({
     'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
     'BIN_EXECUTE_DRIVER_PATH': '/usr' / lib_exec_dir / 'execute-driver',
     'BIN_GENERATE_DRIVER_PATH': '/usr' / lib_exec_dir / 'generate-driver',
-    'BIN_IS_CAMERA_PATH': '/usr' / lib_exec_dir / 'is-ir-camera',
+    'BIN_IS_GRAY_CAMERA_PATH': '/usr' / lib_exec_dir / 'is-gray-camera',
+    'BIN_IS_EMITTER_WORKING_PATH': '/usr' / lib_exec_dir / 'is-emitter-working',
+    'BIN_VIDEO_FEEDBACK_PATH': '/usr' / lib_exec_dir / 'video-feedback',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
 })
@@ -127,6 +152,7 @@ install_data(
     'command/configure.py',
     'command/delete.py',
     'command/run.py',
+    'command/test.py',
     install_dir : lib_dir / 'command',
 )
 

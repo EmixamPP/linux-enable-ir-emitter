@@ -128,6 +128,28 @@ Camera::~Camera()
 }
 
 /**
+ * @brief Show a video feedback until the user exit
+ */
+void Camera::play()
+{
+    openCap();
+    cv::Mat frame;
+    int key = -1;
+
+    cout << "Press any key in the window to close" << endl;
+
+    while (key == -1)
+    {
+        cap->read(frame);
+        cv::imshow("linux-enable-ir-emitter", frame);
+        key = cv::waitKey(5);
+    }
+
+    closeCap();
+    cv::destroyAllWindows();
+}
+
+/**
  * @brief Apply an instruction on the camera
  *
  * @param instruction to apply
@@ -166,6 +188,8 @@ unique_ptr<cv::Mat> Camera::read1()
 
 /**
  * @brief Check if the emitter is working
+ * by showing a video feedback and
+ * asking confirmation to the user
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -190,7 +214,7 @@ bool Camera::isEmitterWorking()
 
     closeCap();
     cv::destroyAllWindows();
-    
+
     return key == OK_KEY;
 }
 

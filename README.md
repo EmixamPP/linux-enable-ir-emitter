@@ -25,7 +25,7 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 ```
 
 ## How to enable your infrared emitter?
-1. Stand in front of the camera and make sure the room is well lit.
+1. Stand in front of and close to the camera and make sure the room is well lit.
 2. Ensure to not use the camera during the execution.
 3. Be patient, do not kill the process.
 4. Execute `sudo linux-enable-ir-emitter configure`.

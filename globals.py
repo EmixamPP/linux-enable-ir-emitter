@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Type, NoReturn
 
 if TYPE_CHECKING:
     from boot_service.systemd import Systemd
@@ -18,7 +18,10 @@ SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@"
 
 BIN_EXECUTE_DRIVER_PATH = "@BIN_EXECUTE_DRIVER_PATH@"
 BIN_GENERATE_DRIVER_PATH = "@BIN_GENERATE_DRIVER_PATH@"
-BIN_IS_CAMERA_PATH = "@BIN_IS_CAMERA_PATH@"
+BIN_IS_GRAY_CAMERA_PATH = "@BIN_IS_GRAY_CAMERA_PATH@"
+BIN_IS_EMITTER_WORKING_PATH = "@BIN_IS_EMITTER_WORKING_PATH@"
+BIN_VIDEO_FEEDBACK_PATH = "@BIN_VIDEO_FEEDBACK_PATH@"
+BIN_GENERATE_DRIVER_PATH = "@BIN_GENERATE_DRIVER_PATH@"
 
 UDEV_RULE_PATH = "@UDEV_RULE_PATH@"
 BOOT_SERVICE_NAME = "@BOOT_SERVICE_NAME@"
@@ -111,3 +114,35 @@ def get_kernels(device: str) -> str:
         shell=True,
         text=True,
     ).strip()
+
+
+def find_grayscale_camera() -> str | NoReturn:
+    """Automatically determine the grayscale camera.
+    Exit if no gray camera is found.
+
+    Returns:
+        str: path to the grayscale camera
+    """
+    devices = (
+        subprocess.run(
+            f"ls /dev/v4l/by-path/*",
+            shell=True,
+            capture_output=True,
+            text=True,
+        )
+        .stdout.strip()
+        .split()
+    )
+
+    for device in devices:
+        exit_code = subprocess.call(
+            [BIN_IS_GRAY_CAMERA_PATH, device],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if exit_code == ExitCode.SUCCESS:
+            return device
+
+    logging.critical("Impossible to find your infrared camera.")
+    logging.info("Please specify your infrared camera path using the -d option.")
+    exit(ExitCode.FAILURE)
