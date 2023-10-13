@@ -23,6 +23,7 @@ def configure(
         emitters (int): number of emitters on the device
         neg_answer_limit (int): number of negative answer before the pattern is skiped. Use -1 for unlimited
     """
+    logging.info("Stand in front of and close to the camera and make sure the room is well lit.")
     logging.info("Ensure to not use the camera during the execution.")
     logging.info("Warning to do not kill the process !")
 
