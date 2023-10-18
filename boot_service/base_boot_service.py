@@ -3,7 +3,7 @@ import os
 import subprocess
 from abc import ABCMeta, abstractmethod
 
-from globals import UDEV_RULE_PATH, get_index, get_kernels
+from utils import UDEV_RULE_PATH, get_index, get_kernels
 
 
 class BaseBootService(metaclass=ABCMeta):

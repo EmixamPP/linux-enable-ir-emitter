@@ -33,7 +33,9 @@ public:
 
     AutoCamera &operator=(AutoCamera &&other) = delete;
 
-    AutoCamera(AutoCamera && other) = delete;
+    AutoCamera(AutoCamera &&other) = delete;
+
+    static shared_ptr<AutoCamera> findGrayscaleCamera();
 };
 
 #endif

@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Type, NoReturn
+from typing import TYPE_CHECKING, Type
 
 if TYPE_CHECKING:
     from boot_service.systemd import Systemd
     from boot_service.openrc import Openrc
 
 import enum
-import glob
 import importlib
 import logging
 import os
@@ -15,13 +14,7 @@ import subprocess
 import sys
 
 SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@"
-
-BIN_EXECUTE_DRIVER_PATH = "@BIN_EXECUTE_DRIVER_PATH@"
-BIN_GENERATE_DRIVER_PATH = "@BIN_GENERATE_DRIVER_PATH@"
-BIN_IS_GRAY_CAMERA_PATH = "@BIN_IS_GRAY_CAMERA_PATH@"
-BIN_IS_EMITTER_WORKING_PATH = "@BIN_IS_EMITTER_WORKING_PATH@"
-BIN_VIDEO_FEEDBACK_PATH = "@BIN_VIDEO_FEEDBACK_PATH@"
-BIN_GENERATE_DRIVER_PATH = "@BIN_GENERATE_DRIVER_PATH@"
+CPP_COMMANDS_LIB_PATH = "@CPP_COMMANDS_LIB_PATH@"
 
 UDEV_RULE_PATH = "@UDEV_RULE_PATH@"
 BOOT_SERVICE_NAME = "@BOOT_SERVICE_NAME@"
@@ -54,24 +47,6 @@ def get_boot_service_constructor() -> Type[Systemd] | Type[Openrc] | None:
         return getattr(module, BOOT_SERVICE_MANAGER)
     except:
         return None
-
-
-def get_drivers_path(device: str | None) -> list[str]:
-    """Get the drivers path corresponding to all configured device
-    or just to one specific.
-
-    Args:
-        device (str | None): path to the a specific infrared camera.
-        None to get all drivers path.
-
-    Returns:
-        list[str]: path(s) to the driver(s).
-    """
-    driverName = "*"
-    if device is not None:
-        driverName = device[device.rfind("/") + 1 :] + driverName
-    path = os.path.join(SAVE_DRIVER_FOLDER_PATH, driverName + ".driver")
-    return glob.glob(path)
 
 
 def get_devices() -> list[str]:
@@ -114,35 +89,3 @@ def get_kernels(device: str) -> str:
         shell=True,
         text=True,
     ).strip()
-
-
-def find_grayscale_camera() -> str | NoReturn:
-    """Automatically determine the grayscale camera.
-    Exit if no gray camera is found.
-
-    Returns:
-        str: path to the grayscale camera
-    """
-    devices = (
-        subprocess.run(
-            f"ls /dev/v4l/by-path/*",
-            shell=True,
-            capture_output=True,
-            text=True,
-        )
-        .stdout.strip()
-        .split()
-    )
-
-    for device in devices:
-        exit_code = subprocess.call(
-            [BIN_IS_GRAY_CAMERA_PATH, device],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        if exit_code == ExitCode.SUCCESS:
-            return device
-
-    logging.critical("Impossible to find your infrared camera.")
-    logging.info("Please specify your infrared camera path using the -d option.")
-    exit(ExitCode.FAILURE)

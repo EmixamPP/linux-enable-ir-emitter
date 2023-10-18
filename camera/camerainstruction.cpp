@@ -67,7 +67,7 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
         minCtrl.assign(curCtrl.begin(), curCtrl.end());
     }
 
-    Logger::debug(("unit: " + to_string(unit) + " selector: " + to_string(selector)));
+    Logger::debug("unit: ", to_string(unit), " selector: ", to_string(selector));
     logDebugCtrl("current:", curCtrl);
     logDebugCtrl("minimum:", minCtrl);
     logDebugCtrl("maximum:", maxCtrl);
@@ -91,10 +91,10 @@ CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vecto
  * false if the maximum control has already been set
  */
 bool CameraInstruction::next() noexcept
-{   
+{
     if (curCtrl == maxCtrl)
         return false;
-        
+
     for (unsigned i = 0; i < curCtrl.size(); ++i)
     {
         uint16_t nextCtrli = static_cast<uint16_t>(curCtrl[i] + 1);
@@ -180,7 +180,7 @@ bool CameraInstruction::setMaxAsCur() noexcept
 }
 
 CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit, uint8_t selector)
-    : message("ERROR: Impossible to obtain the instruction on " + device + " for unit: " + to_string(unit) + " selector:" + to_string(selector)) {}
+    : message("Impossible to obtain the instruction on " + device + " for unit: " + to_string(unit) + " selector:" + to_string(selector)) {}
 
 const char *CameraInstructionException::what() const noexcept
 {

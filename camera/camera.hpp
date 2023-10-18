@@ -66,6 +66,10 @@ public:
     int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
     uint16_t lenUvcQuery(uint8_t unit, uint8_t selector);
+
+    bool isGrayscale();
+
+    static shared_ptr<Camera> findGrayscaleCamera();
 };
 
 class CameraException : public exception

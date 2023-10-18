@@ -1,0 +1,23 @@
+#ifndef GLOBALS_HPP
+#define GLOBALS_HPP
+
+#include <memory>
+#include <string>
+#include <vector>
+using namespace std;
+
+const string SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@";
+
+enum ExitCode
+{
+    SUCCESS = 0,
+    FAILURE = 1,
+    FILE_DESCRIPTOR_ERROR = 126,
+    ROOT_REQUIRED = 2
+};
+
+shared_ptr<vector<string>> get_drivers_path(const string &device);
+
+shared_ptr<vector<string>> get_v4l_devices();
+
+#endif
