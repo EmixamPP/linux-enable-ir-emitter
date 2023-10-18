@@ -8,7 +8,7 @@ using namespace std;
 
 extern "C"
 {
-    ExitCode configure(const char* device, bool manual, int emitters, int negAnswerLimit);
+    ExitCode configure(const char* device, bool manual, unsigned emitters, unsigned negAnswerLimit);
     ExitCode delete_driver(const char* device);
     ExitCode run(const char* device);
     ExitCode test(const char* device);

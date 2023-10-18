@@ -25,7 +25,7 @@ void enableDebug()
  *
  * @return exit code
  */
-ExitCode configure(const char *device_char_p, bool manual, int emitters, int negAnswerLimit)
+ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit)
 {
     const string device = string(device_char_p);
 

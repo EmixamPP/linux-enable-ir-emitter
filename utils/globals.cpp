@@ -18,7 +18,7 @@ using namespace std;
  */
 shared_ptr<vector<string>> get_drivers_path(const string &device)
 {
-    string deviceName = "";
+    string deviceName;
     if (!device.empty())
     {
         size_t pos = device.rfind("/");
@@ -27,7 +27,7 @@ shared_ptr<vector<string>> get_drivers_path(const string &device)
     }
 
     auto drivers = make_shared<vector<string>>();
-    for (auto &entry : filesystem::directory_iterator(SAVE_DRIVER_FOLDER_PATH))
+    for (const auto &entry : filesystem::directory_iterator(SAVE_DRIVER_FOLDER_PATH))
     {
         string pathStr = entry.path();
         if (pathStr.find(deviceName) != string::npos)
@@ -45,7 +45,7 @@ shared_ptr<vector<string>> get_drivers_path(const string &device)
 shared_ptr<vector<string>> get_v4l_devices()
 {
     auto devices = make_shared<vector<string>>();
-    for (auto &entry : filesystem::directory_iterator("/dev/v4l/by-path"))
+    for (const auto &entry : filesystem::directory_iterator("/dev/v4l/by-path"))
         devices->push_back(entry.path());
 
     return devices;

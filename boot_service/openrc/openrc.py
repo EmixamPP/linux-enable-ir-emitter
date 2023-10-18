@@ -2,7 +2,7 @@ import logging
 import subprocess
 
 from boot_service import BaseBootService
-from utils. import BOOT_SERVICE_NAME
+from utils import BOOT_SERVICE_NAME
 
 
 class Openrc(BaseBootService):
