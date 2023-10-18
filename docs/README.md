@@ -6,14 +6,15 @@
 
 ### linux-enable-ir-emitter usage 
 ```
-usage: linux-enable-ir-emitter [-h] [-v] [-V] [-d device] {run,configure,boot,delete} ...
+usage: linux-enable-ir-emitter [-h] [-v] [-V] [-d device] {run,configure,test,boot,delete} ...
 
 Provides support for infrared cameras.
 
 positional arguments:
-  {run,configure,boot,delete}
+  {run,configure,test,boot,delete}
     run                 apply drivers
     configure           generate ir emitter driver
+    test                test a camera
     boot                enable ir at boot
     delete              delete drivers
 
@@ -44,10 +45,4 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-```
-```
-usage: linux-enable-ir-emitter delete [-h]
-
-options:
-  -h, --help  show this help message and exit
 ```
