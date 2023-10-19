@@ -9,6 +9,7 @@
 using namespace std;
 
 #include "opencv.hpp"
+#include "globals.hpp"
 
 /**
  * @brief Obtain the intensity variation sum of camera captures
@@ -70,7 +71,6 @@ long long unsigned AutoCamera::intensityVariationSum()
     return sum;
 }
 
-
 /**
  * @brief Check if the emitter is working,
  * without asking for manual confirmation
@@ -94,3 +94,28 @@ bool AutoCamera::isEmitterWorking()
 }
 
 AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(device), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}
+
+/**
+ * @brief Find a grayscale camera.
+ *
+ * @return path to the graycale device,
+ * nullptr if unable to find such device
+ */
+shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera()
+{
+    auto v4lDevices = get_v4l_devices();
+    for (auto &device : *v4lDevices)
+    {
+        try
+        {
+            auto camera = make_shared<AutoCamera>(device);
+            if (camera->isGrayscale())
+                return camera;
+        }
+        catch (CameraException &e)
+        { // ignore them
+        }
+    }
+
+    return nullptr;
+}

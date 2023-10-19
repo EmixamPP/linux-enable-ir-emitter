@@ -8,6 +8,9 @@
 #include <vector>
 using namespace std;
 
+#include "../utils/logger.hpp"
+#include "globals.hpp"
+
 Driver::Driver(const string &device, uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
     : device(device), unit(unit), selector(selector), control(control) {}
 
@@ -23,7 +26,7 @@ void Driver::writeDriver(const string &driverFile, const unique_ptr<Driver> &dri
 {
     ofstream file(driverFile);
     if (!file.is_open())
-        throw ifstream::failure("CRITICAL: Impossible to write the driver in " + driverFile);
+        Logger::critical(ExitCode::FAILURE, "Impossible to write the driver in", driverFile);
 
     file << "device=" << driver->device << endl;
     file << "unit=" << static_cast<int>(driver->unit) << endl;
@@ -38,16 +41,16 @@ void Driver::writeDriver(const string &driverFile, const unique_ptr<Driver> &dri
  * @param driverFile path where the driver is store
  *
  * @throw ifstream::failure Impossible to open the driver at driverFile
- 
+
  * @return the driver
  */
 unique_ptr<Driver> Driver::readDriver(const string &driverFile)
 {
     ifstream file(driverFile);
     if (!file.is_open())
-        throw ifstream::failure("CRITICAL: Impossible to open the driver at " + driverFile);
+        Logger::critical(ExitCode::FAILURE, "Impossible to open the driver at", driverFile);
 
-    string line;  
+    string line;
     char device[128];
     uint8_t unit;
     uint8_t selector;
@@ -58,18 +61,18 @@ unique_ptr<Driver> Driver::readDriver(const string &driverFile)
     getline(file, line);
     res = sscanf(line.c_str(), "device=%s", device);
     if (res == 0)
-        throw runtime_error("CRITICAL: device is missing in the driver at " + driverFile);
+        Logger::critical(ExitCode::FAILURE, "Device is missing in the driver at", driverFile);
 
     getline(file, line);
     res = sscanf(line.c_str(), "unit=%hhu", &unit);
     if (res == 0)
-        throw runtime_error("CRITICAL: unit is missing in the driver at " + driverFile);
+        Logger::critical(ExitCode::FAILURE, "Unit is missing in the driver at", driverFile);
 
     getline(file, line);
     res = sscanf(line.c_str(), "selector=%hhu", &selector);
     if (res == 0)
-        throw runtime_error("CRITICAL: selector is missing in the driver at " + driverFile);
-    
+        Logger::critical(ExitCode::FAILURE, "Selector is missing in the driver at", driverFile);
+
     res = 1;
     for (unsigned i = 0; res == 1; ++i)
     {
@@ -80,7 +83,7 @@ unique_ptr<Driver> Driver::readDriver(const string &driverFile)
             control.push_back(controli);
     }
     if (control.empty())
-        throw runtime_error("CRITICAL: control is missing in the driver at " + driverFile);
+        Logger::critical(ExitCode::FAILURE, "Control is missing in the driver at", driverFile);
 
     return make_unique<Driver>(device, unit, selector, control);
 }

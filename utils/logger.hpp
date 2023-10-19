@@ -1,7 +1,7 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include <string>
+#include <iostream>
 using namespace std;
 
 class Logger
@@ -9,7 +9,7 @@ class Logger
 private:
     static bool isDebugEnabled;
 
-public:  
+public:
     Logger() = delete;
 
     ~Logger() = default;
@@ -20,17 +20,45 @@ public:
 
     Logger &operator=(Logger &&other) = delete;
 
-    Logger(Logger && other) = delete;
+    Logger(Logger &&other) = delete;
 
     static void enableDebug();
 
-    static void debug(const string &text);
+    template <typename... Args>
+    static void debug(Args... args)
+    {
+        if (Logger::isDebugEnabled)
+        {
+            cout << "DEBUG:";
+            ((cout << " " << args), ...);
+            cout << endl;
+        }
+    }
 
-    static void info(const string &text);
+    template <typename... Args>
+    static void info(Args... args)
+    {
+        cout << "INFO:";
+        ((cout << " " << args), ...);
+        cout << endl;
+    }
 
-    static void error(const string &text);
+    template <typename... Args>
+    static void error(Args... args)
+    {
+        cout << "ERROR:";
+        ((cout << " " << args), ...);
+        cout << endl;
+    }
 
-    static void critical(const string &text);
+    template <typename... Args>
+    [[noreturn]] static void critical(int code, Args... args)
+    {
+        cout << "CRITICAL:";
+        ((cout << " " << args), ...);
+        cout << endl;
+        exit(code);
+    }
 };
 
 #endif

@@ -27,13 +27,11 @@ public:
 
     Driver &operator=(Driver &&other) = delete;
 
-    Driver(Driver && other) = delete;
+    Driver(Driver &&other) = delete;
 
     static void writeDriver(const string &driverFile, const unique_ptr<Driver> &driver);
 
     static unique_ptr<Driver> readDriver(const string &driverFile);
 };
-
-
 
 #endif

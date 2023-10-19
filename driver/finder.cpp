@@ -7,9 +7,9 @@
 #include <vector>
 using namespace std;
 
+#include "driver.hpp"
 #include "../camera/camera.hpp"
 #include "../camera/camerainstruction.hpp"
-#include "driver.hpp"
 #include "../utils/logger.hpp"
 
 /**
@@ -119,11 +119,11 @@ unique_ptr<vector<unique_ptr<Driver>>> Finder::find()
             {
                 CameraInstruction instruction(camera, unit, selector);
                 const CameraInstruction initInstruction = instruction; // copy for reset later
-                
+
                 instruction.setMinAsCur();
                 unsigned negAnswerCounter = 0;
                 while (negAnswerCounter < negAnswerLimit && instruction.next())
-                {   
+                {
                     if (negAnswerCounter == negAnswerLimit - 1)
                         instruction.setMaxAsCur();
 

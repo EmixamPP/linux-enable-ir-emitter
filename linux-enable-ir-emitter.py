@@ -3,13 +3,15 @@
 import argparse
 import logging
 import subprocess
+import sys
 
-from command import boot, configure, delete, run, test
-from globals import ExitCode, check_root
+sys.path.append("@libdir@")
+
+from utils import ExitCode, check_root
+from command import boot, cpp_commands
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        format="%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
     parser = argparse.ArgumentParser(
         description="Provides support for infrared cameras.",
@@ -89,10 +91,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.verbose:  # enable verbosity
-        logging.getLogger().setLevel(logging.DEBUG)
+    if args.verbose:
+        cpp_commands.enableDebug()
 
-    device: str | None = None
+    device: str = ""
     # Determine the device path if needed
     if args.device and args.command in ("configure", "run", "delete"):
         device = args.device
@@ -111,23 +113,28 @@ if __name__ == "__main__":
         device = v4l_device
 
     # Execute the desired command
+    res = ExitCode.FAILURE
     if args.command == "run":
-        run(device)
+        res = cpp_commands.run(device.encode())
 
     elif args.command == "configure":
         check_root()
-        configure(device, args.manual, args.emitters, args.limit)
+        res = cpp_commands.configure(device.encode(), args.manual, args.emitters, args.limit)
+        if res == ExitCode.SUCCESS:
+            boot("enable")
 
     elif args.command == "test":
-        test(device)
+        res = cpp_commands.test(device.encode())
 
     elif args.command == "boot":
         check_root()
-        boot(args.boot_status)
+        res = boot(args.boot_status)
 
     elif args.command == "delete":
         check_root()
-        delete(device)
+        res = cpp_commands.delete_driver(device.encode())
 
     else:
         parser.print_help()
+
+    exit(res)

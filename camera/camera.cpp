@@ -14,12 +14,62 @@
 using namespace std;
 
 #include "opencv.hpp"
-
 #include "camerainstruction.hpp"
+#include "globals.hpp"
 #include "../utils/logger.hpp"
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
+
+/**
+ * @brief Determine if the camera is in grayscale.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if so, otheriwse false.
+ */
+bool Camera::isGrayscale()
+{
+    unique_ptr<cv::Mat> frame = read1();
+
+    if (frame->channels() != 3)
+        return false;
+
+    for (int r = 0; r < frame->rows; ++r)
+        for (int c = 0; c < frame->cols; ++c)
+        {
+            const cv::Vec3b &pixel = frame->at<cv::Vec3b>(r, c);
+            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
+                return false;
+        }
+
+    return true;
+}
+
+/**
+ * @brief Find a grayscale camera.
+ *
+ * @return path to the graycale device,
+ * nullptr if unable to find such device
+ */
+shared_ptr<Camera> Camera::findGrayscaleCamera()
+{
+    auto v4lDevices = get_v4l_devices();
+    for (auto &device : *v4lDevices)
+    {
+        auto camera = make_shared<Camera>(device);
+        try
+        {
+            if (camera->isGrayscale())
+                return camera;
+        }
+        catch (CameraException &e)
+        { // ignore
+        }
+    }
+
+    return nullptr;
+}
 
 /**
  * @brief Get the file descriptor previously opened
@@ -46,16 +96,14 @@ shared_ptr<cv::VideoCapture> Camera::getCap() const noexcept
  *
  * @param device path to the camera
  *
- * @throw runtime_error if unable to obtain the /dev/videoX path
- *
  * @return the device id
  */
 int Camera::deviceId(const string &device)
 {
     std::unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
-    int id;
+    int id = 0;
     if (devDevice == nullptr || sscanf(devDevice.get(), "/dev/video%d", &id) != 1)
-        throw runtime_error("CRITICAL: Unable to obtain the /dev/videoX path");
+        Logger::critical(ExitCode::FAILURE, "Unable to obtain the /dev/videoX path");
     return id;
 }
 
@@ -340,7 +388,7 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
     return len;
 }
 
-CameraException::CameraException(const string &device) : message("CRITICAL: Cannot access to " + device) {}
+CameraException::CameraException(const string &device) : message("Cannot access to " + device) {}
 
 const char *CameraException::what() const noexcept
 {
