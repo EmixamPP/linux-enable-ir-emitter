@@ -1,3 +1,7 @@
+# Thu Oct 19 2023 - 5.2.0
+- New test command
+- Improve efficiency
+- Significant reduction in installation size
 # Mon Oct 9 2023 - 5.0.4
 - New advice and hint messages
 - Update OpenCV to v4.8.1
