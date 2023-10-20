@@ -4,7 +4,7 @@ project(
     version: '5.2.0', 
     license: 'MIT',
     default_options: [
-        'default_library=static',
+        'default_library=shared',
         'prefix=/usr',
         'cpp_std=c++17',
         'optimization=3',
