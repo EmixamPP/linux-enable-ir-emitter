@@ -1,4 +1,4 @@
-name: Update OpenCV
+name: Update zlib
 on:
   workflow_dispatch:
   schedule:
@@ -13,25 +13,25 @@ jobs:
       - name: Fetch release version
         env:
             GITHUB_TOKEN: ${{ github.token }}
-            OWNER: opencv
-            REPO: opencv
+            OWNER: madler
+            REPO: zlib
         run: |
             VERSION=$(gh api "/repos/$OWNER/$REPO/releases/latest" --jq ".tag_name")
-            echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+            echo "VERSION=${VERSION#?}" >> "$GITHUB_ENV"
 
       - name: Modify file if new version
         run: |
-            sed -E -i "s@(OPENCV_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/build.yml
+            sed -E -i "s@(ZLIB_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/build.yml
             
       - name: Create PR if new version
         uses: peter-evans/create-pull-request@v5
         with:
             token: ${{ secrets.PAT }}
-            title: "build(deps): update opencv to ${{ env.VERSION }}"
-            branch: "opencv-${{ env.VERSION }}"
-            commit-message: "chore(deps): update opencv to ${{ env.VERSION }}"
+            title: "build(deps): update zlib to ${{ env.VERSION }}"
+            branch: "zlib-${{ env.VERSION }}"
+            commit-message: "chore(deps): update zlib to ${{ env.VERSION }}"
             body: |
-              Update OpenCV to ${{ env.VERSION }}.
+              Update zlib to ${{ env.VERSION }}.
 
               This PR has been created automatically.
             committer: github-actions[bot] <noreply@github.com>
