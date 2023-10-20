@@ -1,3 +1,5 @@
+# Fri Oct 20 2023 - 5.2.1
+- Fix unable to execute commands
 # Thu Oct 19 2023 - 5.2.0
 - New test command
 - Improve efficiency
