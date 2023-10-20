@@ -6,7 +6,7 @@ on:
 
 env: 
   OPENCV_VERSION: "4.8.1"
-  ZLIB_VERSION: "v1.3"
+  ZLIB_VERSION: "1.3"
 
 jobs:
   build:
@@ -28,14 +28,14 @@ jobs:
           python -m pip install meson
       
       - name: Cache OpenCV
-        id: cache
+        id: opencv-cache
         uses: actions/cache@v3
         with:
           path: opencv
           key: opencv-${{ env.OPENCV_VERSION }}
 
       - name: Build tiny static OpenCV
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ steps.opencv-cache.outputs.cache-hit != 'true' }}
         run: |
           mkdir -p opencv/build
           curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz -C opencv
@@ -49,15 +49,21 @@ jobs:
               -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
               -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
           ninja -C opencv/build
+        
+      - name: Cache zlib
+        id: zlib-cache
+        uses: actions/cache@v3
+        with:
+          path: zlib
+          key: zlib-${{ env.ZLIB_VERSION }}
       
-      - name: Build static zlib
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      - name: Build zlib
+        if: ${{ steps.zlib-cache.outputs.cache-hit != 'true' }}
         run: |
-          sudo apt-get install -y curl
           mkdir -p zlib/build
-          curl -L https://github.com/madler/zlib/archive/refs/tags/${{ env.ZLIB_VERSION }}.tar.gz | tar -xz -C zlib
-          zlib/configure
-          make CFLAGS="-fPIC" -C zlib
+          curl -L https://github.com/madler/zlib/archive/refs/tags/v${{ env.ZLIB_VERSION }}.tar.gz | tar -xz -C zlib
+          cmake -B zlib/build -S zlib/zlib-${{ env.ZLIB_VERSION }} -GNinja -DCMAKE_C_FLAGS="-fPIC"
+          ninja -C zlib/build
           
       - name: Install OpenCV
         run: |
@@ -65,7 +71,7 @@ jobs:
         
       - name: Install zlib
         run: |
-          sudo make install -C zlib
+          sudo ninja install -C zlib/build
 
       - name: Setup build
         run: |
