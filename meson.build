@@ -4,7 +4,6 @@ project(
     version: '5.2.0', 
     license: 'MIT',
     default_options: [
-        'default_library=shared',
         'prefix=/usr',
         'cpp_std=c++17',
         'optimization=3',
@@ -31,6 +30,7 @@ add_project_arguments(
 # Dependency
 ############
 opencv_dep = dependency('opencv4', static: true)
+zlib_dep = dependency('zlib', static: true)
 gtk_dep = dependency('gtk+-3.0')
 
 ##########
@@ -103,7 +103,7 @@ library(
         'utils/globals.cpp',
         'utils/logger.cpp',
     ],
-    dependencies: [opencv_dep, gtk_dep],
+    dependencies: [opencv_dep, zlib_dep, gtk_dep],
     pic: true,
     install: true,
     install_dir: lib_dir

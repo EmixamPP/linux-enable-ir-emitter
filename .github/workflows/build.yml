@@ -6,6 +6,7 @@ on:
 
 env: 
   OPENCV_VERSION: "4.8.1"
+  ZLIB_VERSION: "v1.3"
 
 jobs:
   build:
@@ -22,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev zlib1g-dev cmake
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev cmake curl
           python -m pip install --upgrade pip
           python -m pip install meson
       
@@ -36,7 +37,6 @@ jobs:
       - name: Build tiny static OpenCV
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          sudo apt-get install -y curl
           mkdir -p opencv/build
           curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz -C opencv
           cmake -B opencv/build -S opencv/opencv-${{ env.OPENCV_VERSION }} -GNinja \
@@ -49,10 +49,23 @@ jobs:
               -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
               -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
           ninja -C opencv/build
+      
+      - name: Build static zlib
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get install -y curl
+          mkdir -p zlib/build
+          curl -L https://github.com/madler/zlib/archive/refs/tags/${{ env.ZLIB_VERSION }}.tar.gz | tar -xz -C zlib
+          zlib/configure
+          make CFLAGS="-fPIC" -C zlib
           
       - name: Install OpenCV
         run: |
           sudo ninja install -C opencv/build
+        
+      - name: Install zlib
+        run: |
+          sudo make install -C zlib
 
       - name: Setup build
         run: |
@@ -90,4 +103,3 @@ jobs:
           name: linux-enable-ir-emitter.openrc.x86-64.tar.gz
           path: build/linux-enable-ir-emitter.openrc.x86-64.tar.gz
   
-
