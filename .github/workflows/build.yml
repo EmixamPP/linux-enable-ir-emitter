@@ -52,10 +52,6 @@ jobs:
       - name: Install OpenCV
         run: |
           sudo ninja install -C opencv/build
-        
-      - name: Install zlib
-        run: |
-          sudo ninja install -C zlib/build
 
       - name: Setup build
         run: |
