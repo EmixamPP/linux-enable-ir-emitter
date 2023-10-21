@@ -30,7 +30,6 @@ add_project_arguments(
 # Dependency
 ############
 opencv_dep = dependency('opencv4', static: true)
-zlib_dep = dependency('zlib', static: true)
 gtk_dep = dependency('gtk+-3.0')
 
 ##########
@@ -103,8 +102,7 @@ library(
         'utils/globals.cpp',
         'utils/logger.cpp',
     ],
-    dependencies: [opencv_dep, zlib_dep, gtk_dep],
-    pic: true,
+    dependencies: [opencv_dep, gtk_dep],
     install: true,
     install_dir: lib_dir
 )
