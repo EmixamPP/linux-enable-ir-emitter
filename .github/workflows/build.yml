@@ -6,7 +6,6 @@ on:
 
 env: 
   OPENCV_VERSION: "4.8.1"
-  ZLIB_VERSION: "1.3"
 
 jobs:
   build:
@@ -49,21 +48,6 @@ jobs:
               -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
               -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
           ninja -C opencv/build
-        
-      - name: Cache zlib
-        id: zlib-cache
-        uses: actions/cache@v3
-        with:
-          path: zlib
-          key: zlib-${{ env.ZLIB_VERSION }}
-      
-      - name: Build zlib
-        if: ${{ steps.zlib-cache.outputs.cache-hit != 'true' }}
-        run: |
-          mkdir -p zlib/build
-          curl -L https://github.com/madler/zlib/archive/refs/tags/v${{ env.ZLIB_VERSION }}.tar.gz | tar -xz -C zlib
-          cmake -B zlib/build -S zlib/zlib-${{ env.ZLIB_VERSION }} -GNinja -DCMAKE_C_FLAGS="-fPIC"
-          ninja -C zlib/build
           
       - name: Install OpenCV
         run: |
