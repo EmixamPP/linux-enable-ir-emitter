@@ -103,7 +103,6 @@ library(
         'utils/logger.cpp',
     ],
     dependencies: [opencv_dep, gtk_dep],
-    pic: true,
     install: true,
     install_dir: lib_dir
 )
