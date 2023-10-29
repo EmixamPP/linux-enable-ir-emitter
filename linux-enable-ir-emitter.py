@@ -71,6 +71,13 @@ if __name__ == "__main__":
         default=40,
         type=int,
     )
+    command_configure.add_argument(
+        "-g",
+        "--no-gui",
+        help="no gui video feedback",
+        action="store_true",
+        default=False,
+    )
     command_test = command_subparser.add_parser(
         "test",
         help="test a camera",
@@ -119,7 +126,13 @@ if __name__ == "__main__":
 
     elif args.command == "configure":
         check_root()
-        res = cpp_commands.configure(device.encode(), args.manual, args.emitters, args.limit)
+        res = cpp_commands.configure(
+            device.encode(),
+            args.manual,
+            args.emitters,
+            args.limit,
+            args.no_gui
+        )
         if res == ExitCode.SUCCESS:
             boot("enable")
 
