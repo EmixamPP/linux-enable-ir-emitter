@@ -58,7 +58,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
 
     Logger::info("Configuring the camera:", camera->device, ".");
 
-    const string deviceName = device.substr(device.find_last_of("/") + 1);
+    const string deviceName = camera->device.substr(camera->device.find_last_of("/") + 1);
     const string excludedPath = SAVE_DRIVER_FOLDER_PATH + deviceName + ".excluded";
     Finder finder(*camera, emitters, negAnswerLimit, excludedPath);
 

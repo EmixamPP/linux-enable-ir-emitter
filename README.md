@@ -16,7 +16,6 @@ We also support OpenRC, just download the `.openrc` variant.
 It can be uninstalled by executing (remove the last line to keep the emitter configuration):
 ```
 sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
-/usr/libexec/linux-enable-ir-emitter \
 /usr/bin/linux-enable-ir-emitter \
 /usr/lib/systemd/system/linux-enable-ir-emitter.service \
 /etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
