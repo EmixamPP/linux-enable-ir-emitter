@@ -1,3 +1,7 @@
+# Wed Nov 1 2023 - 5.2.4
+- Fix driver generated but not found
+- Fix for OpenCV exception thrown
+- Reduction in installation size
 # Fri Oct 20 2023 - 5.2.1
 - Fix unable to execute commands
 # Thu Oct 19 2023 - 5.2.0
