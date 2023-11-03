@@ -9,6 +9,7 @@ cpp_commands.configure.argtypes = [
     ctypes.c_bool,
     ctypes.c_uint32,
     ctypes.c_uint32,
+    ctypes.c_bool,
 ]
 cpp_commands.configure.restype = ctypes.c_int
 

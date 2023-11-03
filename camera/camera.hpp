@@ -18,6 +18,7 @@ private:
     int id;
     int fd = -1;
     const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
+    bool noGui = false;
 
 protected:
     int getFd() const noexcept;
@@ -35,6 +36,10 @@ protected:
     static int deviceId(const string &device);
 
     int executeUvcQuery(const uvc_xu_control_query &query);
+
+    bool isEmitterWorkingAsk();
+
+    bool isEmitterWorkingAskNoGui();
 
 public:
     const string device;
@@ -59,7 +64,7 @@ public:
 
     virtual bool isEmitterWorking();
 
-    unique_ptr<cv::Mat> read1();
+    shared_ptr<cv::Mat> read1();
 
     int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
@@ -70,6 +75,8 @@ public:
     bool isGrayscale();
 
     static shared_ptr<Camera> findGrayscaleCamera();
+
+    void disableGui();
 };
 
 class CameraException : public exception

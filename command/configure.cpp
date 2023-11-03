@@ -22,10 +22,11 @@ void enableDebug()
  * @param manual true for enabling the manual configuration
  * @param emitters number of emitters on the device
  * @param negAnswerLimit number of negative answer before the pattern is skiped. Use -1 for unlimited
+ * @param noGui no gui video feedback
  *
  * @return exit code
  */
-ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit)
+ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
 {
     const string device = string(device_char_p);
 
@@ -49,12 +50,15 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
             camera = make_shared<AutoCamera>(device);
     }
 
+    if (noGui) 
+        camera->disableGui();
+
     if (camera == nullptr)
         Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
 
     Logger::info("Configuring the camera:", camera->device, ".");
 
-    const string deviceName = device.substr(device.find_last_of("/") + 1);
+    const string deviceName = camera->device.substr(camera->device.find_last_of("/") + 1);
     const string excludedPath = SAVE_DRIVER_FOLDER_PATH + deviceName + ".excluded";
     Finder finder(*camera, emitters, negAnswerLimit, excludedPath);
 

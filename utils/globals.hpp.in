@@ -6,7 +6,7 @@
 #include <vector>
 using namespace std;
 
-const string SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@";
+const string SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@/";
 
 enum ExitCode
 {

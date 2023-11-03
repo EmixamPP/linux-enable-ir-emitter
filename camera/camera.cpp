@@ -30,7 +30,7 @@ constexpr int NOK_KEY = 110;
  */
 bool Camera::isGrayscale()
 {
-    unique_ptr<cv::Mat> frame = read1();
+    auto frame = read1();
 
     if (frame->channels() != 3)
         return false;
@@ -163,8 +163,7 @@ void Camera::closeCap() noexcept
         cap->release();
 }
 
-Camera::Camera(const string &device)
-    : id(Camera::deviceId(device)), device(device)
+Camera::Camera(const string &device) : id(Camera::deviceId(device)), device(device)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
@@ -225,19 +224,74 @@ bool Camera::apply(const CameraInstruction &instruction)
  *
  * @return the frame
  */
-unique_ptr<cv::Mat> Camera::read1()
+shared_ptr<cv::Mat> Camera::read1()
 {
     openCap();
-    auto frame = make_unique<cv::Mat>();
+    auto frame = make_shared<cv::Mat>();
     cap->read(*frame);
     closeCap();
     return frame;
 }
 
 /**
+ * @brief Show a video feedback to the user
+ * and asks if the emitter is working
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if yes, false if not
+ */
+bool Camera::isEmitterWorkingAsk()
+{
+    cv::Mat frame;
+    int key = -1;
+
+    cout << "Is the video flashing? Press Y or N in the window" << endl;
+    while (key != OK_KEY && key != NOK_KEY)
+    {
+        cap->read(frame);
+        cv::imshow("linux-enable-ir-emitter", frame);
+        key = cv::waitKey(5);
+    }
+    cout << (key == OK_KEY ? "Y pressed" : "N pressed") << endl;
+
+    cv::destroyAllWindows();
+    return key == OK_KEY;
+}
+
+/**
+ * @brief Trigger the camera
+ * and asks if the emitter is working
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if yes, false if not
+ */
+bool Camera::isEmitterWorkingAskNoGui()
+{
+    cv::Mat frame;
+    cap->read(frame);
+
+    string answer;
+    cout << "Is the ir emitter flashing (not just turn on) ? Yes/No ? ";
+    cin >> answer;
+    transform(answer.begin(), answer.end(), answer.begin(), [](char c)
+              { return tolower(c); });
+
+    while (answer != "yes" && answer != "y" && answer != "no" && answer != "n")
+    {
+        cout << "Yes/No ? ";
+        cin >> answer;
+        transform(answer.begin(), answer.end(), answer.begin(), [](char c)
+                  { return tolower(c); });
+    }
+
+    return answer == "yes" || answer == "y";
+}
+
+/**
  * @brief Check if the emitter is working
- * by showing a video feedback and
- * asking confirmation to the user
+ * by asking confirmation to the user
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -246,24 +300,16 @@ unique_ptr<cv::Mat> Camera::read1()
 bool Camera::isEmitterWorking()
 {
     openCap();
-    cv::Mat frame;
-    int key = -1;
 
-    cout << "Is the video flashing? Press Y or N in the window" << endl;
-
-    while (key != OK_KEY && key != NOK_KEY)
-    {
-        cap->read(frame);
-        cv::imshow("linux-enable-ir-emitter", frame);
-        key = cv::waitKey(5);
-    }
-
-    cout << (key == OK_KEY ? "Y pressed" : "N pressed") << endl;
+    bool res;
+    if (noGui)
+        res = isEmitterWorkingAskNoGui();
+    else
+        res = isEmitterWorkingAsk();
 
     closeCap();
-    cv::destroyAllWindows();
 
-    return key == OK_KEY;
+    return res;
 }
 
 /**
@@ -386,6 +432,11 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
     uint16_t len = 0;
     memcpy(&len, query.data, 2);
     return len;
+}
+
+void Camera::disableGui()
+{
+    noGui = true;
 }
 
 CameraException::CameraException(const string &device) : message("Cannot access to " + device) {}
