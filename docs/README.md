@@ -35,6 +35,7 @@ options:
                         the number of emitters on the device, by default is 1
   -l <count>, --limit <count>
                         the number of negative answer before the pattern is skipped, by default is 40. Use -1 for unlimited
+  -g, --no-gui          no gui video feedback
 ```
 ```
 usage: linux-enable-ir-emitter boot [-h] {enable,disable,status}
