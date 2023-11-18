@@ -1,5 +1,4 @@
-#ifndef AUTOCAMERA_HPP
-#define AUTOCAMERA_HPP
+#pragma once
 
 #include <string>
 using namespace std;
@@ -37,5 +36,3 @@ public:
 
     static shared_ptr<AutoCamera> findGrayscaleCamera();
 };
-
-#endif

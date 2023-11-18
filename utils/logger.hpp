@@ -1,5 +1,4 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#pragma once
 
 #include <iostream>
 using namespace std;
@@ -60,5 +59,3 @@ public:
         exit(code);
     }
 };
-
-#endif

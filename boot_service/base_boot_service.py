@@ -10,10 +10,10 @@ class BaseBootService(metaclass=ABCMeta):
     """Manage the boot service of linux-enable-ir-emitter"""
 
     def __init__(self, devices: list[str]) -> None:
-        """Create a boot service for run the drivers.
+        """Create a boot service for run the configurations.
 
         Args:
-            devices (list[str]): devices for which a driver will be run.
+            devices (list[str]): devices for which a configuration will be run.
         """
         self.devices: list[str] = devices
 

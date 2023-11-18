@@ -1,40 +1,77 @@
 #include "globals.hpp"
 
 #include <filesystem>
-#include <memory>
 #include <string>
 #include <vector>
 using namespace std;
 
 #include <iostream>
+
 /**
- * @brief Get the drivers path corresponding to all configured device
+ * @brief Gets the device corresponding to
+ * the path of a configuration.
+ *
+ * @param configPath path of the configuration
+ *
+ * @return device path
+ */
+string deviceOf(const string &configPath)
+{
+    size_t pos = configPath.rfind('/');
+    return "/dev/v4l/by-path/" + configPath.substr(pos + 1);
+}
+
+string deviceNameOf(const string &device)
+{
+    size_t pos = device.rfind('/');
+    return device.substr(pos + 1);
+}
+
+/**
+ * @brief Gets the path corresponding to the scan
+ * of a device.
+ *
+ * @param deviceName name of the device
+ *
+ * @return path to the file
+ */
+string scanPathOf(const string &deviceName)
+{
+    return _SAVE_FOLDER_SCAN_PATH + deviceName;
+}
+
+/**
+ * @brief Gets the path corresponding to the configuration
+ * of a device.
+ *
+ * @param deviceName name of the device
+ *
+ * @return path to the file
+ */
+string configPathOf(const string &deviceName){
+    return _SAVE_FOLDER_CONFIG_PATH + deviceName;
+}
+
+/**
+ * @brief Get the configurations path corresponding to all configured device
  * or just to one specific
  *
- * @param device path to the a specific infrared camera.
- * Empty string to get all drivers path
+ * @param deviceName name of a specific device
+ * Empty string to get all configurations path
  *
- * @return path(s) to the driver(s)
+ * @return path(s) to the configuration(s)
  */
-shared_ptr<vector<string>> get_drivers_path(const string &device)
+vector<string> getConfigPaths(const string &deviceName)
 {
-    string deviceName;
-    if (!device.empty())
-    {
-        size_t pos = device.rfind("/");
-        if (pos != string::npos)
-            deviceName = device.substr(pos + 1);
-    }
-
-    auto drivers = make_shared<vector<string>>();
-    for (const auto &entry : filesystem::directory_iterator(SAVE_DRIVER_FOLDER_PATH))
+    vector<string> paths;
+    for (const auto &entry : filesystem::directory_iterator(_SAVE_FOLDER_CONFIG_PATH))
     {
         string pathStr = entry.path();
         if (pathStr.find(deviceName) != string::npos)
-            drivers->push_back(entry.path());
+            paths.push_back(entry.path());
     }
 
-    return drivers;
+    return paths;
 }
 
 /**
@@ -42,11 +79,11 @@ shared_ptr<vector<string>> get_drivers_path(const string &device)
  *
  * @return path to the v4l device
  */
-shared_ptr<vector<string>> get_v4l_devices()
+vector<string> getV4LDevices()
 {
-    auto devices = make_shared<vector<string>>();
+    vector<string> devices;
     for (const auto &entry : filesystem::directory_iterator("/dev/v4l/by-path"))
-        devices->push_back(entry.path());
+        devices.push_back(entry.path());
 
     return devices;
 }

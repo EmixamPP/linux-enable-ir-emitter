@@ -42,11 +42,11 @@ if __name__ == "__main__":
     command_subparser = parser.add_subparsers(dest="command")
     command_run = command_subparser.add_parser(
         "run",
-        help="apply drivers",
+        help="apply configurations",
     )
     command_configure = command_subparser.add_parser(
         "configure",
-        help="generate ir emitter driver",
+        help="generate ir emitter configuration",
     )
     command_configure.add_argument(
         "-m",
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     )
     command_delete = command_subparser.add_parser(
         "delete",
-        help="delete drivers",
+        help="delete configurations",
     )
 
     args = parser.parse_args()
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     elif args.command == "delete":
         check_root()
-        res = cpp_commands.delete_driver(device.encode())
+        res = cpp_commands.delete_config(device.encode())
 
     else:
         parser.print_help()

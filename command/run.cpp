@@ -1,41 +1,41 @@
 #include "commands.hpp"
 
-#include <memory>
-using namespace std;
-
-#include "globals.hpp"
-#include "../driver/driver.hpp"
-#include "../camera/camera.hpp"
-#include "../camera/camerainstruction.hpp"
-#include "../utils/logger.hpp"
+#include "camera/camera.hpp"
+#include "camera/camerainstruction.hpp"
+#include "utils/logger.hpp"
+#include "utils/serializer.hpp"
 
 /**
- * @brief Execute a driver.
+ * @brief Execute a configuration.
  *
- * @param device path to the infrared camera, empty string to execute all driver
+ * @param device path to the infrared camera, empty string to execute all configurations
  *
  * @return exit code
  */
-ExitCode run(const char* device)
-{   
-    
-    auto paths = get_drivers_path(device);
+ExitCode run(const char *device)
+{
 
-    if (paths->empty())
-        Logger::critical(ExitCode::FAILURE, "No driver for", device, "has been configured.");
+    vector<string> paths = getConfigPaths(device);
+
+    if (paths.empty())
+        Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been configured.");
 
     ExitCode code = ExitCode::SUCCESS;
-    for (auto &driverFile : *paths)
+    for (auto &configPath : paths)
     {
-        const unique_ptr<Driver> driver = Driver::readDriver(driverFile);
+        vector<CameraInstruction> configuration = Serializer::readConfigFromFile(configPath);
+        string device = deviceOf(configPath);
+
+        Camera camera(device);
         try
-        {
-            Camera camera(driver->device);
-            CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control);
-            if (!camera.apply(instruction))
+        {   
+            for (auto &instruction : configuration)
             {
-                Logger::error("Failed to apply the driver of", driver->device);
-                code = ExitCode::FAILURE;
+                if (!camera.apply(instruction))
+                {
+                    Logger::error("Failed to apply the configuration of", device);
+                    code = ExitCode::FAILURE;
+                }
             }
         }
         catch (CameraException &e)

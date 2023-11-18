@@ -1,32 +1,21 @@
 #include "camerainstruction.hpp"
 
 #include <cstdint>
+#include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include <linux/usb/video.h>
 using namespace std;
 
 #include "opencv.hpp"
+#include <yaml-cpp/yaml.h>
 
 #include "camera.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
 
 /**
- * @brief Print the control value in the debug log
- *
- * @param prefixMasg what show before the control
- * @param control control value
- */
-void CameraInstruction::logDebugCtrl(const string &prefixMsg, const vector<uint8_t> &control) noexcept
-{
-    string msg = prefixMsg;
-    for (const uint8_t &i : control)
-        msg += " " + to_string(i);
-    Logger::debug(msg);
-}
-
-/**
- * @brief Construct a new CameraInstruction object
+ * @brief Construct a new CameraInstruction object.
  *
  * @param camera on which find the control instruction
  * @param unit of the instruction
@@ -44,8 +33,10 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
 
     // get the current control value
     curCtrl.resize(ctrlSize);
+    initCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_CUR, unit, selector, curCtrl) == 1)
         throw CameraInstructionException(camera.device, unit, selector);
+    initCtrl.assign(curCtrl.begin(), curCtrl.end());
 
     // ensure the control can be modified
     if (camera.setUvcQuery(unit, selector, curCtrl) == 1)
@@ -54,38 +45,42 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     // try to get the maximum control value (it does not necessary exists)
     maxCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, maxCtrl) == 1)
-    {
-        Logger::debug("Using default maximum control.");
-        maxCtrl.assign(ctrlSize, 255);
-    }
+        maxCtrl.resize(0);
 
     // try get the minimum control value (it does not necessary exists)
     minCtrl.resize(ctrlSize);
     if (camera.getUvcQuery(UVC_GET_MIN, unit, selector, minCtrl) == 1)
-    {
-        Logger::debug("Using current as minimum control.");
-        minCtrl.assign(curCtrl.begin(), curCtrl.end());
-    }
-
-    Logger::debug("unit: ", to_string(unit), " selector: ", to_string(selector));
-    logDebugCtrl("current:", curCtrl);
-    logDebugCtrl("minimum:", minCtrl);
-    logDebugCtrl("maximum:", maxCtrl);
+        minCtrl.resize(0);
 }
 
 /**
- * @brief Construct a new Camera Instruction object
- * Cannot compute next control instruction, and do not check if the instruction is valid
+ * @brief Construct a new Camera Instruction object.
+ * Do not check if the instruction is valid.
  *
  * @param unit of the instruction
  * @param selector of the instruction
- * @param control instruction
+ * @param current instruction
  */
-CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &control)
-    : unit(unit), selector(selector), curCtrl(control) {}
+CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &current)
+    : unit(unit), selector(selector), curCtrl(current), initCtrl(current) {}
 
 /**
- * @brief Compute the next possible control value
+ * @brief Construct a new Camera Instruction object.
+ * Do not check if the instruction is valid.
+ *
+ * @param unit of the instruction
+ * @param selector of the instruction
+ * @param current instruction
+ * @param maximum instruction
+ * @param minimum instruction
+
+ */
+CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &current,
+                                     const vector<uint8_t> &maximum, const vector<uint8_t> &minimum)
+    : unit(unit), selector(selector), curCtrl(current), initCtrl(curCtrl), maxCtrl(maximum), minCtrl(minimum) {}
+
+/**
+ * @brief Compute the next possible control value.
  *
  * @return true if the next value has been set,
  * false if the maximum control has already been set
@@ -99,11 +94,10 @@ bool CameraInstruction::next() noexcept
     {
         uint16_t nextCtrli = static_cast<uint16_t>(curCtrl[i] + 1);
         if (nextCtrli > maxCtrl[i])
-            curCtrl[i] = minCtrl[i]; // simulate "overflow"
+            curCtrl[i] = minCtrl.empty() ? initCtrl[i] : minCtrl[i]; // simulate "overflow"
         else
         {
             curCtrl[i] = static_cast<uint8_t>(nextCtrli);
-            logDebugCtrl("new current:", curCtrl);
             return true;
         }
     }
@@ -114,17 +108,27 @@ bool CameraInstruction::next() noexcept
 }
 
 /**
- * @brief Get the current control value
+ * @brief Get the corruption status.
+ *
+ * @return true if the instruction is corrupted
+ */
+bool CameraInstruction::isCorrupted() const noexcept
+{
+    return corrupted;
+}
+
+/**
+ * @brief Get the current control value.
  *
  * @return current control value
  */
-const vector<uint8_t> &CameraInstruction::getCurrent() const noexcept
+const vector<uint8_t> &CameraInstruction::getCur() const noexcept
 {
     return curCtrl;
 }
 
 /**
- * @brief Get the unit of the instruction
+ * @brief Get the unit of the instruction.
  *
  * @return unit
  */
@@ -134,7 +138,7 @@ uint8_t CameraInstruction::getUnit() const noexcept
 }
 
 /**
- * @brief Get the selector of the instruction
+ * @brief Get the selector of the instruction.
  *
  * @return selector
  */
@@ -144,9 +148,34 @@ uint8_t CameraInstruction::getSelector() const noexcept
 }
 
 /**
- * @brief If a minimun control instruction exists
+ * @brief Get the maximum of the instruction.
+ *
+ * @return maximum control
+ */
+const vector<uint8_t> &CameraInstruction::getMax() const noexcept
+{
+    return maxCtrl;
+}
+
+/**
+ * @brief Get the minimum of the instruction.
+ *
+ * @return minimum control
+ */
+const vector<uint8_t> &CameraInstruction::getMin() const noexcept
+{
+    return minCtrl;
+}
+
+void CameraInstruction::setCorrupted(bool isCorrupted) noexcept
+{
+    corrupted = isCorrupted;
+}
+
+/**
+ * @brief If a minimum control instruction exists
  * and is not already the current,
- * set the current control instruction with that value
+ * set it as the current control instruction with that value.
  *
  * @return true if success, otherwise false
  */
@@ -156,15 +185,16 @@ bool CameraInstruction::setMinAsCur() noexcept
         return false;
 
     curCtrl.assign(minCtrl.begin(), minCtrl.end());
-    logDebugCtrl("new current:", curCtrl);
 
     return true;
 }
 
 /**
- * @brief If a maximum control instruction
- * is not already the current,
- * set the current control instruction with that value
+ * @brief If a maximum control instruction exists
+ * and is not already the current,
+ * set it as the current control instruction with that value.
+ * If no maximum control exists,
+ * set the maximum value possible (i.e. 255).
  *
  * @return true if success, otherwise false
  */
@@ -172,11 +202,31 @@ bool CameraInstruction::setMaxAsCur() noexcept
 {
     if (curCtrl == maxCtrl)
         return false;
-
-    curCtrl.assign(maxCtrl.begin(), maxCtrl.end());
-    logDebugCtrl("new current:", curCtrl);
+    else if (maxCtrl.empty())
+        curCtrl.assign(curCtrl.size(), 255);
+    else
+        curCtrl.assign(maxCtrl.begin(), maxCtrl.end());
 
     return true;
+}
+
+/**
+ * @brief Reset to current control
+ * to its initial value.
+ */
+void CameraInstruction::reset() noexcept
+{
+    curCtrl.assign(initCtrl.begin(), initCtrl.end());
+}
+
+CameraInstruction::operator string() const
+{
+    string res = " unit: " + to_string(static_cast<int>(unit));
+    res += ", selector: " + to_string(static_cast<int>(unit));
+    res += ", control:";
+    for (auto &v : curCtrl)
+        res += " " + to_string(static_cast<int>(v));
+    return res;
 }
 
 CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit, uint8_t selector)

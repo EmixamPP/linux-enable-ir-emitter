@@ -1,5 +1,4 @@
-#ifndef CAMERA_HPP
-#define CAMERA_HPP
+#pragma once
 
 #include <cstdint>
 #include <linux/uvcvideo.h>
@@ -64,7 +63,7 @@ public:
 
     virtual bool isEmitterWorking();
 
-    shared_ptr<cv::Mat> read1();
+    cv::Mat read1();
 
     int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
@@ -89,5 +88,3 @@ public:
 
     const char *what() const noexcept override;
 };
-
-#endif

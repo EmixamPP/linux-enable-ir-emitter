@@ -13,8 +13,8 @@ cpp_commands.configure.argtypes = [
 ]
 cpp_commands.configure.restype = ctypes.c_int
 
-cpp_commands.delete_driver.argtypes = [ctypes.c_char_p]
-cpp_commands.delete_driver.restype = ctypes.c_int
+cpp_commands.delete_config.argtypes = [ctypes.c_char_p]
+cpp_commands.delete_config.restype = ctypes.c_int
 
 cpp_commands.run.argtypes = [ctypes.c_char_p]
 cpp_commands.run.restype = ctypes.c_int

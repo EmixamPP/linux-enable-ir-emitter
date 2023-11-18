@@ -16,7 +16,7 @@ using namespace std;
 #include "opencv.hpp"
 #include "camerainstruction.hpp"
 #include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
@@ -30,15 +30,15 @@ constexpr int NOK_KEY = 110;
  */
 bool Camera::isGrayscale()
 {
-    auto frame = read1();
+    cv::Mat frame = read1();
 
-    if (frame->channels() != 3)
+    if (frame.channels() != 3)
         return false;
 
-    for (int r = 0; r < frame->rows; ++r)
-        for (int c = 0; c < frame->cols; ++c)
+    for (int r = 0; r < frame.rows; ++r)
+        for (int c = 0; c < frame.cols; ++c)
         {
-            const cv::Vec3b &pixel = frame->at<cv::Vec3b>(r, c);
+            const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
             if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
                 return false;
         }
@@ -54,8 +54,8 @@ bool Camera::isGrayscale()
  */
 shared_ptr<Camera> Camera::findGrayscaleCamera()
 {
-    auto v4lDevices = get_v4l_devices();
-    for (auto &device : *v4lDevices)
+    vector<string> v4lDevices = getV4LDevices();
+    for (auto &device : v4lDevices)
     {
         auto camera = make_shared<Camera>(device);
         try
@@ -100,7 +100,7 @@ shared_ptr<cv::VideoCapture> Camera::getCap() const noexcept
  */
 int Camera::deviceId(const string &device)
 {
-    std::unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
+    unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
     int id = 0;
     if (devDevice == nullptr || sscanf(devDevice.get(), "/dev/video%d", &id) != 1)
         Logger::critical(ExitCode::FAILURE, "Unable to obtain the /dev/videoX path");
@@ -211,8 +211,8 @@ bool Camera::apply(const CameraInstruction &instruction)
         instruction.getUnit(),
         instruction.getSelector(),
         UVC_SET_CUR,
-        static_cast<uint16_t>(instruction.getCurrent().size()),
-        const_cast<uint8_t *>(instruction.getCurrent().data()), // const_cast safe; this is a set query
+        static_cast<uint16_t>(instruction.getCur().size()),
+        const_cast<uint8_t *>(instruction.getCur().data()), // const_cast safe; this is a set query
     };
     return executeUvcQuery(query) == 0;
 }
@@ -224,11 +224,11 @@ bool Camera::apply(const CameraInstruction &instruction)
  *
  * @return the frame
  */
-shared_ptr<cv::Mat> Camera::read1()
+cv::Mat Camera::read1()
 {
     openCap();
-    auto frame = make_shared<cv::Mat>();
-    cap->read(*frame);
+    cv::Mat frame;
+    cap->read(frame);
     closeCap();
     return frame;
 }
@@ -328,7 +328,7 @@ int Camera::executeUvcQuery(const uvc_xu_control_query &query)
     const int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
     if (result == 1 || errno)
     {
-        /* // ioctl debug not really useful for automated driver generation since linux-enable-ir-emitter v3
+        /* // ioctl debug not really useful for automated configuration generation since linux-enable-ir-emitter v3
         fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
         switch (errno) {
         case ENOENT:

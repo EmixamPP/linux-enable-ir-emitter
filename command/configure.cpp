@@ -1,14 +1,17 @@
 #include "commands.hpp"
 
+#include <fstream>
 #include <memory>
 using namespace std;
 
 #include "globals.hpp"
-#include "../driver/finder.hpp"
-#include "../driver/driver.hpp"
-#include "../camera/camera.hpp"
-#include "../camera/autocamera.hpp"
-#include "../utils/logger.hpp"
+#include "camera/camera.hpp"
+#include "camera/autocamera.hpp"
+#include "camera/camerainstruction.hpp"
+#include "configuration/finder.hpp"
+#include "configuration/scanner.hpp"
+#include "utils/logger.hpp"
+#include "utils/serializer.hpp"
 
 void enableDebug()
 {
@@ -16,7 +19,7 @@ void enableDebug()
 }
 
 /**
- * @brief Find a driver for the infrared camera.
+ * @brief Finds a configuration for an infrared camera which enables its emitter(s).
  *
  * @param device path to the infrared camera, empty string for automatic detection
  * @param manual true for enabling the manual configuration
@@ -31,7 +34,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
     const string device = string(device_char_p);
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
-    Logger::info("Ensure to not use the camera during the execution.");
+    Logger::info("Ensure to not use the camera during the execution."); // TODO catch ctrl-c
     Logger::info("Warning to do not kill the process !");
 
     shared_ptr<Camera> camera;
@@ -50,7 +53,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
             camera = make_shared<AutoCamera>(device);
     }
 
-    if (noGui) 
+    if (noGui)
         camera->disableGui();
 
     if (camera == nullptr)
@@ -58,9 +61,17 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
 
     Logger::info("Configuring the camera:", camera->device, ".");
 
-    const string deviceName = camera->device.substr(camera->device.find_last_of("/") + 1);
-    const string excludedPath = SAVE_DRIVER_FOLDER_PATH + deviceName + ".excluded";
-    Finder finder(*camera, emitters, negAnswerLimit, excludedPath);
+    const string deviceName = deviceNameOf(camera->device);
+
+    vector<CameraInstruction> instructions = Serializer::readScanFromFile(deviceName);
+    if (instructions.empty())
+    {
+        Scanner scanner(*camera);
+        instructions = scanner.scan();
+    }
+
+    Finder finder(*camera, emitters, negAnswerLimit, instructions);
+    vector<CameraInstruction> configuration;
 
     try
     {
@@ -70,28 +81,27 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
             return ExitCode::FAILURE;
         }
 
-        auto drivers = finder.find();
-        if (drivers->empty())
-        {
-            Logger::error("The configuration has failed.");
-            Logger::error("Please retry in manual mode by adding the '-m' option.");
-            Logger::info("Do not hesitate to visit the GitHub !");
-            Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
-            return ExitCode::FAILURE;
-        }
-
-        for (unsigned i = 0; i < drivers->size(); ++i)
-        {
-            string driverPath = SAVE_DRIVER_FOLDER_PATH + deviceName + "_emitter" + to_string(i) + ".driver";
-            auto &driver = drivers->at(i);
-            Driver::writeDriver(driverPath, driver);
-        }
+        configuration = finder.find();
     }
     catch (CameraException &e)
     {
+        Serializer::writeScanToFile(instructions, deviceName);
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Logger::info("The driver has been successfully generated.");
+    Serializer::writeScanToFile(instructions, deviceName);
+
+    if (configuration.empty())
+    {
+        Logger::error("The configuration has failed.");
+        Logger::error("Please retry in manual mode by adding the '-m' option.");
+        Logger::info("Do not hesitate to visit the GitHub !");
+        Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
+        return ExitCode::FAILURE;
+    }
+
+    Serializer::writeConfigToFile(configuration, deviceName);
+
+    Logger::info("The emitter has been successfully configured.");
     return ExitCode::SUCCESS;
 }

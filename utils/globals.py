@@ -13,7 +13,7 @@ import re
 import subprocess
 import sys
 
-SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@"
+SAVE_FOLDER_CONFIG_PATH = "@SAVE_FOLDER_PATH@/config/"
 CPP_COMMANDS_LIB_PATH = "@CPP_COMMANDS_LIB_PATH@"
 
 UDEV_RULE_PATH = "@UDEV_RULE_PATH@"
@@ -52,10 +52,9 @@ def get_boot_service_constructor() -> Type[Systemd] | Type[Openrc] | None:
 def get_devices() -> list[str]:
     """Return all configured devices."""
     devices_path = []
-    for driver in os.listdir(SAVE_DRIVER_FOLDER_PATH):
-        if re.match(r".*_emitter[0-9]+.driver", driver):
-            path = "/dev/v4l/by-path/" + driver[: driver.rfind("_emitter")]
-            devices_path.append(path)
+    for config in os.listdir(SAVE_FOLDER_CONFIG_PATH):
+        path = "/dev/v4l/by-path/" + config
+        devices_path.append(path)
     return devices_path
 
 

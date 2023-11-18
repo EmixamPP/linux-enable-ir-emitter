@@ -1,12 +1,11 @@
-#ifndef GLOBALS_HPP
-#define GLOBALS_HPP
+#pragma once
 
-#include <memory>
 #include <string>
 #include <vector>
 using namespace std;
 
-const string SAVE_DRIVER_FOLDER_PATH = "@SAVE_DRIVER_FOLDER_PATH@/";
+const string _SAVE_FOLDER_CONFIG_PATH = "@SAVE_FOLDER_PATH@/config/";
+const string _SAVE_FOLDER_SCAN_PATH = "@SAVE_FOLDER_PATH@/scan/";
 
 enum ExitCode
 {
@@ -16,8 +15,14 @@ enum ExitCode
     ROOT_REQUIRED = 2
 };
 
-shared_ptr<vector<string>> get_drivers_path(const string &device);
+string deviceOf(const string &configPath);
 
-shared_ptr<vector<string>> get_v4l_devices();
+string deviceNameOf(const string &device);
 
-#endif
+string scanPathOf(const string &device);
+
+string configPathOf(const string &device);
+
+vector<string> getConfigPaths(const string &device);
+
+vector<string> getV4LDevices();

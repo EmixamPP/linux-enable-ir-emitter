@@ -5,22 +5,22 @@
 using namespace std;
 
 #include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
 
 /**
- * @brief Delete the driver associated to a device,
- * without causing error if the driver does not exists.
+ * @brief Deletes the config associated to a device,
+ * without causing error if the config does not exists.
  *
- * @param path to the infrared camera, empty string to execute all driver
+ * @param path to the infrared camera, empty string to execute all configs
  *
  * @return exit code
  */
-ExitCode delete_driver(const char* device)
+ExitCode delete_config(const char* device)
 {
-    auto drivers = get_drivers_path(device);
-    for (auto &driver : *drivers)
-        filesystem::remove(driver);
+    vector<string> configs = getConfigPaths(device);
+    for (auto &config : configs)
+        filesystem::remove(config);
 
-    Logger::info("The drivers have been deleted.");
+    Logger::info("The configurations have been deleted.");
     return ExitCode::SUCCESS;
 }

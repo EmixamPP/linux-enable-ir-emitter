@@ -3,9 +3,9 @@
 #include <string>
 using namespace std;
 
-#include "../camera/autocamera.hpp"
+#include "camera/autocamera.hpp"
 #include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
 
 /**
  * @brief Test if the camera is in grayscale and if the emitter is working.

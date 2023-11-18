@@ -103,8 +103,8 @@ AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(de
  */
 shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera()
 {
-    auto v4lDevices = get_v4l_devices();
-    for (auto &device : *v4lDevices)
+    vector<string> v4lDevices = getV4LDevices();
+    for (auto &device : v4lDevices)
     {
         try
         {

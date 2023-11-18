@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '5.2.4', 
+    version: '6.0.0', 
     license: 'MIT',
     default_options: [
         'prefix=/usr',
@@ -31,6 +31,7 @@ add_project_arguments(
 ############
 opencv_dep = dependency('opencv4', static: true)
 gtk_dep = dependency('gtk+-3.0')
+yaml_dep = dependency('yaml-cpp', static: true)
 
 ##########
 # Variable
@@ -41,7 +42,7 @@ boot_service = get_option('boot_service')
 cfg_data = configuration_data({
     'version': meson.project_version(),
     'libdir': abs_lib_dir,
-    'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
+    'SAVE_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
     'CPP_COMMANDS_LIB_PATH': abs_lib_dir / 'libcommands.so',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
@@ -97,12 +98,13 @@ library(
         'command/delete.cpp',
         'command/run.cpp',
         'command/test.cpp',
-        'driver/driver.cpp',
-        'driver/finder.cpp',
+        'configuration/finder.cpp',
+        'configuration/scanner.cpp',
         'utils/globals.cpp',
         'utils/logger.cpp',
+        'utils/serializer.cpp',
     ],
-    dependencies: [opencv_dep, gtk_dep],
+    dependencies: [opencv_dep, gtk_dep, yaml_dep],
     install: true,
     install_dir: lib_dir
 )
@@ -158,9 +160,12 @@ endif
 ######
 # Conf
 ######
-install_subdir(
-    meson.project_name(),
-    install_dir: get_option('sysconfdir'),
+install_emptydir(
+    get_option('sysconfdir') / meson.project_name() / 'config',
+)
+
+install_emptydir(
+    get_option('sysconfdir') / meson.project_name() / 'scan',
 )
 
 ##################

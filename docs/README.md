@@ -12,11 +12,11 @@ Provides support for infrared cameras.
 
 positional arguments:
   {run,configure,test,boot,delete}
-    run                 apply drivers
-    configure           generate ir emitter driver
+    run                 apply configurations
+    configure           generate ir emitter configuration
     test                test a camera
     boot                enable ir at boot
-    delete              delete drivers
+    delete              delete configurations
 
 options:
   -h, --help            show this help message and exit

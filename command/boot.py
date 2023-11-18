@@ -4,7 +4,7 @@ from utils import ExitCode, get_boot_service_constructor, get_devices
 
 
 def boot(boot_status: str) -> ExitCode:
-    """Enable or disable the boot service which
+    """Enables or disables the boot service which
     activates the ir emitter for all configured device,
     and exit.
 
@@ -21,7 +21,7 @@ def boot(boot_status: str) -> ExitCode:
 
     boot_service_constructor = get_boot_service_constructor()
     if boot_service_constructor is None:
-        logging.critical("No supported boot service are installed.")
+        logging.critical("No supported boot service is installed.")
         return ExitCode.FAILURE
 
     devices = get_devices()
@@ -29,16 +29,16 @@ def boot(boot_status: str) -> ExitCode:
 
     if boot_status == "enable":
         if not len(devices):
-            logging.critical("No driver have been configured.")
+            logging.critical("No emitter have been configured.")
             return ExitCode.FAILURE
         if boot_service.enable():
             return ExitCode.FAILURE
-        logging.info("The boot service have been enabled.")
+        logging.info("The boot service has been enabled.")
 
     elif boot_status == "disable":
         if boot_service.disable():
             return ExitCode.FAILURE
-        logging.info("The boot service have been disabled.")
+        logging.info("The boot service has been disabled.")
 
     elif boot_status == "status":
         if boot_service.status():
