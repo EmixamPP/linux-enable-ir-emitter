@@ -42,7 +42,7 @@ boot_service = get_option('boot_service')
 cfg_data = configuration_data({
     'version': meson.project_version(),
     'libdir': abs_lib_dir,
-    'SAVE_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
+    'SAVE_FOLDER_CONFIG_PATH': get_option('sysconfdir') / meson.project_name(),
     'CPP_COMMANDS_LIB_PATH': abs_lib_dir / 'libcommands.so',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
@@ -102,7 +102,7 @@ library(
         'configuration/scanner.cpp',
         'utils/globals.cpp',
         'utils/logger.cpp',
-        'utils/serializer.cpp',
+        'utils/configuration.cpp',
     ],
     dependencies: [opencv_dep, gtk_dep, yaml_dep],
     install: true,

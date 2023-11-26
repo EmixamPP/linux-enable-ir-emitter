@@ -3,7 +3,7 @@
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 #include "utils/logger.hpp"
-#include "utils/serializer.hpp"
+#include "utils/configuration.hpp"
 
 /**
  * @brief Execute a configuration.
@@ -21,20 +21,23 @@ ExitCode run(const char *device)
         Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been configured.");
 
     ExitCode code = ExitCode::SUCCESS;
-    for (auto &configPath : paths)
+    for (auto &path : paths)
     {
-        vector<CameraInstruction> configuration = Serializer::readConfigFromFile(configPath);
-        string device = deviceOf(configPath);
-
+        vector<CameraInstruction> instructions = Configuration::load(path);
+        string device = deviceOf(path);
         Camera camera(device);
         try
-        {   
-            for (auto &instruction : configuration)
+        {
+            for (auto &instruction : instructions)
             {
-                if (!camera.apply(instruction))
+                if (instruction.getCur() != instruction.getInit())
                 {
-                    Logger::error("Failed to apply the configuration of", device);
-                    code = ExitCode::FAILURE;
+                    Logger::info("Applying instruction", string(instruction), "on", device);
+                    if (!camera.apply(instruction))
+                    {
+                        Logger::error("Failed to apply the configuration of", device);
+                        code = ExitCode::FAILURE;
+                    }
                 }
             }
         }

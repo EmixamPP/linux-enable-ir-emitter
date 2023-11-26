@@ -54,32 +54,6 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
 }
 
 /**
- * @brief Construct a new Camera Instruction object.
- * Do not check if the instruction is valid.
- *
- * @param unit of the instruction
- * @param selector of the instruction
- * @param current instruction
- */
-CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &current)
-    : unit(unit), selector(selector), curCtrl(current), initCtrl(current) {}
-
-/**
- * @brief Construct a new Camera Instruction object.
- * Do not check if the instruction is valid.
- *
- * @param unit of the instruction
- * @param selector of the instruction
- * @param current instruction
- * @param maximum instruction
- * @param minimum instruction
-
- */
-CameraInstruction::CameraInstruction(uint8_t unit, uint8_t selector, const vector<uint8_t> &current,
-                                     const vector<uint8_t> &maximum, const vector<uint8_t> &minimum)
-    : unit(unit), selector(selector), curCtrl(current), initCtrl(curCtrl), maxCtrl(maximum), minCtrl(minimum) {}
-
-/**
  * @brief Compute the next possible control value.
  *
  * @return true if the next value has been set,
@@ -118,16 +92,6 @@ bool CameraInstruction::isCorrupted() const noexcept
 }
 
 /**
- * @brief Get the current control value.
- *
- * @return current control value
- */
-const vector<uint8_t> &CameraInstruction::getCur() const noexcept
-{
-    return curCtrl;
-}
-
-/**
  * @brief Get the unit of the instruction.
  *
  * @return unit
@@ -148,6 +112,16 @@ uint8_t CameraInstruction::getSelector() const noexcept
 }
 
 /**
+ * @brief Get the current control value.
+ *
+ * @return current control value
+ */
+const vector<uint8_t> &CameraInstruction::getCur() const noexcept
+{
+    return curCtrl;
+}
+
+/**
  * @brief Get the maximum of the instruction.
  *
  * @return maximum control
@@ -165,6 +139,16 @@ const vector<uint8_t> &CameraInstruction::getMax() const noexcept
 const vector<uint8_t> &CameraInstruction::getMin() const noexcept
 {
     return minCtrl;
+}
+
+/**
+ * @brief Get the initial control value.
+ *
+ * @return intial control value
+ */
+const vector<uint8_t> &CameraInstruction::getInit() const noexcept
+{
+    return initCtrl;
 }
 
 void CameraInstruction::setCorrupted(bool isCorrupted) noexcept
@@ -211,8 +195,8 @@ bool CameraInstruction::setMaxAsCur() noexcept
 }
 
 /**
- * @brief Reset to current control
- * to its initial value.
+ * @brief Reset the current control
+ * to the initial control value.
  */
 void CameraInstruction::reset() noexcept
 {

@@ -1,4 +1,4 @@
-#include "serializer.hpp"
+#include "configuration.hpp"
 
 #include <fstream>
 #include <string>
@@ -7,8 +7,8 @@ using namespace std;
 
 #include <yaml-cpp/yaml.h>
 
-#include "globals.hpp"
 #include "camera/camerainstruction.hpp"
+#include "globals.hpp"
 
 static void writeToFile(const vector<CameraInstruction> &instructions, const string &filePath)
 {
@@ -27,30 +27,19 @@ static vector<CameraInstruction> readFromFile(const string &filePath)
     }
     catch (YAML::BadFile &file)
     {
+        // TODO better handeling
     }
     return vector<CameraInstruction>();
 }
 
-void Serializer::writeScanToFile(const vector<CameraInstruction> &instructions, const string &deviceName)
-{
-    string path = scanPathOf(deviceName);
+void Configuration::save(const string &device, const vector<CameraInstruction> &instructions)
+{   
+    string path = configPathOf(device);
     writeToFile(instructions, path);
 }
 
-void Serializer::writeConfigToFile(const vector<CameraInstruction> &instructions, const string &deviceName)
+vector<CameraInstruction> Configuration::load(const string &device)
 {
-    string path = configPathOf(deviceName);
-    writeToFile(instructions, path);
-}
-
-vector<CameraInstruction> Serializer::readScanFromFile(const string &deviceName)
-{
-    string path = scanPathOf(deviceName);
-    return readFromFile(path);
-}
-
-vector<CameraInstruction> Serializer::readConfigFromFile(const string &deviceName)
-{
-    string path = configPathOf(deviceName);
+    string path = configPathOf(device);
     return readFromFile(path);
 }

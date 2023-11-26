@@ -14,12 +14,11 @@ private:
     Camera &camera;
     const unsigned emitters;
     const unsigned negAnswerLimit;
-    vector<CameraInstruction> &intructions;
 
 public:
     Finder() = delete;
 
-    explicit Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit, vector<CameraInstruction> &intructions);
+    explicit Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit);
 
     ~Finder() = default;
 
@@ -31,7 +30,7 @@ public:
 
     Finder(Finder &&other) = delete;
 
-    vector<CameraInstruction> find();
+    bool find(vector<CameraInstruction> &intructions);
 };
 
 #endif

@@ -108,7 +108,7 @@ shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera()
     {
         try
         {
-            auto camera = make_shared<AutoCamera>(device);
+            shared_ptr<AutoCamera> camera(new AutoCamera(device));
             if (camera->isGrayscale())
                 return camera;
         }

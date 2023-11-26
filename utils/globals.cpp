@@ -5,7 +5,53 @@
 #include <vector>
 using namespace std;
 
-#include <iostream>
+/**
+ * @brief Obtains the name of a device
+ *
+ * @param device path to the infrared camera
+ * @return devie name
+ */
+static string deviceNameOf(const string &device)
+{
+    size_t pos = device.rfind('/');
+    return device.substr(pos + 1);
+}
+
+/**
+ * @brief Gets the path corresponding to the configuration
+ * of a device. It does not check if the path exists.
+ *
+ * @param device path to the infrared camera
+ *
+ * @return path to the file
+ */
+string configPathOf(const string &device)
+{
+    return _SAVE_FOLDER_CONFIG_PATH + deviceNameOf(device);
+}
+
+/**
+ * @brief Get the configurations path corresponding to all configured device
+ * or just to one specific
+ *
+ * @param device path to the infrared camera
+ * Empty string to get all configurations path
+ *
+ * @return path(s) to the configuration(s)
+ */
+vector<string> getConfigPaths(const string &device)
+{
+    const string deviceName = deviceNameOf(device);
+    vector<string> paths;
+    for (const auto &entry : filesystem::directory_iterator(_SAVE_FOLDER_CONFIG_PATH))
+    {
+        string pathStr = entry.path();
+        if (pathStr.find(deviceName) != string::npos)
+            paths.push_back(entry.path());
+    }
+
+    return paths;
+}
 
 /**
  * @brief Gets the device corresponding to
@@ -17,61 +63,7 @@ using namespace std;
  */
 string deviceOf(const string &configPath)
 {
-    size_t pos = configPath.rfind('/');
-    return "/dev/v4l/by-path/" + configPath.substr(pos + 1);
-}
-
-string deviceNameOf(const string &device)
-{
-    size_t pos = device.rfind('/');
-    return device.substr(pos + 1);
-}
-
-/**
- * @brief Gets the path corresponding to the scan
- * of a device.
- *
- * @param deviceName name of the device
- *
- * @return path to the file
- */
-string scanPathOf(const string &deviceName)
-{
-    return _SAVE_FOLDER_SCAN_PATH + deviceName;
-}
-
-/**
- * @brief Gets the path corresponding to the configuration
- * of a device.
- *
- * @param deviceName name of the device
- *
- * @return path to the file
- */
-string configPathOf(const string &deviceName){
-    return _SAVE_FOLDER_CONFIG_PATH + deviceName;
-}
-
-/**
- * @brief Get the configurations path corresponding to all configured device
- * or just to one specific
- *
- * @param deviceName name of a specific device
- * Empty string to get all configurations path
- *
- * @return path(s) to the configuration(s)
- */
-vector<string> getConfigPaths(const string &deviceName)
-{
-    vector<string> paths;
-    for (const auto &entry : filesystem::directory_iterator(_SAVE_FOLDER_CONFIG_PATH))
-    {
-        string pathStr = entry.path();
-        if (pathStr.find(deviceName) != string::npos)
-            paths.push_back(entry.path());
-    }
-
-    return paths;
+    return "/dev/v4l/by-path/" + deviceNameOf(configPath);
 }
 
 /**

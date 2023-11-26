@@ -57,7 +57,7 @@ shared_ptr<Camera> Camera::findGrayscaleCamera()
     vector<string> v4lDevices = getV4LDevices();
     for (auto &device : v4lDevices)
     {
-        auto camera = make_shared<Camera>(device);
+        shared_ptr<Camera> camera(new Camera(device));
         try
         {
             if (camera->isGrayscale())

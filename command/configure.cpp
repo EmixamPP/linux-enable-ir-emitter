@@ -11,7 +11,7 @@ using namespace std;
 #include "configuration/finder.hpp"
 #include "configuration/scanner.hpp"
 #include "utils/logger.hpp"
-#include "utils/serializer.hpp"
+#include "utils/configuration.hpp"
 
 void enableDebug()
 {
@@ -31,7 +31,7 @@ void enableDebug()
  */
 ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
 {
-    const string device = string(device_char_p);
+    const string device_string = string(device_char_p);
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution."); // TODO catch ctrl-c
@@ -40,17 +40,17 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
     shared_ptr<Camera> camera;
     if (manual)
     {
-        if (device.empty())
+        if (device_string.empty())
             camera = Camera::findGrayscaleCamera();
         else
-            camera = make_shared<Camera>(device);
+            camera = make_shared<Camera>(device_string);
     }
     else
     {
-        if (device.empty())
+        if (device_string.empty())
             camera = AutoCamera::findGrayscaleCamera();
         else
-            camera = make_shared<AutoCamera>(device);
+            camera = make_shared<AutoCamera>(device_string);
     }
 
     if (noGui)
@@ -61,18 +61,16 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
 
     Logger::info("Configuring the camera:", camera->device, ".");
 
-    const string deviceName = deviceNameOf(camera->device);
-
-    vector<CameraInstruction> instructions = Serializer::readScanFromFile(deviceName);
+    vector<CameraInstruction> instructions = Configuration::load(camera->device);
     if (instructions.empty())
     {
         Scanner scanner(*camera);
         instructions = scanner.scan();
     }
 
-    Finder finder(*camera, emitters, negAnswerLimit, instructions);
-    vector<CameraInstruction> configuration;
+    Finder finder(*camera, emitters, negAnswerLimit);
 
+    bool success = false;
     try
     {
         if (camera->Camera::isEmitterWorking())
@@ -81,17 +79,17 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
             return ExitCode::FAILURE;
         }
 
-        configuration = finder.find();
+        success = finder.find(instructions);
     }
     catch (CameraException &e)
     {
-        Serializer::writeScanToFile(instructions, deviceName);
+        Configuration::save(camera->device, instructions);
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Serializer::writeScanToFile(instructions, deviceName);
+    Configuration::save(camera->device, instructions);
 
-    if (configuration.empty())
+    if (!success)
     {
         Logger::error("The configuration has failed.");
         Logger::error("Please retry in manual mode by adding the '-m' option.");
@@ -99,8 +97,6 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
         Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
         return ExitCode::FAILURE;
     }
-
-    Serializer::writeConfigToFile(configuration, deviceName);
 
     Logger::info("The emitter has been successfully configured.");
     return ExitCode::SUCCESS;
