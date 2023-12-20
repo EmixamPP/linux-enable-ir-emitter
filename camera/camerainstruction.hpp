@@ -1,13 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
 #include <vector>
 using namespace std;
 
 #include <yaml-cpp/yaml.h>
-
-#include <iostream>
 
 class Camera;
 
@@ -55,16 +52,20 @@ public:
 
     void setCorrupted(bool isCorrupted) noexcept;
 
+    bool setCur(const vector<uint8_t> &newCur) noexcept;
+
     bool setMinAsCur() noexcept;
 
     bool setMaxAsCur() noexcept;
 
     void reset() noexcept;
 
-    operator string() const;
-
     friend struct YAML::convert<CameraInstruction>;
 };
+
+string to_string(const CameraInstruction &inst);
+
+string to_string(const vector<uint8_t> &vec);
 
 class CameraInstructionException : public exception
 {
@@ -114,7 +115,7 @@ namespace YAML
             obj.curCtrl = node["current"].as<vector<uint8_t>>();
 
             if (node["initial"])
-                obj.initCtrl = node["intial"].as<vector<uint8_t>>();
+                obj.initCtrl = node["initial"].as<vector<uint8_t>>();
             else
                 obj.initCtrl.assign(obj.curCtrl.begin(), obj.curCtrl.end());
 

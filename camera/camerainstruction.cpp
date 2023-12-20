@@ -1,14 +1,10 @@
 #include "camerainstruction.hpp"
 
-#include <cstdint>
 #include <fstream>
-#include <string>
 #include <utility>
-#include <vector>
 #include <linux/usb/video.h>
 using namespace std;
 
-#include "opencv.hpp"
 #include <yaml-cpp/yaml.h>
 
 #include "camera.hpp"
@@ -64,7 +60,7 @@ bool CameraInstruction::next() noexcept
     if (curCtrl == maxCtrl)
         return false;
 
-    for (unsigned i = 0; i < curCtrl.size(); ++i)
+    for (size_t i = 0; i < curCtrl.size(); ++i)
     {
         uint16_t nextCtrli = static_cast<uint16_t>(curCtrl[i] + 1);
         if (nextCtrli > maxCtrl[i])
@@ -151,15 +147,46 @@ const vector<uint8_t> &CameraInstruction::getInit() const noexcept
     return initCtrl;
 }
 
+/**
+ * @brief Changes the corrupted status of the instruction.
+ *
+ * @param isCorrupted status to set
+ */
 void CameraInstruction::setCorrupted(bool isCorrupted) noexcept
 {
     corrupted = isCorrupted;
 }
 
 /**
+ * @brief Sets a new current control value, if it is valid.
+ *
+ * @param newCur control to set
+ *
+ * @return true if success, otherwise false
+ */
+bool CameraInstruction::setCur(const vector<uint8_t> &newCur) noexcept
+{
+    if (curCtrl.size() != newCur.size())
+        return false;
+
+    
+    for (size_t i = 0; i < newCur.size(); ++i)
+    {
+        if (!minCtrl.empty() && minCtrl[i] > newCur[i])
+            return false;
+        else if (!maxCtrl.empty() && maxCtrl[i] < newCur[i])
+            return false;
+    }
+
+    curCtrl.assign(newCur.begin(), newCur.end());
+
+    return true;
+}
+
+/**
  * @brief If a minimum control instruction exists
  * and is not already the current,
- * set it as the current control instruction with that value.
+ * sets it as the current control instruction with that value.
  *
  * @return true if success, otherwise false
  */
@@ -203,14 +230,20 @@ void CameraInstruction::reset() noexcept
     curCtrl.assign(initCtrl.begin(), initCtrl.end());
 }
 
-CameraInstruction::operator string() const
+string to_string(const CameraInstruction &inst)
 {
-    string res = " unit: " + to_string(static_cast<int>(unit));
-    res += ", selector: " + to_string(static_cast<int>(unit));
-    res += ", control:";
-    for (auto &v : curCtrl)
-        res += " " + to_string(static_cast<int>(v));
+    string res = "unit: " + to_string(inst.getUnit());
+    res += ", selector: " + to_string(inst.getSelector());
+    res += ", control: " + to_string(inst.getCur());
     return res;
+}
+
+string to_string(const vector<uint8_t> &vec)
+{
+    string res;
+    for (auto v : vec)
+        res += " " + to_string(v);
+    return res.empty() ? res : res.substr(1);
 }
 
 CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit, uint8_t selector)

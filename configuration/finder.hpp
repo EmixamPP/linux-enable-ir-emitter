@@ -1,8 +1,6 @@
 #ifndef FINDER_HPP
 #define FINDER_HPP
 
-#include <cstdint>
-#include <string>
 #include <vector>
 using namespace std;
 

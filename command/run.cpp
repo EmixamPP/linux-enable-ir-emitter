@@ -1,5 +1,8 @@
 #include "commands.hpp"
 
+#include <vector>
+using namespace std;
+
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 #include "utils/logger.hpp"
@@ -18,9 +21,9 @@ ExitCode run(const char *device)
     vector<string> paths = getConfigPaths(device);
 
     if (paths.empty())
-        Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been configured.");
+        Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been found.");
 
-    ExitCode code = ExitCode::SUCCESS;
+    bool oneFailure = false;
     for (auto &path : paths)
     {
         vector<CameraInstruction> instructions = Configuration::load(path);
@@ -32,20 +35,20 @@ ExitCode run(const char *device)
             {
                 if (instruction.getCur() != instruction.getInit())
                 {
-                    Logger::info("Applying instruction", string(instruction), "on", device);
+                    Logger::info("Applying instruction", to_string(instruction), "on", device);
                     if (!camera.apply(instruction))
                     {
                         Logger::error("Failed to apply the configuration of", device);
-                        code = ExitCode::FAILURE;
+                        oneFailure = true;
                     }
                 }
             }
         }
-        catch (CameraException &e)
+        catch (const CameraException &e)
         {
             Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
         }
     }
 
-    return code;
+    return oneFailure ? ExitCode::FAILURE : ExitCode::SUCCESS;
 }

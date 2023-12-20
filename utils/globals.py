@@ -9,11 +9,10 @@ import enum
 import importlib
 import logging
 import os
-import re
 import subprocess
 import sys
 
-SAVE_FOLDER_CONFIG_PATH = "@SAVE_FOLDER_PATH@/config/"
+SAVE_FOLDER_CONFIG_PATH = "@SAVE_FOLDER_CONFIG_PATH@"
 CPP_COMMANDS_LIB_PATH = "@CPP_COMMANDS_LIB_PATH@"
 
 UDEV_RULE_PATH = "@UDEV_RULE_PATH@"

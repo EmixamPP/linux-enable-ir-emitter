@@ -1,75 +1,20 @@
 #include "camera.hpp"
 
-#include <cstdint>
-#include <cstring>
 #include <cerrno>
 #include <fcntl.h>
 #include <linux/usb/video.h>
-#include <linux/uvcvideo.h>
-#include <memory>
-#include <string>
 #include <sys/ioctl.h>
+#include <thread>
 #include <unistd.h>
-#include <vector>
 using namespace std;
 
-#include "opencv.hpp"
 #include "camerainstruction.hpp"
 #include "globals.hpp"
 #include "utils/logger.hpp"
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
-
-/**
- * @brief Determine if the camera is in grayscale.
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if so, otheriwse false.
- */
-bool Camera::isGrayscale()
-{
-    cv::Mat frame = read1();
-
-    if (frame.channels() != 3)
-        return false;
-
-    for (int r = 0; r < frame.rows; ++r)
-        for (int c = 0; c < frame.cols; ++c)
-        {
-            const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
-            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
-                return false;
-        }
-
-    return true;
-}
-
-/**
- * @brief Find a grayscale camera.
- *
- * @return path to the graycale device,
- * nullptr if unable to find such device
- */
-shared_ptr<Camera> Camera::findGrayscaleCamera()
-{
-    vector<string> v4lDevices = getV4LDevices();
-    for (auto &device : v4lDevices)
-    {
-        shared_ptr<Camera> camera(new Camera(device));
-        try
-        {
-            if (camera->isGrayscale())
-                return camera;
-        }
-        catch (CameraException &e)
-        { // ignore
-        }
-    }
-
-    return nullptr;
-}
+constexpr int IMAGE_DELAY = 1;
 
 /**
  * @brief Get the file descriptor previously opened
@@ -176,8 +121,9 @@ Camera::~Camera()
 
 /**
  * @brief Show a video feedback until the user exit
+ * by pressing any key
  */
-void Camera::play()
+void Camera::playForever()
 {
     openCap();
     cv::Mat frame;
@@ -189,11 +135,46 @@ void Camera::play()
     {
         cap->read(frame);
         cv::imshow("linux-enable-ir-emitter", frame);
-        key = cv::waitKey(5);
+        key = cv::waitKey(IMAGE_DELAY);
     }
 
     closeCap();
     cv::destroyAllWindows();
+}
+
+/**
+ * @brief Show a video feedback until the
+ * stop funciton is called.
+ * You should not use the camera object
+ * until the stop function is called.
+ *
+ * @return a stop function
+ */
+function<void()> Camera::play()
+{
+    openCap();
+
+    shared_ptr<bool> stop = make_shared<bool>(false);
+
+    shared_ptr<thread> showVideo = make_shared<thread>(
+        [this, stop]()
+        {   // TODO: why video get stucks sometimes?
+            cv::Mat frame;
+            while (!(*stop))
+            {
+                cap->read(frame);
+                cv::imshow("linux-enable-ir-emitter", frame);
+                cv::waitKey(IMAGE_DELAY);
+            }
+        });
+
+    return [this, stop, showVideo]()
+    {
+        *stop = true;
+        showVideo->join();
+        closeCap();
+        cv::destroyAllWindows();
+    };
 }
 
 /**
@@ -234,8 +215,40 @@ cv::Mat Camera::read1()
 }
 
 /**
+ * @brief Disable the video feedback for `isEmitterWorking()`
+ */
+void Camera::disableGui()
+{
+    noGui = true;
+}
+
+/**
+ * @brief Check if the emitter is working
+ * by asking confirmation to the user
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if yes, false if not
+ */
+bool Camera::isEmitterWorking()
+{
+    openCap();
+
+    bool res;
+    if (noGui)
+        res = isEmitterWorkingAskNoGui();
+    else
+        res = isEmitterWorkingAsk();
+
+    closeCap();
+
+    return res;
+}
+
+/**
  * @brief Show a video feedback to the user
- * and asks if the emitter is working
+ * and asks if the emitter is working.
+ * Must be called between `openCap()` and `closeCap()`.
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -261,7 +274,8 @@ bool Camera::isEmitterWorkingAsk()
 
 /**
  * @brief Trigger the camera
- * and asks if the emitter is working
+ * and asks if the emitter is working.
+ * Must be called between `openCap()` and `closeCap()`.
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -287,29 +301,6 @@ bool Camera::isEmitterWorkingAskNoGui()
     }
 
     return answer == "yes" || answer == "y";
-}
-
-/**
- * @brief Check if the emitter is working
- * by asking confirmation to the user
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if yes, false if not
- */
-bool Camera::isEmitterWorking()
-{
-    openCap();
-
-    bool res;
-    if (noGui)
-        res = isEmitterWorkingAskNoGui();
-    else
-        res = isEmitterWorkingAsk();
-
-    closeCap();
-
-    return res;
 }
 
 /**
@@ -434,9 +425,54 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
     return len;
 }
 
-void Camera::disableGui()
+/**
+ * @brief Determine if the camera is in grayscale.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if so, otheriwse false.
+ */
+bool Camera::isGrayscale()
 {
-    noGui = true;
+    cv::Mat frame = read1();
+
+    if (frame.channels() != 3)
+        return false;
+
+    for (int r = 0; r < frame.rows; ++r)
+        for (int c = 0; c < frame.cols; ++c)
+        {
+            const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
+            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
+                return false;
+        }
+
+    return true;
+}
+
+/**
+ * @brief Find a grayscale camera.
+ *
+ * @return path to the graycale device,
+ * nullptr if unable to find such device
+ */
+shared_ptr<Camera> Camera::findGrayscaleCamera()
+{
+    vector<string> v4lDevices = getV4LDevices();
+    for (auto &device : v4lDevices)
+    {
+        shared_ptr<Camera> camera = make_shared<Camera>(device);
+        try
+        {
+            if (camera->isGrayscale())
+                return camera;
+        }
+        catch (CameraException &e)
+        { // ignore
+        }
+    }
+
+    return nullptr;
 }
 
 CameraException::CameraException(const string &device) : message("Cannot access to " + device) {}

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
 #include <vector>
 using namespace std;
 
@@ -19,13 +17,13 @@ public:
 
     ~Scanner() = default;
 
-    Scanner &operator=(const Scanner &) = default;
+    Scanner &operator=(const Scanner &) = delete;
 
-    Scanner(const Scanner &) = default;
+    Scanner(const Scanner &) = delete;
 
-    Scanner &operator=(Scanner &&other) = default;
+    Scanner &operator=(Scanner &&other) = delete;
 
-    Scanner(Scanner &&other) = default;
+    Scanner(Scanner &&other) = delete;
 
     vector<CameraInstruction> scan() noexcept;
 };

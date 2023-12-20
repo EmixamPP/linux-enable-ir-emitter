@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-using namespace std;
-
 #include "globals.hpp"
 
 extern "C"
@@ -11,5 +8,6 @@ extern "C"
     ExitCode delete_config(const char* device);
     ExitCode run(const char* device);
     ExitCode test(const char* device);
+    ExitCode tweak(const char* device);
     void enableDebug();
 }

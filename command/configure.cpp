@@ -4,7 +4,6 @@
 #include <memory>
 using namespace std;
 
-#include "globals.hpp"
 #include "camera/camera.hpp"
 #include "camera/autocamera.hpp"
 #include "camera/camerainstruction.hpp"
@@ -16,6 +15,33 @@ using namespace std;
 void enableDebug()
 {
     Logger::enableDebug();
+}
+
+static shared_ptr<Camera> makeCamera(const string &device, bool manual, bool noGui)
+{
+    shared_ptr<Camera> camera;
+    if (manual)
+    {
+        if (device.empty())
+            camera = Camera::findGrayscaleCamera();
+        else
+            camera = make_shared<Camera>(device);
+    }
+    else
+    {
+        if (device.empty())
+            camera = AutoCamera::findGrayscaleCamera();
+        else
+            camera = make_shared<AutoCamera>(device);
+    }
+
+    if (camera == nullptr)
+        Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
+
+    if (noGui)
+        camera->disableGui();
+    
+    return camera;
 }
 
 /**
@@ -31,34 +57,11 @@ void enableDebug()
  */
 ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
 {
-    const string device_string = string(device_char_p);
-
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution."); // TODO catch ctrl-c
     Logger::info("Warning to do not kill the process !");
 
-    shared_ptr<Camera> camera;
-    if (manual)
-    {
-        if (device_string.empty())
-            camera = Camera::findGrayscaleCamera();
-        else
-            camera = make_shared<Camera>(device_string);
-    }
-    else
-    {
-        if (device_string.empty())
-            camera = AutoCamera::findGrayscaleCamera();
-        else
-            camera = make_shared<AutoCamera>(device_string);
-    }
-
-    if (noGui)
-        camera->disableGui();
-
-    if (camera == nullptr)
-        Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-
+    shared_ptr<Camera> camera = makeCamera(string(device_char_p), manual, noGui);
     Logger::info("Configuring the camera:", camera->device, ".");
 
     vector<CameraInstruction> instructions = Configuration::load(camera->device);
@@ -81,7 +84,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
 
         success = finder.find(instructions);
     }
-    catch (CameraException &e)
+    catch (const CameraException &e)
     {
         Configuration::save(camera->device, instructions);
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());

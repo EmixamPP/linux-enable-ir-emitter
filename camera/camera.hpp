@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <linux/uvcvideo.h>
 #include <memory>
 #include <string>
@@ -57,9 +56,13 @@ public:
 
     Camera(Camera &&other) = delete;
 
-    void play();
+    function<void()> play();
+
+    void playForever();
 
     bool apply(const CameraInstruction &instruction);
+
+    void disableGui();
 
     virtual bool isEmitterWorking();
 
@@ -74,8 +77,6 @@ public:
     bool isGrayscale();
 
     static shared_ptr<Camera> findGrayscaleCamera();
-
-    void disableGui();
 };
 
 class CameraException : public exception

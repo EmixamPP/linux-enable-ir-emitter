@@ -2,9 +2,6 @@
 
 #include "camera/camerainstruction.hpp"
 
-#include <vector>
-using namespace std;
-
 /**
  * @brief Construct a new Scanner:: Scanner object
  * 

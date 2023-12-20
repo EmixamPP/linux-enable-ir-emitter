@@ -3,10 +3,8 @@
 #include <fstream>
 #include <string>
 #include <thread>
-#include <vector>
 using namespace std;
 
-#include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 #include "utils/logger.hpp"
 
@@ -47,14 +45,11 @@ bool Finder::find(vector<CameraInstruction> &intructions)
                 if (negAnswerCounter == negAnswerLimit - 1)
                     instruction.setMaxAsCur();
 
-                Logger::debug("Instruction applied:", string(instruction));
+                Logger::debug("Instruction applied:", to_string(instruction));
 
-                if (camera.apply(instruction) && camera.isEmitterWorking())
-                {
-                    ++configured;
-                    if (configured == emitters) // all emitters are configured
-                        return true;
-                }
+                if (camera.apply(instruction) && camera.isEmitterWorking() && ++configured == emitters)
+                    return true; // all emitters are configured
+
                 ++negAnswerCounter;
             }
 
