@@ -79,6 +79,10 @@ if __name__ == "__main__":
         default=False,
     )
     command_test = command_subparser.add_parser(
+        "tweak",
+        help="tweak a camera",
+    )
+    command_test = command_subparser.add_parser(
         "test",
         help="test a camera",
     )
@@ -131,10 +135,14 @@ if __name__ == "__main__":
             args.manual,
             args.emitters,
             args.limit,
-            args.no_gui
+            args.no_gui,
         )
         if res == ExitCode.SUCCESS:
             boot("enable")
+
+    elif args.command == "tweak":
+        check_root()
+        res = cpp_commands.tweak(device.encode())
 
     elif args.command == "test":
         res = cpp_commands.test(device.encode())

@@ -21,3 +21,6 @@ cpp_commands.run.restype = ctypes.c_int
 
 cpp_commands.test.argtypes = [ctypes.c_char_p]
 cpp_commands.test.restype = ctypes.c_int
+
+cpp_commands.tweak.argtypes = [ctypes.c_char_p]
+cpp_commands.tweak.restype = ctypes.c_int
