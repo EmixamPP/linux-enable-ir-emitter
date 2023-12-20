@@ -16,10 +16,12 @@ project(
 add_project_arguments(
     # fix clang-tidy
     '-Wno-unknown-warning-option', '-Wno-unused-macros',
-    # ignore boring flags
+    # ignore bugged and boring flags
     '-Wno-pragmas', '-Wno-abi-tag', '-Wno-effc++',
     '-Wno-padded', '-Wno-shadow', '-Wno-sign-promo', 
-    '-Wno-unused-const-variable',
+    '-Wno-unused-const-variable', '-Wno-suggest-final-types',
+    '-Wno-suggest-final-methods', '-Wno-suggest-attribute=pure',
+    '-Wno-suggest-attribute=const', '-Wno-inline',
     # for yaml-cpp because impossible to disable werror
     # and warning_level
     '-Wno-switch-default', '-Wno-multiple-inheritance', '-Wno-missing-include-dirs',
