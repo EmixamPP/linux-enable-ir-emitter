@@ -22,6 +22,8 @@ Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit)
  * @brief Find an instruction which enable the ir emitter(s)
  *
  * @param instructions to test, corrupted ones are ignored or will be marked as such
+ * 
+ * @throw CameraException
  *
  * @return a vector containing the intruction(s),
  * empty if the configuration failed

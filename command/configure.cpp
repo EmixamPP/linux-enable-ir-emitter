@@ -78,7 +78,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
     {
         if (camera->Camera::isEmitterWorking())
         {
-            Logger::error("Your emiter is already working, skipping the configuration.");
+            Logger::error("The emiter is already working, skipping the configuration.");
             return ExitCode::FAILURE;
         }
 
@@ -95,7 +95,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
     if (!success)
     {
         Logger::error("The configuration has failed.");
-        Logger::error("Please retry in manual mode by adding the '-m' option.");
+        Logger::info("Please retry in manual mode by adding the '-m' option.");
         Logger::info("Do not hesitate to visit the GitHub !");
         Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
         return ExitCode::FAILURE;

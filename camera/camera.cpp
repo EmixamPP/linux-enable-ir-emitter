@@ -259,14 +259,14 @@ bool Camera::isEmitterWorkingAsk()
     cv::Mat frame;
     int key = -1;
 
-    cout << "Is the video flashing? Press Y or N in the window" << endl;
+    cout << "Is the video flashing? Press Y or N in the window." << endl;
     while (key != OK_KEY && key != NOK_KEY)
     {
         cap->read(frame);
         cv::imshow("linux-enable-ir-emitter", frame);
         key = cv::waitKey(5);
     }
-    cout << (key == OK_KEY ? "Y pressed" : "N pressed") << endl;
+    Logger::debug(key == OK_KEY ? "Y pressed." : "N pressed.");
 
     cv::destroyAllWindows();
     return key == OK_KEY;
@@ -299,6 +299,7 @@ bool Camera::isEmitterWorkingAskNoGui()
         transform(answer.begin(), answer.end(), answer.begin(), [](char c)
                   { return tolower(c); });
     }
+    Logger::debug(answer, " inputed.");
 
     return answer == "yes" || answer == "y";
 }

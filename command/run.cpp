@@ -33,10 +33,10 @@ ExitCode run(const char *device)
         {
             for (auto &instruction : instructions)
             {
-                Logger::info("Applying instruction", to_string(instruction), "on", device);
+                Logger::debug("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))
                 {
-                    Logger::error("Failed to apply the instruction.");
+                    Logger::error("Failed to apply the instruction", to_string(instruction));
                     oneFailure = true;
                 }
             }

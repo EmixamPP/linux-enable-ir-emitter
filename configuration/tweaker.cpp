@@ -42,14 +42,13 @@ static size_t askForChoice(const vector<CameraInstruction> &instructions)
 
 static vector<uint8_t> askForNewCur(const CameraInstruction &inst)
 {
-    auto &prevCur = inst.getCur();
-    auto &min = inst.getMin();
-    auto &max = inst.getMax();
+    cout << "minimum: " << to_string(inst.getMin()) << endl;
+    cout << ", maximum: " << to_string(inst.getMax()) << endl;
+    cout << " initial: " << to_string(inst.getInit()) << endl;
+    cout << "current: " << to_string(inst.getCur()) << endl;
+    cout << "new current: ";
 
     string newCurStr;
-    cout << "minimum: " << to_string(min) << ", maximum: " << to_string(max);
-    cout << " initial: " << to_string(inst.getInit()) << ", current: " << to_string(prevCur) << std::endl;
-    cout << "new current: ";
     getline(cin >> ws, newCurStr);
 
     vector<uint8_t> newCur;
@@ -63,6 +62,8 @@ static vector<uint8_t> askForNewCur(const CameraInstruction &inst)
  * @brief Allow the user to tweak the instruction of its camera
  *
  * @param intructions to tweak, corrupted ones are ignored or will be marked as such
+ * 
+ * @throw CameraException
  */
 void Tweaker::tweak(vector<CameraInstruction> &instructions)
 {
@@ -85,7 +86,7 @@ void Tweaker::tweak(vector<CameraInstruction> &instructions)
 
         if (!inst.setCur(newCur))
         {
-            Logger::error("Invalid value for the instruction.");
+            Logger::warning("Invalid value for the instruction.");
             continue;
         }
 

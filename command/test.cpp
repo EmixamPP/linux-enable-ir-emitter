@@ -41,7 +41,7 @@ ExitCode test(const char *device_char_p)
     if (camera->isGrayscale())
         Logger::info("The camera", camera->device, "is in gray scale. This is probably your infrared camera.");
     else
-        Logger::error("The camera", camera->device, "is not in gray scale. This is probably your regular camera.");
+        Logger::warning("The camera", camera->device, "is not in gray scale. This is probably your regular camera.");
 
     try
     {
