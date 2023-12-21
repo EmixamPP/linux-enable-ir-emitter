@@ -42,7 +42,15 @@ ExitCode tweak(const char *device_char_p)
     }
 
     Tweaker tweaker(*camera);
-    tweaker.tweak(instructions);
+    try
+    {
+        tweaker.tweak(instructions);
+    }
+    catch (const CameraException &e)
+    {
+        Configuration::save(camera->device, instructions);
+        Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
+    }
 
     Configuration::save(camera->device, instructions);
 
