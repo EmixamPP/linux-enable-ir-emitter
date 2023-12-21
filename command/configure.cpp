@@ -60,8 +60,7 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
     catch_ctrl_c();
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
-    Logger::info("Ensure to not use the camera during the execution."); // TODO catch ctrl-c
-    Logger::info("Warning to do not kill the process !");
+    Logger::info("Ensure to not use the camera during the execution.");
 
     shared_ptr<Camera> camera = makeCamera(string(device_char_p), manual, noGui);
     Logger::info("Configuring the camera:", camera->device);

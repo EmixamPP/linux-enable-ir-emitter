@@ -25,6 +25,9 @@ static optional<vector<CameraInstruction>> readFromFile(const string &filePath)
         YAML::Node node = YAML::LoadFile(filePath);
         return node.as<vector<CameraInstruction>>();
     }
+    catch (const YAML::BadFile &)
+    {
+    }
     catch (...)
     {
         Logger::error("Error while reading the configuration file at", filePath);
