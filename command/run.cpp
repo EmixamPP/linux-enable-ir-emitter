@@ -33,14 +33,11 @@ ExitCode run(const char *device)
         {
             for (auto &instruction : instructions)
             {
-                if (instruction.getCur() != instruction.getInit())
+                Logger::info("Applying instruction", to_string(instruction), "on", device);
+                if (!camera.apply(instruction))
                 {
-                    Logger::info("Applying instruction", to_string(instruction), "on", device);
-                    if (!camera.apply(instruction))
-                    {
-                        Logger::error("Failed to apply the configuration of", device);
-                        oneFailure = true;
-                    }
+                    Logger::error("Failed to apply the instruction.");
+                    oneFailure = true;
                 }
             }
         }
