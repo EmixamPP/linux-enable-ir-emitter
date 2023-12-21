@@ -14,7 +14,7 @@ using namespace std;
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
-constexpr int IMAGE_DELAY = 1;
+constexpr int IMAGE_DELAY = 30;
 
 /**
  * @brief Get the file descriptor previously opened
@@ -158,7 +158,7 @@ function<void()> Camera::play()
 
     shared_ptr<thread> showVideo = make_shared<thread>(
         [this, stop]()
-        {   // TODO: why video get stucks sometimes?
+        {
             cv::Mat frame;
             while (!(*stop))
             {
@@ -264,7 +264,7 @@ bool Camera::isEmitterWorkingAsk()
     {
         cap->read(frame);
         cv::imshow("linux-enable-ir-emitter", frame);
-        key = cv::waitKey(5);
+        key = cv::waitKey(IMAGE_DELAY);
     }
     Logger::debug(key == OK_KEY ? "Y pressed." : "N pressed.");
 
