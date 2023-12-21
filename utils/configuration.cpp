@@ -2,13 +2,13 @@
 
 #include <fstream>
 #include <string>
-#include <vector>
 using namespace std;
 
 #include <yaml-cpp/yaml.h>
 
-#include "camera/camerainstruction.hpp"
 #include "globals.hpp"
+#include "camera/camerainstruction.hpp"
+#include "utils/logger.hpp"
 
 static void writeToFile(const vector<CameraInstruction> &instructions, const string &filePath)
 {
@@ -18,27 +18,36 @@ static void writeToFile(const vector<CameraInstruction> &instructions, const str
     file.close();
 }
 
-static vector<CameraInstruction> readFromFile(const string &filePath)
+static optional<vector<CameraInstruction>> readFromFile(const string &filePath)
 {
     try
     {
         YAML::Node node = YAML::LoadFile(filePath);
         return node.as<vector<CameraInstruction>>();
     }
-    catch (YAML::BadFile &file)
+    catch (...)
     {
-        // TODO better handeling
+        Logger::error("Error while reading the configuration file at", filePath);
     }
-    return vector<CameraInstruction>();
+
+    return {};
 }
 
 void Configuration::save(const string &device, const vector<CameraInstruction> &instructions)
-{   
+{
     string path = configPathOf(device);
     writeToFile(instructions, path);
 }
 
-vector<CameraInstruction> Configuration::load(const string &device)
+/**
+ * @brief Read the configuration file of a device.
+ *
+ * @param device path to the infrared camera
+ *
+ * @return vector with the instructions of the configuration
+ * @return no value if an error happened
+ */
+optional<vector<CameraInstruction>> Configuration::load(const string &device)
 {
     string path = configPathOf(device);
     return readFromFile(path);

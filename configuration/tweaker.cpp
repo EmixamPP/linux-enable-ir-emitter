@@ -62,7 +62,7 @@ static vector<uint8_t> askForNewCur(const CameraInstruction &inst)
  * @brief Allow the user to tweak the instruction of its camera
  *
  * @param intructions to tweak, corrupted ones are ignored or will be marked as such
- * 
+ *
  * @throw CameraException
  */
 void Tweaker::tweak(vector<CameraInstruction> &instructions)
@@ -94,7 +94,7 @@ void Tweaker::tweak(vector<CameraInstruction> &instructions)
         {
             camera.apply(inst);
         }
-        catch (CameraException &e)
+        catch (const CameraException &e)
         {
             inst.setCur(prevCur);
             inst.setCorrupted(true);

@@ -29,7 +29,7 @@ vector<CameraInstruction> Scanner::scan() noexcept
             {
                 instructions.push_back(CameraInstruction(camera, unit, selector));
             }
-            catch (CameraInstructionException &)
+            catch (const CameraInstructionException &)
             {
             }
         }

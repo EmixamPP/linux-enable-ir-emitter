@@ -58,11 +58,11 @@ bool Finder::find(vector<CameraInstruction> &intructions)
             instruction.reset();
             camera.apply(instruction);
         }
-        catch (CameraInstructionException &e)
+        catch (const CameraInstructionException &e)
         {
             continue;
         }
-        catch (CameraException &e)
+        catch (const CameraException &e)
         {
             Logger::error("Impossible to reset the camera.");
             Logger::info("Please shut down your computer, then boot and retry.");

@@ -108,22 +108,29 @@ namespace YAML
 
         static bool decode(const Node &node, CameraInstruction &obj)
         {
-            obj.corrupted = node["corrupted"].as<bool>();
-            obj.unit = node["unit"].as<uint8_t>();
-            obj.selector = node["selector"].as<uint8_t>();
+            try
+            {
+                obj.corrupted = node["corrupted"].as<bool>();
+                obj.unit = node["unit"].as<uint8_t>();
+                obj.selector = node["selector"].as<uint8_t>();
 
-            obj.curCtrl = node["current"].as<vector<uint8_t>>();
+                obj.curCtrl = node["current"].as<vector<uint8_t>>();
 
-            if (node["initial"])
-                obj.initCtrl = node["initial"].as<vector<uint8_t>>();
-            else
-                obj.initCtrl.assign(obj.curCtrl.begin(), obj.curCtrl.end());
+                if (node["initial"])
+                    obj.initCtrl = node["initial"].as<vector<uint8_t>>();
+                else
+                    obj.initCtrl.assign(obj.curCtrl.begin(), obj.curCtrl.end());
 
-            if (node["maximum"])
-                obj.maxCtrl = node["maximum"].as<vector<uint8_t>>();
+                if (node["maximum"])
+                    obj.maxCtrl = node["maximum"].as<vector<uint8_t>>();
 
-            if (node["minimum"])
-                obj.minCtrl = node["minimum"].as<vector<uint8_t>>();
+                if (node["minimum"])
+                    obj.minCtrl = node["minimum"].as<vector<uint8_t>>();
+            }
+            catch (...)
+            {
+                return false;
+            }
 
             return true;
         }

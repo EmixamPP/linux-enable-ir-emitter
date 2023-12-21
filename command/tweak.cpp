@@ -33,9 +33,10 @@ ExitCode tweak(const char *device_char_p)
     shared_ptr<Camera> camera = makeCamera(string(device_char_p));
 
     Logger::info("Tweaking the camera:", camera->device, ".");
+    Logger::info("Caution, you could break the camera configuration.");
 
-    vector<CameraInstruction> instructions = Configuration::load(camera->device);
-    if (instructions.empty())
+    auto instructions = Configuration::load(camera->device);
+    if (!instructions)
     {
         Scanner scanner(*camera);
         instructions = scanner.scan();
@@ -44,15 +45,15 @@ ExitCode tweak(const char *device_char_p)
     Tweaker tweaker(*camera);
     try
     {
-        tweaker.tweak(instructions);
+        tweaker.tweak(instructions.value());
     }
     catch (const CameraException &e)
     {
-        Configuration::save(camera->device, instructions);
+        Configuration::save(camera->device, instructions.value());
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Configuration::save(camera->device, instructions);
+    Configuration::save(camera->device, instructions.value());
 
     return ExitCode::SUCCESS;
 }

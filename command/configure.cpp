@@ -64,8 +64,8 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
     shared_ptr<Camera> camera = makeCamera(string(device_char_p), manual, noGui);
     Logger::info("Configuring the camera:", camera->device, ".");
 
-    vector<CameraInstruction> instructions = Configuration::load(camera->device);
-    if (instructions.empty())
+    auto instructions = Configuration::load(camera->device);
+    if (!instructions)
     {
         Scanner scanner(*camera);
         instructions = scanner.scan();
@@ -82,15 +82,15 @@ ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, un
             return ExitCode::FAILURE;
         }
 
-        success = finder.find(instructions);
+        success = finder.find(instructions.value());
     }
     catch (const CameraException &e)
     {
-        Configuration::save(camera->device, instructions);
+        Configuration::save(camera->device, instructions.value());
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Configuration::save(camera->device, instructions);
+    Configuration::save(camera->device, instructions.value());
 
     if (!success)
     {

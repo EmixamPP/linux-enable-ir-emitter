@@ -468,7 +468,7 @@ shared_ptr<Camera> Camera::findGrayscaleCamera()
             if (camera->isGrayscale())
                 return camera;
         }
-        catch (CameraException &e)
+        catch (const CameraException &e)
         { // ignore
         }
     }

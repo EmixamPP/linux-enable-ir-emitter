@@ -26,12 +26,15 @@ ExitCode run(const char *device)
     bool oneFailure = false;
     for (auto &path : paths)
     {
-        vector<CameraInstruction> instructions = Configuration::load(path);
+        auto instructions = Configuration::load(path);
+        if (!instructions)
+            continue;
+
         string device = deviceOf(path);
         Camera camera(device);
         try
         {
-            for (auto &instruction : instructions)
+            for (auto &instruction : instructions.value())
             {
                 Logger::debug("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))
