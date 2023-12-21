@@ -43,8 +43,8 @@ static size_t askForChoice(const vector<CameraInstruction> &instructions)
 static vector<uint8_t> askForNewCur(const CameraInstruction &inst)
 {
     cout << "minimum: " << to_string(inst.getMin()) << endl;
-    cout << ", maximum: " << to_string(inst.getMax()) << endl;
-    cout << " initial: " << to_string(inst.getInit()) << endl;
+    cout << "maximum: " << to_string(inst.getMax()) << endl;
+    cout << "initial: " << to_string(inst.getInit()) << endl;
     cout << "current: " << to_string(inst.getCur()) << endl;
     cout << "new current: ";
 
