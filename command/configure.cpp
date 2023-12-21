@@ -57,6 +57,8 @@ static shared_ptr<Camera> makeCamera(const string &device, bool manual, bool noG
  */
 ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
 {
+    catch_ctrl_c();
+    
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution."); // TODO catch ctrl-c
     Logger::info("Warning to do not kill the process !");

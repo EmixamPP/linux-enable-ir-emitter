@@ -30,10 +30,12 @@ static shared_ptr<Camera> makeCamera(const string &device)
 
 ExitCode tweak(const char *device_char_p)
 {
+    catch_ctrl_c();
+    
     shared_ptr<Camera> camera = makeCamera(string(device_char_p));
 
     Logger::info("Tweaking the camera:", camera->device, ".");
-    Logger::info("Caution, you could break the camera configuration.");
+    Logger::info("Caution, you could break the camera.");
 
     auto instructions = Configuration::load(camera->device);
     if (!instructions)

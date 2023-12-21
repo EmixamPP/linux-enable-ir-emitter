@@ -1,8 +1,8 @@
 #include "globals.hpp"
 
 #include <filesystem>
-#include <string>
-#include <vector>
+#include <iostream>
+#include <signal.h>
 using namespace std;
 
 /**
@@ -78,4 +78,21 @@ vector<string> get_V4L_devices()
         devices.push_back(entry.path());
 
     return devices;
+}
+
+static void signalHandler(int signal)
+{
+    if (signal == SIGINT)
+    {
+        static int ctrlc_counter = 0;
+        ++ctrlc_counter;
+        if (ctrlc_counter == 2)
+            exit(ExitCode::FAILURE);
+        cout << " Ctrl-c again if you really want to, be careful this could break the camera." << endl;
+    }
+}
+
+void catch_ctrl_c()
+{
+    signal(SIGINT, signalHandler);
 }

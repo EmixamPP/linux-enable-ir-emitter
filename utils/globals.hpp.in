@@ -21,3 +21,5 @@ vector<string> get_config_paths(const string &device);
 string device_of(const string &configPath);
 
 vector<string> get_V4L_devices();
+
+void catch_ctrl_c();
