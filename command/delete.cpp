@@ -17,7 +17,7 @@ using namespace std;
  */
 ExitCode delete_config(const char* device)
 {
-    vector<string> configs = getConfigPaths(device);
+    vector<string> configs = get_config_paths(device);
     for (auto &config : configs)
         filesystem::remove(config);
 

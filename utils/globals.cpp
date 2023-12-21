@@ -25,7 +25,7 @@ static string deviceNameOf(const string &device)
  *
  * @return path to the file
  */
-string configPathOf(const string &device)
+string config_path_of(const string &device)
 {
     return _SAVE_FOLDER_CONFIG_PATH + deviceNameOf(device);
 }
@@ -39,7 +39,7 @@ string configPathOf(const string &device)
  *
  * @return path(s) to the configuration(s)
  */
-vector<string> getConfigPaths(const string &device)
+vector<string> get_config_paths(const string &device)
 {
     const string deviceName = deviceNameOf(device);
     vector<string> paths;
@@ -61,7 +61,7 @@ vector<string> getConfigPaths(const string &device)
  *
  * @return device path
  */
-string deviceOf(const string &configPath)
+string device_of(const string &configPath)
 {
     return "/dev/v4l/by-path/" + deviceNameOf(configPath);
 }
@@ -71,7 +71,7 @@ string deviceOf(const string &configPath)
  *
  * @return path to the v4l device
  */
-vector<string> getV4LDevices()
+vector<string> get_V4L_devices()
 {
     vector<string> devices;
     for (const auto &entry : filesystem::directory_iterator("/dev/v4l/by-path"))

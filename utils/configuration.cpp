@@ -35,7 +35,7 @@ static optional<vector<CameraInstruction>> readFromFile(const string &filePath)
 
 void Configuration::save(const string &device, const vector<CameraInstruction> &instructions)
 {
-    string path = configPathOf(device);
+    string path = config_path_of(device);
     writeToFile(instructions, path);
 }
 
@@ -49,6 +49,6 @@ void Configuration::save(const string &device, const vector<CameraInstruction> &
  */
 optional<vector<CameraInstruction>> Configuration::load(const string &device)
 {
-    string path = configPathOf(device);
+    string path = config_path_of(device);
     return readFromFile(path);
 }

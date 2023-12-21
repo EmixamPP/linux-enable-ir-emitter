@@ -18,7 +18,7 @@ using namespace std;
 ExitCode run(const char *device)
 {
 
-    vector<string> paths = getConfigPaths(device);
+    vector<string> paths = get_config_paths(device);
 
     if (paths.empty())
         Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been found.");
@@ -30,7 +30,7 @@ ExitCode run(const char *device)
         if (!instructions)
             continue;
 
-        string device = deviceOf(path);
+        string device = device_of(path);
         Camera camera(device);
         try
         {
