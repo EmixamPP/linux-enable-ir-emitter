@@ -1,8 +1,0 @@
-[submodule "subprojects/opencv"]
-	path = subprojects/opencv
-	url = https://github.com/opencv/opencv.git
-	branch = 4.8.1
-[submodule "subprojects/yaml-cpp"]
-	path = subprojects/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
-	branch = yaml-cpp-0.8.0

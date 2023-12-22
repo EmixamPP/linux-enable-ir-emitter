@@ -1,1 +1,2 @@
 option('boot_service', type : 'combo', choices : ['systemd', 'openrc'], value : 'systemd')
+option('static_dep', type : 'boolean', value : false)

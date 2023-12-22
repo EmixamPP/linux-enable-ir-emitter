@@ -22,81 +22,16 @@ add_project_arguments(
     '-Wno-unused-const-variable', '-Wno-suggest-final-types',
     '-Wno-suggest-final-methods', '-Wno-suggest-attribute=pure',
     '-Wno-suggest-attribute=const', '-Wno-inline',
-    # for yaml-cpp because impossible to disable werror
-    # and warning_level
-    '-Wno-switch-default', '-Wno-multiple-inheritance', '-Wno-missing-include-dirs',
     language: 'cpp'
 )
 
 ############
 # Dependency
 ############
-opencv_dep = dependency('opencv4', static: true, required: false)
-if not opencv_dep.found()
-    cmake = import('cmake')
-    opencv_opt = cmake.subproject_options()
-    opencv_opt.add_cmake_defines({
-        'BUILD_SHARED_LIBS': 'OFF',
-        'BUILD_LIST': 'videoio,highgui',
-        # force static zlib build
-        'ZLIB_FOUND': 'OFF',
-        'BUILD_ZLIB': 'ON',
-        # disabe everything else:
-        'WITH_OPENCL': 'OFF',
-        'WITH_OPENCLAMDFFT': 'OFF',
-        'WITH_OPENCLAMDBLAS': 'OFF',
-        'WITH_VA_INTEL': 'OFF',
-        'WITH_IMGCODEC_HDR': 'OFF',
-        'WITH_IMGCODEC_SUNRASTER': 'OFF',
-        'WITH_IMGCODEC_PXM': 'OFF',
-        'WITH_IMGCODEC_PFM': 'OFF',
-        'WITH_JPEG': 'OFF',
-        'WITH_PNG': 'OFF',
-        'WITH_TIFF': 'OFF',
-        'WITH_WEBP': 'OFF',
-        'WITH_OPENJPEG': 'OFF',
-        'WITH_JASPER': 'OFF',
-        'WITH_OPENEXR': 'OFF',
-        'WITH_FFMPEG': 'OFF',
-        'WITH_GSTREAMER': 'OFF',
-        'WITH_1394': 'OFF',
-        'WITH_ANDROID_MEDIANDK': 'OFF',
-        'DVIDEOIO_ENABLE_PLUGINS': 'OFF',
-        'HIGHGUI_ENABLE_PLUGINS': 'OFF',
-        'WITH_PROTOBUF': 'OFF',
-        'OPENCV_DNN_OPENCL': 'OFF',
-        'WITH_IPP': 'OFF',
-        'WITH_ITT' : 'OFF',
-        'WITH_CAROTENE': 'OFF',
-        'WITH_CPUFEATURES': 'OFF',
-        'WITH_EIGEN': 'OFF',
-        'WITH_DIRECTX': 'OFF',
-        'WITH_VA': 'OFF',
-        'WITH_LAPACK': 'OFF',
-        'WITH_VTK': 'OFF',
-        'WITH_FLATBUFFERS': 'OFF',
-    })
-    opencv_opt.set_override_option('werror', 'false')
-    opencv_opt.set_override_option('warning_level', '0')
-    opencv_proj = cmake.subproject('opencv', options: opencv_opt)
-    opencv_dep = opencv_proj.dependency('opencv4')
-endif
+static_dep = get_option('static_dep')
+opencv_dep = dependency('opencv4', static: static_dep)
 gtk_dep = dependency('gtk+-3.0')
-
-yaml_dep = dependency('yaml-cpp', static: true, required: false)
-if not yaml_dep.found()
-    cmake = import('cmake')
-    yaml_opt = cmake.subproject_options()
-    yaml_opt.add_cmake_defines({
-        'YAML_BUILD_SHARED_LIBS': false,
-        'YAML_CPP_BUILD_CONTRIB': false,
-        'YAML_CPP_BUILD_TOOLS': false,
-    })
-    yaml_opt.set_override_option('werror', 'false')
-    yaml_opt.set_override_option('warning_level', '0')
-    yaml_proj = cmake.subproject('yaml-cpp', options: yaml_opt)
-    yaml_dep = yaml_proj.dependency('yaml-cpp')
-endif
+yaml_dep = dependency('yaml-cpp', static: static_dep)
 
 ##########
 # Variable

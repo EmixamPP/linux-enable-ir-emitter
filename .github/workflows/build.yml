@@ -6,6 +6,7 @@ on:
 
 env: 
   OPENCV_VERSION: "4.8.1"
+  YAML_VERSION: "0.8.0"
 
 jobs:
   build:
@@ -24,11 +25,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev cmake curl
           python -m pip install --upgrade pip
-          python -m pip install meson
-      
-      - name: Initialize git dependencies
-        run: |
-          git submodule update --init
+          python -m pip install meson          
       
       - name: Cache OpenCV
         id: opencv-cache
@@ -53,15 +50,32 @@ jobs:
               -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
               -DWITH_IPP=OFF -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF
           ninja -C opencv/build
+      
+      - name: Cache YAML
+        id: yaml-cache
+        uses: actions/cache@v3
+        with:
+          path: yaml
+          key: yaml-${{ env.YAML_VERSION }}
+      
+      - name: Build minimal static YAML
+        if: ${{ steps.yaml-cache.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p yaml/build
+          curl -L https://github.com/jbeder/yaml-cpp/archive/refs/tags/${{ env.YAML_VERSION }}.tar.gz | tar -xz -C yaml
+          cmake -B yaml/build -S yaml/yaml-${{ env.YAML_VERSION }} -GNinja \
+              -DYAML_BUILD_SHARED_LIBS=OFF -DYAML_CPP_BUILD_CONTRIB=OFF -DYAML_CPP_BUILD_TOOLS=OFF
+          ninja -C yaml/build
           
-      - name: Install OpenCV
+      - name: Install OpenCV and YAML
         run: |
           sudo ninja install -C opencv/build
+          sudo ninja install -C yaml/build
 
       - name: Setup build
         run: |
           meson setup build
-          meson configure build -Dlibdir=lib64 
+          meson configure build -Dlibdir=lib64 -Dstatic_dep=true
       
       - name: Compile - Systemd
         run: |
