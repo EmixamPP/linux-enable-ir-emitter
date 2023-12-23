@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     device: str = ""
     # Determine the device path if needed
-    if args.device and args.command in ("configure", "run", "delete"):
+    if args.device and args.command in ("configure", "run", "delete", "tweak"):
         device = args.device
         # Find the v4l path
         v4l_device = subprocess.run(
@@ -115,13 +115,16 @@ if __name__ == "__main__":
             shell=True,
             capture_output=True,
             text=True,
-        ).stdout.strip()
+        ).stdout
+
         if len(v4l_device) == 0:
             logging.critical(
                 f"The device {device} does not exists or is not a supported v4l camera."
             )
             exit(ExitCode.FAILURE)
-        device = v4l_device
+
+        pos = v4l_device.find("\n")
+        device = v4l_device[:pos]
 
     # Execute the desired command
     res = ExitCode.FAILURE
