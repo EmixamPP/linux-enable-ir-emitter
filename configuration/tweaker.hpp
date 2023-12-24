@@ -17,13 +17,13 @@ public:
 
     ~Tweaker() = default;
 
-    Tweaker &operator=(const Tweaker &) = default;
+    Tweaker &operator=(const Tweaker &) = delete;
 
-    Tweaker(const Tweaker &) = default;
+    Tweaker(const Tweaker &) = delete;
 
-    Tweaker &operator=(Tweaker &&other) = default;
+    Tweaker &operator=(Tweaker &&other) = delete;
 
-    Tweaker(Tweaker &&other) = default;
+    Tweaker(Tweaker &&other) = delete;
 
     void tweak(vector<CameraInstruction> &instructions);
 };

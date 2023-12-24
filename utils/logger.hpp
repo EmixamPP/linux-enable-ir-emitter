@@ -24,7 +24,7 @@ public:
     static void enableDebug();
 
     template <typename... Args>
-    static void debug(Args &&...args)
+    static void debug(Args ...args)
     {
         if (Logger::isDebugEnabled)
         {
@@ -35,7 +35,7 @@ public:
     }
 
     template <typename... Args>
-    static void info(Args &&...args)
+    static void info(Args ...args)
     {
         cout << "INFO:";
         ((cout << " " << args), ...);
@@ -43,7 +43,7 @@ public:
     }
 
     template <typename... Args>
-    static void warning(Args &&...args)
+    static void warning(Args ...args)
     {
         cout << "WARNING:";
         ((cout << " " << args), ...);
@@ -51,7 +51,7 @@ public:
     }
 
     template <typename... Args>
-    static void error(Args &&...args)
+    static void error(Args ...args)
     {
         cout << "ERROR:";
         ((cout << " " << args), ...);
@@ -59,7 +59,7 @@ public:
     }
 
     template <typename... Args>
-    [[noreturn]] static void critical(int code, Args &&...args)
+    [[noreturn]] static void critical(int code, Args ...args)
     {
         cout << "CRITICAL:";
         ((cout << " " << args), ...);
