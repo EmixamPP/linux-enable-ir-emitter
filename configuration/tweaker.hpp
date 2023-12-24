@@ -25,5 +25,5 @@ public:
 
     Tweaker(Tweaker &&other) = default;
 
-    void tweak(vector<CameraInstruction> &intructions);
+    void tweak(vector<CameraInstruction> &instructions);
 };

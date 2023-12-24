@@ -20,7 +20,7 @@ static size_t askForChoice(const vector<CameraInstruction> &instructions)
     size_t i = 0;
     for (; i < instructions.size(); ++i)
     {
-        auto &inst = instructions.at(i);
+        const auto &inst = instructions.at(i);
 
         if (inst.isCorrupted())
             continue;
