@@ -39,6 +39,22 @@ if __name__ == "__main__":
         metavar="device",
         help="specify the infrared camera, automatic detection by default",
     )
+    parser.add_argument(
+        "-w",
+        "--width",
+        metavar="width",
+        help="specify the width of the camera, automatic by default",
+        default=-1,
+        type=int,
+    )
+    parser.add_argument(
+        "-t",
+        "--height",
+        metavar="height",
+        help="specify the height of the camera, automatic by default",
+        default=-1,
+        type=int,
+    )
     command_subparser = parser.add_subparsers(dest="command")
     command_run = command_subparser.add_parser(
         "run",
@@ -107,7 +123,7 @@ if __name__ == "__main__":
 
     device: str = ""
     # Determine the device path if needed
-    if args.device and args.command in ("configure", "run", "delete", "tweak"):
+    if args.device and args.command in ("configure", "delete", "run", "test", "tweak"):
         device = args.device
         # Find the v4l path
         v4l_device = subprocess.run(
@@ -135,6 +151,8 @@ if __name__ == "__main__":
         check_root()
         res = cpp_commands.configure(
             device.encode(),
+            args.width,
+            args.height,
             args.manual,
             args.emitters,
             args.limit,
@@ -145,10 +163,10 @@ if __name__ == "__main__":
 
     elif args.command == "tweak":
         check_root()
-        res = cpp_commands.tweak(device.encode())
+        res = cpp_commands.tweak(device.encode(), args.width, args.height)
 
     elif args.command == "test":
-        res = cpp_commands.test(device.encode())
+        res = cpp_commands.test(device.encode(), args.width, args.height)
 
     elif args.command == "boot":
         check_root()
