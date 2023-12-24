@@ -14,6 +14,8 @@ class Camera
 {
 private:
     int id;
+    int width;
+    int height;
     int fd = -1;
     const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
     bool noGui = false;
@@ -44,7 +46,7 @@ public:
 
     Camera() = delete;
 
-    explicit Camera(const string &device);
+    explicit Camera(const string &device, int width = -1, int height = -1);
 
     virtual ~Camera();
 
@@ -76,7 +78,7 @@ public:
 
     bool isGrayscale();
 
-    static shared_ptr<Camera> findGrayscaleCamera();
+    static shared_ptr<Camera> findGrayscaleCamera(int width = -1, int height = -1);
 };
 
 class CameraException : public exception

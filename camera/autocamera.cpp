@@ -30,7 +30,7 @@ long long unsigned AutoCamera::intensityVariationSum()
         if (!frame.empty())
             frames.push_back(std::move(frame));
     }
-    
+
     // compute lighting intensity
     vector<vector<int>> intensities;
     for (auto &frame : frames)
@@ -90,7 +90,8 @@ bool AutoCamera::isEmitterWorking()
     return isEmitterWorkingNoConfirm() && Camera::isEmitterWorking();
 }
 
-AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(device), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}
+AutoCamera::AutoCamera(const string &device, int width, int height, unsigned captureTimeMs)
+    : Camera(device, width, height), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}
 
 /**
  * @brief Find a grayscale camera.
@@ -98,14 +99,14 @@ AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(de
  * @return path to the graycale device,
  * nullptr if unable to find such device
  */
-shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera()
+shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera(int width, int height)
 {
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
     {
         try
         {
-            shared_ptr<AutoCamera> camera = make_shared<AutoCamera>(device);
+            shared_ptr<AutoCamera> camera = make_shared<AutoCamera>(device, width, height);
             if (camera->isGrayscale())
                 return camera;
         }

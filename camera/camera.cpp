@@ -94,6 +94,10 @@ void Camera::openCap()
     if (!cap->isOpened())
     {
         bool isOpened = cap->open(id, cv::CAP_V4L2);
+        if (width > 0)
+            cap->set(cv::CAP_PROP_FRAME_WIDTH, width);
+        if (height > 0)
+            cap->set(cv::CAP_PROP_FRAME_HEIGHT, height);
         if (!isOpened)
             throw CameraException(device);
     }
@@ -108,7 +112,13 @@ void Camera::closeCap() noexcept
         cap->release();
 }
 
-Camera::Camera(const string &device) : id(Camera::deviceId(device)), device(device)
+/**
+ * @brief Construct a new Camera:: Camera object
+ *
+ * @param device path to the camera
+ */
+Camera::Camera(const string &device, int width, int height)
+    : id(Camera::deviceId(device)),  width(width), height(height), device(device)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
@@ -457,12 +467,12 @@ bool Camera::isGrayscale()
  * @return path to the graycale device,
  * nullptr if unable to find such device
  */
-shared_ptr<Camera> Camera::findGrayscaleCamera()
+shared_ptr<Camera> Camera::findGrayscaleCamera(int width, int height)
 {
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
     {
-        shared_ptr<Camera> camera = make_shared<Camera>(device);
+        shared_ptr<Camera> camera = make_shared<Camera>(device, width, height);
         try
         {
             if (camera->isGrayscale())

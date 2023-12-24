@@ -8,24 +8,6 @@ using namespace std;
 #include "globals.hpp"
 #include "utils/logger.hpp"
 
-static shared_ptr<AutoCamera> makeCamera(const string &device)
-{
-    shared_ptr<AutoCamera> camera;
-
-    if (device.empty())
-    {
-        camera = AutoCamera::findGrayscaleCamera();
-        if (camera == nullptr)
-            Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-    }
-    else
-    {
-        camera = make_shared<AutoCamera>(device);
-    }
-
-    return camera;
-}
-
 /**
  * @brief Test if the camera is in grayscale and if the emitter is working.
  * Also display a video feedback.
@@ -34,9 +16,9 @@ static shared_ptr<AutoCamera> makeCamera(const string &device)
  *
  * @return exit code
  */
-ExitCode test(const char *device_char_p)
+ExitCode test(const char *device_char_p, int width, int height)
 {
-    shared_ptr<AutoCamera> camera = makeCamera(string(device_char_p));
+    auto camera = makeCamera<Camera>(string(device_char_p), width, height);
 
     if (camera->isGrayscale())
         Logger::info("The camera", camera->device, "is in gray scale. This is probably your infrared camera.");

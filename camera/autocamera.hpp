@@ -18,7 +18,7 @@ private:
 public:
     AutoCamera() = delete;
 
-    explicit AutoCamera(const string &device, unsigned captureTimeMs = 1000);
+    explicit AutoCamera(const string &device, int width = -1, int height = -1, unsigned captureTimeMs = 1000);
 
     ~AutoCamera() override = default;
 
@@ -34,5 +34,5 @@ public:
 
     AutoCamera(AutoCamera &&other) = delete;
 
-    static shared_ptr<AutoCamera> findGrayscaleCamera();
+    static shared_ptr<AutoCamera> findGrayscaleCamera(int width = -1, int height = -1);
 };

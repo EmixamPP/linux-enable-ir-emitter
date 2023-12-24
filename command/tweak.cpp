@@ -10,29 +10,11 @@
 #include <string>
 using namespace std;
 
-static shared_ptr<Camera> makeCamera(const string &device)
-{
-    shared_ptr<Camera> camera;
-
-    if (device.empty())
-    {
-        camera = Camera::findGrayscaleCamera();
-        if (camera == nullptr)
-            Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-    }
-    else
-    {
-        camera = make_shared<Camera>(device);
-    }
-
-    return camera;
-}
-
-ExitCode tweak(const char *device_char_p)
+ExitCode tweak(const char *device_char_p, int width, int height)
 {
     catch_ctrl_c();
     
-    shared_ptr<Camera> camera = makeCamera(string(device_char_p));
+    auto camera = makeCamera<Camera>(string(device_char_p), width, height);
 
     Logger::info("Tweaking the camera:", camera->device);
     Logger::info("Caution, you could break the camera.");

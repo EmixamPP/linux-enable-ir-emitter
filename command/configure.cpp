@@ -17,33 +17,6 @@ void enableDebug()
     Logger::enableDebug();
 }
 
-static shared_ptr<Camera> makeCamera(const string &device, bool manual, bool noGui)
-{
-    shared_ptr<Camera> camera;
-    if (manual)
-    {
-        if (device.empty())
-            camera = Camera::findGrayscaleCamera();
-        else
-            camera = make_shared<Camera>(device);
-    }
-    else
-    {
-        if (device.empty())
-            camera = AutoCamera::findGrayscaleCamera();
-        else
-            camera = make_shared<AutoCamera>(device);
-    }
-
-    if (camera == nullptr)
-        Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-
-    if (noGui)
-        camera->disableGui();
-    
-    return camera;
-}
-
 /**
  * @brief Finds a configuration for an infrared camera which enables its emitter(s).
  *
@@ -55,14 +28,20 @@ static shared_ptr<Camera> makeCamera(const string &device, bool manual, bool noG
  *
  * @return exit code
  */
-ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
+ExitCode configure(const char *device_char_p, int width, int height,
+                   bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
 {
     catch_ctrl_c();
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution.");
 
-    shared_ptr<Camera> camera = makeCamera(string(device_char_p), manual, noGui);
+    shared_ptr<Camera> camera;
+    if (manual)
+        camera = makeCamera<Camera>(string(device_char_p), width, height, noGui);
+    else
+        camera = makeCamera<AutoCamera>(string(device_char_p), width, height, noGui);
+    
     Logger::info("Configuring the camera:", camera->device);
 
     auto instructions = Configuration::load(camera->device);
