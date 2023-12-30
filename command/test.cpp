@@ -1,11 +1,12 @@
 #include "commands.hpp"
 
+#include <memory>
 #include <string>
 using namespace std;
 
-#include "../camera/autocamera.hpp"
+#include "camera/autocamera.hpp"
 #include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
 
 /**
  * @brief Test if the camera is in grayscale and if the emitter is working.
@@ -15,30 +16,20 @@ using namespace std;
  *
  * @return exit code
  */
-ExitCode test(const char* device_char_p)
-{   
-    const string device = string(device_char_p);
-    
-    shared_ptr<AutoCamera> camera;
-    if (device.empty())
-    {
-        camera = AutoCamera::findGrayscaleCamera();
-        if (camera == nullptr)
-            Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-    }
-    else
-        camera = make_shared<AutoCamera>(device);
+ExitCode test(const char *device_char_p, int width, int height)
+{
+    auto camera = makeCamera<Camera>(string(device_char_p), width, height);
 
     if (camera->isGrayscale())
         Logger::info("The camera", camera->device, "is in gray scale. This is probably your infrared camera.");
     else
-        Logger::error("The camera", camera->device, "is not in gray scale. This is probably your regular camera.");
+        Logger::warning("The camera", camera->device, "is not in gray scale. This is probably your regular camera.");
 
     try
     {
-        camera->play();
+        camera->playForever();
     }
-    catch (CameraException &e)
+    catch (const CameraException &e)
     {
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }

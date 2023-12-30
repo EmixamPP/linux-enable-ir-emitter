@@ -1,5 +1,5 @@
 # Wed Nov 1 2023 - 5.2.4
-- Fix driver generated but not found
+- Fix config generated but not found
 - Fix for OpenCV exception thrown
 - Reduction in installation size
 # Fri Oct 20 2023 - 5.2.1
@@ -28,7 +28,7 @@
 - Add openrc support
 - Python >= 3.10
 # Son Feb 26 2023 - 4.5.0
-- Improvement of driver generation 
+- Improvement of config generation 
 # Fri Feb 24 2023 - 4.4.2
 - Fix command not found
 - Smaller size
@@ -41,13 +41,13 @@
 - Fix boot service for custom device 
 # Thu Aug 11 2022 - 4.1.4
 - Force V4l2 backend in opencv
-- Improvement of driver generation
+- Improvement of config generation
 # Mon Jul 4 2022 - 4.1.2
 - Asynchronous camera triggering
 - Fix camera triggering issue
 - Fix device symlink boot service side effect
 # Sun Jun 19 2022 - 4.0.0
-- Rework, optimization and improvement of driver generation 
+- Rework, optimization and improvement of config generation 
 - Remove manual configuration commands
 - Remove option for integration into Howdy
 # Thu Dec 9 2021 - 3.2.5

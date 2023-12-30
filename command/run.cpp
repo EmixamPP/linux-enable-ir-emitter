@@ -1,48 +1,54 @@
 #include "commands.hpp"
 
-#include <memory>
+#include <vector>
 using namespace std;
 
-#include "globals.hpp"
-#include "../driver/driver.hpp"
-#include "../camera/camera.hpp"
-#include "../camera/camerainstruction.hpp"
-#include "../utils/logger.hpp"
+#include "camera/camera.hpp"
+#include "camera/camerainstruction.hpp"
+#include "utils/logger.hpp"
+#include "utils/configuration.hpp"
 
 /**
- * @brief Execute a driver.
+ * @brief Execute a configuration.
  *
- * @param device path to the infrared camera, empty string to execute all driver
+ * @param device path to the infrared camera, empty string to execute all configurations
  *
  * @return exit code
  */
-ExitCode run(const char* device)
-{   
-    
-    auto paths = get_drivers_path(device);
+ExitCode run(const char *device)
+{
 
-    if (paths->empty())
-        Logger::critical(ExitCode::FAILURE, "No driver for", device, "has been configured.");
+    vector<string> paths = get_config_paths(device);
 
-    ExitCode code = ExitCode::SUCCESS;
-    for (auto &driverFile : *paths)
+    if (paths.empty())
+        Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been found.");
+
+    bool oneFailure = false;
+    for (auto &path : paths)
     {
-        const unique_ptr<Driver> driver = Driver::readDriver(driverFile);
+        auto instructions = Configuration::load(path);
+        if (!instructions)
+            continue;
+
+        string device = device_of(path);
+        Camera camera(device);
         try
         {
-            Camera camera(driver->device);
-            CameraInstruction instruction = CameraInstruction(driver->unit, driver->selector, driver->control);
-            if (!camera.apply(instruction))
+            for (auto &instruction : instructions.value())
             {
-                Logger::error("Failed to apply the driver of", driver->device);
-                code = ExitCode::FAILURE;
+                Logger::debug("Applying instruction", to_string(instruction), "on", device);
+                if (!camera.apply(instruction))
+                {
+                    Logger::error("Failed to apply the instruction", to_string(instruction));
+                    oneFailure = true;
+                }
             }
         }
-        catch (CameraException &e)
+        catch (const CameraException &e)
         {
             Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
         }
     }
 
-    return code;
+    return oneFailure ? ExitCode::FAILURE : ExitCode::SUCCESS;
 }

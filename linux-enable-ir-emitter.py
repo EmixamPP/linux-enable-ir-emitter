@@ -19,6 +19,15 @@ if __name__ == "__main__":
         epilog="https://github.com/EmixamPP/linux-enable-ir-emitter",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version="%(prog)s @version@\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        help="show version information and exit",
+    )
+
     parser.add_argument(
         "-v",
         "--verbose",
@@ -27,31 +36,42 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
-        "-V",
-        "--version",
-        action="version",
-        version="%(prog)s @version@\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
-        help="show version information and exit",
-    )
-    parser.add_argument(
         "-d",
         "--device",
         metavar="device",
-        help="specify the infrared camera, automatic detection by default",
+        help="specify the camera, automatic by default",
     )
+    parser.add_argument(
+        "-w",
+        "--width",
+        metavar="width",
+        help="specify the width, automatic by default",
+        default=-1,
+        type=int,
+    )
+    parser.add_argument(
+        "-t",
+        "--height",
+        metavar="height",
+        help="specify the height, automatic by default",
+        default=-1,
+        type=int,
+    )
+
     command_subparser = parser.add_subparsers(dest="command")
     command_run = command_subparser.add_parser(
         "run",
-        help="apply drivers",
+        help="apply a configuration",
     )
+
     command_configure = command_subparser.add_parser(
         "configure",
-        help="generate ir emitter driver",
+        help="create an ir emitter configuration",
     )
     command_configure.add_argument(
         "-m",
         "--manual",
-        help="activate manual configuration",
+        help="manual verification",
         action="store_true",
         default=False,
     )
@@ -59,7 +79,7 @@ if __name__ == "__main__":
         "-e",
         "--emitters",
         metavar="<count>",
-        help="the number of emitters on the device, by default is 1",
+        help="specify the number of emitters, by default is 1",
         default=1,
         type=int,
     )
@@ -67,33 +87,41 @@ if __name__ == "__main__":
         "-l",
         "--limit",
         metavar="<count>",
-        help="the number of negative answer before the pattern is skipped, by default is 40. Use -1 for unlimited",
+        help="specify the negative answer limit, by default is 40. Use -1 for unlimited",
         default=40,
         type=int,
     )
     command_configure.add_argument(
         "-g",
         "--no-gui",
-        help="no gui video feedback",
+        help="disable video feedback",
         action="store_true",
         default=False,
     )
+
+    command_test = command_subparser.add_parser(
+        "tweak",
+        help="create a camera configuration",
+    )
+
     command_test = command_subparser.add_parser(
         "test",
         help="test a camera",
     )
+
     command_boot = command_subparser.add_parser(
         "boot",
-        help="enable ir at boot",
+        help="apply the configurations at boot",
     )
     command_boot.add_argument(
         "boot_status",
         choices=["enable", "disable", "status"],
         help="specify the boot action to perform",
     )
+
     command_delete = command_subparser.add_parser(
         "delete",
-        help="delete drivers",
+        help="delete configurations",
     )
 
     args = parser.parse_args()
@@ -103,7 +131,7 @@ if __name__ == "__main__":
 
     device: str = ""
     # Determine the device path if needed
-    if args.device and args.command in ("configure", "run", "delete"):
+    if args.device and args.command in ("configure", "delete", "run", "test", "tweak"):
         device = args.device
         # Find the v4l path
         v4l_device = subprocess.run(
@@ -111,13 +139,16 @@ if __name__ == "__main__":
             shell=True,
             capture_output=True,
             text=True,
-        ).stdout.strip()
+        ).stdout
+
         if len(v4l_device) == 0:
             logging.critical(
                 f"The device {device} does not exists or is not a supported v4l camera."
             )
             exit(ExitCode.FAILURE)
-        device = v4l_device
+
+        pos = v4l_device.find("\n")
+        device = v4l_device[:pos]
 
     # Execute the desired command
     res = ExitCode.FAILURE
@@ -128,16 +159,22 @@ if __name__ == "__main__":
         check_root()
         res = cpp_commands.configure(
             device.encode(),
+            args.width,
+            args.height,
             args.manual,
             args.emitters,
             args.limit,
-            args.no_gui
+            args.no_gui,
         )
         if res == ExitCode.SUCCESS:
             boot("enable")
 
+    elif args.command == "tweak":
+        check_root()
+        res = cpp_commands.tweak(device.encode(), args.width, args.height)
+
     elif args.command == "test":
-        res = cpp_commands.test(device.encode())
+        res = cpp_commands.test(device.encode(), args.width, args.height)
 
     elif args.command == "boot":
         check_root()
@@ -145,7 +182,7 @@ if __name__ == "__main__":
 
     elif args.command == "delete":
         check_root()
-        res = cpp_commands.delete_driver(device.encode())
+        res = cpp_commands.delete_config(device.encode())
 
     else:
         parser.print_help()

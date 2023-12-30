@@ -1,7 +1,5 @@
-#ifndef CAMERA_HPP
-#define CAMERA_HPP
+#pragma once
 
-#include <cstdint>
 #include <linux/uvcvideo.h>
 #include <memory>
 #include <string>
@@ -16,6 +14,8 @@ class Camera
 {
 private:
     int id;
+    int width;
+    int height;
     int fd = -1;
     const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
     bool noGui = false;
@@ -46,7 +46,7 @@ public:
 
     Camera() = delete;
 
-    explicit Camera(const string &device);
+    explicit Camera(const string &device, int width = -1, int height = -1);
 
     virtual ~Camera();
 
@@ -58,13 +58,17 @@ public:
 
     Camera(Camera &&other) = delete;
 
-    void play();
+    function<void()> play();
+
+    void playForever();
 
     bool apply(const CameraInstruction &instruction);
 
+    void disableGui();
+
     virtual bool isEmitterWorking();
 
-    shared_ptr<cv::Mat> read1();
+    cv::Mat read1();
 
     int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
@@ -74,9 +78,7 @@ public:
 
     bool isGrayscale();
 
-    static shared_ptr<Camera> findGrayscaleCamera();
-
-    void disableGui();
+    static shared_ptr<Camera> findGrayscaleCamera(int width = -1, int height = -1);
 };
 
 class CameraException : public exception
@@ -89,5 +91,3 @@ public:
 
     const char *what() const noexcept override;
 };
-
-#endif

@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '5.2.4', 
+    version: '6.0.0', 
     license: 'MIT',
     default_options: [
         'prefix=/usr',
@@ -16,21 +16,22 @@ project(
 add_project_arguments(
     # fix clang-tidy
     '-Wno-unknown-warning-option', '-Wno-unused-macros',
-    # ignored bugged or boring gcc flags
-    '-Wno-pragmas', '-Wno-abi-tag', '-Wno-suggest-attribute=pure',
-    '-Wno-effc++','-Wno-suggest-attribute=const', '-Wno-padded', 
-    '-Wformat-nonliteral',  '-Wno-suggest-final-types', '-Wno-inline',
-    '-Wno-shadow', '-Wno-missing-declarations', '-Wno-sign-promo', 
-    '-Wno-format-nonliteral', '-Wno-suggest-final-methods',
-    '-Wno-unused-const-variable',
+    # ignore bugged and boring flags
+    '-Wno-pragmas', '-Wno-abi-tag', '-Wno-effc++',
+    '-Wno-padded', '-Wno-shadow', '-Wno-sign-promo', 
+    '-Wno-unused-const-variable', '-Wno-suggest-final-types',
+    '-Wno-suggest-final-methods', '-Wno-suggest-attribute=pure',
+    '-Wno-suggest-attribute=const', '-Wno-inline',
     language: 'cpp'
 )
 
 ############
 # Dependency
 ############
-opencv_dep = dependency('opencv4', static: true)
+static_dep = get_option('static_dep')
+opencv_dep = dependency('opencv4', static: static_dep)
 gtk_dep = dependency('gtk+-3.0')
+yaml_dep = dependency('yaml-cpp', static: static_dep)
 
 ##########
 # Variable
@@ -41,7 +42,7 @@ boot_service = get_option('boot_service')
 cfg_data = configuration_data({
     'version': meson.project_version(),
     'libdir': abs_lib_dir,
-    'SAVE_DRIVER_FOLDER_PATH': get_option('sysconfdir') / meson.project_name(),
+    'SAVE_FOLDER_CONFIG_PATH': get_option('sysconfdir') / meson.project_name(),
     'CPP_COMMANDS_LIB_PATH': abs_lib_dir / 'libcommands.so',
     'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': boot_service,
@@ -97,12 +98,15 @@ library(
         'command/delete.cpp',
         'command/run.cpp',
         'command/test.cpp',
-        'driver/driver.cpp',
-        'driver/finder.cpp',
+        'command/tweak.cpp',
+        'configuration/finder.cpp',
+        'configuration/scanner.cpp',
+        'configuration/tweaker.cpp',
         'utils/globals.cpp',
         'utils/logger.cpp',
+        'utils/configuration.cpp',
     ],
-    dependencies: [opencv_dep, gtk_dep],
+    dependencies: [opencv_dep, gtk_dep, yaml_dep],
     install: true,
     install_dir: lib_dir
 )
@@ -158,15 +162,20 @@ endif
 ######
 # Conf
 ######
-install_subdir(
-    meson.project_name(),
-    install_dir: get_option('sysconfdir'),
+install_emptydir(
+    get_option('sysconfdir') / meson.project_name(),
 )
 
 ##################
 # Shell completion
 ##################
 install_data(
-    'autocomplete/linux-enable-ir-emitter',
+    'autocomplete/linux-enable-ir-emitter.bash',
+    rename: 'linux-enable-ir-emitter',
     install_dir : get_option('datadir') / 'bash-completion/completions',
+)
+install_data(
+    'autocomplete/linux-enable-ir-emitter.zsh',
+    rename: '_linux-enable-ir-emitter',
+    install_dir : get_option('datadir') / 'zsh/site-functions',
 )

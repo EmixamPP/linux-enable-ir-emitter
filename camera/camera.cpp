@@ -1,75 +1,20 @@
 #include "camera.hpp"
 
-#include <cstdint>
-#include <cstring>
 #include <cerrno>
 #include <fcntl.h>
 #include <linux/usb/video.h>
-#include <linux/uvcvideo.h>
-#include <memory>
-#include <string>
 #include <sys/ioctl.h>
+#include <thread>
 #include <unistd.h>
-#include <vector>
 using namespace std;
 
-#include "opencv.hpp"
 #include "camerainstruction.hpp"
 #include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
-
-/**
- * @brief Determine if the camera is in grayscale.
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if so, otheriwse false.
- */
-bool Camera::isGrayscale()
-{
-    auto frame = read1();
-
-    if (frame->channels() != 3)
-        return false;
-
-    for (int r = 0; r < frame->rows; ++r)
-        for (int c = 0; c < frame->cols; ++c)
-        {
-            const cv::Vec3b &pixel = frame->at<cv::Vec3b>(r, c);
-            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
-                return false;
-        }
-
-    return true;
-}
-
-/**
- * @brief Find a grayscale camera.
- *
- * @return path to the graycale device,
- * nullptr if unable to find such device
- */
-shared_ptr<Camera> Camera::findGrayscaleCamera()
-{
-    auto v4lDevices = get_v4l_devices();
-    for (auto &device : *v4lDevices)
-    {
-        auto camera = make_shared<Camera>(device);
-        try
-        {
-            if (camera->isGrayscale())
-                return camera;
-        }
-        catch (CameraException &e)
-        { // ignore
-        }
-    }
-
-    return nullptr;
-}
+constexpr int IMAGE_DELAY = 30;
 
 /**
  * @brief Get the file descriptor previously opened
@@ -100,7 +45,7 @@ shared_ptr<cv::VideoCapture> Camera::getCap() const noexcept
  */
 int Camera::deviceId(const string &device)
 {
-    std::unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
+    unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
     int id = 0;
     if (devDevice == nullptr || sscanf(devDevice.get(), "/dev/video%d", &id) != 1)
         Logger::critical(ExitCode::FAILURE, "Unable to obtain the /dev/videoX path");
@@ -149,6 +94,10 @@ void Camera::openCap()
     if (!cap->isOpened())
     {
         bool isOpened = cap->open(id, cv::CAP_V4L2);
+        if (width > 0)
+            cap->set(cv::CAP_PROP_FRAME_WIDTH, width);
+        if (height > 0)
+            cap->set(cv::CAP_PROP_FRAME_HEIGHT, height);
         if (!isOpened)
             throw CameraException(device);
     }
@@ -163,7 +112,13 @@ void Camera::closeCap() noexcept
         cap->release();
 }
 
-Camera::Camera(const string &device) : id(Camera::deviceId(device)), device(device)
+/**
+ * @brief Construct a new Camera:: Camera object
+ *
+ * @param device path to the camera
+ */
+Camera::Camera(const string &device, int width, int height)
+    : id(Camera::deviceId(device)),  width(width), height(height), device(device)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
@@ -176,8 +131,9 @@ Camera::~Camera()
 
 /**
  * @brief Show a video feedback until the user exit
+ * by pressing any key
  */
-void Camera::play()
+void Camera::playForever()
 {
     openCap();
     cv::Mat frame;
@@ -189,11 +145,46 @@ void Camera::play()
     {
         cap->read(frame);
         cv::imshow("linux-enable-ir-emitter", frame);
-        key = cv::waitKey(5);
+        key = cv::waitKey(IMAGE_DELAY);
     }
 
     closeCap();
     cv::destroyAllWindows();
+}
+
+/**
+ * @brief Show a video feedback until the
+ * stop funciton is called.
+ * You should not use the camera object
+ * until the stop function is called.
+ *
+ * @return a stop function
+ */
+function<void()> Camera::play()
+{
+    openCap();
+
+    shared_ptr<bool> stop = make_shared<bool>(false);
+
+    shared_ptr<thread> showVideo = make_shared<thread>(
+        [this, stop]()
+        {
+            cv::Mat frame;
+            while (!(*stop))
+            {
+                cap->read(frame);
+                cv::imshow("linux-enable-ir-emitter", frame);
+                cv::waitKey(IMAGE_DELAY);
+            }
+        });
+
+    return [this, stop, showVideo]()
+    {
+        *stop = true;
+        showVideo->join();
+        closeCap();
+        cv::destroyAllWindows();
+    };
 }
 
 /**
@@ -211,8 +202,8 @@ bool Camera::apply(const CameraInstruction &instruction)
         instruction.getUnit(),
         instruction.getSelector(),
         UVC_SET_CUR,
-        static_cast<uint16_t>(instruction.getCurrent().size()),
-        const_cast<uint8_t *>(instruction.getCurrent().data()), // const_cast safe; this is a set query
+        static_cast<uint16_t>(instruction.getCur().size()),
+        const_cast<uint8_t *>(instruction.getCur().data()), // const_cast safe; this is a set query
     };
     return executeUvcQuery(query) == 0;
 }
@@ -224,69 +215,21 @@ bool Camera::apply(const CameraInstruction &instruction)
  *
  * @return the frame
  */
-shared_ptr<cv::Mat> Camera::read1()
+cv::Mat Camera::read1()
 {
     openCap();
-    auto frame = make_shared<cv::Mat>();
-    cap->read(*frame);
+    cv::Mat frame;
+    cap->read(frame);
     closeCap();
     return frame;
 }
 
 /**
- * @brief Show a video feedback to the user
- * and asks if the emitter is working
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if yes, false if not
+ * @brief Disable the video feedback for `isEmitterWorking()`
  */
-bool Camera::isEmitterWorkingAsk()
+void Camera::disableGui()
 {
-    cv::Mat frame;
-    int key = -1;
-
-    cout << "Is the video flashing? Press Y or N in the window" << endl;
-    while (key != OK_KEY && key != NOK_KEY)
-    {
-        cap->read(frame);
-        cv::imshow("linux-enable-ir-emitter", frame);
-        key = cv::waitKey(5);
-    }
-    cout << (key == OK_KEY ? "Y pressed" : "N pressed") << endl;
-
-    cv::destroyAllWindows();
-    return key == OK_KEY;
-}
-
-/**
- * @brief Trigger the camera
- * and asks if the emitter is working
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if yes, false if not
- */
-bool Camera::isEmitterWorkingAskNoGui()
-{
-    cv::Mat frame;
-    cap->read(frame);
-
-    string answer;
-    cout << "Is the ir emitter flashing (not just turn on) ? Yes/No ? ";
-    cin >> answer;
-    transform(answer.begin(), answer.end(), answer.begin(), [](char c)
-              { return tolower(c); });
-
-    while (answer != "yes" && answer != "y" && answer != "no" && answer != "n")
-    {
-        cout << "Yes/No ? ";
-        cin >> answer;
-        transform(answer.begin(), answer.end(), answer.begin(), [](char c)
-                  { return tolower(c); });
-    }
-
-    return answer == "yes" || answer == "y";
+    noGui = true;
 }
 
 /**
@@ -313,6 +256,65 @@ bool Camera::isEmitterWorking()
 }
 
 /**
+ * @brief Show a video feedback to the user
+ * and asks if the emitter is working.
+ * Must be called between `openCap()` and `closeCap()`.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if yes, false if not
+ */
+bool Camera::isEmitterWorkingAsk()
+{
+    cv::Mat frame;
+    int key = -1;
+
+    cout << "Is the video flashing? Press Y or N in the window." << endl;
+    while (key != OK_KEY && key != NOK_KEY)
+    {
+        cap->read(frame);
+        cv::imshow("linux-enable-ir-emitter", frame);
+        key = cv::waitKey(IMAGE_DELAY);
+    }
+    Logger::debug(key == OK_KEY ? "Y pressed." : "N pressed.");
+
+    cv::destroyAllWindows();
+    return key == OK_KEY;
+}
+
+/**
+ * @brief Trigger the camera
+ * and asks if the emitter is working.
+ * Must be called between `openCap()` and `closeCap()`.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if yes, false if not
+ */
+bool Camera::isEmitterWorkingAskNoGui()
+{
+    cv::Mat frame;
+    cap->read(frame);
+
+    string answer;
+    cout << "Is the ir emitter flashing (not just turn on) ? Yes/No ? ";
+    cin >> answer;
+    transform(answer.begin(), answer.end(), answer.begin(), [](char c)
+              { return tolower(c); });
+
+    while (answer != "yes" && answer != "y" && answer != "no" && answer != "n")
+    {
+        cout << "Yes/No ? ";
+        cin >> answer;
+        transform(answer.begin(), answer.end(), answer.begin(), [](char c)
+                  { return tolower(c); });
+    }
+    Logger::debug(answer, " inputed.");
+
+    return answer == "yes" || answer == "y";
+}
+
+/**
  * @brief Execute an uvc query on the device indicated by the file descriptor
  *
  * @param query uvc query to execute
@@ -328,7 +330,7 @@ int Camera::executeUvcQuery(const uvc_xu_control_query &query)
     const int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
     if (result == 1 || errno)
     {
-        /* // ioctl debug not really useful for automated driver generation since linux-enable-ir-emitter v3
+        /* // ioctl debug not really useful for automated configuration generation since linux-enable-ir-emitter v3
         fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
         switch (errno) {
         case ENOENT:
@@ -434,9 +436,54 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
     return len;
 }
 
-void Camera::disableGui()
+/**
+ * @brief Determine if the camera is in grayscale.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if so, otheriwse false.
+ */
+bool Camera::isGrayscale()
 {
-    noGui = true;
+    cv::Mat frame = read1();
+
+    if (frame.channels() != 3)
+        return false;
+
+    for (int r = 0; r < frame.rows; ++r)
+        for (int c = 0; c < frame.cols; ++c)
+        {
+            const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
+            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
+                return false;
+        }
+
+    return true;
+}
+
+/**
+ * @brief Find a grayscale camera.
+ *
+ * @return path to the graycale device,
+ * nullptr if unable to find such device
+ */
+shared_ptr<Camera> Camera::findGrayscaleCamera(int width, int height)
+{
+    vector<string> v4lDevices = get_V4L_devices();
+    for (auto &device : v4lDevices)
+    {
+        shared_ptr<Camera> camera = make_shared<Camera>(device, width, height);
+        try
+        {
+            if (camera->isGrayscale())
+                return camera;
+        }
+        catch (const CameraException &e)
+        { // ignore
+        }
+    }
+
+    return nullptr;
 }
 
 CameraException::CameraException(const string &device) : message("Cannot access to " + device) {}
