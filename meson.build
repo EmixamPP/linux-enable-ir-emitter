@@ -170,6 +170,12 @@ install_emptydir(
 # Shell completion
 ##################
 install_data(
-    'autocomplete/linux-enable-ir-emitter',
+    'autocomplete/linux-enable-ir-emitter.bash',
+    rename: 'linux-enable-ir-emitter',
     install_dir : get_option('datadir') / 'bash-completion/completions',
+)
+install_data(
+    'autocomplete/linux-enable-ir-emitter.zsh',
+    rename: '_linux-enable-ir-emitter',
+    install_dir : get_option('datadir') / 'zsh/site-functions',
 )
