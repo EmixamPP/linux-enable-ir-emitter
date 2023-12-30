@@ -9,11 +9,10 @@
 * `meson >= 1.0.0`
 * `ninja-build`
 * `pkg-config`
-* `gtk3 devel`
 * `opencv devel`
-* `cmake` only if you build OpenCV
+* `gtk3 devel`
+* `yaml-cpp devel`
 * `g++` (for `C++17`)
-* `curl`
 
 ## Hardware requirements
 * An infrared camera with at least one emitter.

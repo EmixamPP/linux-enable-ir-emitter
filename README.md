@@ -28,20 +28,33 @@ sudo rm -rf /usr/lib64/linux-enable-ir-emitter \
 2. Ensure to not use the camera during the execution.
 3. Be patient, do not kill the process.
 4. Execute `sudo linux-enable-ir-emitter configure`.
-    * If you have many emitters on the camera, specify it using the option `-e`. E.g. `-e 2` if you have 2 emitters.
-5. Answer to the asked questions.
+    * If you have many emitters on the camera, specify it using the option `--emitters`. E.g. `--emitters 2`.
+    * If you ir camera requires a specific resolution, specify it using the option `--width` and `--height`. E.g. `--width 640 --height 360`.
+    * The tool should detect automatically your ir camera, but you can specify it using the option `--device`. E.g. `--device /dev/video2`; useful if you have multiple ir camera.
+5. You will see a video feedback, answer to the asked questions by pressing Y or N inside the window.
 6. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
 
 If you like the project, do not hesitate to star the repository to support me, thank you!
 
-Any criticims, ideas and contributions are welcome.
-
 If the configuration failed:
-1. But you saw the ir emitter flashing, reboot and switch to manual mode by using the `-m` option.
-2. Also, try the exhaustive search by using the `-l -1` option (caution: this may take several hours; do not combine it `-m`).
+1. But you saw the ir emitter flashing, reboot and switch to manual mode by using the `--manual` option.
+2. Also, try the exhaustive search by using the `--limit -1` option (caution: this may take several hours; do not combine it `--manual`).
 3. Otherwise, feel free to open an issue, *but please consult the [docs](docs/README.md) first*.
 
-The software supports the configuration of multiple devices, execute the configure command and specify each time which device to configure.
+Any criticims, ideas and contributions are welcome.
+
+## How to tweak your camera?
+Some cameras provide instrutions for changing the brightness of the ir emiter.
+You will need to find the corresponding instructions and the correct value manually.
+An instruction consists of X values between 0-255.
+
+1. Execute `sudo linux-enable-ir-emitter tweak`
+   * If you ir camera requires a specific resolution, specify it using the option `--width` and `--height`. E.g. `--width 640 --height 360`.
+   * The tool should detect automatically your ir camera, but you can specify it using the option `--device`. E.g. `--device /dev/video2`; useful if you have multiple ir camera.
+2. You will see a video feedback and a menu of the available instructions.
+3. Select one, then the initial and current value for the instructions, as well as the minimum and maximum values (if exists) are displayed.
+4. Input a new value and observe the video feedback to see the difference.
+5. If you made your camera unusable, it can request you to shut down, then boot and retry ($\neq$ reboot)
 
 ## Manual build
 See [docs](docs/requirements.md) for specification concerning build requirements.
