@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 env: 
-  OPENCV_VERSION: "4.8.1"
+  OPENCV_VERSION: "4.9.0"
   YAML_VERSION: "0.8.0"
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -87,7 +87,7 @@ jobs:
           tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir_systemd .
       
       - name: Upload tarball - Systemd
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-enable-ir-emitter.systemd.x86-64.tar.gz
           path: build/linux-enable-ir-emitter.systemd.x86-64.tar.gz
@@ -103,7 +103,7 @@ jobs:
           tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir_openrc .
       
       - name: Upload tarball - OpenRC
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-enable-ir-emitter.openrc.x86-64.tar.gz
           path: build/linux-enable-ir-emitter.openrc.x86-64.tar.gz
