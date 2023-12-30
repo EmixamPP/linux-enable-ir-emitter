@@ -2,8 +2,11 @@
 
 #include <filesystem>
 #include <iostream>
+#include <string>
 #include <signal.h>
 using namespace std;
+
+const string V4L_PATHS_DIR = "/dev/v4l/by-path/";
 
 /**
  * @brief Obtains the name of a device
@@ -63,7 +66,7 @@ vector<string> get_config_paths(const string &device)
  */
 string device_of(const string &configPath)
 {
-    return "/dev/v4l/by-path/" + deviceNameOf(configPath);
+    return V4L_PATHS_DIR + deviceNameOf(configPath);
 }
 
 /**
@@ -74,7 +77,8 @@ string device_of(const string &configPath)
 vector<string> get_V4L_devices()
 {
     vector<string> devices;
-    for (const auto &entry : filesystem::directory_iterator("/dev/v4l/by-path"))
+    auto paths = filesystem::directory_iterator(V4L_PATHS_DIR);
+    for (const auto &entry : paths)
         devices.push_back(entry.path());
 
     return devices;
