@@ -19,6 +19,15 @@ if __name__ == "__main__":
         epilog="https://github.com/EmixamPP/linux-enable-ir-emitter",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version="%(prog)s @version@\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
+        help="show version information and exit",
+    )
+
     parser.add_argument(
         "-v",
         "--verbose",
@@ -27,23 +36,16 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
-        "-V",
-        "--version",
-        action="version",
-        version="%(prog)s @version@\nDevelopped by Maxime Dirksen - EmixamPP\nMIT License",
-        help="show version information and exit",
-    )
-    parser.add_argument(
         "-d",
         "--device",
         metavar="device",
-        help="specify the infrared camera, automatic detection by default",
+        help="specify the camera, automatic by default",
     )
     parser.add_argument(
         "-w",
         "--width",
         metavar="width",
-        help="specify the width of the camera, automatic by default",
+        help="specify the width, automatic by default",
         default=-1,
         type=int,
     )
@@ -51,23 +53,25 @@ if __name__ == "__main__":
         "-t",
         "--height",
         metavar="height",
-        help="specify the height of the camera, automatic by default",
+        help="specify the height, automatic by default",
         default=-1,
         type=int,
     )
+
     command_subparser = parser.add_subparsers(dest="command")
     command_run = command_subparser.add_parser(
         "run",
-        help="apply configurations",
+        help="apply a configuration",
     )
+
     command_configure = command_subparser.add_parser(
         "configure",
-        help="generate ir emitter configuration",
+        help="create an ir emitter configuration",
     )
     command_configure.add_argument(
         "-m",
         "--manual",
-        help="activate manual configuration",
+        help="manual verification",
         action="store_true",
         default=False,
     )
@@ -75,7 +79,7 @@ if __name__ == "__main__":
         "-e",
         "--emitters",
         metavar="<count>",
-        help="the number of emitters on the device, by default is 1",
+        help="specify the number of emitters, by default is 1",
         default=1,
         type=int,
     )
@@ -83,34 +87,38 @@ if __name__ == "__main__":
         "-l",
         "--limit",
         metavar="<count>",
-        help="the number of negative answer before the pattern is skipped, by default is 40. Use -1 for unlimited",
+        help="specify the negative answer limit, by default is 40. Use -1 for unlimited",
         default=40,
         type=int,
     )
     command_configure.add_argument(
         "-g",
         "--no-gui",
-        help="no gui video feedback",
+        help="disable video feedback",
         action="store_true",
         default=False,
     )
+
     command_test = command_subparser.add_parser(
         "tweak",
-        help="tweak a camera",
+        help="create a camera configuration",
     )
+
     command_test = command_subparser.add_parser(
         "test",
         help="test a camera",
     )
+
     command_boot = command_subparser.add_parser(
         "boot",
-        help="enable ir at boot",
+        help="apply the configurations at boot",
     )
     command_boot.add_argument(
         "boot_status",
         choices=["enable", "disable", "status"],
         help="specify the boot action to perform",
     )
+
     command_delete = command_subparser.add_parser(
         "delete",
         help="delete configurations",
