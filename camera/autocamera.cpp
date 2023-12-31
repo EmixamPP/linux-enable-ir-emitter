@@ -28,7 +28,7 @@ long long unsigned AutoCamera::intensityVariationSum()
         cv::Mat frame;
         cap->read(frame);
         if (!frame.empty())
-            frames.push_back(std::move(frame));
+            frames.push_back(move(frame));
     }
 
     // compute lighting intensity
@@ -42,7 +42,7 @@ long long unsigned AutoCamera::intensityVariationSum()
                 const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
                 intensity.push_back(pixel[0] + pixel[1] + pixel[2]);
             }
-        intensities.push_back(std::move(intensity));
+        intensities.push_back(move(intensity));
     }
 
     // compute difference between each consecutive frame intensity
