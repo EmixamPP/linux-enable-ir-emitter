@@ -1,6 +1,7 @@
 #include "tweaker.hpp"
 
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 #include "camera/camerainstruction.hpp"
@@ -50,10 +51,13 @@ static vector<uint8_t> askForNewCur(const CameraInstruction &inst)
 
     string newCurStr;
     getline(cin >> ws, newCurStr);
+    
+    istringstream iss(newCurStr);
+    auto newCurParsed = vector<int32_t>(istream_iterator<int32_t>{iss}, istream_iterator<int32_t>());
 
     vector<uint8_t> newCur;
-    for (size_t i = 0; i < newCurStr.size(); i += 2)
-        newCur.push_back(static_cast<uint8_t>(newCurStr[i] - '0'));
+    for (auto v : newCurParsed)
+        newCur.push_back(static_cast<uint8_t>(v));
 
     return newCur;
 }
