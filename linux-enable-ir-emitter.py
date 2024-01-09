@@ -172,6 +172,8 @@ if __name__ == "__main__":
     elif args.command == "tweak":
         check_root()
         res = cpp_commands.tweak(device.encode(), args.width, args.height)
+        if res == ExitCode.SUCCESS:
+            boot("enable")
 
     elif args.command == "test":
         res = cpp_commands.test(device.encode(), args.width, args.height)
