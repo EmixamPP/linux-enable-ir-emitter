@@ -48,7 +48,7 @@ int Camera::deviceId(const string &device)
     unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
     int id = 0;
     if (devDevice == nullptr || sscanf(devDevice.get(), "/dev/video%d", &id) != 1)
-        Logger::critical(ExitCode::FAILURE, "Unable to obtain the /dev/videoX path");
+        Logger::critical(ExitCode::FAILURE, "Unable to obtain the /dev/videoX path of", device);
     return id;
 }
 
