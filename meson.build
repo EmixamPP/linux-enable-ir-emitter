@@ -4,7 +4,6 @@ project(
     version: '6.0.0', 
     license: 'MIT',
     default_options: [
-        'prefix=/usr',
         'cpp_std=c++17',
         'buildtype=release',
         'warning_level=everything',
@@ -28,28 +27,26 @@ add_project_arguments(
 ############
 # Dependency
 ############
-static_dep = get_option('static_dep')
-opencv_dep = dependency('opencv4', static: static_dep)
-gtk_dep = dependency('gtk+-3.0')
-yaml_dep = dependency('yaml-cpp', static: static_dep)
+opencv_dep = dependency('opencv4')
+gtk_dep = dependency('gtk+-3.0', static: false)
+yaml_dep = dependency('yaml-cpp')
 
 ##########
 # Variable
 ##########
-lib_dir = get_option('libdir') / meson.project_name()
-abs_lib_dir = get_option('prefix') / lib_dir
-boot_service = get_option('boot_service')
+lib_dir =  get_option('libdir') / meson.project_name()
+sysconf_prefix = get_option('prefix') == '/usr' ? '' : get_option('prefix')
 cfg_data = configuration_data({
     'version': meson.project_version(),
-    'libdir': abs_lib_dir,
-    'SAVE_FOLDER_CONFIG_PATH': get_option('sysconfdir') / meson.project_name(),
-    'CPP_COMMANDS_LIB_PATH': abs_lib_dir / 'libcommands.so',
-    'UDEV_RULE_PATH': '/etc/udev/rules.d/99-linux-enable-ir-emitter.rules',
-    'BOOT_SERVICE_MANAGER': boot_service,
+    'libdir': get_option('prefix') / lib_dir,
+    'SAVE_FOLDER_CONFIG_PATH': sysconf_prefix / get_option('sysconfdir') / meson.project_name(),
+    'CPP_COMMANDS_LIB_PATH': get_option('prefix') / lib_dir / 'libcommands.so',
+    'UDEV_RULE_PATH': sysconf_prefix / get_option('sysconfdir') / 'udev/rules.d/99-linux-enable-ir-emitter.rules',
+    'BOOT_SERVICE_MANAGER': get_option('boot_service'),
 })
-if boot_service == 'systemd'
+if get_option('boot_service') == 'systemd'
     cfg_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter.service')
-elif boot_service == 'openrc'
+elif get_option('boot_service') == 'openrc'
     cfg_data.set('BOOT_SERVICE_NAME', 'linux-enable-ir-emitter')
 endif
 
@@ -137,25 +134,21 @@ install_data(
 ##############
 # Boot service
 ##############
-if boot_service == 'systemd'
-    install_data(
-        'boot_service/systemd/__init__.py',
-        'boot_service/systemd/systemd.py',
-        install_dir : lib_dir / 'boot_service/systemd',
-    )
+install_data(
+    'boot_service' / get_option('boot_service') / '__init__.py',
+    'boot_service' / get_option('boot_service') / get_option('boot_service') + '.py',
+    install_dir : lib_dir / 'boot_service' / get_option('boot_service'),
+)
+
+if get_option('boot_service') == 'systemd'
     install_data(
         'boot_service/systemd/linux-enable-ir-emitter.service',
         install_dir : 'lib/systemd/system',
     )
-elif boot_service == 'openrc'
-    install_data(
-        'boot_service/openrc/__init__.py',
-        'boot_service/openrc/openrc.py',
-        install_dir : lib_dir / 'boot_service/openrc',
-    )
+elif get_option('boot_service') == 'openrc'
     install_data(
         'boot_service/openrc/linux-enable-ir-emitter',
-        install_dir : '/etc/init.d',
+        install_dir : get_option('sysconfdir') / 'init.d',
     )
 endif
 
