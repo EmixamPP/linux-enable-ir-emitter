@@ -74,9 +74,8 @@ jobs:
 
       - name: Setup build
         run: |
-          meson setup build
-          meson configure build -Dlibdir=lib64 -Dstatic_dep=true
-      
+          meson setup build --libdir=lib --prefer-static
+       
       - name: Compile - Systemd
         run: |
           meson compile -C build
