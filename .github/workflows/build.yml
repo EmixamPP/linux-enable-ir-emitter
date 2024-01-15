@@ -3,6 +3,7 @@ name: "Build"
 on:
   workflow_dispatch:
   workflow_call:
+  push:
 
 env: 
   OPENCV_VERSION: "4.9.0"
