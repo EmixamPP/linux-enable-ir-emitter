@@ -2,7 +2,10 @@
 
 #include <cerrno>
 #include <fcntl.h>
+#include <filesystem>
 #include <linux/usb/video.h>
+#include <regex>
+#include <stdexcept>
 #include <sys/ioctl.h>
 #include <thread>
 #include <unistd.h>
@@ -45,11 +48,12 @@ shared_ptr<cv::VideoCapture> Camera::getCap() const noexcept
  */
 int Camera::deviceId(const string &device)
 {
-    unique_ptr<char[], decltype(&free)> devDevice(realpath(device.c_str(), nullptr), &free);
-    int id = 0;
-    if (devDevice == nullptr || sscanf(devDevice.get(), "/dev/video%d", &id) != 1)
-        Logger::critical(ExitCode::FAILURE, "Unable to obtain the /dev/videoX path of", device);
-    return id;
+    auto realPath = filesystem::canonical(device).string();
+    regex pattern("/dev/video([0-9]+)");
+    smatch match;
+    if (!regex_search(realPath, match, pattern))
+        Logger::critical(ExitCode::FAILURE, device + " is not of the regex form /dev/video[0-9]+");
+    return stoi(match[1]);
 }
 
 /**
@@ -118,7 +122,7 @@ void Camera::closeCap() noexcept
  * @param device path to the camera
  */
 Camera::Camera(const string &device, int width, int height)
-    : id(Camera::deviceId(device)),  width(width), height(height), device(device)
+    : id(Camera::deviceId(device)), width(width), height(height), device(device)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
