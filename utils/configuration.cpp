@@ -30,12 +30,18 @@ static optional<vector<CameraInstruction>> readFromFile(const string &filePath)
     }
     catch (...)
     {
-        Logger::error("Error while reading the configuration file at", filePath);
+        Logger::warning("Error while reading the configuration file at", filePath);
     }
 
     return {};
 }
 
+/**
+ * @brief Save the configuration file of a device.
+ *
+ * @param device path to the infrared camera
+ * @param instructions of the configuration
+ */
 void Configuration::save(const string &device, const vector<CameraInstruction> &instructions)
 {
     string path = config_path_of(device);

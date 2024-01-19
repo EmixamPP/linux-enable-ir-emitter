@@ -100,7 +100,7 @@ void Tweaker::tweak(vector<CameraInstruction> &instructions)
         }
         catch (const CameraException &e)
         {
-            Logger::info("Please shut down your computer, then boot and retry.");
+            Logger::info("Please shutdown your computer, then boot and retry.");
             inst.setCur(prevCur);
             inst.setCorrupted(true);
             throw e; // propagate to exit

@@ -476,13 +476,17 @@ shared_ptr<Camera> Camera::findGrayscaleCamera(int width, int height)
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
     {
-        shared_ptr<Camera> camera = make_shared<Camera>(device, width, height);
+        Logger::debug("Checking if", device, "is a grayscale camera.");        
         try
         {
+            auto camera = make_shared<Camera>(device, width, height);
             if (camera->isGrayscale())
+            {
+                Logger::debug(device, "is a grayscale camera.");
                 return camera;
+            }
         }
-        catch (const CameraException &e)
+        catch (const CameraException &)
         { // ignore
         }
     }

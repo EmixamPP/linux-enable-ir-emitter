@@ -12,12 +12,13 @@ shared_ptr<T> makeCamera(const string &device, int width, int height, bool noGui
     shared_ptr<T> camera;
 
     if (device.empty())
+    {
         camera = T::findGrayscaleCamera(width, height);
+        if (camera == nullptr)
+            Logger::critical(ExitCode::FAILURE, "No infrared camera has been found.");
+    }
     else
         camera = make_shared<T>(device, width, height);
-
-    if (camera == nullptr)
-        Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
 
     if (noGui)
         camera->disableGui();

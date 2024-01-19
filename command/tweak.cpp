@@ -12,8 +12,10 @@ using namespace std;
 
 ExitCode tweak(const char *device_char_p, int width, int height)
 {
+    Logger::debug("Executing tweak command.");
+
     catch_ctrl_c();
-    
+
     auto camera = makeCamera<Camera>(string(device_char_p), width, height);
 
     Logger::info("Tweaking the camera:", camera->device);
@@ -22,9 +24,12 @@ ExitCode tweak(const char *device_char_p, int width, int height)
     auto instructions = Configuration::load(camera->device);
     if (!instructions)
     {
+        Logger::debug("No previous configuration found.");
         Scanner scanner(*camera);
         instructions = scanner.scan();
     }
+    else
+        Logger::debug("Previous configuration found.");
 
     Tweaker tweaker(*camera);
     try

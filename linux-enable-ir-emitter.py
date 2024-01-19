@@ -128,6 +128,7 @@ if __name__ == "__main__":
 
     if args.verbose:
         cpp_commands.enableDebug()
+        logging.getLogger().setLevel(logging.DEBUG)
 
     device: str = ""
     # Determine the device path if needed

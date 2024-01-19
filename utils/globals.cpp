@@ -96,6 +96,9 @@ static void signalHandler(int signal)
     }
 }
 
+/**
+ * @brief Catch ctrl-c signal one time.
+ */
 void catch_ctrl_c()
 {
     signal(SIGINT, signalHandler);

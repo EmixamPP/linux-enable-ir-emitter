@@ -17,9 +17,13 @@ using namespace std;
  */
 ExitCode delete_config(const char* device)
 {
+    Logger::debug("Executing delete command.");
+
     vector<string> configs = get_config_paths(device);
-    for (auto &config : configs)
+    for (auto &config : configs) {
+        Logger::debug("Deleting", config);
         filesystem::remove(config);
+    }
 
     Logger::info("The configurations have been deleted.");
     return ExitCode::SUCCESS;

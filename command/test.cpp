@@ -18,6 +18,8 @@ using namespace std;
  */
 ExitCode test(const char *device_char_p, int width, int height)
 {
+    Logger::debug("Executing test command.");
+
     auto camera = makeCamera<Camera>(string(device_char_p), width, height);
 
     if (camera->isGrayscale())

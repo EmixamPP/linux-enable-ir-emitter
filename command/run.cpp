@@ -17,21 +17,20 @@ using namespace std;
  */
 ExitCode run(const char *device)
 {
+    Logger::debug("Executing run command.");
 
     vector<string> paths = get_config_paths(device);
 
     if (paths.empty())
-        Logger::critical(ExitCode::FAILURE, "No configuration for", device, "has been found.");
+        Logger::critical(ExitCode::FAILURE, "No configuration has been found.");
 
     bool oneFailure = false;
     for (auto &path : paths)
     {
         auto instructions = Configuration::load(path);
-        if (!instructions)
-            continue;
-
         string device = device_of(path);
         Camera camera(device);
+
         try
         {
             for (auto &instruction : instructions.value())
@@ -39,7 +38,7 @@ ExitCode run(const char *device)
                 Logger::debug("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))
                 {
-                    Logger::error("Failed to apply the instruction", to_string(instruction));
+                    Logger::warning("Failed to apply the instruction", to_string(instruction));
                     oneFailure = true;
                 }
             }

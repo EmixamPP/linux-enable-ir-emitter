@@ -17,6 +17,8 @@ def boot(boot_status: str) -> ExitCode:
     Returns:
         int: exit code.
     """
+    logging.debug("Executing boot command.")
+
     assert boot_status in ["enable", "disable", "status"]
 
     boot_service_constructor = get_boot_service_constructor()
@@ -29,7 +31,7 @@ def boot(boot_status: str) -> ExitCode:
 
     if boot_status == "enable":
         if not len(devices):
-            logging.critical("No emitter have been configured.")
+            logging.error("No emitter have been configured.")
             return ExitCode.FAILURE
         if boot_service.enable():
             return ExitCode.FAILURE

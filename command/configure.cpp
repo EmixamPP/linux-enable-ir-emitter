@@ -31,6 +31,8 @@ void enableDebug()
 ExitCode configure(const char *device_char_p, int width, int height,
                    bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
 {
+    Logger::debug("Executing configure command.");
+
     catch_ctrl_c();
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
@@ -47,9 +49,11 @@ ExitCode configure(const char *device_char_p, int width, int height,
     auto instructions = Configuration::load(camera->device);
     if (!instructions)
     {
+        Logger::debug("No previous configuration found.");
         Scanner scanner(*camera);
         instructions = scanner.scan();
-    }
+    } else
+        Logger::debug("Previous configuration found.");   
 
     Finder finder(*camera, emitters, negAnswerLimit);
 
@@ -74,9 +78,9 @@ ExitCode configure(const char *device_char_p, int width, int height,
 
     if (!success)
     {
-        Logger::error("The configuration has failed.");
+        Logger::error("The configuration failed.");
         Logger::info("Please retry in manual mode by adding the '-m' option.");
-        Logger::info("Do not hesitate to visit the GitHub !");
+        Logger::info("Do not hesitate to visit the GitHub!");
         Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
         return ExitCode::FAILURE;
     }

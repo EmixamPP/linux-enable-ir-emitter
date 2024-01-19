@@ -34,8 +34,10 @@ bool Finder::find(vector<CameraInstruction> &intructions)
 
     for (auto &instruction : intructions)
     {
-        if (instruction.isCorrupted())
+        if (instruction.isCorrupted()) {
+            Logger::debug("Corrupted instruction skipped:", to_string(instruction));
             continue;
+        }
 
         try
         {
@@ -65,7 +67,7 @@ bool Finder::find(vector<CameraInstruction> &intructions)
         catch (const CameraException &e)
         {
             Logger::error("Impossible to reset the camera.");
-            Logger::info("Please shut down your computer, then boot and retry.");
+            Logger::info("Please shutdown your computer, then boot and retry.");
             instruction.reset();
             instruction.setCorrupted(true);
             throw e; // propagate to exit

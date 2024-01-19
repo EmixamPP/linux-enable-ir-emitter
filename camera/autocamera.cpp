@@ -9,6 +9,7 @@ using namespace std;
 
 #include "opencv.hpp"
 #include "globals.hpp"
+#include "utils/logger.hpp"
 
 /**
  * @brief Obtain the intensity variation sum of camera captures
@@ -103,14 +104,17 @@ shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera(int width, int height)
 {
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
-    {
+    {   
+        Logger::debug("Checking if", device, "is a grayscale camera.");
         try
         {
-            shared_ptr<AutoCamera> camera = make_shared<AutoCamera>(device, width, height);
-            if (camera->isGrayscale())
+            auto camera = make_shared<AutoCamera>(device, width, height);
+            if (camera->isGrayscale()) {
+                Logger::debug(device, "is a grayscale camera.");
                 return camera;
+            }
         }
-        catch (const CameraException &e)
+        catch (const CameraException &)
         { // ignore them
         }
     }
