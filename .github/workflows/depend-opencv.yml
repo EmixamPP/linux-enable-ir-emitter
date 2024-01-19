@@ -27,9 +27,9 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
             token: ${{ secrets.PAT }}
-            title: "build(deps): update opencv to ${{ env.VERSION }}"
+            title: "build(workflow): update opencv to ${{ env.VERSION }}"
             branch: "opencv-${{ env.VERSION }}"
-            commit-message: "chore(deps): update opencv to ${{ env.VERSION }}"
+            commit-message: "build(workflow): update opencv to ${{ env.VERSION }}"
             body: |
               Update OpenCV to ${{ env.VERSION }}.
 
