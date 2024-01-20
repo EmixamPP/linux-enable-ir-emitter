@@ -95,9 +95,9 @@ AutoCamera::AutoCamera(const string &device, int width, int height, unsigned cap
     : Camera(device, width, height), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}
 
 /**
- * @brief Find a grayscale camera.
+ * @brief Find a greyscale camera.
  *
- * @return path to the graycale device,
+ * @return path to the greycale device,
  * nullptr if unable to find such device
  */
 shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera(int width, int height)
@@ -105,12 +105,12 @@ shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera(int width, int height)
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
     {   
-        Logger::debug("Checking if", device, "is a grayscale camera.");
+        Logger::debug("Checking if", device, "is a greyscale camera.");
         try
         {
             auto camera = make_shared<AutoCamera>(device, width, height);
             if (camera->isGrayscale()) {
-                Logger::debug(device, "is a grayscale camera.");
+                Logger::debug(device, "is a greyscale camera.");
                 return camera;
             }
         }

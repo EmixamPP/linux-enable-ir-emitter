@@ -441,7 +441,7 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
 }
 
 /**
- * @brief Determine if the camera is in grayscale.
+ * @brief Determine if the camera is in greyscale.
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -466,9 +466,9 @@ bool Camera::isGrayscale()
 }
 
 /**
- * @brief Find a grayscale camera.
+ * @brief Find a greyscale camera.
  *
- * @return path to the graycale device,
+ * @return path to the greycale device,
  * nullptr if unable to find such device
  */
 shared_ptr<Camera> Camera::findGrayscaleCamera(int width, int height)
@@ -476,13 +476,13 @@ shared_ptr<Camera> Camera::findGrayscaleCamera(int width, int height)
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
     {
-        Logger::debug("Checking if", device, "is a grayscale camera.");        
+        Logger::debug("Checking if", device, "is a greyscale camera.");        
         try
         {
             auto camera = make_shared<Camera>(device, width, height);
             if (camera->isGrayscale())
             {
-                Logger::debug(device, "is a grayscale camera.");
+                Logger::debug(device, "is a greyscale camera.");
                 return camera;
             }
         }
