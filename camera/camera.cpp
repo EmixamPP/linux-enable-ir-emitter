@@ -20,43 +20,6 @@ constexpr int NOK_KEY = 110;
 constexpr int IMAGE_DELAY = 30;
 
 /**
- * @brief Get the file descriptor previously opened
- *
- * @return the fd
- */
-int Camera::getFd() const noexcept
-{
-    return fd;
-}
-
-/**
- * @brief Get the VideoCapture previsouly opened
- *
- * @return the cap
- */
-shared_ptr<cv::VideoCapture> Camera::getCap() const noexcept
-{
-    return cap;
-}
-
-/**
- * @brief Obtain the id of any device path
- *
- * @param device path to the camera
- *
- * @return the device id
- */
-int Camera::deviceId(const string &device)
-{
-    auto realPath = filesystem::canonical(device).string();
-    regex pattern("/dev/video([0-9]+)");
-    smatch match;
-    if (!regex_search(realPath, match, pattern))
-        Logger::critical(ExitCode::FAILURE, device + " is not of the regex form /dev/video[0-9]+");
-    return stoi(match[1]);
-}
-
-/**
  * @brief Open a file discriptor if not yet open
  *
  * @throw CameraException if unable to open the camera device
@@ -93,18 +56,8 @@ void Camera::closeFd() noexcept
  */
 void Camera::openCap()
 {
-    closeFd();
-
-    if (!cap->isOpened())
-    {
-        bool isOpened = cap->open(id, cv::CAP_V4L2);
-        if (width > 0)
-            cap->set(cv::CAP_PROP_FRAME_WIDTH, width);
-        if (height > 0)
-            cap->set(cv::CAP_PROP_FRAME_HEIGHT, height);
-        if (!isOpened)
-            throw CameraException(device);
-    }
+    if (!cap->open(id, cv::CAP_V4L, capParams))
+        throw CameraException(device);
 }
 
 /**
@@ -117,146 +70,46 @@ void Camera::closeCap() noexcept
 }
 
 /**
- * @brief Construct a new Camera:: Camera object
+ * @brief Execute an uvc query on the device indicated by the file descriptor
  *
- * @param device path to the camera
- */
-Camera::Camera(const string &device, int width, int height)
-    : id(Camera::deviceId(device)), width(width), height(height), device(device)
+ * @param query uvc query to execute
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return 1 if error, otherwise 0
+ **/
+int Camera::executeUvcQuery(const uvc_xu_control_query &query)
 {
-    cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
-}
-
-Camera::~Camera()
-{
-    closeFd();
-    closeCap();
-}
-
-/**
- * @brief Show a video feedback until the user exit
- * by pressing any key
- */
-void Camera::playForever()
-{
-    openCap();
-    cv::Mat frame;
-    int key = -1;
-
-    cout << "Press any key in the window to close" << endl;
-
-    while (key == -1)
+    openFd();
+    errno = 0;
+    const int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
+    if (result == 1 || errno)
     {
-        cap->read(frame);
-        cv::imshow("linux-enable-ir-emitter", frame);
-        key = cv::waitKey(IMAGE_DELAY);
+        /* // ioctl debug not really useful for automated configuration generation since linux-enable-ir-emitter v3
+        fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
+        switch (errno) {
+        case ENOENT:
+             fprintf(stderr, "The device does not support the given control or the specified extension unit could not be found.\n");
+             break;
+        case ENOBUFS:
+             fprintf(stderr, "The specified buffer size is incorrect (too big or too small).\n");
+             break;
+        case EINVAL:
+             fprintf(stderr, "An invalid request code was passed.\n");
+             break;
+        case EBADRQC:
+             fprintf(stderr, "The given request is not supported by the given control.\n");
+             break;
+        case EFAULT:
+             fprintf(stderr, "The data pointer references an inaccessible memory area.\n");
+             break;
+        case EILSEQ:
+             fprintf(stderr, "Illegal byte sequence.\n");
+             break;
+        }*/
+        return 1;
     }
-
-    closeCap();
-    cv::destroyAllWindows();
-}
-
-/**
- * @brief Show a video feedback until the
- * stop funciton is called.
- * You should not use the camera object
- * until the stop function is called.
- *
- * @return a stop function
- */
-function<void()> Camera::play()
-{
-    openCap();
-
-    shared_ptr<bool> stop = make_shared<bool>(false);
-
-    shared_ptr<thread> showVideo = make_shared<thread>(
-        [this, stop]()
-        {
-            cv::Mat frame;
-            while (!(*stop))
-            {
-                cap->read(frame);
-                cv::imshow("linux-enable-ir-emitter", frame);
-                cv::waitKey(IMAGE_DELAY);
-            }
-        });
-
-    return [this, stop, showVideo]()
-    {
-        *stop = true;
-        showVideo->join();
-        closeCap();
-        cv::destroyAllWindows();
-    };
-}
-
-/**
- * @brief Apply an instruction on the camera
- *
- * @param instruction to apply
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if success, otherwise false
- */
-bool Camera::apply(const CameraInstruction &instruction)
-{
-    const uvc_xu_control_query query = {
-        instruction.getUnit(),
-        instruction.getSelector(),
-        UVC_SET_CUR,
-        static_cast<uint16_t>(instruction.getCur().size()),
-        const_cast<uint8_t *>(instruction.getCur().data()), // const_cast safe; this is a set query
-    };
-    return executeUvcQuery(query) == 0;
-}
-
-/**
- * @brief Read one frame
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return the frame
- */
-cv::Mat Camera::read1()
-{
-    openCap();
-    cv::Mat frame;
-    cap->read(frame);
-    closeCap();
-    return frame;
-}
-
-/**
- * @brief Disable the video feedback for `isEmitterWorking()`
- */
-void Camera::disableGui()
-{
-    noGui = true;
-}
-
-/**
- * @brief Check if the emitter is working
- * by asking confirmation to the user
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if yes, false if not
- */
-bool Camera::isEmitterWorking()
-{
-    openCap();
-
-    bool res;
-    if (noGui)
-        res = isEmitterWorkingAskNoGui();
-    else
-        res = isEmitterWorkingAsk();
-
-    closeCap();
-
-    return res;
+    return 0;
 }
 
 /**
@@ -319,46 +172,215 @@ bool Camera::isEmitterWorkingAskNoGui()
 }
 
 /**
- * @brief Execute an uvc query on the device indicated by the file descriptor
+ * @brief Obtain the id of any device path
  *
- * @param query uvc query to execute
+ * @param device path to the camera
+ *
+ * @return the device id
+ */
+static int deviceId(const string &device)
+{
+    auto realPath = filesystem::canonical(device).string();
+    regex pattern("/dev/video([0-9]+)");
+    smatch match;
+    if (!regex_search(realPath, match, pattern))
+        Logger::critical(ExitCode::FAILURE, device + " is not of the regex form /dev/video[0-9]+");
+    return stoi(match[1]);
+}
+
+/**
+ * @brief Construct a new Camera:: Camera object
+ *
+ * @param device path to the camera
+ * @param width of the capture resolution
+ * @param height of the capture resolution
+ */
+Camera::Camera(const string &device, int width, int height)
+    : capParams({
+          cv::CAP_PROP_FRAME_WIDTH,
+          width,
+          cv::CAP_PROP_FRAME_HEIGHT,
+          height,
+      }),
+      id(deviceId(device)),
+      device(device)
+{
+    cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
+}
+
+Camera::~Camera()
+{
+    closeFd();
+    closeCap();
+}
+
+/**
+ * @brief Disable the video feedback for `isEmitterWorking()`
+ */
+void Camera::disableGui()
+{
+    noGui = true;
+}
+
+/**
+ * @brief Show a video feedback until the
+ * stop funciton is called.
+ * You should not use the camera object
+ * until the stop function is called.
+ *
+ * @return a stop function
+ */
+function<void()> Camera::play()
+{
+    openCap();
+
+    shared_ptr<bool> stop = make_shared<bool>(false);
+
+    shared_ptr<thread> showVideo = make_shared<thread>(
+        [this, stop]()
+        {
+            cv::Mat frame;
+            while (!(*stop))
+            {
+                cap->read(frame);
+                cv::imshow("linux-enable-ir-emitter", frame);
+                cv::waitKey(IMAGE_DELAY);
+            }
+        });
+
+    return [this, stop, showVideo]()
+    {
+        *stop = true;
+        showVideo->join();
+        closeCap();
+        cv::destroyAllWindows();
+    };
+}
+
+/**
+ * @brief Show a video feedback until the user exit
+ * by pressing any key
+ */
+void Camera::playForever()
+{
+    openCap();
+    cv::Mat frame;
+    int key = -1;
+
+    cout << "Press any key in the window to close" << endl;
+
+    while (key == -1)
+    {
+        cap->read(frame);
+        cv::imshow("linux-enable-ir-emitter", frame);
+        key = cv::waitKey(IMAGE_DELAY);
+    }
+
+    closeCap();
+    cv::destroyAllWindows();
+}
+
+/**
+ * @brief Read one frame
  *
  * @throw CameraException if unable to open the camera device
  *
- * @return 1 if error, otherwise 0
- **/
-int Camera::executeUvcQuery(const uvc_xu_control_query &query)
+ * @return the frame
+ */
+cv::Mat Camera::read1()
 {
-    openFd();
-    errno = 0;
-    const int result = ioctl(fd, UVCIOC_CTRL_QUERY, &query);
-    if (result == 1 || errno)
+    openCap();
+    cv::Mat frame;
+    cap->read(frame);
+    closeCap();
+    return frame;
+}
+
+/**
+ * @brief Read multiple frames
+ *
+ * @param captureTimeMs for how long (ms) collect frames
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return the frames
+ */
+vector<cv::Mat> Camera::readDuring(unsigned captureTimeMs)
+{
+    openCap();
+    vector<cv::Mat> frames;
+    const auto stopTime = chrono::steady_clock::now() + chrono::milliseconds(captureTimeMs);
+    while (chrono::steady_clock::now() < stopTime)
     {
-        /* // ioctl debug not really useful for automated configuration generation since linux-enable-ir-emitter v3
-        fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
-        switch (errno) {
-        case ENOENT:
-             fprintf(stderr, "The device does not support the given control or the specified extension unit could not be found.\n");
-             break;
-        case ENOBUFS:
-             fprintf(stderr, "The specified buffer size is incorrect (too big or too small).\n");
-             break;
-        case EINVAL:
-             fprintf(stderr, "An invalid request code was passed.\n");
-             break;
-        case EBADRQC:
-             fprintf(stderr, "The given request is not supported by the given control.\n");
-             break;
-        case EFAULT:
-             fprintf(stderr, "The data pointer references an inaccessible memory area.\n");
-             break;
-        case EILSEQ:
-             fprintf(stderr, "Illegal byte sequence.\n");
-             break;
-        }*/
-        return 1;
+        cv::Mat frame;
+        cap->read(frame);
+        if (!frame.empty())
+            frames.push_back(move(frame));
     }
-    return 0;
+    closeCap();
+    return frames;
+}
+
+/**
+ * @brief Check if the emitter is working
+ * by asking confirmation to the user
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if yes, false if not
+ */
+bool Camera::isEmitterWorking()
+{
+    openCap();
+    bool res = noGui ? isEmitterWorkingAskNoGui() : isEmitterWorkingAsk();
+    closeCap();
+    return res;
+}
+
+/**
+ * @brief Determine if the camera is in greyscale.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if so, otheriwse false.
+ */
+bool Camera::isGrayscale()
+{
+    cv::Mat frame = read1();
+
+    if (frame.channels() != 3)
+        return false;
+
+    for (int r = 0; r < frame.rows; ++r)
+        for (int c = 0; c < frame.cols; ++c)
+        {
+            const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
+            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
+                return false;
+        }
+
+    return true;
+}
+
+/**
+ * @brief Apply an instruction on the camera
+ *
+ * @param instruction to apply
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return true if success, otherwise false
+ */
+bool Camera::apply(const CameraInstruction &instruction)
+{
+    const uvc_xu_control_query query = {
+        instruction.getUnit(),
+        instruction.getSelector(),
+        UVC_SET_CUR,
+        static_cast<uint16_t>(instruction.getCur().size()),
+        const_cast<uint8_t *>(instruction.getCur().data()), // const_cast safe; this is a set query
+    };
+    return executeUvcQuery(query) == 0;
 }
 
 /**
@@ -441,31 +463,6 @@ uint16_t Camera::lenUvcQuery(uint8_t unit, uint8_t selector)
 }
 
 /**
- * @brief Determine if the camera is in greyscale.
- *
- * @throw CameraException if unable to open the camera device
- *
- * @return true if so, otheriwse false.
- */
-bool Camera::isGrayscale()
-{
-    cv::Mat frame = read1();
-
-    if (frame.channels() != 3)
-        return false;
-
-    for (int r = 0; r < frame.rows; ++r)
-        for (int c = 0; c < frame.cols; ++c)
-        {
-            const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
-            if (pixel[0] != pixel[1] || pixel[0] != pixel[2])
-                return false;
-        }
-
-    return true;
-}
-
-/**
  * @brief Find a greyscale camera.
  *
  * @return path to the greycale device,
@@ -476,7 +473,7 @@ shared_ptr<Camera> Camera::findGrayscaleCamera(int width, int height)
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
     {
-        Logger::debug("Checking if", device, "is a greyscale camera.");        
+        Logger::debug("Checking if", device, "is a greyscale camera.");
         try
         {
             auto camera = make_shared<Camera>(device, width, height);

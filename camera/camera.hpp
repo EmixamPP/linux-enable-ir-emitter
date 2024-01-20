@@ -13,17 +13,11 @@ class CameraInstruction;
 class Camera
 {
 private:
-    int id;
-    int width;
-    int height;
+    bool noGui = false;
     int fd = -1;
     const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
-    bool noGui = false;
-
-protected:
-    int getFd() const noexcept;
-
-    shared_ptr<cv::VideoCapture> getCap() const noexcept;
+    const vector<int> capParams;
+    int id;
 
     void openFd();
 
@@ -32,8 +26,6 @@ protected:
     void openCap();
 
     void closeCap() noexcept;
-
-    static int deviceId(const string &device);
 
     int executeUvcQuery(const uvc_xu_control_query &query);
 
@@ -58,25 +50,27 @@ public:
 
     Camera(Camera &&other) = delete;
 
+    void disableGui();
+
     function<void()> play();
 
     void playForever();
 
-    bool apply(const CameraInstruction &instruction);
+    cv::Mat read1();
 
-    void disableGui();
+    vector<cv::Mat> readDuring(unsigned captureTimeMs);
 
     virtual bool isEmitterWorking();
 
-    cv::Mat read1();
+    bool isGrayscale();
+
+    bool apply(const CameraInstruction &instruction);
 
     int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
     int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
     uint16_t lenUvcQuery(uint8_t unit, uint8_t selector);
-
-    bool isGrayscale();
 
     static shared_ptr<Camera> findGrayscaleCamera(int width = -1, int height = -1);
 };

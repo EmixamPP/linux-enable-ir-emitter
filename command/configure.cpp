@@ -20,7 +20,9 @@ void enableDebug()
 /**
  * @brief Finds a configuration for an infrared camera which enables its emitter(s).
  *
- * @param device path to the infrared camera, empty string for automatic detection
+ * @param device_char_p path to the infrared camera, empty string for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
  * @param manual true for enabling the manual configuration
  * @param emitters number of emitters on the device
  * @param negAnswerLimit number of negative answer before the pattern is skiped. Use -1 for unlimited

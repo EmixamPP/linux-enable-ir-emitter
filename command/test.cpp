@@ -12,7 +12,9 @@ using namespace std;
  * @brief Test if the camera is in greyscale and if the emitter is working.
  * Also display a video feedback.
  *
- * @param path to the infrared camera, empty string for automatic detection
+ * @param device_char_p path to the infrared camera, empty string for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
  *
  * @return exit code
  */

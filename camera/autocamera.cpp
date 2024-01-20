@@ -1,6 +1,5 @@
 #include "autocamera.hpp"
 
-#include <chrono>
 #include <cmath>
 #include <memory>
 #include <utility>
@@ -11,28 +10,8 @@ using namespace std;
 #include "globals.hpp"
 #include "utils/logger.hpp"
 
-/**
- * @brief Obtain the intensity variation sum of camera captures
- *
- * @return the intensity variation sum
- */
-long long unsigned AutoCamera::intensityVariationSum()
+static vector<vector<int>> computeIntensities(const vector<cv::Mat> &frames)
 {
-    openCap();
-    auto cap = getCap();
-    vector<cv::Mat> frames;
-
-    // capture frames
-    const auto stopTime = chrono::steady_clock::now() + chrono::milliseconds(captureTimeMs);
-    while (chrono::steady_clock::now() < stopTime)
-    {
-        cv::Mat frame;
-        cap->read(frame);
-        if (!frame.empty())
-            frames.push_back(move(frame));
-    }
-
-    // compute lighting intensity
     vector<vector<int>> intensities;
     for (auto &frame : frames)
     {
@@ -45,8 +24,11 @@ long long unsigned AutoCamera::intensityVariationSum()
             }
         intensities.push_back(move(intensity));
     }
+    return intensities;
+}
 
-    // compute difference between each consecutive frame intensity
+static vector<int> computeIntesitiesDiff(const vector<vector<int>> &intensities)
+{
     vector<int> diffs;
     for (size_t i = 0; i < intensities.size() - 1; ++i)
     {
@@ -57,16 +39,38 @@ long long unsigned AutoCamera::intensityVariationSum()
             diff += intensity1.at(j) - intensity2.at(j);
         diffs.push_back(diff);
     }
+    return diffs;
+}
 
-    // compute difference between each consecutive intensity difference
-    // this is the variation in the lighting intensity of the fames
-    // and sum them all
+static long long unsigned computeSumOfIntensitiesVariation(const vector<int> &diffs)
+{
     long long unsigned sum = 0;
     for (size_t i = 0; i < diffs.size() - 1; ++i)
         sum += static_cast<long long unsigned>(abs(diffs[i] - diffs[i + 1]));
 
-    closeCap();
     return sum;
+}
+
+/**
+ * @brief Obtain the intensity variation sum of camera captures
+ *
+ * @return the intensity variation sum
+ */
+long long unsigned AutoCamera::intensityVariationSum()
+{
+    // capture frames
+    const vector<cv::Mat> frames = readDuring(captureTimeMs);
+
+    // compute lighting intensity for each pixel of each frame
+    const vector<vector<int>> intensities = computeIntensities(frames);
+
+    // compute difference between each consecutive frame intensity
+    const vector<int> diffs = computeIntesitiesDiff(intensities);
+
+    // compute difference between each consecutive intensity difference
+    // this is the variation in the lighting intensity of the fames
+    // and sum them all
+    return computeSumOfIntensitiesVariation(diffs);
 }
 
 /**
@@ -104,12 +108,13 @@ shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera(int width, int height)
 {
     vector<string> v4lDevices = get_V4L_devices();
     for (auto &device : v4lDevices)
-    {   
+    {
         Logger::debug("Checking if", device, "is a greyscale camera.");
         try
         {
             auto camera = make_shared<AutoCamera>(device, width, height);
-            if (camera->isGrayscale()) {
+            if (camera->isGrayscale())
+            {
                 Logger::debug(device, "is a greyscale camera.");
                 return camera;
             }
