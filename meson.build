@@ -152,6 +152,10 @@ elif get_option('boot_service') == 'openrc'
     )
 endif
 
+install_emptydir(
+    get_option('sysconfdir') / 'udev/rules.d',
+)
+
 ######
 # Conf
 ######
