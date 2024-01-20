@@ -197,6 +197,8 @@ static int deviceId(const string &device)
  */
 Camera::Camera(const string &device, int width, int height)
     : capParams({
+          cv::CAP_PROP_FOURCC,
+          cv::VideoWriter::fourcc('G', 'R', 'E', 'Y'),
           cv::CAP_PROP_FRAME_WIDTH,
           width,
           cv::CAP_PROP_FRAME_HEIGHT,
