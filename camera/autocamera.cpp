@@ -13,7 +13,7 @@ using namespace std;
 static vector<vector<int>> computeIntensities(const vector<cv::Mat> &frames)
 {
     vector<vector<int>> intensities;
-    for (auto &frame : frames)
+    for (const auto &frame : frames)
     {
         vector<int> intensity;
         for (int r = 0; r < frame.rows; ++r)
@@ -22,7 +22,7 @@ static vector<vector<int>> computeIntensities(const vector<cv::Mat> &frames)
                 const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
                 intensity.push_back(pixel[0] + pixel[1] + pixel[2]);
             }
-        intensities.push_back(move(intensity));
+        intensities.push_back(std::move(intensity));
     }
     return intensities;
 }
@@ -32,8 +32,8 @@ static vector<int> computeIntesitiesDiff(const vector<vector<int>> &intensities)
     vector<int> diffs;
     for (size_t i = 0; i < intensities.size() - 1; ++i)
     {
-        auto &intensity1 = intensities[i];
-        auto &intensity2 = intensities[i + 1];
+        const auto &intensity1 = intensities[i];
+        const auto &intensity2 = intensities[i + 1];
         int diff = 0;
         for (size_t j = 0; j < intensity1.size(); ++j)
             diff += intensity1.at(j) - intensity2.at(j);

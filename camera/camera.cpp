@@ -317,7 +317,7 @@ vector<cv::Mat> Camera::readDuring(unsigned captureTimeMs)
         cv::Mat frame;
         cap->read(frame);
         if (!frame.empty())
-            frames.push_back(move(frame));
+            frames.push_back(std::move(frame));
     }
     closeCap();
     return frames;
