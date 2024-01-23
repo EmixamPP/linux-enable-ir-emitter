@@ -20,33 +20,33 @@ using namespace std;
  * @throw CameraInstructionException if information are missing for controlling the device
  */
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
-    : unit(unit), selector(selector)
+    : unit_(unit), selector_(selector)
 {
     // get the control instruction lenght
-    uint16_t ctrlSize = camera.lenUvcQuery(unit, selector);
-    if (ctrlSize == 0)
+    const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
+    if (ctrl_size == 0)
         throw CameraInstructionException(camera.device, unit, selector);
 
     // get the current control value
-    curCtrl.resize(ctrlSize);
-    initCtrl.resize(ctrlSize);
-    if (camera.getUvcQuery(UVC_GET_CUR, unit, selector, curCtrl) == 1)
+    cur_ctrl_.resize(ctrl_size);
+    init_ctrl_.resize(ctrl_size);
+    if (camera.uvc_get_query(UVC_GET_CUR, unit, selector, cur_ctrl_) == 1)
         throw CameraInstructionException(camera.device, unit, selector);
-    initCtrl.assign(curCtrl.begin(), curCtrl.end());
+    init_ctrl_.assign(cur_ctrl_.begin(), cur_ctrl_.end());
 
     // ensure the control can be modified
-    if (camera.setUvcQuery(unit, selector, curCtrl) == 1)
+    if (camera.uvc_set_query(unit, selector, cur_ctrl_) == 1)
         throw CameraInstructionException(camera.device, unit, selector);
 
     // try to get the maximum control value (it does not necessary exists)
-    maxCtrl.resize(ctrlSize);
-    if (camera.getUvcQuery(UVC_GET_MAX, unit, selector, maxCtrl) == 1)
-        maxCtrl.resize(0);
+    max_ctrl_.resize(ctrl_size);
+    if (camera.uvc_get_query(UVC_GET_MAX, unit, selector, max_ctrl_) == 1)
+        max_ctrl_.resize(0);
 
     // try get the minimum control value (it does not necessary exists)
-    minCtrl.resize(ctrlSize);
-    if (camera.getUvcQuery(UVC_GET_MIN, unit, selector, minCtrl) == 1)
-        minCtrl.resize(0);
+    min_ctrl_.resize(ctrl_size);
+    if (camera.uvc_get_query(UVC_GET_MIN, unit, selector, min_ctrl_) == 1)
+        min_ctrl_.resize(0);
 }
 
 /**
@@ -57,23 +57,23 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
  */
 bool CameraInstruction::next() noexcept
 {
-    if (curCtrl == maxCtrl)
+    if (cur_ctrl_ == max_ctrl_)
         return false;
 
-    for (size_t i = 0; i < curCtrl.size(); ++i)
+    for (size_t i = 0; i < cur_ctrl_.size(); ++i)
     {
-        uint16_t nextCtrli = static_cast<uint16_t>(curCtrl[i] + 1);
-        if (nextCtrli > maxCtrl[i])
-            curCtrl[i] = minCtrl.empty() ? initCtrl[i] : minCtrl[i]; // simulate "overflow"
+        const uint16_t next_ctrl_i = static_cast<uint16_t>(cur_ctrl_[i] + 1);
+        if (next_ctrl_i > max_ctrl_[i])
+            cur_ctrl_[i] = min_ctrl_.empty() ? init_ctrl_[i] : min_ctrl_[i]; // simulate "overflow"
         else
         {
-            curCtrl[i] = static_cast<uint8_t>(nextCtrli);
+            cur_ctrl_[i] = static_cast<uint8_t>(next_ctrl_i);
             return true;
         }
     }
 
     // all are in overflow (should never arrive!)
-    setMaxAsCur();
+    set_max_cur();
     return false;
 }
 
@@ -82,9 +82,9 @@ bool CameraInstruction::next() noexcept
  *
  * @return true if the instruction is corrupted
  */
-bool CameraInstruction::isCorrupted() const noexcept
+bool CameraInstruction::is_corrupted() const noexcept
 {
-    return corrupted;
+    return corrupted_;
 }
 
 /**
@@ -92,9 +92,9 @@ bool CameraInstruction::isCorrupted() const noexcept
  *
  * @return unit
  */
-uint8_t CameraInstruction::getUnit() const noexcept
+uint8_t CameraInstruction::unit() const noexcept
 {
-    return unit;
+    return unit_;
 }
 
 /**
@@ -102,9 +102,9 @@ uint8_t CameraInstruction::getUnit() const noexcept
  *
  * @return selector
  */
-uint8_t CameraInstruction::getSelector() const noexcept
+uint8_t CameraInstruction::selector() const noexcept
 {
-    return selector;
+    return selector_;
 }
 
 /**
@@ -112,9 +112,9 @@ uint8_t CameraInstruction::getSelector() const noexcept
  *
  * @return current control value
  */
-const vector<uint8_t> &CameraInstruction::getCur() const noexcept
+const vector<uint8_t> &CameraInstruction::cur() const noexcept
 {
-    return curCtrl;
+    return cur_ctrl_;
 }
 
 /**
@@ -122,9 +122,9 @@ const vector<uint8_t> &CameraInstruction::getCur() const noexcept
  *
  * @return maximum control
  */
-const vector<uint8_t> &CameraInstruction::getMax() const noexcept
+const vector<uint8_t> &CameraInstruction::max() const noexcept
 {
-    return maxCtrl;
+    return max_ctrl_;
 }
 
 /**
@@ -132,9 +132,9 @@ const vector<uint8_t> &CameraInstruction::getMax() const noexcept
  *
  * @return minimum control
  */
-const vector<uint8_t> &CameraInstruction::getMin() const noexcept
+const vector<uint8_t> &CameraInstruction::min() const noexcept
 {
-    return minCtrl;
+    return min_ctrl_;
 }
 
 /**
@@ -142,43 +142,43 @@ const vector<uint8_t> &CameraInstruction::getMin() const noexcept
  *
  * @return intial control value
  */
-const vector<uint8_t> &CameraInstruction::getInit() const noexcept
+const vector<uint8_t> &CameraInstruction::init() const noexcept
 {
-    return initCtrl;
+    return init_ctrl_;
 }
 
 /**
  * @brief Changes the corrupted status of the instruction.
  *
- * @param isCorrupted status to set
+ * @param is_corrupted status to set
  */
-void CameraInstruction::setCorrupted(bool isCorrupted) noexcept
+void CameraInstruction::set_corrupted(bool is_corrupted) noexcept
 {
-    corrupted = isCorrupted;
+    corrupted_ = is_corrupted;
 }
 
 /**
  * @brief Sets a new current control value, if it is valid.
  *
- * @param newCur control to set
+ * @param cur control to set
  *
  * @return true if success, otherwise false
  */
-bool CameraInstruction::setCur(const vector<uint8_t> &newCur) noexcept
+bool CameraInstruction::set_cur(const vector<uint8_t> &cur) noexcept
 {
-    if (curCtrl.size() != newCur.size())
+    if (cur_ctrl_.size() != cur.size())
         return false;
 
     
-    for (size_t i = 0; i < newCur.size(); ++i)
+    for (size_t i = 0; i < cur.size(); ++i)
     {
-        if (!minCtrl.empty() && minCtrl[i] > newCur[i])
+        if (!min_ctrl_.empty() && min_ctrl_[i] > cur[i])
             return false;
-        else if (!maxCtrl.empty() && maxCtrl[i] < newCur[i])
+        else if (!max_ctrl_.empty() && max_ctrl_[i] < cur[i])
             return false;
     }
 
-    curCtrl.assign(newCur.begin(), newCur.end());
+    cur_ctrl_.assign(cur.begin(), cur.end());
 
     return true;
 }
@@ -190,12 +190,12 @@ bool CameraInstruction::setCur(const vector<uint8_t> &newCur) noexcept
  *
  * @return true if success, otherwise false
  */
-bool CameraInstruction::setMinAsCur() noexcept
+bool CameraInstruction::set_min_cur() noexcept
 {
-    if (minCtrl.empty() || curCtrl == minCtrl)
+    if (min_ctrl_.empty() || cur_ctrl_ == min_ctrl_)
         return false;
 
-    curCtrl.assign(minCtrl.begin(), minCtrl.end());
+    cur_ctrl_.assign(min_ctrl_.begin(), min_ctrl_.end());
 
     return true;
 }
@@ -209,14 +209,14 @@ bool CameraInstruction::setMinAsCur() noexcept
  *
  * @return true if success, otherwise false
  */
-bool CameraInstruction::setMaxAsCur() noexcept
+bool CameraInstruction::set_max_cur() noexcept
 {
-    if (curCtrl == maxCtrl)
+    if (cur_ctrl_ == max_ctrl_)
         return false;
-    else if (maxCtrl.empty())
-        curCtrl.assign(curCtrl.size(), 255);
+    else if (max_ctrl_.empty())
+        cur_ctrl_.assign(cur_ctrl_.size(), 255);
     else
-        curCtrl.assign(maxCtrl.begin(), maxCtrl.end());
+        cur_ctrl_.assign(max_ctrl_.begin(), max_ctrl_.end());
 
     return true;
 }
@@ -227,14 +227,14 @@ bool CameraInstruction::setMaxAsCur() noexcept
  */
 void CameraInstruction::reset() noexcept
 {
-    curCtrl.assign(initCtrl.begin(), initCtrl.end());
+    cur_ctrl_.assign(init_ctrl_.begin(), init_ctrl_.end());
 }
 
 string to_string(const CameraInstruction &inst)
 {
-    string res = "unit: " + to_string(inst.getUnit());
-    res += ", selector: " + to_string(inst.getSelector());
-    res += ", control: " + to_string(inst.getCur());
+    string res = "unit: " + to_string(inst.unit());
+    res += ", selector: " + to_string(inst.selector());
+    res += ", control: " + to_string(inst.cur());
     return res;
 }
 

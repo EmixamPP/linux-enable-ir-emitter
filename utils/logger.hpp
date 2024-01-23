@@ -6,7 +6,7 @@ using namespace std;
 class Logger
 {
 private:
-    static bool isDebugEnabled;
+    static bool debug_;
 
 public:
     Logger() = delete;
@@ -21,12 +21,12 @@ public:
 
     Logger(Logger &&other) = delete;
 
-    static void enableDebug();
+    static void enable_debug();
 
     template <typename... Args>
     static void debug(Args ...args)
     {
-        if (Logger::isDebugEnabled)
+        if (Logger::debug_)
         {
             cout << "DEBUG:";
             ((cout << " " << args), ...);

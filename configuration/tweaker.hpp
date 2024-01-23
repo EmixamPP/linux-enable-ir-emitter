@@ -7,7 +7,7 @@ using namespace std;
 
 class Tweaker
 {
-protected:
+private:
     Camera &camera;
 
 public:

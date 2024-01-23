@@ -127,7 +127,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        cpp_commands.enableDebug()
+        cpp_commands.enable_debug()
         logging.getLogger().setLevel(logging.DEBUG)
 
     device: str = ""

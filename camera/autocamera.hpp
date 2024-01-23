@@ -10,10 +10,10 @@ constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 50;
 class AutoCamera : public Camera
 {
 private:
-    unsigned captureTimeMs;
-    long long unsigned refIntesityVarSum;
+    unsigned capture_time_ms_;
+    long long unsigned refIntesity_var_sum_;
 
-    long long unsigned intensityVariationSum();
+    long long unsigned intensity_variation_sum();
 
 public:
     AutoCamera() = delete;
@@ -22,9 +22,9 @@ public:
 
     ~AutoCamera() override = default;
 
-    bool isEmitterWorking() override;
+    bool is_emitter_working() override;
 
-    bool isEmitterWorkingNoConfirm();
+    bool is_emitter_working_no_confirm();
 
     AutoCamera &operator=(const AutoCamera &) = delete;
 
@@ -34,5 +34,5 @@ public:
 
     AutoCamera(AutoCamera &&other) = delete;
 
-    static shared_ptr<AutoCamera> findGrayscaleCamera(int width = -1, int height = -1);
+    static shared_ptr<AutoCamera> FindGrayscaleCamera(int width = -1, int height = -1);
 };

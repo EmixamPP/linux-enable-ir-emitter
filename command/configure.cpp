@@ -12,9 +12,9 @@ using namespace std;
 #include "utils/logger.hpp"
 #include "utils/configuration.hpp"
 
-void enableDebug()
+void enable_debug()
 {
-    Logger::enableDebug();
+    Logger::enable_debug();
 }
 
 /**
@@ -25,30 +25,30 @@ void enableDebug()
  * @param height of the capture resolution
  * @param manual true for enabling the manual configuration
  * @param emitters number of emitters on the device
- * @param negAnswerLimit number of negative answer before the pattern is skiped. Use -1 for unlimited
- * @param noGui no gui video feedback
+ * @param neg_answer_limit number of negative answer before the pattern is skiped. Use -1 for unlimited
+ * @param no_gui no gui video feedback
  *
  * @return exit code
  */
 ExitCode configure(const char *device_char_p, int width, int height,
-                   bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
+                   bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui)
 {
     Logger::debug("Executing configure command.");
 
-    catch_ctrl_c();
+    CatchCtrlC();
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution.");
 
     shared_ptr<Camera> camera;
     if (manual)
-        camera = makeCamera<Camera>(string(device_char_p), width, height, noGui);
+        camera = MakeCamera<Camera>(string(device_char_p), width, height, no_gui);
     else
-        camera = makeCamera<AutoCamera>(string(device_char_p), width, height, noGui);
+        camera = MakeCamera<AutoCamera>(string(device_char_p), width, height, no_gui);
     
     Logger::info("Configuring the camera:", camera->device);
 
-    auto instructions = Configuration::load(camera->device);
+    auto instructions = Configuration::Load(camera->device);
     if (!instructions)
     {
         Logger::debug("No previous configuration found.");
@@ -57,12 +57,12 @@ ExitCode configure(const char *device_char_p, int width, int height,
     } else
         Logger::debug("Previous configuration found.");   
 
-    Finder finder(*camera, emitters, negAnswerLimit);
+    Finder finder(*camera, emitters, neg_answer_limit);
 
     bool success = false;
     try
     {
-        if (camera->Camera::isEmitterWorking())
+        if (camera->Camera::is_emitter_working())
         {
             Logger::error("The emiter is already working, skipping the configuration.");
             return ExitCode::FAILURE;
@@ -72,11 +72,11 @@ ExitCode configure(const char *device_char_p, int width, int height,
     }
     catch (const CameraException &e)
     {
-        Configuration::save(camera->device, instructions.value());
+        Configuration::Save(camera->device, instructions.value());
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Configuration::save(camera->device, instructions.value());
+    Configuration::Save(camera->device, instructions.value());
 
     if (!success)
     {

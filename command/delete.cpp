@@ -19,7 +19,7 @@ ExitCode delete_config(const char* device)
 {
     Logger::debug("Executing delete command.");
 
-    vector<string> configs = get_config_paths(device);
+    vector<string> configs = GetConfigPaths(device);
     for (auto &config : configs) {
         Logger::debug("Deleting", config);
         filesystem::remove(config);

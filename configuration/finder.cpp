@@ -13,10 +13,10 @@ using namespace std;
  *
  * @param camera on which try to find an instruction for the emitter
  * @param emitters number of emitters on the device
- * @param negAnswerLimit skip a patern after negAnswerLimit negative answer
+ * @param neg_answer_limit skip a patern after neg_answer_limit negative answer
  */
-Finder::Finder(Camera &camera, unsigned emitters, unsigned negAnswerLimit)
-    : camera(camera), emitters(emitters), negAnswerLimit(negAnswerLimit) {}
+Finder::Finder(Camera &camera, unsigned emitters, unsigned neg_answer_limit)
+    : camera_(camera), emitters_(emitters), neg_answer_limit_(neg_answer_limit) {}
 
 /**
  * @brief Find an instruction which enable the ir emitter(s)
@@ -34,31 +34,31 @@ bool Finder::find(vector<CameraInstruction> &intructions)
 
     for (auto &instruction : intructions)
     {
-        if (instruction.isCorrupted()) {
+        if (instruction.is_corrupted()) {
             Logger::debug("Corrupted instruction skipped:", to_string(instruction));
             continue;
         }
 
         try
         {
-            instruction.setMinAsCur();
+            instruction.set_min_cur();
 
-            unsigned negAnswerCounter = 0;
-            while (negAnswerCounter < negAnswerLimit && instruction.next())
+            unsigned neg_answer_counter = 0;
+            while (neg_answer_counter < neg_answer_limit_ && instruction.next())
             {
-                if (negAnswerCounter == negAnswerLimit - 1)
-                    instruction.setMaxAsCur();
+                if (neg_answer_counter == neg_answer_limit_ - 1)
+                    instruction.set_max_cur();
 
                 Logger::debug("Instruction applied:", to_string(instruction));
 
-                if (camera.apply(instruction) && camera.isEmitterWorking() && ++configured == emitters)
+                if (camera_.apply(instruction) && camera_.is_emitter_working() && ++configured == emitters_)
                     return true; // all emitters are configured
 
-                ++negAnswerCounter;
+                ++neg_answer_counter;
             }
 
             instruction.reset();
-            camera.apply(instruction);
+            camera_.apply(instruction);
         }
         catch (const CameraInstructionException &e)
         {
@@ -69,7 +69,7 @@ bool Finder::find(vector<CameraInstruction> &intructions)
             Logger::error("Impossible to reset the camera.");
             Logger::info("Please shutdown your computer, then boot and retry.");
             instruction.reset();
-            instruction.setCorrupted(true);
+            instruction.set_corrupted(true);
             throw e; // propagate to exit
         }
     }

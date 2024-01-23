@@ -7,8 +7,8 @@ using namespace std;
 
 class Scanner
 {
-protected:
-    Camera &camera;
+private:
+    Camera &camera_;
 
 public:
     Scanner() = delete;

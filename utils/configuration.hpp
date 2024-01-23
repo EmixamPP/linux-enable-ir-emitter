@@ -8,6 +8,6 @@ using namespace std;
 
 namespace Configuration
 {
-    void save(const string &device, const vector<CameraInstruction> &instructions);
-    optional<vector<CameraInstruction>> load(const string &device);
+    void Save(const string &device, const vector<CameraInstruction> &instructions);
+    optional<vector<CameraInstruction>> Load(const string &device);
 }

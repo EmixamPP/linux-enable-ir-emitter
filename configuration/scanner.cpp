@@ -7,7 +7,7 @@
  * 
  * @param camera on which scans the instructions
  */
-Scanner::Scanner(Camera &camera) : camera(camera) {}
+Scanner::Scanner(Camera &camera) : camera_(camera) {}
 
 /**
  * @brief Scans the available camera instructions
@@ -27,7 +27,7 @@ vector<CameraInstruction> Scanner::scan() noexcept
 
             try
             {
-                instructions.push_back(CameraInstruction(camera, unit, selector));
+                instructions.push_back(CameraInstruction(camera_, unit, selector));
             }
             catch (const CameraInstructionException &)
             {

@@ -10,7 +10,7 @@ using namespace std;
 #include "globals.hpp"
 #include "utils/logger.hpp"
 
-static vector<vector<int>> computeIntensities(const vector<cv::Mat> &frames)
+static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)
 {
     vector<vector<int>> intensities;
     for (const auto &frame : frames)
@@ -27,7 +27,7 @@ static vector<vector<int>> computeIntensities(const vector<cv::Mat> &frames)
     return intensities;
 }
 
-static vector<int> computeIntesitiesDiff(const vector<vector<int>> &intensities)
+static vector<int> compute_intesities_diff(const vector<vector<int>> &intensities)
 {
     vector<int> diffs;
     for (size_t i = 0; i < intensities.size() - 1; ++i)
@@ -42,7 +42,7 @@ static vector<int> computeIntesitiesDiff(const vector<vector<int>> &intensities)
     return diffs;
 }
 
-static long long unsigned computeSumOfIntensitiesVariation(const vector<int> &diffs)
+static long long unsigned compute_sum_intensities_variation(const vector<int> &diffs)
 {
     long long unsigned sum = 0;
     for (size_t i = 0; i < diffs.size() - 1; ++i)
@@ -56,21 +56,21 @@ static long long unsigned computeSumOfIntensitiesVariation(const vector<int> &di
  *
  * @return the intensity variation sum
  */
-long long unsigned AutoCamera::intensityVariationSum()
+long long unsigned AutoCamera::intensity_variation_sum()
 {
     // capture frames
-    const vector<cv::Mat> frames = readDuring(captureTimeMs);
+    const vector<cv::Mat> frames = read_during(capture_time_ms_);
 
     // compute lighting intensity for each pixel of each frame
-    const vector<vector<int>> intensities = computeIntensities(frames);
+    const vector<vector<int>> intensities = compute_intensities(frames);
 
     // compute difference between each consecutive frame intensity
-    const vector<int> diffs = computeIntesitiesDiff(intensities);
+    const vector<int> diffs = compute_intesities_diff(intensities);
 
     // compute difference between each consecutive intensity difference
     // this is the variation in the lighting intensity of the fames
     // and sum them all
-    return computeSumOfIntensitiesVariation(diffs);
+    return compute_sum_intensities_variation(diffs);
 }
 
 /**
@@ -79,9 +79,9 @@ long long unsigned AutoCamera::intensityVariationSum()
  *
  * @return true if yes, false if not
  */
-bool AutoCamera::isEmitterWorkingNoConfirm()
+bool AutoCamera::is_emitter_working_no_confirm()
 {
-    return intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
+    return intensity_variation_sum() > refIntesity_var_sum_ * MAGIC_REF_INTENSITY_VAR_COEF;
 }
 
 /**
@@ -90,13 +90,13 @@ bool AutoCamera::isEmitterWorkingNoConfirm()
  *
  * @return true if yes, false if not
  */
-bool AutoCamera::isEmitterWorking()
+bool AutoCamera::is_emitter_working()
 {
-    return isEmitterWorkingNoConfirm() && Camera::isEmitterWorking();
+    return is_emitter_working_no_confirm() && Camera::is_emitter_working();
 }
 
 AutoCamera::AutoCamera(const string &device, int width, int height, unsigned captureTimeMs)
-    : Camera(device, width, height), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}
+    : Camera(device, width, height), capture_time_ms_(captureTimeMs), refIntesity_var_sum_(intensity_variation_sum()) {}
 
 /**
  * @brief Find a greyscale camera.
@@ -104,16 +104,16 @@ AutoCamera::AutoCamera(const string &device, int width, int height, unsigned cap
  * @return path to the greycale device,
  * nullptr if unable to find such device
  */
-shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera(int width, int height)
+shared_ptr<AutoCamera> AutoCamera::FindGrayscaleCamera(int width, int height)
 {
-    vector<string> v4lDevices = get_V4L_devices();
-    for (auto &device : v4lDevices)
+    const vector<string> v4l_devices = GetV4LDevices();
+    for (auto &device : v4l_devices)
     {
         Logger::debug("Checking if", device, "is a greyscale camera.");
         try
         {
             auto camera = make_shared<AutoCamera>(device, width, height);
-            if (camera->isGrayscale())
+            if (camera->is_gray_scale())
             {
                 Logger::debug(device, "is a greyscale camera.");
                 return camera;

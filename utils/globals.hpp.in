@@ -14,12 +14,12 @@ enum ExitCode
     ROOT_REQUIRED = 2
 };
 
-string config_path_of(const string &device);
+string ConfigPathOf(const string &device);
 
-vector<string> get_config_paths(const string &device);
+vector<string> GetConfigPaths(const string &device);
 
-string device_of(const string &configPath);
+string DeviceOf(const string &config_path);
 
-vector<string> get_V4L_devices();
+vector<string> GetV4LDevices();
 
-void catch_ctrl_c();
+void CatchCtrlC();

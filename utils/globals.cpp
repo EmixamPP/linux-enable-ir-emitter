@@ -28,7 +28,7 @@ static string deviceNameOf(const string &device)
  *
  * @return path to the file
  */
-string config_path_of(const string &device)
+string ConfigPathOf(const string &device)
 {
     return _SAVE_FOLDER_CONFIG_PATH + deviceNameOf(device);
 }
@@ -42,7 +42,7 @@ string config_path_of(const string &device)
  *
  * @return path(s) to the configuration(s)
  */
-vector<string> get_config_paths(const string &device)
+vector<string> GetConfigPaths(const string &device)
 {
     const string deviceName = deviceNameOf(device);
     vector<string> paths;
@@ -64,7 +64,7 @@ vector<string> get_config_paths(const string &device)
  *
  * @return device path
  */
-string device_of(const string &configPath)
+string DeviceOf(const string &configPath)
 {
     return V4L_PATHS_DIR + deviceNameOf(configPath);
 }
@@ -74,7 +74,7 @@ string device_of(const string &configPath)
  *
  * @return path to the v4l device
  */
-vector<string> get_V4L_devices()
+vector<string> GetV4LDevices()
 {
     vector<string> devices;
     auto paths = filesystem::directory_iterator(V4L_PATHS_DIR);
@@ -99,7 +99,7 @@ static void signalHandler(int signal)
 /**
  * @brief Catch ctrl-c signal one time.
  */
-void catch_ctrl_c()
+void CatchCtrlC()
 {
     signal(SIGINT, signalHandler);
 }

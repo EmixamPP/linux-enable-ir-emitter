@@ -1,9 +1,9 @@
 #include "logger.hpp"
 
 
-bool Logger::isDebugEnabled = false;
+bool Logger::debug_ = false;
 
-void Logger::enableDebug()
+void Logger::enable_debug()
 {
-    Logger::isDebugEnabled = true;
+    Logger::debug_ = true;
 }

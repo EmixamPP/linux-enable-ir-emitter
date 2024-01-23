@@ -11,13 +11,13 @@ class Camera;
 class CameraInstruction
 {
 protected:
-    bool corrupted = false;
-    uint8_t unit;
-    uint8_t selector;
-    vector<uint8_t> curCtrl;
-    vector<uint8_t> initCtrl;
-    vector<uint8_t> maxCtrl;
-    vector<uint8_t> minCtrl;
+    bool corrupted_ = false;
+    uint8_t unit_;
+    uint8_t selector_;
+    vector<uint8_t> cur_ctrl_;
+    vector<uint8_t> init_ctrl_;
+    vector<uint8_t> max_ctrl_;
+    vector<uint8_t> min_ctrl_;
 
 public:
     CameraInstruction() = default;
@@ -36,27 +36,27 @@ public:
 
     bool next() noexcept;
 
-    bool isCorrupted() const noexcept;
+    bool is_corrupted() const noexcept;
 
-    uint8_t getUnit() const noexcept;
+    uint8_t unit() const noexcept;
 
-    uint8_t getSelector() const noexcept;
+    uint8_t selector() const noexcept;
 
-    const vector<uint8_t> &getCur() const noexcept;
+    const vector<uint8_t> &cur() const noexcept;
 
-    const vector<uint8_t> &getMax() const noexcept;
+    const vector<uint8_t> &max() const noexcept;
 
-    const vector<uint8_t> &getMin() const noexcept;
+    const vector<uint8_t> &min() const noexcept;
 
-    const vector<uint8_t> &getInit() const noexcept;
+    const vector<uint8_t> &init() const noexcept;
 
-    void setCorrupted(bool isCorrupted) noexcept;
+    void set_corrupted(bool is_corrupted) noexcept;
 
-    bool setCur(const vector<uint8_t> &newCur) noexcept;
+    bool set_cur(const vector<uint8_t> &cur) noexcept;
 
-    bool setMinAsCur() noexcept;
+    bool set_min_cur() noexcept;
 
-    bool setMaxAsCur() noexcept;
+    bool set_max_cur() noexcept;
 
     void reset() noexcept;
 
@@ -86,21 +86,21 @@ namespace YAML
         static Node encode(const CameraInstruction &obj)
         {
             Node node;
-            node["corrupted"] = obj.corrupted;
-            node["unit"] = static_cast<int>(obj.unit);
-            node["selector"] = static_cast<int>(obj.selector);
+            node["corrupted"] = obj.corrupted_;
+            node["unit"] = static_cast<int>(obj.unit_);
+            node["selector"] = static_cast<int>(obj.selector_);
 
-            for (const auto &v : obj.curCtrl)
+            for (const auto &v : obj.cur_ctrl_)
                 node["current"].push_back(static_cast<int>(v));
 
-            if (obj.curCtrl != obj.initCtrl)
-                for (const auto &v : obj.initCtrl)
+            if (obj.cur_ctrl_ != obj.init_ctrl_)
+                for (const auto &v : obj.init_ctrl_)
                     node["initial"].push_back(static_cast<int>(v));
 
-            for (const auto &v : obj.maxCtrl)
+            for (const auto &v : obj.max_ctrl_)
                 node["maximum"].push_back(static_cast<int>(v));
 
-            for (const auto &v : obj.minCtrl)
+            for (const auto &v : obj.min_ctrl_)
                 node["minimum"].push_back(static_cast<int>(v));
 
             return node;
@@ -110,22 +110,22 @@ namespace YAML
         {
             try
             {
-                obj.corrupted = node["corrupted"].as<bool>();
-                obj.unit = node["unit"].as<uint8_t>();
-                obj.selector = node["selector"].as<uint8_t>();
+                obj.corrupted_ = node["corrupted"].as<bool>();
+                obj.unit_ = node["unit"].as<uint8_t>();
+                obj.selector_ = node["selector"].as<uint8_t>();
 
-                obj.curCtrl = node["current"].as<vector<uint8_t>>();
+                obj.cur_ctrl_ = node["current"].as<vector<uint8_t>>();
 
                 if (node["initial"])
-                    obj.initCtrl = node["initial"].as<vector<uint8_t>>();
+                    obj.init_ctrl_ = node["initial"].as<vector<uint8_t>>();
                 else
-                    obj.initCtrl.assign(obj.curCtrl.begin(), obj.curCtrl.end());
+                    obj.init_ctrl_.assign(obj.cur_ctrl_.begin(), obj.cur_ctrl_.end());
 
                 if (node["maximum"])
-                    obj.maxCtrl = node["maximum"].as<vector<uint8_t>>();
+                    obj.max_ctrl_ = node["maximum"].as<vector<uint8_t>>();
 
                 if (node["minimum"])
-                    obj.minCtrl = node["minimum"].as<vector<uint8_t>>();
+                    obj.min_ctrl_ = node["minimum"].as<vector<uint8_t>>();
             }
             catch (...)
             {

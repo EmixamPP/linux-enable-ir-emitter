@@ -16,14 +16,14 @@ Tweaker::Tweaker(Camera &camera) : camera(camera)
 {
 }
 
-static size_t askForChoice(const vector<CameraInstruction> &instructions)
+static size_t ask_for_choice(const vector<CameraInstruction> &instructions)
 {
     size_t i = 0;
     for (; i < instructions.size(); ++i)
     {
         const auto &inst = instructions.at(i);
 
-        if (inst.isCorrupted())
+        if (inst.is_corrupted())
             continue;
 
         cout << i << ") " << to_string(inst) << endl;
@@ -41,25 +41,25 @@ static size_t askForChoice(const vector<CameraInstruction> &instructions)
     return choice;
 }
 
-static vector<uint8_t> askForNewCur(const CameraInstruction &inst)
+static vector<uint8_t> ask_for_new_cur(const CameraInstruction &inst)
 {
-    cout << "minimum: " << to_string(inst.getMin()) << endl;
-    cout << "maximum: " << to_string(inst.getMax()) << endl;
-    cout << "initial: " << to_string(inst.getInit()) << endl;
-    cout << "current: " << to_string(inst.getCur()) << endl;
+    cout << "minimum: " << to_string(inst.min()) << endl;
+    cout << "maximum: " << to_string(inst.max()) << endl;
+    cout << "initial: " << to_string(inst.init()) << endl;
+    cout << "current: " << to_string(inst.cur()) << endl;
     cout << "new current: ";
 
-    string newCurStr;
-    getline(cin >> ws, newCurStr);
+    string new_cur_str;
+    getline(cin >> ws, new_cur_str);
     
-    istringstream iss(newCurStr);
-    auto newCurParsed = vector<int32_t>(istream_iterator<int32_t>{iss}, istream_iterator<int32_t>());
+    istringstream iss(new_cur_str);
+    auto new_cur_parsed = vector<int32_t>(istream_iterator<int32_t>{iss}, istream_iterator<int32_t>());
 
-    vector<uint8_t> newCur;
-    for (auto v : newCurParsed)
-        newCur.push_back(static_cast<uint8_t>(v));
+    vector<uint8_t> new_cur;
+    for (auto v : new_cur_parsed)
+        new_cur.push_back(static_cast<uint8_t>(v));
 
-    return newCur;
+    return new_cur;
 }
 
 /**
@@ -73,22 +73,22 @@ void Tweaker::tweak(vector<CameraInstruction> &instructions)
 {
     while (true)
     {
-        auto stopFeedback = camera.play();
+        auto stop_feedback = camera.play();
 
-        size_t choice = askForChoice(instructions);
+        size_t choice = ask_for_choice(instructions);
         if (choice == instructions.size())
         {
-            stopFeedback();
+            stop_feedback();
             break;
         }
         auto &inst = instructions.at(choice);
 
-        auto prevCur = inst.getCur();
-        auto newCur = askForNewCur(inst);
+        auto prev_cur = inst.cur();
+        auto new_cur = ask_for_new_cur(inst);
 
-        stopFeedback();
+        stop_feedback();
 
-        if (!inst.setCur(newCur))
+        if (!inst.set_cur(new_cur))
         {
             Logger::warning("Invalid value for the instruction.");
             continue;
@@ -101,8 +101,8 @@ void Tweaker::tweak(vector<CameraInstruction> &instructions)
         catch (const CameraException &e)
         {
             Logger::info("Please shutdown your computer, then boot and retry.");
-            inst.setCur(prevCur);
-            inst.setCorrupted(true);
+            inst.set_cur(prev_cur);
+            inst.set_corrupted(true);
             throw e; // propagate to exit
         }
     }

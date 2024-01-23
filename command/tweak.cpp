@@ -14,14 +14,14 @@ ExitCode tweak(const char *device_char_p, int width, int height)
 {
     Logger::debug("Executing tweak command.");
 
-    catch_ctrl_c();
+    CatchCtrlC();
 
-    auto camera = makeCamera<Camera>(string(device_char_p), width, height);
+    auto camera = MakeCamera<Camera>(string(device_char_p), width, height);
 
     Logger::info("Tweaking the camera:", camera->device);
     Logger::info("Caution, you could break the camera.");
 
-    auto instructions = Configuration::load(camera->device);
+    auto instructions = Configuration::Load(camera->device);
     if (!instructions)
     {
         Logger::debug("No previous configuration found.");
@@ -38,11 +38,11 @@ ExitCode tweak(const char *device_char_p, int width, int height)
     }
     catch (const CameraException &e)
     {
-        Configuration::save(camera->device, instructions.value());
+        Configuration::Save(camera->device, instructions.value());
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Configuration::save(camera->device, instructions.value());
+    Configuration::Save(camera->device, instructions.value());
 
     return ExitCode::SUCCESS;
 }

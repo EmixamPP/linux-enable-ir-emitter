@@ -22,16 +22,16 @@ ExitCode test(const char *device_char_p, int width, int height)
 {
     Logger::debug("Executing test command.");
 
-    auto camera = makeCamera<Camera>(string(device_char_p), width, height);
+    auto camera = MakeCamera<Camera>(string(device_char_p), width, height);
 
-    if (camera->isGrayscale())
+    if (camera->is_gray_scale())
         Logger::info("The camera", camera->device, "is in grey scale. This is probably your infrared camera.");
     else
         Logger::warning("The camera", camera->device, "is not in grey scale. This is probably your regular camera.");
 
     try
     {
-        camera->playForever();
+        camera->play_forever();
     }
     catch (const CameraException &e)
     {

@@ -13,25 +13,25 @@ class CameraInstruction;
 class Camera
 {
 private:
-    bool noGui = false;
-    int fd = -1;
-    const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
-    const vector<int> capParams;
-    int id;
+    bool no_gui_ = false;
+    int fd_ = -1;
+    const shared_ptr<cv::VideoCapture> cap_ = make_shared<cv::VideoCapture>();
+    const vector<int> cap_para_;
+    int id_;
 
-    void openFd();
+    void open_fd();
 
-    void closeFd() noexcept;
+    void close_fd() noexcept;
 
-    void openCap();
+    void open_cap();
 
-    void closeCap() noexcept;
+    void close_cap() noexcept;
 
-    int executeUvcQuery(const uvc_xu_control_query &query);
+    int execute_uvc_query(const uvc_xu_control_query &query);
 
-    bool isEmitterWorkingAsk();
+    bool is_emitter_working_ask();
 
-    bool isEmitterWorkingAskNoGui();
+    bool is_emitter_working_ask_no_gui();
 
 public:
     const string device;
@@ -50,29 +50,29 @@ public:
 
     Camera(Camera &&other) = delete;
 
-    void disableGui();
+    void disable_gui();
 
     function<void()> play();
 
-    void playForever();
+    void play_forever();
 
     cv::Mat read1();
 
-    vector<cv::Mat> readDuring(unsigned captureTimeMs);
+    vector<cv::Mat> read_during(unsigned capture_time_ms);
 
-    virtual bool isEmitterWorking();
+    virtual bool is_emitter_working();
 
-    bool isGrayscale();
+    bool is_gray_scale();
 
     bool apply(const CameraInstruction &instruction);
 
-    int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
+    int uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
-    int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
+    int uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
-    uint16_t lenUvcQuery(uint8_t unit, uint8_t selector);
+    uint16_t uvc_len_query(uint8_t unit, uint8_t selector);
 
-    static shared_ptr<Camera> findGrayscaleCamera(int width = -1, int height = -1);
+    static shared_ptr<Camera> FindGrayscaleCamera(int width = -1, int height = -1);
 };
 
 class CameraException : public exception

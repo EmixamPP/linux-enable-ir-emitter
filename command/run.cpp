@@ -19,7 +19,7 @@ ExitCode run(const char *device)
 {
     Logger::debug("Executing run command.");
 
-    vector<string> paths = get_config_paths(device);
+    vector<string> paths = GetConfigPaths(device);
 
     if (paths.empty())
         Logger::critical(ExitCode::FAILURE, "No configuration has been found.");
@@ -27,8 +27,8 @@ ExitCode run(const char *device)
     bool oneFailure = false;
     for (auto &path : paths)
     {
-        auto instructions = Configuration::load(path);
-        string device = device_of(path);
+        auto instructions = Configuration::Load(path);
+        string device = DeviceOf(path);
         Camera camera(device);
 
         try
