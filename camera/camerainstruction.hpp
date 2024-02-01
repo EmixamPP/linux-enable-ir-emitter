@@ -67,6 +67,8 @@ string to_string(const CameraInstruction &inst);
 
 string to_string(const vector<uint8_t> &vec);
 
+using CameraInstructions = vector<CameraInstruction>;
+
 class CameraInstructionException : public exception
 {
 private:

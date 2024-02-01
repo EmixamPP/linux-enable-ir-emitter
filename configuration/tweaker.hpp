@@ -4,6 +4,7 @@
 using namespace std;
 
 #include "camera/camera.hpp"
+#include "camera/camerainstruction.hpp"
 
 class Tweaker
 {
@@ -25,5 +26,5 @@ public:
 
     Tweaker(Tweaker &&other) = delete;
 
-    void tweak(vector<CameraInstruction> &instructions);
+    void tweak(CameraInstructions &instructions);
 };

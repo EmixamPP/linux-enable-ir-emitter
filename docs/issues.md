@@ -17,7 +17,7 @@ Otherwise:
 Otherwise, open an issue using the "Configuration has failed" template.
 
 ## The emitter does not work after successful configuration or after update.
-1. If you use Howdy, be sure it uses the ir camera configured; the path is printed after the message `INFO: Configuring the camera:`.
+1. If you use Howdy, be sure it uses the ir camera configured; the path is printed after the message `INFO: Configuring the camera`.
 2. Execute `sudo linux-enable-ir-emitter boot enable`.
 3. Open an issue using the "Emitter does not work after successful configuration" template.
 

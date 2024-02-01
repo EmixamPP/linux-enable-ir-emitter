@@ -5,6 +5,7 @@
 using namespace std;
 
 #include "camera/camera.hpp"
+#include "camera/camerainstruction.hpp"
 
 class Finder
 {
@@ -28,7 +29,7 @@ public:
 
     Finder(Finder &&other) = delete;
 
-    bool find(vector<CameraInstruction> &intructions);
+    bool find(CameraInstructions &intructions);
 };
 
 #endif

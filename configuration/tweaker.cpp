@@ -16,7 +16,7 @@ Tweaker::Tweaker(Camera &camera) : camera(camera)
 {
 }
 
-static size_t ask_for_choice(const vector<CameraInstruction> &instructions)
+static size_t ask_for_choice(const CameraInstructions &instructions)
 {
     size_t i = 0;
     for (; i < instructions.size(); ++i)
@@ -69,7 +69,7 @@ static vector<uint8_t> ask_for_new_cur(const CameraInstruction &inst)
  *
  * @throw CameraException
  */
-void Tweaker::tweak(vector<CameraInstruction> &instructions)
+void Tweaker::tweak(CameraInstructions &instructions)
 {
     while (true)
     {

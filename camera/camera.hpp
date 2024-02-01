@@ -8,16 +8,30 @@ using namespace std;
 
 #include "opencv.hpp"
 
+#include "utils/logger.hpp"
+
+class CameraException : public exception
+{
+private:
+    string message_;
+
+public:
+    CameraException(const string &message);
+
+    const char *what() const noexcept override;
+};
+
 class CameraInstruction;
 
 class Camera
 {
 private:
-    bool no_gui_ = false;
-    int fd_ = -1;
     const shared_ptr<cv::VideoCapture> cap_ = make_shared<cv::VideoCapture>();
     const vector<int> cap_para_;
-    int id_;
+    int fd_ = -1;
+    bool no_gui_ = false;
+    string device_;
+    int index_;
 
     void open_fd();
 
@@ -34,8 +48,6 @@ private:
     bool is_emitter_working_ask_no_gui();
 
 public:
-    const string device;
-
     Camera() = delete;
 
     explicit Camera(const string &device, int width = -1, int height = -1);
@@ -50,7 +62,9 @@ public:
 
     Camera(Camera &&other) = delete;
 
-    void disable_gui();
+    string device() const noexcept;
+
+    void disable_gui() noexcept;
 
     function<void()> play();
 
@@ -72,16 +86,5 @@ public:
 
     uint16_t uvc_len_query(uint8_t unit, uint8_t selector);
 
-    static shared_ptr<Camera> FindGrayscaleCamera(int width = -1, int height = -1);
-};
-
-class CameraException : public exception
-{
-private:
-    string message;
-
-public:
-    CameraException(const string &device);
-
-    const char *what() const noexcept override;
+    static vector<string> Devices();
 };

@@ -25,18 +25,18 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
     // get the control instruction lenght
     const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
     if (ctrl_size == 0)
-        throw CameraInstructionException(camera.device, unit, selector);
+        throw CameraInstructionException(camera.device(), unit, selector);
 
     // get the current control value
     cur_ctrl_.resize(ctrl_size);
     init_ctrl_.resize(ctrl_size);
     if (camera.uvc_get_query(UVC_GET_CUR, unit, selector, cur_ctrl_) == 1)
-        throw CameraInstructionException(camera.device, unit, selector);
+        throw CameraInstructionException(camera.device(), unit, selector);
     init_ctrl_.assign(cur_ctrl_.begin(), cur_ctrl_.end());
 
     // ensure the control can be modified
     if (camera.uvc_set_query(unit, selector, cur_ctrl_) == 1)
-        throw CameraInstructionException(camera.device, unit, selector);
+        throw CameraInstructionException(camera.device(), unit, selector);
 
     // try to get the maximum control value (it does not necessary exists)
     max_ctrl_.resize(ctrl_size);

@@ -10,7 +10,7 @@ using namespace std;
 #include "configuration/finder.hpp"
 #include "configuration/scanner.hpp"
 #include "utils/logger.hpp"
-#include "utils/configuration.hpp"
+#include "configuration.hpp"
 
 void enable_debug()
 {
@@ -20,7 +20,7 @@ void enable_debug()
 /**
  * @brief Finds a configuration for an infrared camera which enables its emitter(s).
  *
- * @param device_char_p path to the infrared camera, empty string for automatic detection
+ * @param device path to the infrared camera, empty string for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
  * @param manual true for enabling the manual configuration
@@ -30,7 +30,7 @@ void enable_debug()
  *
  * @return exit code
  */
-ExitCode configure(const char *device_char_p, int width, int height,
+ExitCode configure(const char *device, int width, int height,
                    bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui)
 {
     Logger::debug("Executing configure command.");
@@ -40,28 +40,29 @@ ExitCode configure(const char *device_char_p, int width, int height,
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution.");
 
-    shared_ptr<Camera> camera;
-    if (manual)
-        camera = MakeCamera<Camera>(string(device_char_p), width, height, no_gui);
-    else
-        camera = MakeCamera<AutoCamera>(string(device_char_p), width, height, no_gui);
-    
-    Logger::info("Configuring the camera:", camera->device);
-
-    auto instructions = Configuration::Load(camera->device);
-    if (!instructions)
-    {
-        Logger::debug("No previous configuration found.");
-        Scanner scanner(*camera);
-        instructions = scanner.scan();
-    } else
-        Logger::debug("Previous configuration found.");   
-
-    Finder finder(*camera, emitters, neg_answer_limit);
-
     bool success = false;
     try
     {
+        shared_ptr<Camera> camera;
+        if (manual)
+            camera = CreateCamera<Camera>(device, width, height, no_gui);
+        else
+            camera = CreateCamera<AutoCamera>(device, width, height, no_gui);
+
+        Logger::info("Configuring the camera", camera->device());
+
+        auto instructions = Configuration::Load(camera->device());
+        if (!instructions)
+        {
+            Logger::debug("No previous configuration found.");
+            Scanner scanner(*camera);
+            instructions = scanner.scan();
+        }
+        else
+            Logger::debug("Previous configuration found.");
+
+        Finder finder(*camera, emitters, neg_answer_limit);
+
         if (camera->Camera::is_emitter_working())
         {
             Logger::error("The emiter is already working, skipping the configuration.");
@@ -69,14 +70,12 @@ ExitCode configure(const char *device_char_p, int width, int height,
         }
 
         success = finder.find(instructions.value());
+        success = success && Configuration::Save(camera->device(), instructions.value());
     }
     catch (const CameraException &e)
     {
-        Configuration::Save(camera->device, instructions.value());
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
-
-    Configuration::Save(camera->device, instructions.value());
 
     if (!success)
     {

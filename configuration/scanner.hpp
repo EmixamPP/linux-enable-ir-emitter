@@ -4,6 +4,7 @@
 using namespace std;
 
 #include "camera/camera.hpp"
+#include "camera/camerainstruction.hpp"
 
 class Scanner
 {
@@ -25,5 +26,5 @@ public:
 
     Scanner(Scanner &&other) = delete;
 
-    vector<CameraInstruction> scan() noexcept;
+    CameraInstructions scan() noexcept;
 };

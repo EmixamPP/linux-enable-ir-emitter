@@ -28,7 +28,7 @@ Finder::Finder(Camera &camera, unsigned emitters, unsigned neg_answer_limit)
  * @return a vector containing the intruction(s),
  * empty if the configuration failed
  */
-bool Finder::find(vector<CameraInstruction> &intructions)
+bool Finder::find(CameraInstructions &intructions)
 {
     unsigned configured = 0;
 

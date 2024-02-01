@@ -40,6 +40,7 @@ if __name__ == "__main__":
         "--device",
         metavar="device",
         help="specify the camera, automatic by default",
+        default="",
     )
     parser.add_argument(
         "-w",
@@ -130,36 +131,15 @@ if __name__ == "__main__":
         cpp_commands.enable_debug()
         logging.getLogger().setLevel(logging.DEBUG)
 
-    device: str = ""
-    # Determine the device path if needed
-    if args.device and args.command in ("configure", "delete", "run", "test", "tweak"):
-        device = args.device
-        # Find the v4l path
-        v4l_device = subprocess.run(
-            f"find -L /dev/v4l/by-path -samefile {device}",
-            shell=True,
-            capture_output=True,
-            text=True,
-        ).stdout
-
-        if len(v4l_device) == 0:
-            logging.critical(
-                f"The device {device} does not exists or is not a supported v4l camera."
-            )
-            exit(ExitCode.FAILURE)
-
-        pos = v4l_device.find("\n")
-        device = v4l_device[:pos]
-
     # Execute the desired command
     res = ExitCode.FAILURE
     if args.command == "run":
-        res = cpp_commands.run(device.encode())
+        res = cpp_commands.run(args.device.encode())
 
     elif args.command == "configure":
         check_root()
         res = cpp_commands.configure(
-            device.encode(),
+            args.device.encode(),
             args.width,
             args.height,
             args.manual,
@@ -172,12 +152,12 @@ if __name__ == "__main__":
 
     elif args.command == "tweak":
         check_root()
-        res = cpp_commands.tweak(device.encode(), args.width, args.height)
+        res = cpp_commands.tweak(args.device.encode(), args.width, args.height)
         if res == ExitCode.SUCCESS:
             boot("enable")
 
     elif args.command == "test":
-        res = cpp_commands.test(device.encode(), args.width, args.height)
+        res = cpp_commands.test(args.device.encode(), args.width, args.height)
 
     elif args.command == "boot":
         check_root()
@@ -185,7 +165,7 @@ if __name__ == "__main__":
 
     elif args.command == "delete":
         check_root()
-        res = cpp_commands.delete_config(device.encode())
+        res = cpp_commands.delete_config(args.device.encode())
 
     else:
         parser.print_help()

@@ -1,17 +1,18 @@
 #include "commands.hpp"
 
+#include <algorithm>
 #include <vector>
 using namespace std;
 
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 #include "utils/logger.hpp"
-#include "utils/configuration.hpp"
+#include "configuration.hpp"
 
 /**
  * @brief Execute a configuration.
  *
- * @param device path to the infrared camera, empty string to execute all configurations
+ * @param device path to the camera, empty string to execute all configurations
  *
  * @return exit code
  */
@@ -19,21 +20,29 @@ ExitCode run(const char *device)
 {
     Logger::debug("Executing run command.");
 
-    vector<string> paths = GetConfigPaths(device);
+    auto devices = Configuration::ConfiguredDevices();
 
-    if (paths.empty())
-        Logger::critical(ExitCode::FAILURE, "No configuration has been found.");
+    if (devices.empty())
+        Logger::critical(ExitCode::FAILURE, "No device has been configured.");
+    else if (!string(device).empty())
+        devices = {device};
 
     bool oneFailure = false;
-    for (auto &path : paths)
+    for (const auto &device : devices)
     {
-        auto instructions = Configuration::Load(path);
-        string device = DeviceOf(path);
+        auto instructions = Configuration::Load(device);
+        if (!instructions)
+        {
+            oneFailure = true;
+            Logger::warning("Failed to load a configuration for", device);
+            continue;
+        }
+
         Camera camera(device);
 
         try
         {
-            for (auto &instruction : instructions.value())
+            for (const auto &instruction : instructions.value())
             {
                 Logger::debug("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))

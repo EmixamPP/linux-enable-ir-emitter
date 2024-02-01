@@ -54,8 +54,8 @@ endif
 # Source to configure
 #####################
 configure_file(
-    input : 'utils/globals.hpp.in',
-    output : 'globals.hpp',
+    input : 'utils/configuration.hpp.in',
+    output : 'configuration.hpp',
     configuration : cfg_data,
 )
 
@@ -99,9 +99,8 @@ library(
         'configuration/finder.cpp',
         'configuration/scanner.cpp',
         'configuration/tweaker.cpp',
-        'utils/globals.cpp',
-        'utils/logger.cpp',
         'utils/configuration.cpp',
+        'utils/logger.cpp',
     ],
     dependencies: [opencv_dep, gtk_dep, yaml_dep],
     install: true,

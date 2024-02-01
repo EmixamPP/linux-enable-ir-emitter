@@ -14,9 +14,9 @@ Scanner::Scanner(Camera &camera) : camera_(camera) {}
  * 
  * @return the list of instructions
  */
-vector<CameraInstruction> Scanner::scan() noexcept
+CameraInstructions Scanner::scan() noexcept
 {
-    vector<CameraInstruction> instructions;
+    CameraInstructions instructions;
 
     for (unsigned _unit = 0; _unit < 256; ++_unit)
     {

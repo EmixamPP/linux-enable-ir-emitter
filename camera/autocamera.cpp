@@ -7,7 +7,6 @@
 using namespace std;
 
 #include "opencv.hpp"
-#include "globals.hpp"
 #include "utils/logger.hpp"
 
 static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)
@@ -95,34 +94,5 @@ bool AutoCamera::is_emitter_working()
     return is_emitter_working_no_confirm() && Camera::is_emitter_working();
 }
 
-AutoCamera::AutoCamera(const string &device, int width, int height, unsigned captureTimeMs)
-    : Camera(device, width, height), capture_time_ms_(captureTimeMs), refIntesity_var_sum_(intensity_variation_sum()) {}
-
-/**
- * @brief Find a greyscale camera.
- *
- * @return path to the greycale device,
- * nullptr if unable to find such device
- */
-shared_ptr<AutoCamera> AutoCamera::FindGrayscaleCamera(int width, int height)
-{
-    const vector<string> v4l_devices = GetV4LDevices();
-    for (auto &device : v4l_devices)
-    {
-        Logger::debug("Checking if", device, "is a greyscale camera.");
-        try
-        {
-            auto camera = make_shared<AutoCamera>(device, width, height);
-            if (camera->is_gray_scale())
-            {
-                Logger::debug(device, "is a greyscale camera.");
-                return camera;
-            }
-        }
-        catch (const CameraException &)
-        { // ignore them
-        }
-    }
-
-    return nullptr;
-}
+AutoCamera::AutoCamera(const string &device, int width, int height, unsigned capture_time_ms)
+    : Camera(device, width, height), capture_time_ms_(capture_time_ms), refIntesity_var_sum_(intensity_variation_sum()) {}

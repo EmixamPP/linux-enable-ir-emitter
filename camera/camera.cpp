@@ -12,12 +12,13 @@
 using namespace std;
 
 #include "camerainstruction.hpp"
-#include "globals.hpp"
 #include "utils/logger.hpp"
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
 constexpr int IMAGE_DELAY = 30;
+
+const regex DEVICE_PATTERN("/dev/video([0-9]+)");
 
 /**
  * @brief Open a file discriptor if not yet open
@@ -31,9 +32,9 @@ void Camera::open_fd()
     if (fd_ < 0)
     {
         errno = 0;
-        fd_ = open(device.c_str(), O_WRONLY);
+        fd_ = open(device_.c_str(), O_WRONLY);
         if (fd_ < 0 || errno)
-            throw CameraException(device);
+            throw CameraException("Cannot access to " + device_);
     }
 }
 
@@ -56,8 +57,8 @@ void Camera::close_fd() noexcept
  */
 void Camera::open_cap()
 {
-    if (!cap_->open(id_, cv::CAP_V4L, cap_para_))
-        throw CameraException(device);
+    if (!cap_->open(index_, cv::CAP_V4L, cap_para_))
+        throw CameraException("OpenCV cannot access to " + device_);
 }
 
 /**
@@ -172,28 +173,13 @@ bool Camera::is_emitter_working_ask_no_gui()
 }
 
 /**
- * @brief Obtain the id of any device path
- *
- * @param device path to the camera
- *
- * @return the device id
- */
-static int deviceId(const string &device)
-{
-    auto real_path = filesystem::canonical(device).string();
-    regex pattern("/dev/video([0-9]+)");
-    smatch match;
-    if (!regex_search(real_path, match, pattern))
-        Logger::critical(ExitCode::FAILURE, device + " is not of the regex form /dev/video[0-9]+");
-    return stoi(match[1]);
-}
-
-/**
  * @brief Construct a new Camera:: Camera object
  *
  * @param device path to the camera
  * @param width of the capture resolution
  * @param height of the capture resolution
+ * 
+ * @throw CameraException if the device is invalid
  */
 Camera::Camera(const string &device, int width, int height)
     : cap_para_({
@@ -203,11 +189,24 @@ Camera::Camera(const string &device, int width, int height)
           width,
           cv::CAP_PROP_FRAME_HEIGHT,
           height,
-      }),
-      id_(deviceId(device)),
-      device(device)
+      })
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
+
+    if (!filesystem::exists(device))
+        throw CameraException(device + " does not exists.");
+
+    if (regex_match(device, DEVICE_PATTERN))
+        device_ = device;
+    else
+        // try to obtain the /dev/videoX form by taking the caninical path
+        device_ = filesystem::canonical(device).string();
+
+    smatch match;
+    if (regex_search(device_, match, DEVICE_PATTERN))
+        index_ = stoi(match[1]);
+    else
+        throw CameraException("Impossible to obtain the index of " + device);
 }
 
 Camera::~Camera()
@@ -217,9 +216,19 @@ Camera::~Camera()
 }
 
 /**
+ * @brief Get the device
+ *
+ * @return device path
+ */
+string Camera::device() const noexcept
+{
+    return device_;
+}
+
+/**
  * @brief Disable the video feedback for `is_emitter_working()`
  */
-void Camera::disable_gui()
+void Camera::disable_gui() noexcept
 {
     no_gui_ = true;
 }
@@ -228,7 +237,9 @@ void Camera::disable_gui()
  * @brief Show a video feedback until the
  * stop funciton is called.
  * You should not use the camera object
- * until the stop function is called.
+ * until the stop function is called
+ * 
+ * @throw CameraException if unable to open the camera device
  *
  * @return a stop function
  */
@@ -262,6 +273,9 @@ function<void()> Camera::play()
 /**
  * @brief Show a video feedback until the user exit
  * by pressing any key
+ * 
+ * @throw CameraException if unable to open the camera device
+ * 
  */
 void Camera::play_forever()
 {
@@ -301,17 +315,17 @@ cv::Mat Camera::read1()
 /**
  * @brief Read multiple frames
  *
- * @param captureTimeMs for how long (ms) collect frames
+ * @param capture_time_ms for how long (ms) collect frames
  *
  * @throw CameraException if unable to open the camera device
  *
  * @return the frames
  */
-vector<cv::Mat> Camera::read_during(unsigned captureTimeMs)
+vector<cv::Mat> Camera::read_during(unsigned capture_time_ms)
 {
     open_cap();
     vector<cv::Mat> frames;
-    const auto stop_time = chrono::steady_clock::now() + chrono::milliseconds(captureTimeMs);
+    const auto stop_time = chrono::steady_clock::now() + chrono::milliseconds(capture_time_ms);
     while (chrono::steady_clock::now() < stop_time)
     {
         cv::Mat frame;
@@ -465,37 +479,26 @@ uint16_t Camera::uvc_len_query(uint8_t unit, uint8_t selector)
 }
 
 /**
- * @brief Find a greyscale camera.
+ * @brief Return all /dev/videoX devices
  *
- * @return path to the greycale device,
- * nullptr if unable to find such device
+ * @return path to the device
  */
-shared_ptr<Camera> Camera::FindGrayscaleCamera(int width, int height)
+vector<string> Camera::Devices()
 {
-    const vector<string> v4l_devices = GetV4LDevices();
-    for (auto &device : v4l_devices)
+    vector<string> devices;
+    auto paths = filesystem::directory_iterator("/dev");
+    for (const auto &entry : paths)
     {
-        Logger::debug("Checking if", device, "is a greyscale camera.");
-        try
-        {
-            auto camera = make_shared<Camera>(device, width, height);
-            if (camera->is_gray_scale())
-            {
-                Logger::debug(device, "is a greyscale camera.");
-                return camera;
-            }
-        }
-        catch (const CameraException &)
-        { // ignore
-        }
+        auto dev_path = entry.path().string();
+        if (regex_match(dev_path, DEVICE_PATTERN))
+            devices.push_back(dev_path);
     }
-
-    return nullptr;
+    return devices;
 }
 
-CameraException::CameraException(const string &device) : message("Cannot access to " + device) {}
+CameraException::CameraException(const string &message) : message_(message) {}
 
 const char *CameraException::what() const noexcept
 {
-    return message.c_str();
+    return message_.c_str();
 }
