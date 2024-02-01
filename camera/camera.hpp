@@ -43,6 +43,8 @@ private:
 
     int execute_uvc_query(const uvc_xu_control_query &query);
 
+    cv::Mat read1_unsafe();
+
     bool is_emitter_working_ask();
 
     bool is_emitter_working_ask_no_gui();

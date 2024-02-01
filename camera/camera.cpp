@@ -57,6 +57,9 @@ void Camera::close_fd() noexcept
  */
 void Camera::open_cap()
 {
+    if (cap_->isOpened())
+        return;
+
     if (!cap_->open(index_, cv::CAP_V4L, cap_para_))
         throw CameraException("OpenCV cannot access to " + device_);
 }
@@ -124,26 +127,26 @@ int Camera::execute_uvc_query(const uvc_xu_control_query &query)
  */
 bool Camera::is_emitter_working_ask()
 {
-    cv::Mat frame;
-    int key = -1;
+    open_cap();
 
     cout << "Is the video flashing? Press Y or N in the window." << endl;
+    int key = -1;
     while (key != OK_KEY && key != NOK_KEY)
     {
-        cap_->read(frame);
-        cv::imshow("linux-enable-ir-emitter", frame);
+        cv::imshow("linux-enable-ir-emitter", read1_unsafe());
         key = cv::waitKey(IMAGE_DELAY);
     }
     Logger::debug(key == OK_KEY ? "Y pressed." : "N pressed.");
 
     cv::destroyAllWindows();
+    close_cap();
+
     return key == OK_KEY;
 }
 
 /**
  * @brief Trigger the camera
  * and asks if the emitter is working.
- * Must be called between `open_cap()` and `close_cap()`.
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -151,8 +154,8 @@ bool Camera::is_emitter_working_ask()
  */
 bool Camera::is_emitter_working_ask_no_gui()
 {
-    cv::Mat frame;
-    cap_->read(frame);
+    open_cap();
+    read1_unsafe();
 
     string answer;
     cout << "Is the ir emitter flashing (not just turn on) ? Yes/No ? ";
@@ -169,6 +172,8 @@ bool Camera::is_emitter_working_ask_no_gui()
     }
     Logger::debug(answer, " inputed.");
 
+    close_cap();
+
     return answer == "yes" || answer == "y";
 }
 
@@ -178,7 +183,7 @@ bool Camera::is_emitter_working_ask_no_gui()
  * @param device path to the camera
  * @param width of the capture resolution
  * @param height of the capture resolution
- * 
+ *
  * @throw CameraException if the device is invalid
  */
 Camera::Camera(const string &device, int width, int height)
@@ -238,7 +243,7 @@ void Camera::disable_gui() noexcept
  * stop funciton is called.
  * You should not use the camera object
  * until the stop function is called
- * 
+ *
  * @throw CameraException if unable to open the camera device
  *
  * @return a stop function
@@ -255,8 +260,7 @@ function<void()> Camera::play()
             cv::Mat frame;
             while (!(*stop))
             {
-                cap_->read(frame);
-                cv::imshow("linux-enable-ir-emitter", frame);
+                cv::imshow("linux-enable-ir-emitter", read1_unsafe());
                 cv::waitKey(IMAGE_DELAY);
             }
         });
@@ -265,21 +269,22 @@ function<void()> Camera::play()
     {
         *stop = true;
         show_video->join();
-        close_cap();
         cv::destroyAllWindows();
+        close_cap();
     };
 }
 
 /**
  * @brief Show a video feedback until the user exit
  * by pressing any key
- * 
+ *
  * @throw CameraException if unable to open the camera device
- * 
+ *
  */
 void Camera::play_forever()
 {
     open_cap();
+
     cv::Mat frame;
     int key = -1;
 
@@ -287,17 +292,39 @@ void Camera::play_forever()
 
     while (key == -1)
     {
-        cap_->read(frame);
-        cv::imshow("linux-enable-ir-emitter", frame);
+        cv::imshow("linux-enable-ir-emitter", read1_unsafe());
         key = cv::waitKey(IMAGE_DELAY);
     }
 
-    close_cap();
     cv::destroyAllWindows();
+
+    close_cap();
 }
 
 /**
- * @brief Read one frame
+ * @brief Reads one frame
+ * Must be called between `open_cap()` and `close_cap()`,
+ * otherwise it will cause exceptions.
+ *
+ * @throw CameraException if unable to open the camera device
+ *
+ * @return the frame
+ */
+cv::Mat Camera::read1_unsafe()
+{
+    cv::Mat frame;
+    auto retry = IMAGE_DELAY;
+    while (frame.empty() && retry-- != 0)
+        cap_->read(frame);
+
+    if (retry == 0)
+        throw CameraException("Unable to read a frame from " + device_);
+
+    return frame;
+}
+
+/**
+ * @brief Reads one frame
  *
  * @throw CameraException if unable to open the camera device
  *
@@ -306,8 +333,7 @@ void Camera::play_forever()
 cv::Mat Camera::read1()
 {
     open_cap();
-    cv::Mat frame;
-    cap_->read(frame);
+    auto frame = read1_unsafe();
     close_cap();
     return frame;
 }
@@ -324,16 +350,14 @@ cv::Mat Camera::read1()
 vector<cv::Mat> Camera::read_during(unsigned capture_time_ms)
 {
     open_cap();
+
     vector<cv::Mat> frames;
     const auto stop_time = chrono::steady_clock::now() + chrono::milliseconds(capture_time_ms);
     while (chrono::steady_clock::now() < stop_time)
-    {
-        cv::Mat frame;
-        cap_->read(frame);
-        if (!frame.empty())
-            frames.push_back(std::move(frame));
-    }
+        frames.push_back(read1_unsafe());
+
     close_cap();
+
     return frames;
 }
 
@@ -347,9 +371,7 @@ vector<cv::Mat> Camera::read_during(unsigned capture_time_ms)
  */
 bool Camera::is_emitter_working()
 {
-    open_cap();
     bool res = no_gui_ ? is_emitter_working_ask_no_gui() : is_emitter_working_ask();
-    close_cap();
     return res;
 }
 
