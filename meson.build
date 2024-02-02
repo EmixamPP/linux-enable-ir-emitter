@@ -142,7 +142,7 @@ install_data(
 if get_option('boot_service') == 'systemd'
     install_data(
         'boot_service/systemd/linux-enable-ir-emitter.service',
-        install_dir : 'lib/systemd/system',
+        install_dir : get_option('sysconfdir') / 'systemd/system',
     )
 elif get_option('boot_service') == 'openrc'
     install_data(
