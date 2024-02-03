@@ -77,34 +77,18 @@ jobs:
         run: |
           meson setup build --libdir=lib --prefer-static
        
-      - name: Compile - Systemd
+      - name: Compile
         run: |
           meson compile -C build
       
-      - name: Create tarball - Systemd
+      - name: Create tarball
         run: |
           DESTDIR=install_dir_systemd meson install -C build
           tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir_systemd .
       
-      - name: Upload tarball - Systemd
+      - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
           name: linux-enable-ir-emitter.systemd.x86-64.tar.gz
           path: build/linux-enable-ir-emitter.systemd.x86-64.tar.gz
-      
-      - name: Compile - OpenRC
-        run: |
-          meson configure build -Dboot_service=openrc
-          meson compile -C build
-      
-      - name: Create tarball - OpenRC
-        run: |
-          DESTDIR=install_dir_openrc meson install -C build
-          tar -czvf build/linux-enable-ir-emitter.openrc.x86-64.tar.gz -C build/install_dir_openrc .
-      
-      - name: Upload tarball - OpenRC
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-enable-ir-emitter.openrc.x86-64.tar.gz
-          path: build/linux-enable-ir-emitter.openrc.x86-64.tar.gz
   
