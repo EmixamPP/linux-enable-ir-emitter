@@ -10,7 +10,7 @@ Download the latest `linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz` [here]
 sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz
 ```
 
-We also support OpenRC, just download the `.openrc` variant.
+We also support immutable distro and the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
 
 ### Uninstallation
 It can be uninstalled by executing (remove the last line to keep the emitter configuration):
@@ -18,7 +18,7 @@ It can be uninstalled by executing (remove the last line to keep the emitter con
 sudo rm -rf /usr/local/lib/linux-enable-ir-emitter \
 /usr/local/bin/linux-enable-ir-emitter \
 /usr/local/share/bash-completition/completitions/linux-enable-ir-emitter \
-/usr/local/lib/systemd/system/linux-enable-ir-emitter.service \
+/usr/local/etc/systemd/system/linux-enable-ir-emitter.service \
 /usr/local/etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
 /usr/local/etc/linux-enable-ir-emitter
 ```
@@ -39,7 +39,7 @@ If you like the project, do not hesitate to star the repository to support me, t
 If the configuration failed:
 1. But you saw the ir emitter flashing, reboot and switch to manual mode by using the `--manual` option.
 2. Also, try the exhaustive search by using the `--limit -1` option (caution: this may take several hours; do not combine it `--manual`).
-3. Otherwise, feel free to open an issue, *but please consult the [docs](docs/README.md) first*.
+3. Otherwise, feel free to open an issue, **but please consult the [docs](docs/README.md) first**.
 
 Any criticims, ideas and contributions are welcome.
 
@@ -55,26 +55,3 @@ An instruction consists of X values between 0-255.
 3. Select one, then the initial and current value for the instructions, as well as the minimum and maximum values (if exists) are displayed.
 4. Input a new value and observe the video feedback to see the difference.
 5. If you made your camera unusable, it can request you to shut down, then boot and retry ($\neq$ reboot)
-
-## Manual build
-See [docs](docs/requirements.md) for specification concerning build requirements.
-
-Setup build:
-```
-git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
-cd linux-enable-ir-emitter
-meson setup build
-```
-
-Only if you do not have Systemd but OpenRC:
-```
-meson configure build -Dboot_service=openrc
-```
-
-Compile and install:
-```
-meson compile -C build
-meson install -C build
-```
-
-You can uninstall the tool by executing `sudo ninja uninstall -C build`. 

@@ -6,12 +6,13 @@
 * for the tarball artifact provided on GitHub: `glibc`, `libstdc++`, `libgcc`, `gtk3`
 
 ## Manual build requirements
-* `meson >= 1.0.0`
-* `ninja-build`
-* `pkg-config`
+### Libs:
 * `opencv devel`
 * `gtk3 devel`
 * `yaml-cpp devel`
+### Tools:
+* `meson >= 1.0.0`
+* `ninja-build`
 * `g++` (for `C++17`)
 
 ## Hardware requirements
