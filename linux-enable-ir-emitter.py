@@ -88,8 +88,8 @@ if __name__ == "__main__":
         "-l",
         "--limit",
         metavar="<count>",
-        help="specify the negative answer limit, by default is 40. Use -1 for unlimited",
-        default=40,
+        help="specify the negative answer limit, by default is 10. Use -1 for unlimited",
+        default=10,
         type=int,
     )
     command_configure.add_argument(
