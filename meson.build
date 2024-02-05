@@ -35,13 +35,12 @@ yaml_dep = dependency('yaml-cpp')
 # Variable
 ##########
 lib_dir =  get_option('libdir') / meson.project_name()
-sysconf_prefix = get_option('prefix') == '/usr' ? '' : get_option('prefix')
 cfg_data = configuration_data({
     'version': meson.project_version(),
     'libdir': get_option('prefix') / lib_dir,
-    'SAVE_FOLDER_CONFIG_PATH': sysconf_prefix / get_option('sysconfdir') / meson.project_name(),
+    'SAVE_FOLDER_CONFIG_PATH': '/' / get_option('sysconfdir') / meson.project_name(),
     'CPP_COMMANDS_LIB_PATH': get_option('prefix') / lib_dir / 'libcommands.so',
-    'UDEV_RULE_PATH': sysconf_prefix / get_option('sysconfdir') / 'udev/rules.d/99-linux-enable-ir-emitter.rules',
+    'UDEV_RULE_PATH': '/' / get_option('sysconfdir') / 'udev/rules.d/99-linux-enable-ir-emitter.rules',
     'BOOT_SERVICE_MANAGER': get_option('boot_service'),
 })
 if get_option('boot_service') == 'systemd'
@@ -142,17 +141,17 @@ install_data(
 if get_option('boot_service') == 'systemd'
     install_data(
         'boot_service/systemd/linux-enable-ir-emitter.service',
-        install_dir : get_option('sysconfdir') / 'systemd/system',
+        install_dir : '/' / get_option('sysconfdir') / 'systemd/system',
     )
 elif get_option('boot_service') == 'openrc'
     install_data(
         'boot_service/openrc/linux-enable-ir-emitter',
-        install_dir : get_option('sysconfdir') / 'init.d',
+        install_dir : '/' / get_option('sysconfdir') / 'init.d',
     )
 endif
 
 install_emptydir(
-    get_option('sysconfdir') / 'udev/rules.d',
+    '/' / get_option('sysconfdir') / 'udev/rules.d',
 )
 
 ######
