@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 env: 
-  OPENCV_VERSION: "4.8.1"
+  OPENCV_VERSION: "4.9.0"
 
 jobs:
   build:
