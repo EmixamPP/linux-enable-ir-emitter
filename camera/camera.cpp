@@ -170,7 +170,6 @@ bool Camera::is_emitter_working_ask_no_gui()
         transform(answer.begin(), answer.end(), answer.begin(), [](char c)
                   { return tolower(c); });
     }
-    Logger::debug(answer, " inputed.");
 
     close_cap();
 

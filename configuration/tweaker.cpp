@@ -30,9 +30,7 @@ static size_t ask_for_choice(const CameraInstructions &instructions)
     }
     cout << i << ") exit" << endl;
 
-    size_t choice;
-    cout << "Choose an instruction to tweak: ";
-    cin >> choice;
+    size_t choice = instructions.size() + 1;
     while (choice > instructions.size())
     {
         cout << "Choose an instruction to tweak: ";

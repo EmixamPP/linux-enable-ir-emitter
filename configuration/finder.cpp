@@ -22,7 +22,7 @@ Finder::Finder(Camera &camera, unsigned emitters, unsigned neg_answer_limit)
  * @brief Find an instruction which enable the ir emitter(s)
  *
  * @param instructions to test, corrupted ones are ignored or will be marked as such
- * 
+ *
  * @throw CameraException
  *
  * @return a vector containing the intruction(s),
@@ -34,7 +34,8 @@ bool Finder::find(CameraInstructions &intructions)
 
     for (auto &instruction : intructions)
     {
-        if (instruction.is_corrupted()) {
+        if (instruction.is_corrupted())
+        {
             Logger::debug("Corrupted instruction skipped:", to_string(instruction));
             continue;
         }
@@ -51,13 +52,27 @@ bool Finder::find(CameraInstructions &intructions)
 
                 Logger::debug("Instruction applied:", to_string(instruction));
 
-                if (camera_.apply(instruction) && camera_.is_emitter_working() && ++configured == emitters_)
-                    return true; // all emitters are configured
+                if (camera_.apply(instruction))
+                {
+                    Logger::debug("Instruction is valid.");
+                    if (camera_.is_emitter_working())
+                    {
+                        Logger::debug("Instruction makes emitter flash.");
+                        if (++configured == emitters_)
+                        {
+                            Logger::debug("All emitters are configured.");
+                            return true;
+                        }
+                    }
+                }
+                else
+                    Logger::debug("Instruction is not valid.");
 
                 ++neg_answer_counter;
             }
 
             instruction.reset();
+            Logger::debug("Reseting to instruction:", to_string(instruction));
             camera_.apply(instruction);
         }
         catch (const CameraInstructionException &e)

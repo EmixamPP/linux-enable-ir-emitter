@@ -86,6 +86,6 @@ ExitCode configure(const char *device, int width, int height,
         return ExitCode::FAILURE;
     }
 
-    Logger::info("The emitter has been successfully configured.");
+    Logger::info("The infrared camera has been successfully configured.");
     return ExitCode::SUCCESS;
 }
