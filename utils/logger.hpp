@@ -30,7 +30,7 @@ public:
         {
             cout << "DEBUG:";
             ((cout << " " << args), ...);
-            cout << endl;
+            cout << endl << flush;
         }
     }
 
@@ -39,7 +39,15 @@ public:
     {
         cout << "INFO:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
+    }
+
+    template <typename... Args>
+    static void info_no_endl(Args ...args)
+    {
+        cout << "INFO:";
+        ((cout << " " << args), ...);
+        cout << flush;
     }
 
     template <typename... Args>
@@ -47,7 +55,7 @@ public:
     {
         cout << "WARNING:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
     }
 
     template <typename... Args>
@@ -55,7 +63,7 @@ public:
     {
         cout << "ERROR:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
     }
 
     template <typename... Args>
@@ -63,7 +71,7 @@ public:
     {
         cout << "CRITICAL:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
         exit(code);
     }
 };
