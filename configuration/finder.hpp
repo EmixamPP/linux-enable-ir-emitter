@@ -10,14 +10,14 @@ using namespace std;
 class Finder
 {
 private:
-    Camera &camera_;
+    shared_ptr<Camera> camera_;
     const unsigned emitters_;
     const unsigned neg_answer_limit_;
 
 public:
     Finder() = delete;
 
-    explicit Finder(Camera &camera, unsigned emitters, unsigned neg_answer_limit_);
+    explicit Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer_limit_);
 
     ~Finder() = default;
 

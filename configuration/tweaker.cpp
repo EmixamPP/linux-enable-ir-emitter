@@ -12,7 +12,7 @@ using namespace std;
  *
  * @param camera on which to tweak instructions
  */
-Tweaker::Tweaker(Camera &camera) : camera(camera)
+Tweaker::Tweaker(shared_ptr<Camera> camera) : camera(camera)
 {
 }
 
@@ -71,7 +71,7 @@ void Tweaker::tweak(CameraInstructions &instructions)
 {
     while (true)
     {
-        auto stop_feedback = camera.play();
+        auto stop_feedback = camera->play();
 
         size_t choice = ask_for_choice(instructions);
         if (choice == instructions.size())
@@ -94,7 +94,7 @@ void Tweaker::tweak(CameraInstructions &instructions)
 
         try
         {
-            camera.apply(inst);
+            camera->apply(inst);
         }
         catch (const CameraException &e)
         {

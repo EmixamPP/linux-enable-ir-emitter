@@ -9,12 +9,12 @@ using namespace std;
 class Tweaker
 {
 private:
-    Camera &camera;
+    shared_ptr<Camera> camera;
 
 public:
     Tweaker() = delete;
 
-    explicit Tweaker(Camera &camera);
+    explicit Tweaker(shared_ptr<Camera> camera);
 
     ~Tweaker() = default;
 

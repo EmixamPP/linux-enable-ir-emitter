@@ -9,12 +9,12 @@ using namespace std;
 class Scanner
 {
 private:
-    Camera &camera_;
+    shared_ptr<Camera> camera_;
 
 public:
     Scanner() = delete;
 
-    explicit Scanner(Camera &camera);
+    explicit Scanner(shared_ptr<Camera> camera);
 
     ~Scanner() = default;
 

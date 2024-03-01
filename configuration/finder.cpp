@@ -15,7 +15,7 @@ using namespace std;
  * @param emitters number of emitters on the device
  * @param neg_answer_limit skip a patern after neg_answer_limit negative answer
  */
-Finder::Finder(Camera &camera, unsigned emitters, unsigned neg_answer_limit)
+Finder::Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer_limit)
     : camera_(camera), emitters_(emitters), neg_answer_limit_(neg_answer_limit) {}
 
 /**
@@ -52,10 +52,10 @@ bool Finder::find(CameraInstructions &intructions)
 
                 Logger::debug("Instruction applied:", to_string(instruction));
 
-                if (camera_.apply(instruction))
+                if (camera_->apply(instruction))
                 {
                     Logger::debug("Instruction is valid.");
-                    if (camera_.is_emitter_working())
+                    if (camera_->is_emitter_working())
                     {
                         Logger::debug("Instruction makes emitter flash.");
                         if (++configured == emitters_)
@@ -73,7 +73,7 @@ bool Finder::find(CameraInstructions &intructions)
 
             instruction.reset();
             Logger::debug("Reseting to instruction:", to_string(instruction));
-            camera_.apply(instruction);
+            camera_->apply(instruction);
         }
         catch (const CameraInstructionException &e)
         {

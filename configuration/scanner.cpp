@@ -12,7 +12,7 @@ using namespace std;
  *
  * @param camera on which scans the instructions
  */
-Scanner::Scanner(Camera &camera) : camera_(camera) {}
+Scanner::Scanner(shared_ptr<Camera> camera) : camera_(camera) {}
 
 /**
  * @brief Scans the available camera instructions
@@ -37,14 +37,14 @@ CameraInstructions Scanner::scan() noexcept
 
             try
             {
-                instructions.push_back(CameraInstruction(camera_, unit, selector));
+                instructions.push_back(CameraInstruction(*camera_, unit, selector));
             }
             catch (const CameraInstructionException &)
             {
             }
         }
     }
-    cout << std::endl;
+    cout << endl;
 
     return instructions;
 }

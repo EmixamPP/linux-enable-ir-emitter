@@ -28,14 +28,14 @@ ExitCode tweak(const char *device, int width, int height)
         if (!instructions)
         {
             Logger::debug("No previous configuration found.");
-            Scanner scanner(*camera);
+            Scanner scanner(camera);
             instructions = scanner.scan();
             Configuration::Save(camera->device(), instructions.value());
         }
         else
             Logger::debug("Previous configuration found.");
 
-        Tweaker tweaker(*camera);
+        Tweaker tweaker(camera);
 
         tweaker.tweak(instructions.value());
 

@@ -55,14 +55,14 @@ ExitCode configure(const char *device, int width, int height,
         if (!instructions)
         {
             Logger::debug("No previous configuration found.");
-            Scanner scanner(*camera);
+            Scanner scanner(camera);
             instructions = scanner.scan();
             Configuration::Save(camera->device(), instructions.value());
         }
         else
             Logger::debug("Previous configuration found.");
 
-        Finder finder(*camera, emitters, neg_answer_limit);
+        Finder finder(camera, emitters, neg_answer_limit);
 
         if (camera->Camera::is_emitter_working())
         {
