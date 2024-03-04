@@ -1,5 +1,6 @@
 ---
 Checks: '
+-clang-diagnostic-pragma-system-header-outside-header,
 readability*,
 -readability-identifier-length,
 -readability-braces-around-statements,
