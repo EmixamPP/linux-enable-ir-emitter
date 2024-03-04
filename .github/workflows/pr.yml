@@ -43,4 +43,4 @@ jobs:
             ## :package: Artifacts:
             If the building step was successfull, you can download the appropriate tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
 
-            Unzip and then execute `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`. 
+            Uninstall the previous version, unzip and then execute `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`. 
