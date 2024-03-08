@@ -30,7 +30,7 @@ jobs:
       
       - name: Cache OpenCV
         id: opencv-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: opencv
           key: opencv-${{ env.OPENCV_VERSION }}
@@ -54,7 +54,7 @@ jobs:
       
       - name: Cache YAML
         id: yaml-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: yaml
           key: yaml-${{ env.YAML_VERSION }}
