@@ -5,7 +5,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 `linux-enable-ir-emitter` can automatically configure almost any (UVC) infrared emitter.
 
 ## Installation
-Download the latest `linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), then execute:
+Download the latest `linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases), then execute:
 ```
 sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz
 ```
@@ -41,7 +41,7 @@ If the configuration failed:
 2. Also, try the exhaustive search by using the `--limit -1` option (caution: this may take several hours; do not combine it `--manual`).
 3. Otherwise, feel free to open an issue, **but please consult the [docs](docs/README.md) first**.
 
-Any criticims, ideas and contributions are welcome.
+Any criticims, ideas and contributions are welcome!
 
 ## How to tweak your camera?
 Some cameras provide instrutions for changing the brightness of the ir emiter.
