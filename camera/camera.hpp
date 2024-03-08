@@ -1,7 +1,5 @@
-#ifndef CAMERA_HPP
-#define CAMERA_HPP
+#pragma once
 
-#include <cstdint>
 #include <linux/uvcvideo.h>
 #include <memory>
 #include <string>
@@ -10,43 +8,51 @@ using namespace std;
 
 #include "opencv.hpp"
 
+#include "utils/logger.hpp"
+
+class CameraException : public exception
+{
+private:
+    string message_;
+
+public:
+    CameraException(const string &message);
+
+    const char *what() const noexcept override;
+};
+
 class CameraInstruction;
 
 class Camera
 {
 private:
-    int id;
-    int fd = -1;
-    const shared_ptr<cv::VideoCapture> cap = make_shared<cv::VideoCapture>();
-    bool noGui = false;
+    const shared_ptr<cv::VideoCapture> cap_ = make_shared<cv::VideoCapture>();
+    const vector<int> cap_para_;
+    int fd_ = -1;
+    bool no_gui_ = false;
+    string device_;
+    int index_;
 
-protected:
-    int getFd() const noexcept;
+    void open_fd();
 
-    shared_ptr<cv::VideoCapture> getCap() const noexcept;
+    void close_fd() noexcept;
 
-    void openFd();
+    void open_cap();
 
-    void closeFd() noexcept;
+    void close_cap() noexcept;
 
-    void openCap();
+    int execute_uvc_query(const uvc_xu_control_query &query);
 
-    void closeCap() noexcept;
+    cv::Mat read1_unsafe();
 
-    static int deviceId(const string &device);
+    bool is_emitter_working_ask();
 
-    int executeUvcQuery(const uvc_xu_control_query &query);
-
-    bool isEmitterWorkingAsk();
-
-    bool isEmitterWorkingAskNoGui();
+    bool is_emitter_working_ask_no_gui();
 
 public:
-    const string device;
-
     Camera() = delete;
 
-    explicit Camera(const string &device);
+    explicit Camera(const string &device, int width = -1, int height = -1);
 
     virtual ~Camera();
 
@@ -58,36 +64,29 @@ public:
 
     Camera(Camera &&other) = delete;
 
-    void play();
+    string device() const noexcept;
+
+    void disable_gui() noexcept;
+
+    function<void()> play();
+
+    void play_forever();
+
+    cv::Mat read1();
+
+    vector<cv::Mat> read_during(unsigned capture_time_ms);
+
+    virtual bool is_emitter_working();
+
+    bool is_gray_scale();
 
     bool apply(const CameraInstruction &instruction);
 
-    virtual bool isEmitterWorking();
+    int uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
-    shared_ptr<cv::Mat> read1();
+    int uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
 
-    int setUvcQuery(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
+    uint16_t uvc_len_query(uint8_t unit, uint8_t selector);
 
-    int getUvcQuery(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
-
-    uint16_t lenUvcQuery(uint8_t unit, uint8_t selector);
-
-    bool isGrayscale();
-
-    static shared_ptr<Camera> findGrayscaleCamera();
-
-    void disableGui();
+    static vector<string> Devices();
 };
-
-class CameraException : public exception
-{
-private:
-    string message;
-
-public:
-    CameraException(const string &device);
-
-    const char *what() const noexcept override;
-};
-
-#endif

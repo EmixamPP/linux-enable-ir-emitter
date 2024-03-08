@@ -1,44 +1,38 @@
 #include "commands.hpp"
 
+#include <memory>
 #include <string>
 using namespace std;
 
-#include "../camera/autocamera.hpp"
-#include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "camera/autocamera.hpp"
+#include "utils/logger.hpp"
 
 /**
- * @brief Test if the camera is in grayscale and if the emitter is working.
+ * @brief Test if the camera is in greyscale and if the emitter is working.
  * Also display a video feedback.
  *
- * @param path to the infrared camera, empty string for automatic detection
+ * @param device path to the infrared camera, empty string for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
  *
  * @return exit code
  */
-ExitCode test(const char* device_char_p)
-{   
-    const string device = string(device_char_p);
-    
-    shared_ptr<AutoCamera> camera;
-    if (device.empty())
-    {
-        camera = AutoCamera::findGrayscaleCamera();
-        if (camera == nullptr)
-            Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-    }
-    else
-        camera = make_shared<AutoCamera>(device);
-
-    if (camera->isGrayscale())
-        Logger::info("The camera", camera->device, "is in gray scale. This is probably your infrared camera.");
-    else
-        Logger::error("The camera", camera->device, "is not in gray scale. This is probably your regular camera.");
+ExitCode test(const char *device, int width, int height)
+{
+    Logger::debug("Executing test command.");
 
     try
     {
-        camera->play();
+        auto camera = CreateCamera<Camera>(device, width, height);
+
+        if (camera->is_gray_scale())
+            Logger::info("The camera", camera->device(), "is in grey scale. This is probably your infrared camera.");
+        else
+            Logger::warning("The camera", camera->device(), "is not in grey scale. This is probably your regular camera.");
+
+        camera->play_forever();
     }
-    catch (CameraException &e)
+    catch (const CameraException &e)
     {
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }

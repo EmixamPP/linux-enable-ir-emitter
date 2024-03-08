@@ -2,25 +2,34 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 using namespace std;
 
-#include "globals.hpp"
-#include "../utils/logger.hpp"
+#include "utils/logger.hpp"
+#include "configuration.hpp"
 
 /**
- * @brief Delete the driver associated to a device,
- * without causing error if the driver does not exists.
+ * @brief Deletes the config associated to a device,
+ * without causing error if the config does not exists.
  *
- * @param path to the infrared camera, empty string to execute all driver
+ * @param device path to the camera,
+ * empty to delete all configs
  *
  * @return exit code
  */
-ExitCode delete_driver(const char* device)
+ExitCode delete_config(const char *device)
 {
-    auto drivers = get_drivers_path(device);
-    for (auto &driver : *drivers)
-        filesystem::remove(driver);
+    Logger::debug("Executing delete command.");
 
-    Logger::info("The drivers have been deleted.");
+    if (string(device).empty())
+    {
+        auto devices = Configuration::ConfiguredDevices();
+        for (const auto &device: devices)
+            Configuration::Delete(device);
+    }
+    else
+        Configuration::Delete(device);
+
+    Logger::info("The configurations have been deleted.");
     return ExitCode::SUCCESS;
 }

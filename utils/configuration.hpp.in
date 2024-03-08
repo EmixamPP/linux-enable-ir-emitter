@@ -1,0 +1,23 @@
+#pragma once
+
+#include <memory>
+#include <optional>
+#include <vector>
+using namespace std;
+
+#include "camera/camera.hpp"
+#include "camera/camerainstruction.hpp"
+
+
+namespace Configuration
+{
+    const string SAVE_FOLDER_CONFIG_PATH_ = "@SAVE_FOLDER_CONFIG_PATH@/";
+
+    bool Save(const string &device, const CameraInstructions &instructions);
+
+    optional<CameraInstructions> Load(const string &device) noexcept;
+
+    void Delete(const string &device);
+
+    vector<string> ConfiguredDevices() noexcept;
+}

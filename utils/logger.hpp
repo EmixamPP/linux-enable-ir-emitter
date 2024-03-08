@@ -1,5 +1,4 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#pragma once
 
 #include <iostream>
 using namespace std;
@@ -7,7 +6,7 @@ using namespace std;
 class Logger
 {
 private:
-    static bool isDebugEnabled;
+    static bool debug_;
 
 public:
     Logger() = delete;
@@ -22,43 +21,57 @@ public:
 
     Logger(Logger &&other) = delete;
 
-    static void enableDebug();
+    static void enable_debug();
 
     template <typename... Args>
-    static void debug(Args... args)
+    static void debug(Args ...args)
     {
-        if (Logger::isDebugEnabled)
+        if (Logger::debug_)
         {
             cout << "DEBUG:";
             ((cout << " " << args), ...);
-            cout << endl;
+            cout << endl << flush;
         }
     }
 
     template <typename... Args>
-    static void info(Args... args)
+    static void info(Args ...args)
     {
         cout << "INFO:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
     }
 
     template <typename... Args>
-    static void error(Args... args)
+    static void info_no_endl(Args ...args)
+    {
+        cout << "INFO:";
+        ((cout << " " << args), ...);
+        cout << flush;
+    }
+
+    template <typename... Args>
+    static void warning(Args ...args)
+    {
+        cout << "WARNING:";
+        ((cout << " " << args), ...);
+        cout << endl << flush;
+    }
+
+    template <typename... Args>
+    static void error(Args ...args)
     {
         cout << "ERROR:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
     }
 
     template <typename... Args>
-    [[noreturn]] static void critical(int code, Args... args)
+    [[noreturn]] static void critical(int code, Args ...args)
     {
         cout << "CRITICAL:";
         ((cout << " " << args), ...);
-        cout << endl;
+        cout << endl << flush;
         exit(code);
     }
 };
-
-#endif

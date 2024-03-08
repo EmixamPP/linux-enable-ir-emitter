@@ -7,7 +7,7 @@ start_pre() {
 }
 
 start() {
-    /usr/bin/linux-enable-ir-emitter run
+    linux-enable-ir-emitter run
 }
 
 depend() {

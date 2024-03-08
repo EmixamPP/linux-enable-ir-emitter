@@ -1,74 +1,75 @@
 #include "autocamera.hpp"
 
-#include <chrono>
 #include <cmath>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 using namespace std;
 
 #include "opencv.hpp"
-#include "globals.hpp"
+#include "utils/logger.hpp"
+
+static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)
+{
+    vector<vector<int>> intensities;
+    for (const auto &frame : frames)
+    {
+        vector<int> intensity;
+        for (int r = 0; r < frame.rows; ++r)
+            for (int c = 0; c < frame.cols; ++c)
+            {
+                const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
+                intensity.push_back(pixel[0] + pixel[1] + pixel[2]);
+            }
+        intensities.push_back(std::move(intensity));
+    }
+    return intensities;
+}
+
+static vector<int> compute_intesities_diff(const vector<vector<int>> &intensities)
+{
+    vector<int> diffs;
+    for (size_t i = 0; i < intensities.size() - 1; ++i)
+    {
+        const auto &intensity1 = intensities[i];
+        const auto &intensity2 = intensities[i + 1];
+        int diff = 0;
+        for (size_t j = 0; j < intensity1.size(); ++j)
+            diff += intensity1.at(j) - intensity2.at(j);
+        diffs.push_back(diff);
+    }
+    return diffs;
+}
+
+static long long unsigned compute_sum_intensities_variation(const vector<int> &diffs)
+{
+    long long unsigned sum = 0;
+    for (size_t i = 0; i < diffs.size() - 1; ++i)
+        sum += static_cast<long long unsigned>(abs(diffs[i] - diffs[i + 1]));
+
+    return sum;
+}
 
 /**
  * @brief Obtain the intensity variation sum of camera captures
  *
  * @return the intensity variation sum
  */
-long long unsigned AutoCamera::intensityVariationSum()
+long long unsigned AutoCamera::intensity_variation_sum()
 {
-    openCap();
-    shared_ptr<cv::VideoCapture> cap = getCap();
-    vector<unique_ptr<cv::Mat>> frames;
-
     // capture frames
-    const auto stopTime = chrono::steady_clock::now() + chrono::milliseconds(captureTimeMs);
-    while (chrono::steady_clock::now() < stopTime)
-    {
-        auto frame = make_unique<cv::Mat>();
-        cap->read(*frame);
-        if (!frame->empty())
-            frames.push_back(std::move(frame));
-    }
+    const vector<cv::Mat> frames = read_during(capture_time_ms_);
 
-    // compute lighting intensity
-    vector<unique_ptr<vector<int>>> intensities;
-    for (auto &frame : frames)
-    {
-        auto intensity = make_unique<vector<int>>();
-        for (int r = 0; r < frame->rows; ++r)
-            for (int c = 0; c < frame->cols; ++c)
-            {
-                const cv::Vec3b &pixel = frame->at<cv::Vec3b>(r, c);
-                intensity->push_back(pixel[0] + pixel[1] + pixel[2]);
-            }
-        intensities.push_back(std::move(intensity));
-    }
+    // compute lighting intensity for each pixel of each frame
+    const vector<vector<int>> intensities = compute_intensities(frames);
 
     // compute difference between each consecutive frame intensity
-    vector<int> diffs;
-    for (unsigned i = 0; i < intensities.size() - 1; ++i)
-    {
-        const auto &intensity1 = intensities[i];
-        const auto &intensity2 = intensities[i + 1];
-        int diff = 0;
-        for (unsigned j = 0; j < intensity1->size(); ++j)
-        {
-            diff += intensity1->at(j) - intensity2->at(j);
-        }
-        diffs.push_back(diff);
-    }
+    const vector<int> diffs = compute_intesities_diff(intensities);
 
     // compute difference between each consecutive intensity difference
     // this is the variation in the lighting intensity of the fames
     // and sum them all
-    long long unsigned sum = 0;
-    for (unsigned i = 0; i < diffs.size() - 1; ++i)
-        sum += static_cast<long long unsigned>(abs(diffs[i] - diffs[i + 1]));
-
-    closeCap();
-    return sum;
+    return compute_sum_intensities_variation(diffs);
 }
 
 /**
@@ -77,9 +78,9 @@ long long unsigned AutoCamera::intensityVariationSum()
  *
  * @return true if yes, false if not
  */
-bool AutoCamera::isEmitterWorkingNoConfirm()
+bool AutoCamera::is_emitter_working_no_confirm()
 {
-    return intensityVariationSum() > refIntesityVarSum * MAGIC_REF_INTENSITY_VAR_COEF;
+    return intensity_variation_sum() > refIntesity_var_sum_ * MAGIC_REF_INTENSITY_VAR_COEF;
 }
 
 /**
@@ -88,34 +89,10 @@ bool AutoCamera::isEmitterWorkingNoConfirm()
  *
  * @return true if yes, false if not
  */
-bool AutoCamera::isEmitterWorking()
+bool AutoCamera::is_emitter_working()
 {
-    return isEmitterWorkingNoConfirm() && Camera::isEmitterWorking();
+    return is_emitter_working_no_confirm() && Camera::is_emitter_working();
 }
 
-AutoCamera::AutoCamera(const string &device, unsigned captureTimeMs) : Camera(device), captureTimeMs(captureTimeMs), refIntesityVarSum(intensityVariationSum()) {}
-
-/**
- * @brief Find a grayscale camera.
- *
- * @return path to the graycale device,
- * nullptr if unable to find such device
- */
-shared_ptr<AutoCamera> AutoCamera::findGrayscaleCamera()
-{
-    auto v4lDevices = get_v4l_devices();
-    for (auto &device : *v4lDevices)
-    {
-        try
-        {
-            auto camera = make_shared<AutoCamera>(device);
-            if (camera->isGrayscale())
-                return camera;
-        }
-        catch (CameraException &e)
-        { // ignore them
-        }
-    }
-
-    return nullptr;
-}
+AutoCamera::AutoCamera(const string &device, int width, int height, unsigned capture_time_ms)
+    : Camera(device, width, height), capture_time_ms_(capture_time_ms), refIntesity_var_sum_(intensity_variation_sum()) {}

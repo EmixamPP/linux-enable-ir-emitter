@@ -1,5 +1,6 @@
 ---
 Checks: '
+-clang-diagnostic-pragma-system-header-outside-header,
 readability*,
 -readability-identifier-length,
 -readability-braces-around-statements,
@@ -7,6 +8,8 @@ readability*,
 -readability-named-parameter,
 -readability-function-cognitive-complexity,
 -readability-use-anyofallof,
+-readability-convert-member-functions-to-static,
+-readability-else-after-return,
 cppcoreguidelines*,
 -cppcoreguidelines-init-variables,
 -cppcoreguidelines-avoid-magic-numbers,

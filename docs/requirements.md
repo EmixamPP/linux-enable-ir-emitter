@@ -3,17 +3,17 @@
 * `python3 >= 3.10`
 * `video4linux` as video capture devices framework
 * `systemd` or `openrc` as service manager
-* `glibc`, `libstdc++`, `libgcc`, `gtk3`
+* for the tarball artifact provided on GitHub: `glibc`, `libstdc++`, `libgcc`, `gtk3`
 
 ## Manual build requirements
+### Libs:
+* `opencv devel`
+* `gtk3 devel`
+* `yaml-cpp devel`
+### Tools:
 * `meson >= 1.0.0`
 * `ninja-build`
-* `pkg-config`
-* `gtk3 devel`
-* `opencv devel`
-* `cmake` only if you build OpenCV
 * `g++` (for `C++17`)
-* `curl`
 
 ## Hardware requirements
 * An infrared camera with at least one emitter.

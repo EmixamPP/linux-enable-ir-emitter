@@ -1,97 +1,92 @@
 #include "commands.hpp"
 
+#include <fstream>
 #include <memory>
 using namespace std;
 
-#include "globals.hpp"
-#include "../driver/finder.hpp"
-#include "../driver/driver.hpp"
-#include "../camera/camera.hpp"
-#include "../camera/autocamera.hpp"
-#include "../utils/logger.hpp"
+#include "camera/camera.hpp"
+#include "camera/autocamera.hpp"
+#include "camera/camerainstruction.hpp"
+#include "configuration/finder.hpp"
+#include "configuration/scanner.hpp"
+#include "utils/logger.hpp"
+#include "configuration.hpp"
 
-void enableDebug()
+void enable_debug()
 {
-    Logger::enableDebug();
+    Logger::enable_debug();
 }
 
 /**
- * @brief Find a driver for the infrared camera.
+ * @brief Finds a configuration for an infrared camera which enables its emitter(s).
  *
  * @param device path to the infrared camera, empty string for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
  * @param manual true for enabling the manual configuration
  * @param emitters number of emitters on the device
- * @param negAnswerLimit number of negative answer before the pattern is skiped. Use -1 for unlimited
- * @param noGui no gui video feedback
+ * @param neg_answer_limit number of negative answer before the pattern is skiped. Use -1 for unlimited
+ * @param no_gui no gui video feedback
  *
  * @return exit code
  */
-ExitCode configure(const char *device_char_p, bool manual, unsigned emitters, unsigned negAnswerLimit, bool noGui)
+ExitCode configure(const char *device, int width, int height,
+                   bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui)
 {
-    const string device = string(device_char_p);
+    Logger::debug("Executing configure command.");
+
+    CatchCtrlC();
 
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution.");
-    Logger::info("Warning to do not kill the process !");
 
-    shared_ptr<Camera> camera;
-    if (manual)
-    {
-        if (device.empty())
-            camera = Camera::findGrayscaleCamera();
-        else
-            camera = make_shared<Camera>(device);
-    }
-    else
-    {
-        if (device.empty())
-            camera = AutoCamera::findGrayscaleCamera();
-        else
-            camera = make_shared<AutoCamera>(device);
-    }
-
-    if (noGui) 
-        camera->disableGui();
-
-    if (camera == nullptr)
-        Logger::critical(ExitCode::FAILURE, "Impossible to find an infrared camera.");
-
-    Logger::info("Configuring the camera:", camera->device, ".");
-
-    const string deviceName = camera->device.substr(camera->device.find_last_of("/") + 1);
-    const string excludedPath = SAVE_DRIVER_FOLDER_PATH + deviceName + ".excluded";
-    Finder finder(*camera, emitters, negAnswerLimit, excludedPath);
-
+    bool success = false;
     try
     {
-        if (camera->Camera::isEmitterWorking())
+        shared_ptr<Camera> camera;
+        if (manual)
+            camera = CreateCamera<Camera>(device, width, height, no_gui);
+        else
+            camera = CreateCamera<AutoCamera>(device, width, height, no_gui);
+
+        Logger::info("Configuring the camera", camera->device());
+
+        auto instructions = Configuration::Load(camera->device());
+        if (!instructions)
         {
-            Logger::error("Your emiter is already working, skipping the configuration.");
+            Logger::debug("No previous configuration found.");
+            Scanner scanner(camera);
+            instructions = scanner.scan();
+            Configuration::Save(camera->device(), instructions.value());
+        }
+        else
+            Logger::debug("Previous configuration found.");
+
+        Finder finder(camera, emitters, neg_answer_limit);
+
+        if (camera->Camera::is_emitter_working())
+        {
+            Logger::error("The emiter is already working, skipping the configuration.");
             return ExitCode::FAILURE;
         }
 
-        auto drivers = finder.find();
-        if (drivers->empty())
-        {
-            Logger::error("The configuration has failed.");
-            Logger::error("Please retry in manual mode by adding the '-m' option.");
-            Logger::info("Do not hesitate to visit the GitHub !");
-            Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
-            return ExitCode::FAILURE;
-        }
-
-        for (unsigned i = 0; i < drivers->size(); ++i)
-        {
-            string driverPath = SAVE_DRIVER_FOLDER_PATH + deviceName + "_emitter" + to_string(i) + ".driver";
-            auto &driver = drivers->at(i);
-            Driver::writeDriver(driverPath, driver);
-        }
+        success = finder.find(instructions.value());
+        success = success && Configuration::Save(camera->device(), instructions.value());
     }
-    catch (CameraException &e)
+    catch (const CameraException &e)
     {
         Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
     }
 
-    Logger::info("The driver has been successfully generated.");
+    if (!success)
+    {
+        Logger::error("The configuration failed.");
+        Logger::info("Please retry in manual mode by adding the '-m' option.");
+        Logger::info("Do not hesitate to visit the GitHub!");
+        Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
+        return ExitCode::FAILURE;
+    }
+
+    Logger::info("The infrared camera has been successfully configured.");
     return ExitCode::SUCCESS;
 }

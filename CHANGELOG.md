@@ -1,5 +1,17 @@
+# Fri Mar 8 2024 - 6.0.0-pre
+- Usage of YAML to store camera configuration
+- Save of all the camera instructions
+- Tweak manually any instructions of a camera
+- Specify camera resolution
+- Catch ctrl-c (one time) to avoid breaking camera
+- Zsh completion
+- Fix video feedback freeze
+- Better logging
+- Fix test command
+- Fix multiple v4l path for same device
+- OpenCV imshow exception
 # Wed Nov 1 2023 - 5.2.4
-- Fix driver generated but not found
+- Fix config generated but not found
 - Fix for OpenCV exception thrown
 - Reduction in installation size
 # Fri Oct 20 2023 - 5.2.1
@@ -10,7 +22,6 @@
 - Significant reduction in installation size
 # Mon Oct 9 2023 - 5.0.4
 - New advice and hint messages
-- Update OpenCV to v4.8.1
 # Wed Aug 23 2023 - 5.0.2
 - Minor search fix
 - Longer search by default
@@ -28,7 +39,7 @@
 - Add openrc support
 - Python >= 3.10
 # Son Feb 26 2023 - 4.5.0
-- Improvement of driver generation 
+- Improvement of config generation 
 # Fri Feb 24 2023 - 4.4.2
 - Fix command not found
 - Smaller size
@@ -41,13 +52,13 @@
 - Fix boot service for custom device 
 # Thu Aug 11 2022 - 4.1.4
 - Force V4l2 backend in opencv
-- Improvement of driver generation
+- Improvement of config generation
 # Mon Jul 4 2022 - 4.1.2
 - Asynchronous camera triggering
 - Fix camera triggering issue
 - Fix device symlink boot service side effect
 # Sun Jun 19 2022 - 4.0.0
-- Rework, optimization and improvement of driver generation 
+- Rework, optimization and improvement of config generation 
 - Remove manual configuration commands
 - Remove option for integration into Howdy
 # Thu Dec 9 2021 - 3.2.5
