@@ -1,3 +1,15 @@
+# Fri Mar 8 2024 - 6.0.0-pre
+- Usage of YAML to store camera configuration
+- Save of all the camera instructions
+- Tweak manually any instructions of a camera
+- Specify camera resolution
+- Catch ctrl-c (one time) to avoid breaking camera
+- Zsh completion
+- Fix video feedback freeze
+- Better logging
+- Fix test command
+- Fix multiple v4l path for same device
+- OpenCV imshow exception
 # Wed Nov 1 2023 - 5.2.4
 - Fix config generated but not found
 - Fix for OpenCV exception thrown
@@ -10,7 +22,6 @@
 - Significant reduction in installation size
 # Mon Oct 9 2023 - 5.0.4
 - New advice and hint messages
-- Update OpenCV to v4.8.1
 # Wed Aug 23 2023 - 5.0.2
 - Minor search fix
 - Longer search by default
