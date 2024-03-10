@@ -94,7 +94,6 @@ inline shared_ptr<T> CreateCamera(const string &device, int width, int height, b
 extern "C"
 {
     ExitCode configure(const char *device, int width, int height, bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui);
-    ExitCode delete_config(const char *device);
     ExitCode run(const char *device);
     ExitCode test(const char *device, int width, int height);
     ExitCode tweak(const char *device, int width, int height);

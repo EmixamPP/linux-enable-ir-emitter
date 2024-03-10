@@ -54,10 +54,9 @@ bool Finder::find(CameraInstructions &intructions)
 
                 if (camera_->apply(instruction))
                 {
-                    Logger::debug("Instruction is valid.");
                     if (camera_->is_emitter_working())
                     {
-                        Logger::debug("Instruction makes emitter flash.");
+                        Logger::debug("The instruction makes emitter flash.");
                         if (++configured == emitters_)
                         {
                             Logger::debug("All emitters are configured.");
@@ -66,13 +65,13 @@ bool Finder::find(CameraInstructions &intructions)
                     }
                 }
                 else
-                    Logger::debug("Instruction is not valid.");
+                    Logger::debug("The instruction is not valid.");
 
                 ++neg_answer_counter;
             }
 
             instruction.reset();
-            Logger::debug("Reseting to instruction:", to_string(instruction));
+            Logger::debug("Reseting to the instruction:", to_string(instruction));
             camera_->apply(instruction);
         }
         catch (const CameraInstructionException &e)

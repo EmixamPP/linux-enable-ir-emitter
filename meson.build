@@ -91,7 +91,6 @@ library(
         'camera/camera.cpp',
         'camera/camerainstruction.cpp',
         'command/configure.cpp',
-        'command/delete.cpp',
         'command/run.cpp',
         'command/test.cpp',
         'command/tweak.cpp',
