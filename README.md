@@ -18,9 +18,10 @@ It can be uninstalled by executing (remove the last line to keep the emitter con
 sudo rm -rf /usr/local/lib/linux-enable-ir-emitter \
 /usr/local/bin/linux-enable-ir-emitter \
 /usr/local/share/bash-completition/completitions/linux-enable-ir-emitter \
-/usr/local/etc/systemd/system/linux-enable-ir-emitter.service \
-/usr/local/etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
-/usr/local/etc/linux-enable-ir-emitter
+/usr/local/share/zsh/site-functions/_linux-enable-ir-emitter \
+/etc/systemd/system/linux-enable-ir-emitter.service \
+/etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
+/etc/linux-enable-ir-emitter
 ```
 
 ## How to enable your infrared emitter?
