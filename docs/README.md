@@ -1,5 +1,6 @@
 ### In this documentations you can find help for:
 * [Solve common problem and instruction for opening a new issue](issues.md)
+* [Save or delete your camera configurations](configurations.md)
 * [System, manual build and hardware requirements](requirements.md)
 * [Manual build instructions](manual-build.md)
 * [Exit code meaning](exit-code.md)
