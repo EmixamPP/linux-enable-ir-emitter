@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <optional>
 #include <vector>
 using namespace std;
@@ -16,8 +15,6 @@ namespace Configuration
     bool Save(const string &device, const CameraInstructions &instructions);
 
     optional<CameraInstructions> Load(const string &device) noexcept;
-
-    void Delete(const string &device);
 
     vector<string> ConfiguredDevices() noexcept;
 }

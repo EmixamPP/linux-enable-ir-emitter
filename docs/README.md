@@ -1,5 +1,6 @@
 ### In this documentations you can find help for:
 * [Solve common problem and instruction for opening a new issue](issues.md)
+* [Save or delete your camera configurations](configurations.md)
 * [System, manual build and hardware requirements](requirements.md)
 * [Manual build instructions](manual-build.md)
 * [Exit code meaning](exit-code.md)
@@ -7,18 +8,17 @@
 
 ### linux-enable-ir-emitter usage 
 ```
-usage: linux-enable-ir-emitter [-h] [-V] [-v] [-d device] [-w width] [-t height] {run,configure,tweak,test,boot,delete} ...
+usage: linux-enable-ir-emitter [-h] [-V] [-v] [-d device] [-w width] [-t height] {run,configure,tweak,test,boot} ...
 
 Provides support for infrared cameras.
 
 positional arguments:
-  {run,configure,tweak,test,boot,delete}
+  {run,configure,tweak,test,boot}
     run                 apply a configuration
     configure           create an ir emitter configuration
     tweak               create a camera configuration
     test                test a camera
     boot                apply the configurations at boot
-    delete              delete configurations
 
 options:
   -h, --help            show this help message and exit

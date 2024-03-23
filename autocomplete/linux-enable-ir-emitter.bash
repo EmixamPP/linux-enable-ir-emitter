@@ -9,7 +9,7 @@ _linux-enable-ir-emitter() {
 
 	case "${prev}" in
 		"linux-enable-ir-emitter"|"-v"|"--verbose"|/dev/video*|"-w"|"--width"|"-t"|"--height")
-			opts="-v --verbose -d --device -w --width -t --height run configure tweak test boot delete"
+			opts="-v --verbose -d --device -w --width -t --height run configure tweak test boot"
 			;;
 		"-d"|"--device")
             opts="$(ls /dev/video*)"

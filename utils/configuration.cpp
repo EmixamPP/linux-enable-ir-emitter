@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <set>
 #include <string>
 using namespace std;
 
@@ -12,7 +13,7 @@ using namespace std;
 
 const string V4L_PREFIX = "/dev/v4l/by-path/";
 
-static void write_to_file(const CameraInstructions &instructions, const string &file_path) noexcept
+static void write_to_file(const CameraInstructions &instructions, const string &file_path)
 {
     YAML::Node node(instructions);
     ofstream file(file_path);
@@ -41,19 +42,25 @@ static optional<CameraInstructions> read_from_file(const string &file_path) noex
 
 static optional<string> V4LNameOf(const string &device)
 {
+    set<string> names; // multiple names can exists
+
     try
     {
         auto device_path = filesystem::canonical(device);
 
         for (const auto &v4l : filesystem::directory_iterator(V4L_PREFIX))
-            if (device_path == filesystem::canonical(v4l))
-                return v4l.path().filename();
+            if (device_path == filesystem::canonical(v4l) && v4l.path().has_filename())
+                names.emplace(v4l.path().filename());
+
+        if (names.empty())
+            return {};
     }
-    catch (const std::filesystem::filesystem_error &e)
+    catch (const filesystem::filesystem_error &e)
     {
         Logger::debug(e.what());
     }
-    return {};
+
+    return *names.begin();
 }
 
 static optional<string> PathOf(const string &device) noexcept
@@ -84,7 +91,7 @@ optional<CameraInstructions> Configuration::Load(const string &device) noexcept
 }
 
 /**
- * @brief Save the configuration file of a device.
+ * @brief Save the configuration of a device
  *
  * @param device path to the camera
  * @param instructions of the configuration
@@ -97,22 +104,11 @@ bool Configuration::Save(const string &device, const CameraInstructions &instruc
     if (path)
     {
         write_to_file(instructions, path.value());
+        Logger::debug("Configuration for", device, "saved here:", path.value());
         return true;
     }
 
     return false;
-}
-
-/**
- * @brief Delete the configuration file of a device.
- *
- * @param device path to the camera
- */
-void Configuration::Delete(const string &device)
-{
-    auto path = PathOf(device);
-    if (path && filesystem::remove(path.value()))
-        Logger::debug("Deleting", path.value());
 }
 
 /**
@@ -126,7 +122,7 @@ vector<string> Configuration::ConfiguredDevices() noexcept
     for (const auto &conf : filesystem::directory_iterator(SAVE_FOLDER_CONFIG_PATH_))
     {
         auto device = V4L_PREFIX + conf.path().filename().string();
-        devices.push_back(device);
+        devices.push_back(std::move(device));
     }
     return devices;
 }

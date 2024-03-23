@@ -120,11 +120,6 @@ if __name__ == "__main__":
         help="specify the boot action to perform",
     )
 
-    command_delete = command_subparser.add_parser(
-        "delete",
-        help="delete configurations",
-    )
-
     args = parser.parse_args()
 
     if args.verbose:
@@ -162,10 +157,6 @@ if __name__ == "__main__":
     elif args.command == "boot":
         check_root()
         res = boot(args.boot_status)
-
-    elif args.command == "delete":
-        check_root()
-        res = cpp_commands.delete_config(args.device.encode())
 
     else:
         parser.print_help()

@@ -136,7 +136,7 @@ bool Camera::is_emitter_working_ask()
         cv::imshow("linux-enable-ir-emitter", read1_unsafe());
         key = cv::waitKey(IMAGE_DELAY);
     }
-    Logger::debug(key == OK_KEY ? "Y pressed." : "N pressed.");
+    cout << (key == OK_KEY ? "Y pressed." : "N pressed.") << endl;
 
     cv::destroyAllWindows();
     close_cap();
