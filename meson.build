@@ -157,7 +157,7 @@ install_emptydir(
 # Conf
 ######
 install_emptydir(
-    get_option('sysconfdir') / meson.project_name(),
+    '/' / get_option('sysconfdir') / meson.project_name(),
 )
 
 ##################
