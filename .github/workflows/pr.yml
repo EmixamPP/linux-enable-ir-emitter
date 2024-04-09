@@ -2,7 +2,6 @@ name: "Pull Request"
 
 on:
   pull_request:
-    types: [opened, reopened]
   
 jobs:
   py-lint:
@@ -27,6 +26,7 @@ jobs:
         with:
           comment_tag: bot_comment
           mode: recreate
+          GITHUB_TOKEN: ${{ secrets.PAT }}
           message: |
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
