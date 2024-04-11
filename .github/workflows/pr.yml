@@ -26,7 +26,6 @@ jobs:
         with:
           comment_tag: bot_comment
           mode: recreate
-          GITHUB_TOKEN: ${{ secrets.PAT }}
           message: |
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
@@ -43,4 +42,4 @@ jobs:
             ## :package: Artifacts:
             If the building step was successfull, you can download the appropriate tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
 
-            Uninstall the previous version, unzip and then execute `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`. 
+            [Uninstall the previous version](docs/uninstallation.md) , unzip and then execute `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`. 

@@ -27,9 +27,9 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
             token: ${{ secrets.PAT }}
-            title: "chore(workflow): update yaml to ${{ env.VERSION }}"
+            title: "chore(ci): update yaml to ${{ env.VERSION }}"
             branch: "yaml-${{ env.VERSION }}"
-            commit-message: "chore(workflow): update yaml to ${{ env.VERSION }}"
+            commit-message: "chore(ci): update yaml to ${{ env.VERSION }}"
             body: |
               Update YAML to ${{ env.VERSION }}.
 
