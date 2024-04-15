@@ -1,0 +1,119 @@
+#include <iostream>
+#include <string>
+#include <unistd.h>
+using namespace std;
+
+#include "utils/argparse.hpp"
+
+#include "command/commands.hpp"
+#include "utils/logger.hpp"
+
+/// TODO check root for configure & tweak
+
+/**
+ * @brief Exit if the program was not run with root privilege.
+ */
+static void check_root()
+{
+    if (geteuid() != 0)
+        Logger::critical(ExitCode::ROOT_REQUIRED, "Please run with root privilege.");
+}
+
+int main(int argc, char **argv)
+{
+    argparse::ArgumentParser program("linux-enable-ir-emitter", "@version@");
+    program.add_description("Provides support for infrared cameras.");
+    program.add_epilog("https://github.com/EmixamPP/linux-enable-ir-emitter");
+
+    program.add_argument("-d", "--device")
+        .help("specify the camera, nothing for automatic")
+        .default_value("")
+        .nargs(1)
+        .metavar("device");
+    program.add_argument("-w", "--width")
+        .help("specify the width, -1 automatic") 
+        .default_value(-1)
+        .scan<'i', int>()
+        .nargs(1)
+        .metavar("width");
+    program.add_argument("-t", "--height")
+        .help("specify the height, -1 for automatic")
+        .default_value(-1)
+        .scan<'i', int>()
+        .nargs(1)
+        .metavar("height");
+    program.add_argument("-V", "--verbose")
+        .help("enable verbose information")
+        .flag()
+        .action([](const auto &){Logger::enable_debug();});
+
+    argparse::ArgumentParser configure_command("configure");
+    configure_command.add_argument("-m", "--manual")
+        .help("manual verification")
+        .flag();
+    configure_command.add_argument("-e", "--emitters")
+        .help("specify the number of emitters")
+        .default_value(1)
+        .scan<'i', unsigned>()
+        .nargs(1)
+        .metavar("emitters");
+    configure_command.add_argument("-l", "--limit")
+        .help("specify the negative answer limit, use -1 for unlimited")
+        .default_value(10)
+        .scan<'i', unsigned>()
+        .nargs(1)
+        .metavar("limit");
+    configure_command.add_argument("-g", "--no-gui")
+        .help("disable video feedback")
+        .flag();
+    program.add_subparser(configure_command);
+
+    argparse::ArgumentParser run_command("run");
+    program.add_subparser(run_command);
+
+    argparse::ArgumentParser tweak_command("tweak");
+    program.add_subparser(tweak_command);
+
+    argparse::ArgumentParser test_command("test");
+    program.add_subparser(test_command);
+
+    try
+    {
+        program.parse_args(argc, argv);
+    }
+    catch (const exception &e)
+    {
+        cerr << e.what() << endl;
+        cerr << program;
+        return ExitCode::FAILURE;
+    }
+
+    if (program.is_subcommand_used(configure_command))
+    {
+        check_root();
+        return configure(program.get<string>("device"),
+                         program.get<int>("width"),
+                         program.get<bool>("height"),
+                         program.get<bool>("manual"),
+                         program.get<unsigned>("emitters"),
+                         program.get<unsigned>("limit"),
+                         program.get<bool>("no-gui"));
+    }
+    else if (program.is_subcommand_used(run_command))
+        return run(program.get<string>("device"));
+    else if (program.is_subcommand_used(tweak_command))
+    {
+        check_root();
+        return tweak(program.get<string>("device"),
+                     program.get<int>("width"),
+                     program.get<int>("height"));
+    }
+    else if (program.is_subcommand_used(test_command))
+        return test(program.get<string>("device"),
+                    program.get<int>("width"),
+                    program.get<int>("height"));
+
+    cerr << "Subcommand choice is missing" << endl;
+    cerr << program;
+    return ExitCode::FAILURE;
+}

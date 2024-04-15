@@ -6,7 +6,7 @@
 #include <vector>
 using namespace std;
 
-#include "opencv.hpp"
+#include "utils/opencv.hpp"
 
 #include "utils/logger.hpp"
 

@@ -4,7 +4,7 @@
 #include <vector>
 using namespace std;
 
-#include <yaml-cpp/yaml.h>
+#include "utils/yaml.hpp"
 
 class Camera;
 

@@ -6,7 +6,7 @@
 #include <string>
 using namespace std;
 
-#include <yaml-cpp/yaml.h>
+#include "yaml.hpp"
 
 #include "camera/camerainstruction.hpp"
 #include "utils/logger.hpp"

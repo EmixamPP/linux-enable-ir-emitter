@@ -7,10 +7,9 @@ using namespace std;
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 
-
 namespace Configuration
 {
-    const string SAVE_FOLDER_CONFIG_PATH_ = "@SAVE_FOLDER_CONFIG_PATH@/";
+    const string SAVE_FOLDER_CONFIG_PATH_ = "@configdir@/";
 
     bool Save(const string &device, const CameraInstructions &instructions);
 

@@ -17,9 +17,6 @@ _linux-enable-ir-emitter() {
 		"configure"|"-m"|"--manual"|"-e"|"--emitters"|"-l"|"--limit"|"-g"|"--no-gui")
 			opts="-m --manual -e --emitters -l --limit -g --no-gui"
 			;;
-		"boot")
-			opts="enable disable status"
-			;;
  		*)
 		return 0;
 	esac

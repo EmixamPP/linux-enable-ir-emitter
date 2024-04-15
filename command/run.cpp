@@ -16,15 +16,17 @@ using namespace std;
  *
  * @return exit code
  */
-ExitCode run(const char *device)
+ExitCode run(const string &device)
 {
     Logger::debug("Executing run command.");
 
     auto devices = Configuration::ConfiguredDevices();
 
-    if (devices.empty())
-        Logger::critical(ExitCode::FAILURE, "No device has been configured.");
-    else if (!string(device).empty())
+    if (devices.empty()) {
+        Logger::warning("No device has been configured.");
+        return ExitCode::SUCCESS;
+    }
+    else if (!device.empty())
         devices = {device};
 
     bool oneFailure = false;
@@ -34,7 +36,7 @@ ExitCode run(const char *device)
         if (!instructions)
         {
             oneFailure = true;
-            Logger::warning("Failed to load a configuration for", device);
+            Logger::error("Failed to load a configuration for", device);
             continue;
         }
 
@@ -47,7 +49,7 @@ ExitCode run(const char *device)
                 Logger::debug("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))
                 {
-                    Logger::warning("Failed to apply the instruction", to_string(instruction));
+                    Logger::error("Failed to apply the instruction", to_string(instruction));
                     oneFailure = true;
                 }
             }

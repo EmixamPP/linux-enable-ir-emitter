@@ -10,14 +10,12 @@
 #include <signal.h>
 using namespace std;
 
-const regex DEVICE_PATTERN("/dev/video[0-9]+");
-
 enum ExitCode
 {
     SUCCESS = 0,
     FAILURE = 1,
+    ROOT_REQUIRED = 2,
     FILE_DESCRIPTOR_ERROR = 126,
-    ROOT_REQUIRED = 2
 };
 
 /**
@@ -48,9 +46,9 @@ inline void CatchCtrlC()
  * @param width of the capture resolution
  * @param height of the capture resolution
  * @param no_gui
- * 
+ *
  * @throw CameraException if the device is invalid
- * 
+ *
  * @return a smart pointer to the created object
  */
 template <typename T>
@@ -91,11 +89,10 @@ inline shared_ptr<T> CreateCamera(const string &device, int width, int height, b
     return camera;
 }
 
-extern "C"
-{
-    ExitCode configure(const char *device, int width, int height, bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui);
-    ExitCode run(const char *device);
-    ExitCode test(const char *device, int width, int height);
-    ExitCode tweak(const char *device, int width, int height);
-    void enable_debug();
-}
+ExitCode configure(const string &device, int width, int height, bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui);
+
+ExitCode run(const string &device);
+
+ExitCode test(const string &device, int width, int height);
+
+ExitCode tweak(const string &device, int width, int height);

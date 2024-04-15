@@ -17,7 +17,7 @@ using namespace std;
  *
  * @return exit code
  */
-ExitCode test(const char *device, int width, int height)
+ExitCode test(const string &device, int width, int height)
 {
     Logger::debug("Executing test command.");
 

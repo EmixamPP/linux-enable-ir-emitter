@@ -10,7 +10,7 @@
 #include <string>
 using namespace std;
 
-ExitCode tweak(const char *device, int width, int height)
+ExitCode tweak(const string &device, int width, int height)
 {
     Logger::debug("Executing tweak command.");
 
