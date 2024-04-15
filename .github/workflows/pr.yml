@@ -4,21 +4,18 @@ on:
   pull_request:
   
 jobs:
-  py-lint:
-    uses: ./.github/workflows/py-lint.yml
-  
-  cpp-lint:
-    uses: ./.github/workflows/cpp-lint.yml
-
   build:
     uses: ./.github/workflows/build.yml
   
+  cpp-lint:
+    needs: build
+    uses: ./.github/workflows/cpp-lint.yml  
+  
   comment:
     name: Bot comment
-    needs: 
-      - py-lint
-      - cpp-lint
+    needs:
       - build
+      - cpp-lint
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -32,8 +29,6 @@ jobs:
             ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             ## :mag: Linting results:
-            ${{ needs.py-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} Python Linting
-
             ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} C++ Linting
 
             ## :hammer_and_wrench: Building result:

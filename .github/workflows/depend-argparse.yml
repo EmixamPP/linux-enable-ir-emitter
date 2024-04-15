@@ -13,23 +13,23 @@ jobs:
       - name: Fetch release version
         env:
             GITHUB_TOKEN: ${{ github.token }}
-            OWNER: jbeder
-            REPO: yaml-cpp
+            OWNER: p-ranav
+            REPO: argparse
         run: |
             VERSION=$(gh api "/repos/$OWNER/$REPO/releases/latest" --jq ".tag_name")
             echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Modify file if new version
         run: |
-            sed -E -i "s@(YAML_GIT_TAG=\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/deps/version.env
+            sed -E -i "s@(ARGPARSE_GIT_TAG=\s+\")(v[0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/deps/version.env
             
       - name: Create PR if new version
         uses: peter-evans/create-pull-request@v6
         with:
             token: ${{ secrets.PAT }}
-            title: "chore(ci): update yaml to ${{ env.VERSION }}"
-            branch: "yaml-${{ env.VERSION }}"
-            commit-message: "chore(ci): update yaml to ${{ env.VERSION }}"
+            title: "chore(ci): update argparse to ${{ env.VERSION }}"
+            branch: "argparse-${{ env.VERSION }}"
+            commit-message: "chore(ci): update argparse to ${{ env.VERSION }}"
             body: |
               Update YAML to ${{ env.VERSION }}.
 

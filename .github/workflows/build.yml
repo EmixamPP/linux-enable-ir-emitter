@@ -3,11 +3,11 @@ name: "Build"
 on:
   workflow_dispatch:
   workflow_call:
-  push:
 
 env: 
-  OPENCV_VERSION: "4.9.0"
-  YAML_VERSION: "0.8.0"
+  OPENCV_GIT_TAG: "4.9.0"
+  YAML_GIT_TAG: "0.8.0"
+  ARGPARSE_GIT_TAG: "v3.0"
 
 jobs:
   build:
@@ -16,79 +16,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: cardinalby/export-env-action@v2
         with:
-          python-version: "3.10"
+          envFile: '.github/workflows/deps/version.env'
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev cmake curl
+          sudo apt-get update -y && sudo apt-get upgrade -y
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev cmake
           python -m pip install --upgrade pip
           python -m pip install meson          
-      
-      - name: Cache OpenCV
-        id: opencv-cache
-        uses: actions/cache@v4
-        with:
-          path: opencv
-          key: opencv-${{ env.OPENCV_VERSION }}
 
-      - name: Build tiny static OpenCV
-        if: ${{ steps.opencv-cache.outputs.cache-hit != 'true' }}
-        run: |
-          mkdir -p opencv/build
-          curl -L https://github.com/opencv/opencv/archive/refs/tags/${{ env.OPENCV_VERSION }}.tar.gz | tar -xz -C opencv
-          cmake -B opencv/build -S opencv/opencv-${{ env.OPENCV_VERSION }} -GNinja \
-              -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=YES \
-              -DBUILD_LIST=videoio,highgui \
-              -DWITH_V4L=ON -DWITH_GTK=ON -DZLIB_FOUND=OFF -DBUILD_ZLIB=ON \
-              -DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_IMGCODEC_HDR=OFF -DWITH_IMGCODEC_SUNRASTER=OFF -DWITH_IMGCODEC_PXM=OFF -DWITH_IMGCODEC_PFM=OFF \
-              -DWITH_FFMPEG=FALSE -DWITH_GSTREAMER=OFF -DWITH_1394=OFF -DDVIDEOIO_ENABLE_PLUGINS=OFF -DWITH_ANDROID_MEDIANDK=OFF \
-              -DHIGHGUI_ENABLE_PLUGINS=OFF -DWITH_VTK=OFF \
-              -DWITH_PROTOBUF=OFF -DOPENCV_DNN_OPENCL=OFF \
-              -DWITH_VA_INTEL=OFF -DWITH_OPENCL=OFF -DWITH_OPENCL_SVM=OFF -DWITH_OPENCLAMDFFT=OFF -DWITH_OPENCLAMDBLAS=OFF -DWITH_OPENCL_D3D11_NV=OFF \
-              -DWITH_CAROTENE=OFF -DWITH_CPUFEATURES=OFF -DWITH_EIGEN=OFF -DWITH_OPENVX=OFF -DWITH_DIRECTX=OFF -DWITH_VA=OFF -DWITH_LAPACK=OFF -DWITH_QUIRC=OFF -DBUILD_ITT=OFF -DWITH_IPP=OFF -DBUILD_IPP_IW=OFF 
-          ninja -C opencv/build
-      
-      - name: Cache YAML
-        id: yaml-cache
+      - name: Cache lib dependencies
+        id: deps-cache
         uses: actions/cache@v4
         with:
-          path: yaml
-          key: yaml-${{ env.YAML_VERSION }}
-      
-      - name: Build minimal static YAML
-        if: ${{ steps.yaml-cache.outputs.cache-hit != 'true' }}
+          path: .github/workflows/deps/install_dir
+          key: ${{ env.OPENCV_GIT_TAG }}-${{ env.YAML_GIT_TAG }}-${{ env.ARGPARSE_GIT_TAG }}
+
+      - name: Build lib dependencis
+        if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
-          mkdir -p yaml/build
-          curl -L https://github.com/jbeder/yaml-cpp/archive/refs/tags/${{ env.YAML_VERSION }}.tar.gz | tar -xz -C yaml
-          cmake -B yaml/build -S yaml/yaml-cpp-${{ env.YAML_VERSION }} -GNinja \
-              -DYAML_BUILD_SHARED_LIBS=OFF -DYAML_CPP_BUILD_CONTRIB=OFF -DYAML_CPP_BUILD_TOOLS=OFF
-          ninja -C yaml/build
-          
-      - name: Install OpenCV and YAML
-        run: |
-          sudo ninja install -C opencv/build
-          sudo ninja install -C yaml/build
+          cd .github/workflows/deps
+          cmake . -B build -GNinja \
+            -DOPENCV_GIT_TAG=${{ env.OPENCV_GIT_TAG }} -DYAML_GIT_TAG=${{ env.YAML_GIT_TAG }} -DARGPARSE_GIT_TAG=${{ env.ARGPARSE_GIT_TAG }}
+          ninja -C build
+          cd -
 
       - name: Setup build
         run: |
-          meson setup build --libdir=lib --prefer-static
-       
+          meson setup build --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+
       - name: Compile
         run: |
           meson compile -C build
-      
+
+      - name: Retrieve version
+        run: |
+          VERSION=$(meson introspect --projectinfo build | jq -r '.version')
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
       - name: Create tarball
         run: |
-          DESTDIR=install_dir_systemd meson install -C build
-          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir_systemd .
-      
+          DESTDIR=install_dir meson install -C build
+          tar -czvf build/linux-enable-ir-emitter-${VERSION}.systemd.x86-64.tar.gz -C build/install_dir .
+
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
-          name: linux-enable-ir-emitter.systemd.x86-64.tar.gz
-          path: build/linux-enable-ir-emitter.systemd.x86-64.tar.gz
-  
+          name: linux-enable-ir-emitter-${VERSION}.systemd.x86-64.tar.gz
+          path: build/linux-enable-ir-emitter-${VERSION}.systemd.x86-64.tar.gz
