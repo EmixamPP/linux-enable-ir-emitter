@@ -4,11 +4,6 @@ on:
   workflow_dispatch:
   workflow_call:
 
-env: 
-  OPENCV_GIT_TAG: "4.9.0"
-  YAML_GIT_TAG: "0.8.0"
-  ARGPARSE_GIT_TAG: "v3.0"
-
 jobs:
   build:
     name: Building
@@ -16,7 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: cardinalby/export-env-action@v2
+      - name: Load dependencies versions
+        uses: cardinalby/export-env-action@v2
         with:
           envFile: '.github/workflows/deps/version.env'
 

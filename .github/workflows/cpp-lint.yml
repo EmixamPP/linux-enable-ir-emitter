@@ -4,15 +4,17 @@ on:
   workflow_dispatch:
   workflow_call:
 
-env: 
-  
-
 jobs:
   lint:
     name: C++ linting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load dependencies versions
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: '.github/workflows/deps/version.env'
 
       - name: Install dependencies
         run: |
