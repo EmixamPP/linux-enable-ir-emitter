@@ -3,7 +3,6 @@
 - [Please, first, ensure that you have the last version. Compare the latest release with `linux-enable-ir-emitter -V`](#please-first-ensure-that-you-have-the-last-version-compare-the-latest-release-with-linux-enable-ir-emitter--v)
 - [The configuration has failed](#the-configuration-has-failed)
 - [The emitter does not work after successful configuration or after update](#the-emitter-does-not-work-after-successful-configuration-or-after-update)
-- [Error with the systemd/openrc or udev boot service](#error-with-the-systemdopenrc-or-udev-boot-service)
 - [Exception thrown by OpenCV during the configuration](#exception-thrown-by-opencv-during-the-configuration)
 - [Other bugs](#other-bugs)
 
@@ -27,11 +26,6 @@ Otherwise, open an issue using the "Configuration has failed" template.
 
 ## The emitter does not work after successful configuration or after update
 1. If you use Howdy, be sure it uses the ir camera configured; the path is printed after the message `INFO: Configuring the camera`.
-2. Execute `sudo linux-enable-ir-emitter boot enable`.
-3. Open an issue using the "Emitter does not work after successful configuration" template.
-
-## Error with the systemd/openrc or udev boot service
-1. Ensure you have `systemd` or `openrc` (and the related version installed).
 2. Open an issue using the "Emitter does not work after successful configuration" template.
 
 ## Exception thrown by OpenCV during the configuration

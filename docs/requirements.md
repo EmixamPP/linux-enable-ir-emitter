@@ -1,15 +1,14 @@
 ## System requirements
 * if you used chicony-ir-toggle, please remove it
-* `python3 >= 3.10`
 * `video4linux` as video capture devices framework
-* `systemd` or `openrc` as service manager
 * for the tarball artifact provided on GitHub: `glibc`, `libstdc++`, `libgcc`, `gtk3`
 
 ## Manual build requirements
-### Libs:
+### C/C++ libs:
 * `opencv devel`
 * `gtk3 devel`
 * `yaml-cpp devel`
+* `argparse devel`
 ### Tools:
 * `meson >= 1.0.0`
 * `ninja-build`

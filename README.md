@@ -5,24 +5,15 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 `linux-enable-ir-emitter` can automatically configure almost any (UVC) infrared emitter.
 
 ## Installation
-Download the latest `linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz` [here](https://github.com/EmixamPP/linux-enable-ir-emitter/releases), then execute:
+Download the latest [linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
 ```
-sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz
+sudo tar -C / -vxzf linux-enable-ir-emitter*.tar.gz
+sudo systemctl enable linux-enable-ir-emitter
 ```
 
-We also support immutable distro and the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
+We also support the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
 
-### Uninstallation
-It can be uninstalled by executing (remove the last line to keep the emitter configuration):
-```
-sudo rm -rf /usr/local/lib/linux-enable-ir-emitter \
-/usr/local/bin/linux-enable-ir-emitter \
-/usr/local/share/bash-completition/completitions/linux-enable-ir-emitter \
-/usr/local/share/zsh/site-functions/_linux-enable-ir-emitter \
-/etc/systemd/system/linux-enable-ir-emitter.service \
-/etc/udev/rules.d/99-linux-enable-ir-emitter.rules \
-/etc/linux-enable-ir-emitter
-```
+To uninstall the tool, see [docs/uninstallation.md](docs/uninstallation.md) for the instructions.
 
 ## How to enable your infrared emitter?
 1. Stand in front of and close to the camera and make sure the room is well lit.

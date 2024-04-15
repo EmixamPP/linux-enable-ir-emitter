@@ -3,53 +3,39 @@
 * [Save or delete your camera configurations](configurations.md)
 * [System, manual build and hardware requirements](requirements.md)
 * [Manual build instructions](manual-build.md)
+* [Uninstallation](uninstallation.md)
 * [Exit code meaning](exit-code.md)
 * [Command line usage](#linux-enable-ir-emitter-usage) 
 
 ### linux-enable-ir-emitter usage 
 ```
-usage: linux-enable-ir-emitter [-h] [-V] [-v] [-d device] [-w width] [-t height] {run,configure,tweak,test,boot} ...
+Usage: linux-enable-ir-emitter [--help] [--version] [--device device] [--width width] [--height height] [--verbose] {configure,run,test,tweak}
 
 Provides support for infrared cameras.
 
-positional arguments:
-  {run,configure,tweak,test,boot}
-    run                 apply a configuration
-    configure           create an ir emitter configuration
-    tweak               create a camera configuration
-    test                test a camera
-    boot                apply the configurations at boot
+Optional arguments:
+  -h, --help           shows help message and exits 
+  -v, --version        prints version information and exits 
+  -d, --device device  specify the camera, automatic by default [default: ""]
+  -w, --width width    specify the width, automatic by default [default: -1]
+  -t, --height height  specify the height, automatic by default [default: -1]
+  -V, --verbose        enable verbose information 
 
-options:
-  -h, --help            show this help message and exit
-  -V, --version         show version information and exit
-  -v, --verbose         print verbose information
-  -d device, --device device
-                        specify the camera, automatic by default
-  -w width, --width width
-                        specify the width, automatic by default
-  -t height, --height height
-                        specify the height, automatic by default
+Subcommands:
+  configure           
+  run                 
+  test                
+  tweak               
+
 ```
 ```
-usage: linux-enable-ir-emitter configure [-h] [-m] [-e <count>] [-l <count>] [-g]
+Usage: configure [--help] [--version] [--manual] [--emitters emitters] [--limit limit] [--no-gui]
 
-options:
-  -h, --help            show this help message and exit
-  -m, --manual          manual verification
-  -e <count>, --emitters <count>
-                        specify the number of emitters, by default is 1
-  -l <count>, --limit <count>
-                        specify the negative answer limit, by default is 40. Use -1 for unlimited
-  -g, --no-gui          disable video feedback
-```
-```
-usage: linux-enable-ir-emitter boot [-h] {enable,disable,status}
-
-positional arguments:
-  {enable,disable,status}
-                        specify the boot action to perform
-
-optional arguments:
-  -h, --help            show this help message and exit
+Optional arguments:
+  -h, --help               shows help message and exits 
+  -v, --version            prints version information and exits 
+  -m, --manual             manual verification 
+  -e, --emitters emitters  specify the number of emitters [default: 1]
+  -l, --limit limit        specify the negative answer limit, use -1 for unlimited [default: 10]
+  -g, --no-gui             disable video feedback 
 ```

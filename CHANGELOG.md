@@ -1,4 +1,4 @@
-# Fri Mar 8 2024 - 6.0.0-pre
+# 2024 - 6.0.0-beta
 - Usage of YAML to store camera configuration
 - Save of all the camera instructions
 - Tweak manually any instructions of a camera
@@ -10,6 +10,7 @@
 - Fix test command
 - Fix multiple v4l path for same device
 - OpenCV imshow exception
+- Remove boot command
 # Wed Nov 1 2023 - 5.2.4
 - Fix config generated but not found
 - Fix for OpenCV exception thrown
