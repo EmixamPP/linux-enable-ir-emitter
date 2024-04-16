@@ -31,7 +31,7 @@ jobs:
 
             ## :mag: Linting results: ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }}
 
-            ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
+            ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }}
           
             ## :package: Artifacts:
             If the building step was successfull:
