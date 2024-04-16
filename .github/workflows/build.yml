@@ -18,9 +18,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update -y && sudo apt-get upgrade -y
           sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev cmake
-          python -m pip install --upgrade pip
           python -m pip install meson          
 
       - name: Cache lib dependencies
