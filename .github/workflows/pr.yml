@@ -29,13 +29,14 @@ jobs:
 
             ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            ## :mag: Linting results:
-            ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }} C++ Linting
+            ## :mag: Linting results: ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }}
 
-            ## :hammer_and_wrench: Building result:
-            ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
-
+            ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }} Building
+          
             ## :package: Artifacts:
-            If the building step was successfull, you can download the appropriate tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-
-            [Uninstall the previous version](docs/uninstallation.md) , unzip and then execute `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`. 
+            If the building step was successfull:
+            1. Download the tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            2. [Uninstall the previous version](docs/uninstallation.md) if you have one
+            3. Unzip: `unzip linux-enable-ir-emitter*.tar.gz.zip`
+            4. Install: `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`
+            5. Enable the boot service: `sudo systemctl enable linux-enable-ir-emitter`
