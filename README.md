@@ -8,7 +8,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 Download the latest [linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
 ```
 sudo tar -C / -vxzf linux-enable-ir-emitter*.tar.gz
-sudo systemctl enable linux-enable-ir-emitter
+sudo systemctl enable --now linux-enable-ir-emitter
 ```
 
 We also support the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
