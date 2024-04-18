@@ -27,10 +27,10 @@ add_project_arguments(
 ############
 # Dependency
 ############
-opencv_dep = dependency('opencv4')
+opencv_dep = dependency('opencv4', include_type: 'system')
 gtk_dep = dependency('gtk+-3.0', static: false)
-yaml_dep = dependency('yaml-cpp')
-argparse_dep = dependency('argparse')
+yaml_dep = dependency('yaml-cpp', include_type: 'system')
+argparse_dep = dependency('argparse', include_type: 'system')
 
 ##########
 # Variable
