@@ -1,9 +1,5 @@
 #include "commands.hpp"
 
-#include <memory>
-#include <string>
-using namespace std;
-
 #include "camera/autocamera.hpp"
 #include "utils/logger.hpp"
 
@@ -11,13 +7,13 @@ using namespace std;
  * @brief Test if the camera is in greyscale and if the emitter is working.
  * Also display a video feedback.
  *
- * @param device path to the infrared camera, empty string for automatic detection
+ * @param device path to the infrared camera, nothing for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
  *
  * @return exit code
  */
-ExitCode test(const string &device, int width, int height)
+ExitCode test(const optional<string> &device, int width, int height)
 {
     Logger::debug("Executing test command.");
 

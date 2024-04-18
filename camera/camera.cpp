@@ -179,7 +179,7 @@ bool Camera::is_emitter_working_ask_no_gui()
 /**
  * @brief Construct a new Camera:: Camera object
  *
- * @param device path to the camera
+ * @param device path of the camera
  * @param width of the capture resolution
  * @param height of the capture resolution
  *

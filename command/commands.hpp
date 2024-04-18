@@ -6,7 +6,9 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <regex>
+#include <string>
 #include <signal.h>
 using namespace std;
 
@@ -42,7 +44,7 @@ inline void CatchCtrlC()
  * @brief Creates a Camera or AutoCamera object.
  *
  * @tparam T type which inherited from `Camera`
- * @param device path to the camera
+ * @param device path of the camera, nothing for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
  * @param no_gui
@@ -52,11 +54,11 @@ inline void CatchCtrlC()
  * @return a smart pointer to the created object
  */
 template <typename T>
-inline shared_ptr<T> CreateCamera(const string &device, int width, int height, bool no_gui = false)
+inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int height, bool no_gui = false)
 {
     shared_ptr<T> camera;
 
-    if (device.empty())
+    if (!device.has_value())
     {
         // find a greyscale camera
         auto devices = T::Devices();
@@ -81,7 +83,7 @@ inline shared_ptr<T> CreateCamera(const string &device, int width, int height, b
             Logger::critical(ExitCode::FAILURE, "No infrared camera has been found.");
     }
     else
-        camera = make_shared<T>(device, width, height);
+        camera = make_shared<T>(device.value(), width, height);
 
     if (no_gui)
         camera->disable_gui();
@@ -89,10 +91,10 @@ inline shared_ptr<T> CreateCamera(const string &device, int width, int height, b
     return camera;
 }
 
-ExitCode configure(const string &device, int width, int height, bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui);
+ExitCode configure(const optional<string> &device, int width, int height, bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui);
 
-ExitCode run(const string &device);
+ExitCode run(const optional<string> &device, int width, int height);
 
-ExitCode test(const string &device, int width, int height);
+ExitCode test(const optional<string> &device, int width, int height);
 
-ExitCode tweak(const string &device, int width, int height);
+ExitCode tweak(const optional<string> &device, int width, int height);

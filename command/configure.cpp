@@ -15,7 +15,7 @@ using namespace std;
 /**
  * @brief Finds a configuration for an infrared camera which enables its emitter(s).
  *
- * @param device path to the infrared camera, empty string for automatic detection
+ * @param device path of the infrared camera, nothing for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
  * @param manual true for enabling the manual configuration
@@ -25,7 +25,7 @@ using namespace std;
  *
  * @return exit code
  */
-ExitCode configure(const string &device, int width, int height,
+ExitCode configure(const optional<string> &device, int width, int height,
                    bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui)
 {
     Logger::debug("Executing configure command.");

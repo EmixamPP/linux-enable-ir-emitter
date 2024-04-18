@@ -9,25 +9,30 @@ using namespace std;
 #include "utils/logger.hpp"
 #include "configuration.hpp"
 
+#include <iostream>
+
 /**
  * @brief Execute a configuration.
  *
- * @param device path to the camera, empty string to execute all configurations
+ * @param device path of the camera, nothing to execute all configurations
+ * @param width of the capture resolution
+ * @param height of the capture resolution
  *
  * @return exit code
  */
-ExitCode run(const string &device)
+ExitCode run(const optional<string> &device, int width, int height)
 {
     Logger::debug("Executing run command.");
 
     auto devices = Configuration::ConfiguredDevices();
 
-    if (devices.empty()) {
+    if (devices.empty())
+    {
         Logger::warning("No device has been configured.");
         return ExitCode::SUCCESS;
     }
-    else if (!device.empty())
-        devices = {device};
+    else if (device.has_value())
+        devices = {device.value()};
 
     bool oneFailure = false;
     for (const auto &device : devices)
@@ -40,7 +45,7 @@ ExitCode run(const string &device)
             continue;
         }
 
-        Camera camera(device);
+        Camera camera(device, width, height);
 
         try
         {
