@@ -20,13 +20,13 @@ Finder::Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer
 
 /**
  * @brief Find an instruction which enable the ir emitter(s)
+ * by changing its value.
  *
- * @param instructions to test, corrupted ones are ignored or will be marked as such
+ * @param instructions to test and modify, corrupted ones are ignored or will be marked as such
  *
  * @throw CameraException
  *
- * @return a vector containing the intruction(s),
- * empty if the configuration failed
+ * @return true if success otherwise false
  */
 bool Finder::find(CameraInstructions &intructions)
 {

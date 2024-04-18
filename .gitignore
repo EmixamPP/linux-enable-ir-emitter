@@ -1,9 +1,6 @@
-# Python
-__pycache__/
-env/
-
-# Meson
+# Build
 build/
+install_dir/
 
 # Others
 .vscode/

@@ -5,8 +5,6 @@
 #include <linux/usb/video.h>
 using namespace std;
 
-#include <yaml-cpp/yaml.h>
-
 #include "camera.hpp"
 #include "utils/logger.hpp"
 

@@ -4,10 +4,11 @@ description="enable the infrared emitter"
 
 start_pre() {
     modprobe uvcvideo
+    /bin/sleep 2
 }
 
 start() {
-    linux-enable-ir-emitter run
+    linux-enable-ir-emitter --verbose run
 }
 
 depend() {

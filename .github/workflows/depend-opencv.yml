@@ -21,15 +21,15 @@ jobs:
 
       - name: Modify file if new version
         run: |
-            sed -E -i "s@(OPENCV_VERSION:\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/build.yml
+            sed -E -i "s@(OPENCV_GIT_TAG=\s+\")([0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/deps/version.env
             
       - name: Create PR if new version
         uses: peter-evans/create-pull-request@v6
         with:
             token: ${{ secrets.PAT }}
-            title: "chore(workflow): update opencv to ${{ env.VERSION }}"
+            title: "chore(ci): update opencv to ${{ env.VERSION }}"
             branch: "opencv-${{ env.VERSION }}"
-            commit-message: "chore(workflow): update opencv to ${{ env.VERSION }}"
+            commit-message: "chore(ci): update opencv to ${{ env.VERSION }}"
             body: |
               Update OpenCV to ${{ env.VERSION }}.
 

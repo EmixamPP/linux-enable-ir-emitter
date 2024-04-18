@@ -11,18 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load dependencies versions
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: '.github/workflows/deps/version.env'
+
       - name: Install dependencies
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config clang-tidy libgtk-3-dev libopencv-dev libyaml-cpp-dev
-          python -m pip install --upgrade pip
+          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev
           python -m pip install meson
+
+      - name: Cache lib dependencies
+        uses: actions/cache@v4
+        with:
+          path: .github/workflows/deps/install_dir
+          key: ${{ env.OPENCV_GIT_TAG }}-${{ env.YAML_GIT_TAG }}-${{ env.ARGPARSE_GIT_TAG }}
+          fail-on-cache-miss: true
 
       - name: Setup
         run: |
-          meson setup build 
+          meson setup build --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
 
       - name: Lint
         run: |
           ninja clang-tidy -C build
-      

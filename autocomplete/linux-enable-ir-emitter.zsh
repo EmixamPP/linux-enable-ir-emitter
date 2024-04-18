@@ -32,10 +32,6 @@ _linux-enable-ir-emitter() {
                     )
 					_describe 'configure' opts
 					;;
-				boot)
-					opts=("enable" "disable" "status")
-					_describe 'boot' opts
-					;;
 			esac
 			;;
 	esac

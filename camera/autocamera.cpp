@@ -6,7 +6,8 @@
 #include <vector>
 using namespace std;
 
-#include "opencv.hpp"
+#include <opencv2/core.hpp>
+
 #include "utils/logger.hpp"
 
 static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)

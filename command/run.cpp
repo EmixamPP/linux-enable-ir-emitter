@@ -9,23 +9,30 @@ using namespace std;
 #include "utils/logger.hpp"
 #include "configuration.hpp"
 
+#include <iostream>
+
 /**
  * @brief Execute a configuration.
  *
- * @param device path to the camera, empty string to execute all configurations
+ * @param device path of the camera, nothing to execute all configurations
+ * @param width of the capture resolution
+ * @param height of the capture resolution
  *
  * @return exit code
  */
-ExitCode run(const char *device)
+ExitCode run(const optional<string> &device, int width, int height)
 {
     Logger::debug("Executing run command.");
 
     auto devices = Configuration::ConfiguredDevices();
 
     if (devices.empty())
-        Logger::critical(ExitCode::FAILURE, "No device has been configured.");
-    else if (!string(device).empty())
-        devices = {device};
+    {
+        Logger::warning("No device has been configured.");
+        return ExitCode::SUCCESS;
+    }
+    else if (device.has_value())
+        devices = {device.value()};
 
     bool oneFailure = false;
     for (const auto &device : devices)
@@ -34,11 +41,11 @@ ExitCode run(const char *device)
         if (!instructions)
         {
             oneFailure = true;
-            Logger::warning("Failed to load a configuration for", device);
+            Logger::error("Failed to load a configuration for", device);
             continue;
         }
 
-        Camera camera(device);
+        Camera camera(device, width, height);
 
         try
         {
@@ -47,7 +54,7 @@ ExitCode run(const char *device)
                 Logger::debug("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))
                 {
-                    Logger::warning("Failed to apply the instruction", to_string(instruction));
+                    Logger::error("Failed to apply the instruction", to_string(instruction));
                     oneFailure = true;
                 }
             }

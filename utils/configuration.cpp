@@ -76,7 +76,7 @@ static optional<string> PathOf(const string &device) noexcept
 /**
  * @brief Read the configuration file of a device.
  *
- * @param device path to the camera
+ * @param device path of the camera
  *
  * @return vector with the instructions of the configuration
  * @return no value if an error happened
@@ -93,7 +93,7 @@ optional<CameraInstructions> Configuration::Load(const string &device) noexcept
 /**
  * @brief Save the configuration of a device
  *
- * @param device path to the camera
+ * @param device path of the camera
  * @param instructions of the configuration
  *
  * @return true if success otherwise false

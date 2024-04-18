@@ -3,40 +3,46 @@ See [docs/requirements.md](docs/requirements.md) for specifications and dependen
 
 Feel free to open an issue if you need help!
 
-Setup build:
-```
-git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
-cd linux-enable-ir-emitter
-meson setup build
-```
+1. Clone the project:
+    ```
+    git clone https://github.com/EmixamPP/linux-enable-ir-emitter.git
+    cd linux-enable-ir-emitter
+    ```
 
-If you do not have Systemd but OpenRC:
-```
-meson configure build -Dboot_service=openrc
-```
+2. You want to build the project using static libraries?\
+    This is recommanded to avoid breaking the tool after distro update, because they are directly included inside the generated executable.
+    We provide a CMake file to easily build all the dependencies. Npthing will be installed on your system:
+    ```
+    cd .github/workflows/deps
+    cmake . -B build -GNinja
+    ninja -C build
+    cd -
+    ```
 
-You plan to contribute? Enable the debug build:
-```
-meson configure build --buildtype debug
-```
+3. Setup the build:
+    * If you built the dependecies using the previous step:
+    ```
+    meson setup build --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+    ```
+    * Otherwise:
+    ```
+    meson setup build
+    ```
 
-For immutable distro,
-you may want to change to installation directory,
-by default /usr/local, to $HOME/.local:
-```
-meson configure build --prefix=$HOME/.local
-```
+4. If you do not have Systemd but OpenRC:
+    ```
+    meson configure build -Dboot_service=openrc
+    ```
 
-If you do not want to rebuild the tool after each update of your distro,
-you may want to statically link the dependencies (this requires also static build of the libs):
-```
-meson configure build --prefer-static
-```
+5. You plan to contribute? Enable the debug build:
+    ```
+    meson configure build --buildtype debug
+    ```
 
-Compile and install:
-```
-meson compile -C build
-meson install -C build
-```
+6. Compile and install:
+    ```
+    meson compile -C build
+    meson install -C build
+    ```
 
-You can uninstall the tool by executing `sudo ninja uninstall -C build` (thus do not remove the build directory). 
+You can uninstall the tool by executing `sudo ninja uninstall -C build` (thus do not remove the build directory) or see [docs/uninstallation](uninstallation.md). 
