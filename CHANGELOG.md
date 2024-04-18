@@ -11,6 +11,8 @@
 - Fix multiple v4l path for same device
 - OpenCV imshow exception
 - Remove boot command
+- Migrate all Python code to C++
+- Reduction in installation size
 # Wed Nov 1 2023 - 5.2.4
 - Fix config generated but not found
 - Fix for OpenCV exception thrown
