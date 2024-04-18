@@ -9,23 +9,23 @@
 
 ### linux-enable-ir-emitter usage 
 ```
-Usage: linux-enable-ir-emitter [--help] [--version] [--device device] [--width width] [--height height] [--verbose] {configure,run,test,tweak}
+Usage: linux-enable-ir-emitter [--help] [--version VAR] [--device device] [--width width] [--height height] [--verbose] {configure,run,test,tweak}
 
 Provides support for infrared cameras.
 
 Optional arguments:
   -h, --help           shows help message and exits 
-  -v, --version        prints version information and exits 
-  -d, --device device  specify the camera, automatic by default [default: ""]
-  -w, --width width    specify the width, automatic by default [default: -1]
-  -t, --height height  specify the height, automatic by default [default: -1]
-  -V, --verbose        enable verbose information 
+  -V, --version        shows version message and exits 
+  -d, --device device  specify the camera, nothing for automatic [default: ""]
+  -w, --width width    specify the width, -1 automatic [default: -1]
+  -t, --height height  specify the height, -1 for automatic [default: -1]
+  -v, --verbose        enables verbose information 
 
 Subcommands:
   configure           
   run                 
   test                
-  tweak               
+  tweak           
 
 ```
 ```
