@@ -11,7 +11,7 @@ Feel free to open an issue if you need help!
 
 2. You want to build the project using static libraries?\
     This is recommanded to avoid breaking the tool after distro update, because they are directly included inside the generated executable.
-    We provide a CMake file to easily build all the dependencies. Npthing will be installed on your system:
+    We provide a CMake file to easily build all the dependencies. Nothing will be installed on your system:
     ```
     cd .github/workflows/deps
     cmake . -B build -GNinja
