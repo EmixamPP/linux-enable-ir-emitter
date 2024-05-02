@@ -38,5 +38,5 @@ jobs:
             1. Download the tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
             2. [Uninstall the previous version](docs/uninstallation.md) if you have one
             3. Unzip: `unzip linux-enable-ir-emitter*.tar.gz.zip`
-            4. Install: `sudo tar -C / --no-same-owner -h -vxzf linux-enable-ir-emitter*.tar.gz`
+            4. Install: `sudo tar -C / --no-same-owner -m -h -vxzf linux-enable-ir-emitter*.tar.gz`
             5. Enable the boot service: `sudo systemctl enable --now linux-enable-ir-emitter`
