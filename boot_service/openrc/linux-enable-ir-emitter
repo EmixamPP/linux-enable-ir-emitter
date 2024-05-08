@@ -4,7 +4,7 @@ description="enable the infrared emitter"
 
 start_pre() {
     modprobe uvcvideo
-    /bin/sleep 2
+    /bin/sleep 1
 }
 
 start() {
