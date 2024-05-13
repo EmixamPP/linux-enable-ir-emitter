@@ -30,10 +30,10 @@ static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)
 static vector<int> compute_intesities_diff(const vector<vector<int>> &intensities)
 {
     vector<int> diffs;
-    for (size_t i = 0; i < intensities.size() - 1; ++i)
+    for (size_t i = 1; i < intensities.size(); ++i)
     {
-        const auto &intensity1 = intensities[i];
-        const auto &intensity2 = intensities[i + 1];
+        const auto &intensity1 = intensities[i - 1];
+        const auto &intensity2 = intensities[i];
         int diff = 0;
         for (size_t j = 0; j < intensity1.size(); ++j)
             diff += intensity1.at(j) - intensity2.at(j);
@@ -45,8 +45,8 @@ static vector<int> compute_intesities_diff(const vector<vector<int>> &intensitie
 static long long unsigned compute_sum_intensities_variation(const vector<int> &diffs)
 {
     long long unsigned sum = 0;
-    for (size_t i = 0; i < diffs.size() - 1; ++i)
-        sum += static_cast<long long unsigned>(abs(diffs[i] - diffs[i + 1]));
+    for (size_t i = 1; i < diffs.size(); ++i)
+        sum += static_cast<long long unsigned>(abs(diffs[i - 1] - diffs[i]));
 
     return sum;
 }
@@ -54,12 +54,26 @@ static long long unsigned compute_sum_intensities_variation(const vector<int> &d
 /**
  * @brief Obtain the intensity variation sum of camera captures
  *
+ * @throw CameraException if unable to read frames
+ *
  * @return the intensity variation sum
  */
 long long unsigned AutoCamera::intensity_variation_sum()
 {
     // capture frames
-    const vector<cv::Mat> frames = read_during(capture_time_ms_);
+    vector<cv::Mat> frames = read_during(capture_time_ms_);
+
+    auto retry = RETRY_CAPTURE;
+    while (frames.empty() && retry-- != 0)
+    {
+        // extend capture time,
+        // to give the camera more time to capture frames
+        capture_time_ms_ += 1000;
+        frames = read_during(capture_time_ms_);
+    }
+
+    if (retry == 0)
+        throw CameraException("Unable to read frames from " + device());
 
     // compute lighting intensity for each pixel of each frame
     const vector<vector<int>> intensities = compute_intensities(frames);
@@ -77,6 +91,8 @@ long long unsigned AutoCamera::intensity_variation_sum()
  * @brief Check if the emitter is working,
  * without asking for manual confirmation
  *
+ * @throw CameraException if unable to read frames
+ *
  * @return true if yes, false if not
  */
 bool AutoCamera::is_emitter_working_no_confirm()
@@ -88,6 +104,8 @@ bool AutoCamera::is_emitter_working_no_confirm()
  * @brief Check if the emitter is working,
  * if so, ask for manual confirmation
  *
+ * @throw CameraException if unable to read frames
+ *
  * @return true if yes, false if not
  */
 bool AutoCamera::is_emitter_working()
@@ -95,5 +113,15 @@ bool AutoCamera::is_emitter_working()
     return is_emitter_working_no_confirm() && Camera::is_emitter_working();
 }
 
+/**
+ * @brief Construct a new AutoCamera object
+ * The difference with the regular Camera object is that this one
+ * can automatically determine if the ir emitter is working or not.
+ *
+ * @param device path of the camera
+ * @param width of the capture resolution
+ * @param height of the capture resolution
+ * @param capture_time_ms duration of the capture
+ */
 AutoCamera::AutoCamera(const string &device, int width, int height, unsigned capture_time_ms)
     : Camera(device, width, height), capture_time_ms_(capture_time_ms), refIntesity_var_sum_(intensity_variation_sum()) {}

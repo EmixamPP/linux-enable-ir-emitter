@@ -6,6 +6,8 @@ using namespace std;
 #include "camera.hpp"
 
 constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 50;
+constexpr unsigned CAPTURE_TIME_MS = 1000;
+constexpr unsigned RETRY_CAPTURE = 2;
 
 class AutoCamera : public Camera
 {
@@ -18,7 +20,7 @@ private:
 public:
     AutoCamera() = delete;
 
-    explicit AutoCamera(const string &device, int width = -1, int height = -1, unsigned capture_time_ms = 1000);
+    explicit AutoCamera(const string &device, int width = -1, int height = -1, unsigned capture_time_ms = CAPTURE_TIME_MS);
 
     ~AutoCamera() override = default;
 
