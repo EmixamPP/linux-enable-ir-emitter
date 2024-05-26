@@ -46,13 +46,13 @@ ExitCode configure(const optional<string> &device, int width, int height,
 
         Logger::info("Configuring the camera", camera->device());
 
-        auto instructions = Configuration::Load(camera->device());
+        auto instructions = Configuration::LoadInit(camera->device());
         if (!instructions)
         {
             Logger::debug("No previous configuration found.");
             Scanner scanner(camera);
             instructions = scanner.scan();
-            Configuration::Save(camera->device(), instructions.value());
+            Configuration::SaveInit(camera->device(), instructions.value());
         }
         else
             Logger::debug("Previous configuration found.");
