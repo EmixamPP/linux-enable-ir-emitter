@@ -30,10 +30,9 @@ ExitCode configure(const optional<string> &device, int width, int height,
 {
     Logger::debug("Executing configure command.");
 
-    CatchCtrlC();
-
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution.");
+    Logger::info("Do not kill the process, unless you really need to, and only use ctrl-c.");
 
     bool success = false;
     try

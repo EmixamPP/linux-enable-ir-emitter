@@ -19,8 +19,6 @@ ExitCode tweak(const optional<string> &device, int width, int height)
 {
     Logger::debug("Executing tweak command.");
 
-    CatchCtrlC();
-
     bool saved = false;
     try
     {
