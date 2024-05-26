@@ -51,7 +51,7 @@ ExitCode run(const optional<string> &device, int width, int height)
         {
             for (const auto &instruction : instructions.value())
             {
-                Logger::debug("Applying instruction", to_string(instruction), "on", device);
+                Logger::info("Applying instruction", to_string(instruction), "on", device);
                 if (!camera.apply(instruction))
                 {
                     Logger::error("Failed to apply the instruction", to_string(instruction));

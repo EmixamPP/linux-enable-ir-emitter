@@ -36,7 +36,7 @@ bool Finder::find(CameraInstructions &intructions)
     {
         if (instruction.is_corrupted())
         {
-            Logger::debug("Corrupted instruction skipped:", to_string(instruction));
+            Logger::info("Corrupted instruction skipped:", to_string(instruction));
             continue;
         }
 
@@ -50,7 +50,7 @@ bool Finder::find(CameraInstructions &intructions)
                 if (neg_answer_counter == neg_answer_limit_ - 1)
                     instruction.set_max_cur();
 
-                Logger::debug("Instruction applied:", to_string(instruction));
+                Logger::info("Instruction applied:", to_string(instruction));
 
                 if (camera_->apply(instruction))
                 {
@@ -65,13 +65,13 @@ bool Finder::find(CameraInstructions &intructions)
                     }
                 }
                 else
-                    Logger::debug("The instruction is not valid.");
+                    Logger::info("The instruction is not valid.");
 
                 ++neg_answer_counter;
             }
 
             instruction.reset();
-            Logger::debug("Reseting to the instruction:", to_string(instruction));
+            Logger::info("Reseting to the instruction:", to_string(instruction));
             camera_->apply(instruction);
         }
         catch (const CameraInstructionException &e)
