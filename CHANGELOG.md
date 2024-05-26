@@ -3,7 +3,7 @@
 - Save of all the camera instructions
 - Tweak manually any instructions of a camera
 - Specify camera resolution
-- Catch ctrl-c (one time) to avoid breaking camera
+- Catch ctrl-c to avoid breaking camera
 - Zsh completion
 - Fix video feedback freeze
 - Better logging
@@ -13,6 +13,7 @@
 - Remove boot command
 - Migrate all Python code to C++
 - Reduction in installation size
+- Fix size assertion exception
 # Wed Nov 1 2023 - 5.2.4
 - Fix config generated but not found
 - Fix for OpenCV exception thrown
