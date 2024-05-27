@@ -81,9 +81,11 @@ static optional<string> PathOf(const string &device) noexcept
  * @return vector with the instructions of the configuration
  * @return no value if an error happened
  */
-optional<CameraInstructions> Configuration::Load(const string &device) noexcept
+optional<CameraInstructions> Configuration::Load(const string &device, optional<string> path) noexcept
 {
-    auto path = PathOf(device);
+    if (!path)
+        path = PathOf(device);
+
     if (path)
         return read_from_file(path.value());
 
@@ -91,16 +93,36 @@ optional<CameraInstructions> Configuration::Load(const string &device) noexcept
 }
 
 /**
+ * @brief Read the configuration file of a device.
+ *
+ * @param device path of the camera
+ *
+ * @return vector with the instructions of the configuration
+ * @return no value if an error happened
+ */
+optional<CameraInstructions> Configuration::LoadInit(const string &device) noexcept
+{
+    auto path = PathOf(device);
+    if (path)
+        path->append(".ini");
+
+    return Configuration::Load(device, path);
+}
+
+/**
  * @brief Save the configuration of a device
  *
  * @param device path of the camera
  * @param instructions of the configuration
+ * @param path path where to store the configuration, nothing for default one
  *
  * @return true if success otherwise false
  */
-bool Configuration::Save(const string &device, const CameraInstructions &instructions)
+bool Configuration::Save(const string &device, const CameraInstructions &instructions, optional<string> path)
 {
-    auto path = PathOf(device);
+    if (!path)
+        path = PathOf(device);
+
     if (path)
     {
         write_to_file(instructions, path.value());
@@ -112,7 +134,24 @@ bool Configuration::Save(const string &device, const CameraInstructions &instruc
 }
 
 /**
- * @brief Get all the device configured
+ * @brief Save the configuration of a device as initial
+ *
+ * @param device path of the camera
+ * @param instructions of the configuration
+ *
+ * @return true if success otherwise false
+ */
+bool Configuration::SaveInit(const string &device, const CameraInstructions &instructions)
+{
+    auto path = PathOf(device);
+    if (path)
+        path->append(".ini");
+
+    return Configuration::Save(device, instructions, path);
+}
+
+/**
+ * @brief Get all the device configured, only based on the file name
  *
  * @return device path of the configured camera
  */
@@ -121,6 +160,9 @@ vector<string> Configuration::ConfiguredDevices() noexcept
     vector<string> devices;
     for (const auto &conf : filesystem::directory_iterator(SAVE_FOLDER_CONFIG_PATH_))
     {
+        if (conf.path().filename().extension().compare(".ini") == 0)
+            continue;
+
         auto device = V4L_PREFIX + conf.path().filename().string();
         devices.push_back(std::move(device));
     }

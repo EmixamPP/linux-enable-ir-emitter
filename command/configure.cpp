@@ -30,10 +30,9 @@ ExitCode configure(const optional<string> &device, int width, int height,
 {
     Logger::debug("Executing configure command.");
 
-    CatchCtrlC();
-
     Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
     Logger::info("Ensure to not use the camera during the execution.");
+    Logger::info("Do not kill the process, unless you really need to, and only use ctrl-c.");
 
     bool success = false;
     try
@@ -46,13 +45,13 @@ ExitCode configure(const optional<string> &device, int width, int height,
 
         Logger::info("Configuring the camera", camera->device());
 
-        auto instructions = Configuration::Load(camera->device());
+        auto instructions = Configuration::LoadInit(camera->device());
         if (!instructions)
         {
             Logger::debug("No previous configuration found.");
             Scanner scanner(camera);
             instructions = scanner.scan();
-            Configuration::Save(camera->device(), instructions.value());
+            Configuration::SaveInit(camera->device(), instructions.value());
         }
         else
             Logger::debug("Previous configuration found.");

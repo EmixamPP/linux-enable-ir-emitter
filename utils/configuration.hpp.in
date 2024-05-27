@@ -11,9 +11,13 @@ namespace Configuration
 {
     const string SAVE_FOLDER_CONFIG_PATH_ = "@configdir@/";
 
-    bool Save(const string &device, const CameraInstructions &instructions);
+    bool Save(const string &device, const CameraInstructions &instructions, optional<string> path = {});
 
-    optional<CameraInstructions> Load(const string &device) noexcept;
+    bool SaveInit(const string &device, const CameraInstructions &instructions);
+
+    optional<CameraInstructions> Load(const string &device, optional<string> path = {}) noexcept;
+
+    optional<CameraInstructions> LoadInit(const string &device) noexcept;
 
     vector<string> ConfiguredDevices() noexcept;
 }

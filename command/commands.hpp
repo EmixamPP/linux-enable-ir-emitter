@@ -5,11 +5,11 @@
 #include "configuration.hpp"
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <regex>
 #include <string>
-#include <signal.h>
 using namespace std;
 
 enum ExitCode
@@ -19,26 +19,6 @@ enum ExitCode
     ROOT_REQUIRED = 2,
     FILE_DESCRIPTOR_ERROR = 126,
 };
-
-/**
- * @brief Catch ctrl-c signal one time.
- */
-inline void CatchCtrlC()
-{
-    auto handler = [](int signal)
-    {
-        if (signal == SIGINT)
-        {
-            static int ctrlc_counter = 0;
-            ++ctrlc_counter;
-            if (ctrlc_counter == 2)
-                exit(ExitCode::FAILURE);
-            cout << " Ctrl-c again if you really want to, be careful this could break the camera." << endl;
-        }
-    };
-
-    signal(SIGINT, std::move(handler));
-}
 
 /**
  * @brief Creates a Camera or AutoCamera object.
