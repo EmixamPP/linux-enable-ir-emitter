@@ -8,6 +8,7 @@ endif()
 option(OPENCV_GIT_TAG "Tag or branch used to checkout when cloning opencv" "master")
 option(YAML_GIT_TAG "Tag or branch used to checkout when cloning yaml-cpp" "master")
 option(ARGPARSE_GIT_TAG "Tag or branch used to checkout when cloning argparse" "master")
+option(SPDLOG_GIT_TAG "Tag or branch used to checkout when cloning argparse" "v1.x")
 
 include(ExternalProject)
 
@@ -85,4 +86,13 @@ ExternalProject_Add(argparse
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
         -DARGPARSE_BUILD_TESTS=OFF
+)
+
+ExternalProject_Add(spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG ${SPDLOG_GIT_TAG}
+    PREFIX ${CMAKE_BINARY_DIR}/spdlog
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 )

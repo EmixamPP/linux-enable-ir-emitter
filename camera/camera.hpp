@@ -10,8 +10,6 @@ using namespace std;
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/utils/logger.hpp>
 
-#include "utils/logger.hpp"
-
 class CameraException : public exception
 {
 private:

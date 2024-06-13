@@ -1,10 +1,11 @@
 #include "commands.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "camera/camera.hpp"
 #include "configuration/scanner.hpp"
 #include "configuration/tweaker.hpp"
 #include "configuration.hpp"
-#include "utils/logger.hpp"
 
 /**
  * @brief Let the user modify the configuration of a camera
@@ -17,26 +18,26 @@
  */
 ExitCode tweak(const optional<string> &device, int width, int height)
 {
-    Logger::debug("Executing tweak command.");
+    spdlog::debug("Executing tweak command.");
 
     bool saved = false;
     try
     {
         auto camera = CreateCamera<Camera>(device, width, height);
 
-        Logger::info("Tweaking the camera", camera->device());
-        Logger::info("Caution, you could break the camera.");
+        spdlog::info("Tweaking the camera {}", camera->device());
+        spdlog::info("Caution, you could break the camera.");
 
         auto instructions = Configuration::Load(camera->device());
         if (!instructions)
         {
-            Logger::debug("No previous configuration found.");
+            spdlog::debug("No previous configuration found.");
             Scanner scanner(camera);
             instructions = scanner.scan();
             Configuration::Save(camera->device(), instructions.value());
         }
         else
-            Logger::debug("Previous configuration found.");
+            spdlog::debug("Previous configuration found.");
 
         Tweaker tweaker(camera);
 
@@ -46,7 +47,8 @@ ExitCode tweak(const optional<string> &device, int width, int height)
     }
     catch (const CameraException &e)
     {
-        Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
+        spdlog::critical(e.what());
+        exit(ExitCode::FILE_DESCRIPTOR_ERROR);
     }
 
     return saved ? ExitCode::SUCCESS : ExitCode::FAILURE;

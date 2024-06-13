@@ -8,8 +8,6 @@ using namespace std;
 
 #include <opencv2/core.hpp>
 
-#include "utils/logger.hpp"
-
 static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)
 {
     vector<vector<int>> intensities;
@@ -27,7 +25,7 @@ static vector<vector<int>> compute_intensities(const vector<cv::Mat> &frames)
     return intensities;
 }
 
-static vector<int> compute_intesities_diff(const vector<vector<int>> &intensities)
+static vector<int> compute_intensities_diff(const vector<vector<int>> &intensities)
 {
     vector<int> diffs;
     for (size_t i = 1; i < intensities.size(); ++i)
@@ -79,7 +77,7 @@ long long unsigned AutoCamera::intensity_variation_sum()
     const vector<vector<int>> intensities = compute_intensities(frames);
 
     // compute difference between each consecutive frame intensity
-    const vector<int> diffs = compute_intesities_diff(intensities);
+    const vector<int> diffs = compute_intensities_diff(intensities);
 
     // compute difference between each consecutive intensity difference
     // this is the variation in the lighting intensity of the fames
@@ -97,7 +95,7 @@ long long unsigned AutoCamera::intensity_variation_sum()
  */
 bool AutoCamera::is_emitter_working_no_confirm()
 {
-    return intensity_variation_sum() > refIntesity_var_sum_ * MAGIC_REF_INTENSITY_VAR_COEF;
+    return intensity_variation_sum() > refIntensity_var_sum_ * MAGIC_REF_INTENSITY_VAR_COEF;
 }
 
 /**
@@ -124,4 +122,4 @@ bool AutoCamera::is_emitter_working()
  * @param capture_time_ms duration of the capture
  */
 AutoCamera::AutoCamera(const string &device, int width, int height, unsigned capture_time_ms)
-    : Camera(device, width, height), capture_time_ms_(capture_time_ms), refIntesity_var_sum_(intensity_variation_sum()) {}
+    : Camera(device, width, height), capture_time_ms_(capture_time_ms), refIntensity_var_sum_(intensity_variation_sum()) {}

@@ -6,7 +6,6 @@
 using namespace std;
 
 #include "camera.hpp"
-#include "utils/logger.hpp"
 
 /**
  * @brief Construct a new CameraInstruction object.
@@ -20,7 +19,7 @@ using namespace std;
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
     : unit_(unit), selector_(selector)
 {
-    // get the control instruction lenght
+    // get the control instruction length
     const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
     if (ctrl_size == 0)
         throw CameraInstructionException(camera.device(), unit, selector);
@@ -76,13 +75,13 @@ bool CameraInstruction::next() noexcept
 }
 
 /**
- * @brief Get the corruption status.
+ * @brief Get the disable status.
  *
- * @return true if the instruction is corrupted
+ * @return true if the instruction is disable
  */
-bool CameraInstruction::is_corrupted() const noexcept
+bool CameraInstruction::is_disable() const noexcept
 {
-    return corrupted_;
+    return disable_;
 }
 
 /**
@@ -138,7 +137,7 @@ const vector<uint8_t> &CameraInstruction::min() const noexcept
 /**
  * @brief Get the initial control value.
  *
- * @return intial control value
+ * @return initial control value
  */
 const vector<uint8_t> &CameraInstruction::init() const noexcept
 {
@@ -146,13 +145,13 @@ const vector<uint8_t> &CameraInstruction::init() const noexcept
 }
 
 /**
- * @brief Changes the corrupted status of the instruction.
+ * @brief Changes the disable status of the instruction.
  *
- * @param is_corrupted status to set
+ * @param is_disable status to set
  */
-void CameraInstruction::set_corrupted(bool is_corrupted) noexcept
+void CameraInstruction::set_disable(bool is_disable) noexcept
 {
-    corrupted_ = is_corrupted;
+    disable_ = is_disable;
 }
 
 /**

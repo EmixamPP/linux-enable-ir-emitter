@@ -4,12 +4,11 @@
 #include <vector>
 using namespace std;
 
+#include <spdlog/spdlog.h>
+
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
-#include "utils/logger.hpp"
 #include "configuration.hpp"
-
-#include <iostream>
 
 /**
  * @brief Execute a configuration.
@@ -22,13 +21,13 @@ using namespace std;
  */
 ExitCode run(const optional<string> &device, int width, int height)
 {
-    Logger::debug("Executing run command.");
+    spdlog::debug("Executing run command.");
 
     auto devices = Configuration::ConfiguredDevices();
 
     if (devices.empty())
     {
-        Logger::warning("No device has been configured.");
+        spdlog::warn("No device has been configured.");
         return ExitCode::SUCCESS;
     }
     else if (device.has_value())
@@ -41,7 +40,7 @@ ExitCode run(const optional<string> &device, int width, int height)
         if (!instructions)
         {
             oneFailure = true;
-            Logger::error("Failed to load a configuration for", device);
+            spdlog::error("Failed to load a configuration for {}.", device);
             continue;
         }
 
@@ -51,17 +50,21 @@ ExitCode run(const optional<string> &device, int width, int height)
         {
             for (const auto &instruction : instructions.value())
             {
-                Logger::info("Applying instruction", to_string(instruction), "on", device);
-                if (!camera.apply(instruction))
+                if (!instruction.is_disable())
                 {
-                    Logger::error("Failed to apply the instruction", to_string(instruction));
-                    oneFailure = true;
+                    spdlog::debug("Applying instruction {} on {}.", to_string(instruction), device);
+                    if (!camera.apply(instruction))
+                    {
+                        spdlog::error("Failed to apply the instruction {}.", to_string(instruction));
+                        oneFailure = true;
+                    }
                 }
             }
         }
         catch (const CameraException &e)
         {
-            Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
+            spdlog::critical(e.what());
+            exit(ExitCode::FILE_DESCRIPTOR_ERROR);
         }
     }
 
