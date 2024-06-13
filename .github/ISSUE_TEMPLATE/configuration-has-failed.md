@@ -10,16 +10,19 @@ assignees: ''
 <!-- Please look at the docs before open an issue -->
 <!-- https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md -->
 
-**Ouput of `linux-enable-ir-emitter -v configure`**
-<!-- Feel free to specify your device (-d) and the number of emitters (-e) if you need to -->
+**Ouput of `cat /var/local/log/linux-enable-ir-emitter`**
 ```
 paste here
 ```
 
-**Output of `cat /etc/linux-enable-ir-emitter/*`**
-```
-paste here
-```
+**Output of `find path/to/your/folder -type f -exec sh -c 'echo "File: {}"; cat {}; echo ""' \;`**
+<details>
+  <summary>Click to expand</summary>
+
+  ```
+  paste here
+  ```
+</details>
 
 **Output of `v4l2-ctl --list-devices`**
 ```

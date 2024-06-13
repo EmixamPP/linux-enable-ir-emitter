@@ -15,10 +15,14 @@ assignees: ''
 paste here
 ```
 
-**Output of `cat /etc/linux-enable-ir-emitter/*`**
-```
-paste here
-```
+**Output of `find path/to/your/folder -type f -exec sh -c 'echo "File: {}"; cat {}; echo ""' \;`**
+<details>
+  <summary>Click to expand</summary>
+
+  ```
+  paste here
+  ```
+</details>
 
 **Give more information if you have**
 <!-- describe here if you have -->

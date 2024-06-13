@@ -9,6 +9,7 @@
 * `gtk3 devel`
 * `yaml-cpp devel`
 * `argparse devel`
+* `spdlog devel`
 ### Tools:
 * `meson >= 1.0.0`
 * `ninja-build`
