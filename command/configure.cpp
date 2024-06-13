@@ -9,8 +9,9 @@ using namespace std;
 #include "camera/camerainstruction.hpp"
 #include "configuration/finder.hpp"
 #include "configuration/scanner.hpp"
-#include "utils/logger.hpp"
 #include "configuration.hpp"
+
+#include <spdlog/spdlog.h>
 
 /**
  * @brief Finds a configuration for an infrared camera which enables its emitter(s).
@@ -28,11 +29,9 @@ using namespace std;
 ExitCode configure(const optional<string> &device, int width, int height,
                    bool manual, unsigned emitters, unsigned neg_answer_limit, bool no_gui)
 {
-    Logger::debug("Executing configure command.");
-
-    Logger::info("Stand in front of and close to the camera and make sure the room is well lit.");
-    Logger::info("Ensure to not use the camera during the execution.");
-    Logger::info("Do not kill the process, unless you really need to, and only use ctrl-c.");
+    spdlog::debug("Executing configure command.");
+    spdlog::info("Stand in front of and close to the camera and make sure the room is well lit.");
+    spdlog::info("Ensure to not use the camera during the execution.");
 
     bool success = false;
     try
@@ -43,24 +42,24 @@ ExitCode configure(const optional<string> &device, int width, int height,
         else
             camera = CreateCamera<AutoCamera>(device, width, height, no_gui);
 
-        Logger::info("Configuring the camera", camera->device());
+        spdlog::info("Configuring the camera {}.", camera->device());
 
         auto instructions = Configuration::LoadInit(camera->device());
         if (!instructions)
         {
-            Logger::debug("No previous configuration found.");
+            spdlog::debug("No previous configuration found.");
             Scanner scanner(camera);
             instructions = scanner.scan();
             Configuration::SaveInit(camera->device(), instructions.value());
         }
         else
-            Logger::debug("Previous configuration found.");
+            spdlog::debug("Previous configuration found.");
 
         Finder finder(camera, emitters, neg_answer_limit);
 
         if (camera->Camera::is_emitter_working())
         {
-            Logger::error("The emiter is already working, skipping the configuration.");
+            spdlog::error("The emitter is already working, skipping the configuration.");
             return ExitCode::FAILURE;
         }
 
@@ -69,18 +68,19 @@ ExitCode configure(const optional<string> &device, int width, int height,
     }
     catch (const CameraException &e)
     {
-        Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
+        spdlog::critical(e.what());
+        exit(ExitCode::FILE_DESCRIPTOR_ERROR);
     }
 
     if (!success)
     {
-        Logger::error("The configuration failed.");
-        Logger::info("Please retry in manual mode by adding the '-m' option.");
-        Logger::info("Do not hesitate to visit the GitHub!");
-        Logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
+        spdlog::error("The configuration failed.");
+        spdlog::info("Please retry in manual mode by adding the '-m' option.");
+        spdlog::info("Do not hesitate to visit the GitHub!");
+        spdlog::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
         return ExitCode::FAILURE;
     }
 
-    Logger::info("The infrared camera has been successfully configured.");
+    spdlog::info("The infrared camera has been successfully configured.");
     return ExitCode::SUCCESS;
 }

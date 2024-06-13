@@ -11,7 +11,7 @@ class Camera;
 class CameraInstruction
 {
 protected:
-    bool corrupted_ = false;
+    bool disable_ = false;
     uint8_t unit_;
     uint8_t selector_;
     vector<uint8_t> cur_ctrl_;
@@ -36,7 +36,7 @@ public:
 
     bool next() noexcept;
 
-    bool is_corrupted() const noexcept;
+    bool is_disable() const noexcept;
 
     uint8_t unit() const noexcept;
 
@@ -50,7 +50,7 @@ public:
 
     const vector<uint8_t> &init() const noexcept;
 
-    void set_corrupted(bool is_corrupted) noexcept;
+    void set_disable(bool is_disable) noexcept;
 
     bool set_cur(const vector<uint8_t> &cur) noexcept;
 
@@ -88,7 +88,7 @@ namespace YAML
         static Node encode(const CameraInstruction &obj)
         {
             Node node;
-            node["corrupted"] = obj.corrupted_;
+            node["disable"] = obj.disable_;
             node["unit"] = static_cast<int>(obj.unit_);
             node["selector"] = static_cast<int>(obj.selector_);
 
@@ -112,7 +112,7 @@ namespace YAML
         {
             try
             {
-                obj.corrupted_ = node["corrupted"].as<bool>();
+                obj.disable_ = node["disable"].as<bool>();
                 obj.unit_ = node["unit"].as<uint8_t>();
                 obj.selector_ = node["selector"].as<uint8_t>();
 

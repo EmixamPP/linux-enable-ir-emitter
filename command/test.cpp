@@ -1,10 +1,11 @@
 #include "commands.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "camera/autocamera.hpp"
-#include "utils/logger.hpp"
 
 /**
- * @brief Test if the camera is in greyscale and if the emitter is working.
+ * @brief Test if the camera is in grayscale and if the emitter is working.
  * Also display a video feedback.
  *
  * @param device path to the infrared camera, nothing for automatic detection
@@ -15,22 +16,23 @@
  */
 ExitCode test(const optional<string> &device, int width, int height)
 {
-    Logger::debug("Executing test command.");
+    spdlog::debug("Executing test command.");
 
     try
     {
         auto camera = CreateCamera<Camera>(device, width, height);
 
         if (camera->is_gray_scale())
-            Logger::info("The camera", camera->device(), "is in grey scale. This is probably your infrared camera.");
+            spdlog::info("The camera {} is in grey scale. This is probably your infrared camera.", camera->device());
         else
-            Logger::warning("The camera", camera->device(), "is not in grey scale. This is probably your regular camera.");
+            spdlog::warn("The camera {} is not in grey scale. This is probably your regular camera.", camera->device());
 
         camera->play_forever();
     }
     catch (const CameraException &e)
     {
-        Logger::critical(ExitCode::FILE_DESCRIPTOR_ERROR, e.what());
+        spdlog::critical(e.what());
+        exit(ExitCode::FILE_DESCRIPTOR_ERROR);
     }
 
     return ExitCode::SUCCESS;

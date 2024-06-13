@@ -29,7 +29,7 @@ public:
 
     Finder(Finder &&other) = delete;
 
-    bool find(CameraInstructions &intructions);
+    bool find(CameraInstructions &instructions);
 };
 
 #endif

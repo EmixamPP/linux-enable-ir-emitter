@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter', 
     'cpp',
-    version: '6.0.0-beta', 
+    version: '6.0.0', 
     license: 'MIT',
     default_options: [
         'cpp_std=c++17',
@@ -24,26 +24,29 @@ add_project_arguments(
     language: 'cpp'
 )
 
-############
-# Dependency
-############
+##############
+# Dependency #
+##############
 opencv_dep = dependency('opencv4', include_type: 'system')
 gtk_dep = dependency('gtk+-3.0', static: false)
 yaml_dep = dependency('yaml-cpp', include_type: 'system')
 argparse_dep = dependency('argparse', include_type: 'system')
+spdlog_dep = dependency('spdlog', include_type: 'system')
 
-##########
-# Variable
-##########
+############
+# Variable #
+############
 sysconf_dir = '/' / get_option('sysconfdir') / meson.project_name()
+log_dir = get_option('localstatedir') / 'log' / meson.project_name()
 cfg_data = configuration_data({
     'version': meson.project_version(),
     'configdir': sysconf_dir,
+    'log_file': log_dir / meson.project_name() + '.log',
 })
 
-############
-# Executable
-############
+##############
+# Executable #
+##############
 configure_file(
     input : 'utils/configuration.hpp.in',
     output : 'configuration.hpp',
@@ -71,21 +74,20 @@ executable(
         'configuration/scanner.cpp',
         'configuration/tweaker.cpp',
         'utils/configuration.cpp',
-        'utils/logger.cpp',
     ],
-    dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep],
+    dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep, spdlog_dep],
     install: true,
     install_dir: get_option('bindir')
 )
 
-###############
-# Configuration
-###############
+#################
+# Configuration #
+#################
 install_emptydir(sysconf_dir)
 
-##################
-# Shell completion
-##################
+####################
+# Shell completion #
+####################
 install_data(
     'autocomplete/linux-enable-ir-emitter.bash',
     rename: 'linux-enable-ir-emitter',
@@ -98,9 +100,9 @@ install_data(
     install_dir : get_option('datadir') / 'zsh/site-functions',
 )
 
-##############
-# Boot service
-##############
+################
+# Boot service #
+################
 if get_option('boot_service') == 'systemd'
     install_data(
         'boot_service/systemd/linux-enable-ir-emitter.service',
@@ -113,9 +115,11 @@ elif get_option('boot_service') == 'openrc'
     )
 endif
 
-########
-# Others
-########
+##########
+# Others #
+##########
+install_emptydir(log_dir)
+
 install_data(
     'LICENSE',
     install_dir : get_option('datadir') / 'licences' / meson.project_name(),

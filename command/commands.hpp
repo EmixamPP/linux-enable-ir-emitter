@@ -1,7 +1,6 @@
 #pragma once
 
 #include "camera/camera.hpp"
-#include "utils/logger.hpp"
 #include "configuration.hpp"
 
 #include <filesystem>
@@ -11,6 +10,8 @@
 #include <regex>
 #include <string>
 using namespace std;
+
+#include <spdlog/spdlog.h>
 
 enum ExitCode
 {
@@ -40,17 +41,17 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
 
     if (!device.has_value())
     {
-        // find a greyscale camera
+        // find a grayscale camera
         auto devices = T::Devices();
         for (const auto &device : devices)
         {
-            Logger::debug("Checking if", device, "is a greyscale camera.");
+            spdlog::debug("Checking if {} is a grayscale camera.", device);
             try
             {
                 camera = make_shared<T>(device, width, height);
                 if (camera->is_gray_scale())
                 {
-                    Logger::debug(device, "is a greyscale camera.");
+                    spdlog::debug(device, "is a grayscale camera.");
                     break;
                 }
             }
@@ -60,7 +61,10 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
         }
 
         if (!camera)
-            Logger::critical(ExitCode::FAILURE, "No infrared camera has been found.");
+        {
+            spdlog::critical("No infrared camera has been found.");
+            exit(ExitCode::FAILURE);
+        }
     }
     else
         camera = make_shared<T>(device.value(), width, height);

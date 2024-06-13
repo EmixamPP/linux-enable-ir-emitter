@@ -1,11 +1,13 @@
 #include "tweaker.hpp"
 
 #include <iostream>
+#include <optional>
 #include <sstream>
 using namespace std;
 
+#include <spdlog/spdlog.h>
+
 #include "camera/camerainstruction.hpp"
-#include "utils/logger.hpp"
 
 /**
  * @brief Construct a new Tweaker:: Tweaker object
@@ -16,6 +18,12 @@ Tweaker::Tweaker(shared_ptr<Camera> camera) : camera(camera)
 {
 }
 
+/**
+ * @brief Ask the user to choose an instruction to tweak
+ *
+ * @param instructions instructions list
+ * @return index of the instruction choosen in the list
+ */
 static size_t ask_for_choice(const CameraInstructions &instructions)
 {
     size_t i = 0;
@@ -23,10 +31,10 @@ static size_t ask_for_choice(const CameraInstructions &instructions)
     {
         const auto &inst = instructions.at(i);
 
-        if (inst.is_corrupted())
-            continue;
-
-        cout << i << ") " << to_string(inst) << endl;
+        cout << i << ") " << to_string(inst);
+        if (inst.is_disable())
+            cout << " [DISABLE]";
+        cout << endl;
     }
     cout << i << ") exit" << endl;
 
@@ -39,17 +47,40 @@ static size_t ask_for_choice(const CameraInstructions &instructions)
     return choice;
 }
 
-static vector<uint8_t> ask_for_new_cur(const CameraInstruction &inst)
+/**
+ * @brief Ask the user to input a new value for the current instruction
+ * or to enable/disable the instruction.
+ *
+ * @param inst te instruction to tweak
+ * @return the input value for the instruction, it may be invalid
+ * or nothing if the instruction has been disabled/enabled.
+ */
+static optional<vector<uint8_t>> ask_for_new_cur(CameraInstruction &inst)
 {
     cout << "minimum: " << to_string(inst.min()) << endl;
     cout << "maximum: " << to_string(inst.max()) << endl;
     cout << "initial: " << to_string(inst.init()) << endl;
     cout << "current: " << to_string(inst.cur()) << endl;
-    cout << "new current: ";
+    if (inst.is_disable())
+        cout << "status: " << "disable" << endl;
+    else
+        cout << "status: " << "enable" << endl;
+    cout << "new current or status: ";
 
     string new_cur_str;
     getline(cin >> ws, new_cur_str);
-    
+
+    if (new_cur_str == "enable")
+    {
+        inst.set_disable(false);
+        return {};
+    }
+    else if (new_cur_str == "disable")
+    {
+        inst.set_disable(true);
+        return {};
+    }
+
     istringstream iss(new_cur_str);
     auto new_cur_parsed = vector<int32_t>(istream_iterator<int32_t>{iss}, istream_iterator<int32_t>());
 
@@ -63,7 +94,7 @@ static vector<uint8_t> ask_for_new_cur(const CameraInstruction &inst)
 /**
  * @brief Allow the user to tweak the instruction of its camera
  *
- * @param intructions to tweak, corrupted ones are ignored or will be marked as such
+ * @param instructions the instructions to tweak
  *
  * @throw CameraException
  */
@@ -86,9 +117,12 @@ void Tweaker::tweak(CameraInstructions &instructions)
 
         stop_feedback();
 
-        if (!inst.set_cur(new_cur))
+        if (!new_cur.has_value())
+            continue;
+
+        if (!inst.set_cur(new_cur.value()))
         {
-            Logger::warning("Invalid value for the instruction.");
+            spdlog::warn("Invalid value for the instruction.");
             continue;
         }
 
@@ -98,9 +132,9 @@ void Tweaker::tweak(CameraInstructions &instructions)
         }
         catch (const CameraException &e)
         {
-            Logger::info("Please shutdown your computer, then boot and retry.");
+            spdlog::info("Please shutdown your computer, then boot and retry.");
             inst.set_cur(prev_cur);
-            inst.set_corrupted(true);
+            inst.set_disable(true);
             throw e; // propagate to exit
         }
     }

@@ -13,7 +13,7 @@ class AutoCamera : public Camera
 {
 private:
     unsigned capture_time_ms_;
-    long long unsigned refIntesity_var_sum_;
+    long long unsigned refIntensity_var_sum_;
 
     long long unsigned intensity_variation_sum();
 

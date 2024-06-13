@@ -12,7 +12,6 @@
 using namespace std;
 
 #include "camerainstruction.hpp"
-#include "utils/logger.hpp"
 
 constexpr int OK_KEY = 121;
 constexpr int NOK_KEY = 110;
@@ -21,7 +20,7 @@ constexpr int IMAGE_DELAY = 30;
 const regex DEVICE_PATTERN("/dev/video([0-9]+)");
 
 /**
- * @brief Open a file discriptor if not yet open
+ * @brief Open a file descriptor if not yet open
  *
  * @throw CameraException if unable to open the camera device
  */
@@ -129,7 +128,7 @@ bool Camera::is_emitter_working_ask()
 {
     open_cap();
 
-    cout << "Is the video flashing? Press Y or N in the window." << endl;
+    cout << "Is the video flashing? Press Y or N in the window. " << flush;
     int key = -1;
     while (key != OK_KEY && key != NOK_KEY)
     {
@@ -203,7 +202,7 @@ Camera::Camera(const string &device, int width, int height)
     if (regex_match(device, DEVICE_PATTERN))
         device_ = device;
     else
-        // try to obtain the /dev/videoX form by taking the caninical path
+        // try to obtain the /dev/videoX form by taking the canonical path
         device_ = filesystem::canonical(device).string();
 
     smatch match;
@@ -239,7 +238,7 @@ void Camera::disable_gui() noexcept
 
 /**
  * @brief Show a video feedback until the
- * stop funciton is called.
+ * stop function is called.
  * You should not use the camera object
  * until the stop function is called
  *
@@ -375,11 +374,11 @@ bool Camera::is_emitter_working()
 }
 
 /**
- * @brief Determine if the camera is in greyscale.
+ * @brief Determine if the camera is in grayscale.
  *
  * @throw CameraException if unable to open the camera device
  *
- * @return true if so, otheriwse false.
+ * @return true if so, otherwise false.
  */
 bool Camera::is_gray_scale()
 {
@@ -445,7 +444,7 @@ int Camera::uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &contr
 }
 
 /**
- * @brief Get the current, maximale, resolution or minimale value of the uvc control for the camera device
+ * @brief Get the current, maximal, resolution or minimal value of the uvc control for the camera device
  *
  * @param query_type UVC_GET_MAX, UVC_GET_RES, UVC_GET_CUR or UVC_GET_MIN
  * @param unit extension unit ID
