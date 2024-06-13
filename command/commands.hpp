@@ -51,7 +51,7 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
                 camera = make_shared<T>(device, width, height);
                 if (camera->is_gray_scale())
                 {
-                    spdlog::debug(device, "is a grayscale camera.");
+                    spdlog::debug("{} is a grayscale camera.", device);
                     break;
                 }
             }
