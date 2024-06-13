@@ -1,4 +1,4 @@
-# 2024 - 6.0.0-beta
+# Fri Jun 14 2024 - 6.0.0
 - Usage of YAML to store camera configuration
 - Save of all the camera instructions
 - Tweak manually any instructions of a camera
@@ -7,6 +7,7 @@
 - Zsh completion
 - Fix video feedback freeze
 - Better logging
+- Logging in file
 - Fix test command
 - Fix multiple v4l path for same device
 - OpenCV imshow exception
