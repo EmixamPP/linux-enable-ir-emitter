@@ -27,14 +27,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/workflows/deps/install_dir
-          key: ${{ env.OPENCV_GIT_TAG }}-${{ env.YAML_GIT_TAG }}-${{ env.ARGPARSE_GIT_TAG }}
+          key: ${{ env.OPENCV_GIT_TAG }}-${{ env.YAML_GIT_TAG }}-${{ env.ARGPARSE_GIT_TAG }}-${{ env.SPDLOG_GIT_TAG }}
 
       - name: Build lib dependencis
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
           cd .github/workflows/deps
           cmake . -B build -GNinja \
-            -DOPENCV_GIT_TAG=${{ env.OPENCV_GIT_TAG }} -DYAML_GIT_TAG=${{ env.YAML_GIT_TAG }} -DARGPARSE_GIT_TAG=${{ env.ARGPARSE_GIT_TAG }}
+            -DOPENCV_GIT_TAG=${{ env.OPENCV_GIT_TAG }} \
+            -DYAML_GIT_TAG=${{ env.YAML_GIT_TAG }} \
+            -DARGPARSE_GIT_TAG=${{ env.ARGPARSE_GIT_TAG }} \
+            -DSPDLOG_GIT_TAG=${{ env.SPDLOG_GIT_TAG }}
           ninja -C build
           cd -
 
