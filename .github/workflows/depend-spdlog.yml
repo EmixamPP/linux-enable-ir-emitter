@@ -5,7 +5,7 @@ on:
     - cron:  '0 7 * * *'
 
 jobs:
-  update-yaml:
+  update-spdlog:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,7 +13,7 @@ jobs:
       - name: Fetch release version
         env:
             GITHUB_TOKEN: ${{ github.token }}
-            OWNER: gabine
+            OWNER: gabime
             REPO: spdlog
         run: |
             VERSION=$(gh api "/repos/$OWNER/$REPO/releases/latest" --jq ".tag_name")
