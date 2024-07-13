@@ -51,7 +51,7 @@ jobs:
 
       - name: Setup build
         run: |
-          meson setup build --buildtype ${{ github.event.inputs.buildtype }} --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+          meson setup build --buildtype ${{ inputs.buildtype }} --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
 
       - name: Compile
         run: |
