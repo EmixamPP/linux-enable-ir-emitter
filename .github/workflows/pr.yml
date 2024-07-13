@@ -1,4 +1,4 @@
-name: "Pull Request"
+name: Pull Request
 
 on:
   pull_request:
@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     uses: ./.github/workflows/build.yml
+    with:
+      buildtype: debug
 
   cpp-lint:
     needs:
@@ -32,11 +34,13 @@ jobs:
             ## :mag: Linting results: ${{ needs.cpp-lint.result == 'success' && ':heavy_check_mark:' || ':x:' }}
 
             ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':heavy_check_mark:' || ':x:' }}
-          
+
             ## :package: Artifacts:
             If the building step was successfull:
             1. Download the tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-            2. [Uninstall the previous version](docs/uninstallation.md) if you have one
+            2. If new major version, [uninstall the previous version](docs/uninstallation.md) if you have one
             3. Unzip: `unzip linux-enable-ir-emitter*.tar.gz.zip`
-            4. Install: `sudo tar -C / --no-same-owner -m -h -vxzf linux-enable-ir-emitter*.tar.gz`
-            5. Enable the boot service: `sudo systemctl enable --now linux-enable-ir-emitter`
+            4. [Execute the install instructions](README.md#installation)
+
+            During the execution the tool raises an exception?\
+            Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type "bt" to show the error trace ("q" to exit).
