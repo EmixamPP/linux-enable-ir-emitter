@@ -8,7 +8,7 @@ using namespace std;
 #include <argparse/argparse.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/daily_file_sink.h>
 
 #include "command/commands.hpp"
 
@@ -36,25 +36,31 @@ static void check_root() noexcept
  */
 static void setup_logger(bool verbose_console, bool enable_file)
 {
-    spdlog::set_pattern("%v"); // set pattern of console sink (default one)
-    if (verbose_console)
-        spdlog::set_level(spdlog::level::debug);
+    auto console_sink = make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_level(verbose_console ? spdlog::level::debug : spdlog::level::info);
+    console_sink->set_pattern("%v");
+
+    std::vector<spdlog::sink_ptr> sinks{console_sink};
 
     if (enable_file) // add file sink if possible
     {
         try
         {
-            auto file_sink = make_shared<spdlog::sinks::basic_file_sink_mt>(LOG_FILE);
-            file_sink->set_level(spdlog::level::trace);
+            auto file_sink = make_shared<spdlog::sinks::daily_file_format_sink_mt>(LOG_FILE, 0, 0);
+            file_sink->set_level(spdlog::level::debug);
             file_sink->set_pattern("[%H:%M:%S] [%l] %v");
 
-            spdlog::default_logger()->sinks().push_back(file_sink);
+            sinks.push_back(file_sink);
         }
         catch (const spdlog::spdlog_ex &e)
         {
             spdlog::warn("Impossible to use the log file {}. Ensure it is writable by the user.", LOG_FILE);
         }
     }
+
+    auto logger = make_shared<spdlog::logger>("logger", sinks.begin(), sinks.end());
+    logger->set_level(spdlog::level::debug);
+    spdlog::set_default_logger(logger);
 }
 
 /**
