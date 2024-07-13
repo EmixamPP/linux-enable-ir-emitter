@@ -15,14 +15,10 @@ assignees: ''
 paste here
 ```
 
-**Output of `find path/to/your/folder -type f -exec sh -c 'echo "File: {}"; cat {}; echo ""' \;`**
-<details>
-  <summary>Click to expand</summary>
-
-  ```
-  paste here
-  ```
-</details>
+**Output of `sudo linux-enable-ir-emitter tweak`**
+```
+paste here
+```
 
 **Output of `v4l2-ctl --list-devices`**
 ```
