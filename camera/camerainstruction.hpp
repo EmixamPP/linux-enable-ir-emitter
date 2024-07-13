@@ -11,9 +11,9 @@ class Camera;
 class CameraInstruction
 {
 protected:
-    bool disable_ = false;
     uint8_t unit_;
     uint8_t selector_;
+    bool disable_;
     vector<uint8_t> cur_ctrl_;
     vector<uint8_t> init_ctrl_;
     vector<uint8_t> max_ctrl_;
@@ -22,7 +22,7 @@ protected:
 public:
     CameraInstruction() = default;
 
-    explicit CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector);
+    explicit CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector, bool disable = false);
 
     ~CameraInstruction() = default;
 
