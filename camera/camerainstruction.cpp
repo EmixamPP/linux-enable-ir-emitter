@@ -16,8 +16,8 @@ using namespace std;
  *
  * @throw CameraInstructionException if information are missing for controlling the device
  */
-CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector)
-    : unit_(unit), selector_(selector)
+CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector, bool disable)
+    : unit_(unit), selector_(selector), disable_(disable)
 {
     // get the control instruction length
     const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
