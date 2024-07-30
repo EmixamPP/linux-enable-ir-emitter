@@ -1,5 +1,4 @@
-#ifndef FINDER_HPP
-#define FINDER_HPP
+#pragma once
 
 #include <vector>
 using namespace std;
@@ -7,29 +6,29 @@ using namespace std;
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 
-class Finder
-{
-private:
-    shared_ptr<Camera> camera_;
-    const unsigned emitters_;
-    const unsigned neg_answer_limit_;
+constexpr unsigned PROGRESSION_LINE_SIZE = 20;
+constexpr unsigned PROGRESSION_NBR_POINTS = 5;
 
-public:
-    Finder() = delete;
+class Finder {
+ private:
+  shared_ptr<Camera> camera_;
+  const unsigned emitters_;
+  const unsigned neg_answer_limit_;
 
-    explicit Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer_limit_);
+ public:
+  Finder() = delete;
 
-    ~Finder() = default;
+  explicit Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer_limit_);
 
-    Finder &operator=(const Finder &) = delete;
+  ~Finder() = default;
 
-    Finder(const Finder &) = delete;
+  Finder &operator=(const Finder &) = delete;
 
-    Finder &operator=(Finder &&other) = delete;
+  Finder(const Finder &) = delete;
 
-    Finder(Finder &&other) = delete;
+  Finder &operator=(Finder &&other) = delete;
 
-    bool find(CameraInstructions &instructions);
+  Finder(Finder &&other) = delete;
+
+  bool find(CameraInstructions &instructions);
 };
-
-#endif
