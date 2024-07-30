@@ -9,16 +9,22 @@ jobs:
     with:
       buildtype: debug
 
-  cpp-lint:
+  clang-tidy:
     needs:
       - build
-    uses: ./.github/workflows/cpp-lint.yml
+    uses: ./.github/workflows/clang-tidy.yml
+
+  clang-format:
+    needs:
+      - build
+    uses: ./.github/workflows/clang-format.yml
 
   comment:
     name: Bot comment
     needs:
       - build
-      - cpp-lint
+      - clang-tidy
+      - clang-format
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -31,7 +37,9 @@ jobs:
 
             ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            ## :mag: Linting results: ${{ (needs.cpp-lint.result == 'success' && ':white_check_mark:') || (needs.cpp-lint.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
+            ## :mag: clang-tidy results: ${{ (needs.clang-tidy.result == 'success' && ':white_check_mark:') || (needs.clang-tidy.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
+
+            ## :writing_hand: clang-format results: ${{ (needs.clang-format.result == 'success' && ':white_check_mark:') || (needs.clang-format.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
 
             ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':white_check_mark:' || ':x:' }}
 
@@ -43,4 +51,4 @@ jobs:
             4. [Execute the install instructions](README.md#installation)
 
             During the execution the tool raises an exception?\
-            Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type "bt" to show the error trace ("q" to exit).
+            Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type `bt` to show the error trace (`q` to exit).

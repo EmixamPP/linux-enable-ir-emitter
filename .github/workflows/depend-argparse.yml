@@ -21,8 +21,8 @@ jobs:
 
       - name: Modify file if new version
         run: |
-            sed -E -i "s@(ARGPARSE_GIT_TAG=\s+\")(v[0-9]+\.[0-9]+\.[0-9]+)(\")@\1$VERSION\3@" .github/workflows/deps/version.env
-            
+            sed -i 's/\(option(ARGPARSE_GIT_TAG "[^\"]*" "\)[^"]*"/\1'"${VERSION}"'"/' .github/workflows/deps/CMakeLists.txt
+
       - name: Create PR if new version
         uses: peter-evans/create-pull-request@v6
         with:
