@@ -6,19 +6,8 @@ using namespace std;
 
 #include <spdlog/spdlog.h>
 
-#include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
-#include "configuration.hpp"
 
-/**
- * @brief Execute a configuration.
- *
- * @param device path of the camera, nothing to execute all configurations
- * @param width of the capture resolution
- * @param height of the capture resolution
- *
- * @return exit code
- */
 ExitCode run(const optional<string> &device, int width, int height) {
   spdlog::debug("Executing run command.");
 

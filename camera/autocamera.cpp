@@ -10,6 +10,14 @@ using namespace std;
 
 #include <opencv2/core.hpp>
 
+// Coefficient applied on `refIntensity_var_sum_`
+// that determines the significance
+constexpr int MAGIC_REF_INTENSITY_VAR_COEF = 50;
+
+// How many times retry a frame capture in case of failure
+// before increasing `capture_time_ms_` by `CAPTURE_TIME_MS`
+constexpr unsigned RETRY_CAPTURE = 2;
+
 /**
  * @brief Compute lighting intensity for each pixel of each frame
  *
@@ -63,20 +71,13 @@ static long long unsigned compute_sum_intensities_variation(const vector<int> &d
   return sum;
 }
 
-/**
- * @brief Obtain the intensity variation sum of camera captures
- *
- * @throw CameraException if unable to read frames
- *
- * @return the intensity variation sum
- */
 long long unsigned AutoCamera::intensity_variation_sum() {
   // capture frames
   vector<cv::Mat> frames = read_during(capture_time_ms_);
 
   auto retry = RETRY_CAPTURE;
   while (frames.empty() && retry-- != 0) {
-    // extend capture time,
+    // double the capture time,
     // to give the camera more time to capture frames
     capture_time_ms_ += CAPTURE_TIME_MS;
     frames = read_during(capture_time_ms_);
@@ -96,40 +97,14 @@ long long unsigned AutoCamera::intensity_variation_sum() {
   return compute_sum_intensities_variation(diffs);
 }
 
-/**
- * @brief Check if the emitter is working,
- * without asking for manual confirmation
- *
- * @throw CameraException if unable to read frames
- *
- * @return true if yes, false if not
- */
 bool AutoCamera::is_emitter_working_no_confirm() {
   return intensity_variation_sum() > refIntensity_var_sum_ * MAGIC_REF_INTENSITY_VAR_COEF;
 }
 
-/**
- * @brief Check if the emitter is working,
- * if so, ask for manual confirmation
- *
- * @throw CameraException if unable to read frames
- *
- * @return true if yes, false if not
- */
 bool AutoCamera::is_emitter_working() {
   return is_emitter_working_no_confirm() && Camera::is_emitter_working();
 }
 
-/**
- * @brief Construct a new AutoCamera object
- * The difference with the regular Camera object is that this one
- * can automatically determine if the ir emitter is working or not.
- *
- * @param device path of the camera
- * @param width of the capture resolution
- * @param height of the capture resolution
- * @param capture_time_ms duration of the capture
- */
 AutoCamera::AutoCamera(const string &device, int width, int height, unsigned capture_time_ms)
     : Camera(device, width, height),
       capture_time_ms_(capture_time_ms),

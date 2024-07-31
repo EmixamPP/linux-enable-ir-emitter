@@ -8,18 +8,8 @@ using namespace std;
 
 #include "camera/camerainstruction.hpp"
 
-/**
- * @brief Construct a new Scanner:: Scanner object
- *
- * @param camera on which scans the instructions
- */
 Scanner::Scanner(shared_ptr<Camera> camera) : camera_(std::move(camera)) {}
 
-/**
- * @brief Scans the available camera instructions
- *
- * @return the list of instructions
- */
 CameraInstructions Scanner::scan() noexcept {
   CameraInstructions instructions;
 

@@ -13,6 +13,9 @@ using namespace std;
 
 #include <spdlog/spdlog.h>
 
+/**
+ * @brief Exit codes for the program.
+ */
 enum ExitCode {
   SUCCESS = 0,
   FAILURE = 1,
@@ -65,11 +68,53 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
   return camera;
 }
 
+/**
+ * @brief Finds a configuration for an infrared camera which enables its emitter(s).
+ *
+ * @param device path of the infrared camera, nothing for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
+ * @param manual true for enabling the manual configuration
+ * @param emitters number of emitters on the device
+ * @param neg_answer_limit number of negative answer before the pattern is skiped. Use -1 for
+ * unlimited
+ * @param no_gui no gui video feedback
+ *
+ * @return exit code
+ */
 ExitCode configure(const optional<string> &device, int width, int height, bool manual,
                    unsigned emitters, unsigned neg_answer_limit, bool no_gui);
 
+/**
+ * @brief Execute a configuration.
+ *
+ * @param device path of the camera, nothing to execute all configurations
+ * @param width of the capture resolution
+ * @param height of the capture resolution
+ *
+ * @return exit code
+ */
 ExitCode run(const optional<string> &device, int width, int height);
 
+/**
+ * @brief Test if the camera is in grayscale and if the emitter is working.
+ * Also display a video feedback.
+ *
+ * @param device path to the infrared camera, nothing for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
+ *
+ * @return exit code
+ */
 ExitCode test(const optional<string> &device, int width, int height);
 
+/**
+ * @brief Let the user modify the configuration of a camera
+ *
+ * @param device path to the infrared camera, nothing for automatic detection
+ * @param width of the capture resolution
+ * @param height of the capture resolution
+ *
+ * @return exit code
+ */
 ExitCode tweak(const optional<string> &device, int width, int height);

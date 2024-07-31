@@ -3,16 +3,6 @@
 #include "camera/autocamera.hpp"
 #include "commands.hpp"
 
-/**
- * @brief Test if the camera is in grayscale and if the emitter is working.
- * Also display a video feedback.
- *
- * @param device path to the infrared camera, nothing for automatic detection
- * @param width of the capture resolution
- * @param height of the capture resolution
- *
- * @return exit code
- */
 ExitCode test(const optional<string> &device, int width, int height) {
   spdlog::debug("Executing test command.");
 

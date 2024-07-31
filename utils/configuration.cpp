@@ -11,8 +11,15 @@ using namespace std;
 
 #include "camera/camerainstruction.hpp"
 
+// Prefix path of a v4l device
 const string V4L_PREFIX = "/dev/v4l/by-path/";
 
+/**
+ * @brief Write the instructions to a file.
+ *
+ * @param instructions the instructions to write
+ * @param file_path the path of the file
+ */
 static void write_to_file(const CameraInstructions &instructions, const string &file_path) {
   YAML::Node node(instructions);
   ofstream file(file_path);
@@ -20,6 +27,12 @@ static void write_to_file(const CameraInstructions &instructions, const string &
   file.close();
 }
 
+/**
+ * @brief Read the instructions from a file.
+ *
+ * @param file_path the path of the file
+ * @return the instructions
+ */
 static optional<CameraInstructions> read_from_file(const string &file_path) noexcept {
   try {
     YAML::Node node = YAML::LoadFile(file_path);
@@ -33,6 +46,12 @@ static optional<CameraInstructions> read_from_file(const string &file_path) noex
   return {};
 }
 
+/**
+ * @brief Get the v4l name of a device.
+ *
+ * @param device path of the camera
+ * @return the v4l name
+ */
 static optional<string> V4LNameOf(const string &device) {
   set<string> names;  // multiple names can exists
 
@@ -51,6 +70,13 @@ static optional<string> V4LNameOf(const string &device) {
   return *names.begin();
 }
 
+/**
+ * @brief Get the theoretical path of the configuration file.
+ * It does not check if the configuration exists.
+ *
+ * @param device path of the camera
+ * @return the path of the configuration file
+ */
 static optional<string> PathOf(const string &device) noexcept {
   auto v4l_name = V4LNameOf(device);
   if (v4l_name) return Configuration::SAVE_FOLDER_CONFIG_PATH_ + v4l_name.value();
@@ -59,14 +85,6 @@ static optional<string> PathOf(const string &device) noexcept {
   return {};
 }
 
-/**
- * @brief Read the configuration file of a device.
- *
- * @param device path of the camera
- *
- * @return vector with the instructions of the configuration
- * @return no value if an error happened
- */
 optional<CameraInstructions> Configuration::Load(const string &device,
                                                  optional<string> path) noexcept {
   if (!path) path = PathOf(device);
@@ -76,14 +94,6 @@ optional<CameraInstructions> Configuration::Load(const string &device,
   return {};
 }
 
-/**
- * @brief Read the configuration file of a device.
- *
- * @param device path of the camera
- *
- * @return vector with the instructions of the configuration
- * @return no value if an error happened
- */
 optional<CameraInstructions> Configuration::LoadInit(const string &device) noexcept {
   auto path = PathOf(device);
   if (path) path->append(".ini");
@@ -91,15 +101,6 @@ optional<CameraInstructions> Configuration::LoadInit(const string &device) noexc
   return Configuration::Load(device, path);
 }
 
-/**
- * @brief Save the configuration of a device
- *
- * @param device path of the camera
- * @param instructions of the configuration
- * @param path path where to store the configuration, nothing for default one
- *
- * @return true if success otherwise false
- */
 bool Configuration::Save(const string &device, const CameraInstructions &instructions,
                          optional<string> path) {
   if (!path) path = PathOf(device);
@@ -113,14 +114,6 @@ bool Configuration::Save(const string &device, const CameraInstructions &instruc
   return false;
 }
 
-/**
- * @brief Save the configuration of a device as initial
- *
- * @param device path of the camera
- * @param instructions of the configuration
- *
- * @return true if success otherwise false
- */
 bool Configuration::SaveInit(const string &device, const CameraInstructions &instructions) {
   auto path = PathOf(device);
   if (path) path->append(".ini");
@@ -128,11 +121,6 @@ bool Configuration::SaveInit(const string &device, const CameraInstructions &ins
   return Configuration::Save(device, instructions, path);
 }
 
-/**
- * @brief Get all the device configured, only based on the file name
- *
- * @return device path of the configured camera
- */
 vector<string> Configuration::ConfiguredDevices() noexcept {
   vector<string> devices;
   for (const auto &conf : filesystem::directory_iterator(SAVE_FOLDER_CONFIG_PATH_)) {

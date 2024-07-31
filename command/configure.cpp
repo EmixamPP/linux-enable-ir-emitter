@@ -1,32 +1,15 @@
 #include <fstream>
 #include <memory>
-
-#include "commands.hpp"
 using namespace std;
 
 #include <spdlog/spdlog.h>
 
 #include "camera/autocamera.hpp"
-#include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
-#include "configuration.hpp"
+#include "commands.hpp"
 #include "configuration/finder.hpp"
 #include "configuration/scanner.hpp"
 
-/**
- * @brief Finds a configuration for an infrared camera which enables its emitter(s).
- *
- * @param device path of the infrared camera, nothing for automatic detection
- * @param width of the capture resolution
- * @param height of the capture resolution
- * @param manual true for enabling the manual configuration
- * @param emitters number of emitters on the device
- * @param neg_answer_limit number of negative answer before the pattern is skiped. Use -1 for
- * unlimited
- * @param no_gui no gui video feedback
- *
- * @return exit code
- */
 ExitCode configure(const optional<string> &device, int width, int height, bool manual,
                    unsigned emitters, unsigned neg_answer_limit, bool no_gui) {
   spdlog::debug("Executing configure command.");

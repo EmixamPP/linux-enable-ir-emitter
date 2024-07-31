@@ -10,16 +10,6 @@ using namespace std;
 
 #include "camera.hpp"
 
-/**
- * @brief Construct a new CameraInstruction object.
- *
- * @param camera on which find the control instruction
- * @param unit of the instruction
- * @param selector of the instruction
- *
- * @throw CameraInstructionException if information are missing for controlling
- * the device
- */
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector, bool disable)
     : unit_(unit), selector_(selector), disable_(disable) {
   // get the control instruction length
@@ -46,12 +36,6 @@ CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selec
   if (camera.uvc_get_query(UVC_GET_MIN, unit, selector, min_ctrl_) == 1) min_ctrl_.resize(0);
 }
 
-/**
- * @brief Compute the next possible control value.
- *
- * @return true if the next value has been set,
- * false if the maximum control has already been set
- */
 bool CameraInstruction::next() noexcept {
   if (cur_ctrl_ == max_ctrl_) return false;
 
@@ -70,69 +54,22 @@ bool CameraInstruction::next() noexcept {
   return false;
 }
 
-/**
- * @brief Get the disable status.
- *
- * @return true if the instruction is disable
- */
 bool CameraInstruction::is_disable() const noexcept { return disable_; }
 
-/**
- * @brief Get the unit of the instruction.
- *
- * @return unit
- */
 uint8_t CameraInstruction::unit() const noexcept { return unit_; }
 
-/**
- * @brief Get the selector of the instruction.
- *
- * @return selector
- */
 uint8_t CameraInstruction::selector() const noexcept { return selector_; }
 
-/**
- * @brief Get the current control value.
- *
- * @return current control value
- */
 const vector<uint8_t> &CameraInstruction::cur() const noexcept { return cur_ctrl_; }
 
-/**
- * @brief Get the maximum of the instruction.
- *
- * @return maximum control
- */
 const vector<uint8_t> &CameraInstruction::max() const noexcept { return max_ctrl_; }
 
-/**
- * @brief Get the minimum of the instruction.
- *
- * @return minimum control
- */
 const vector<uint8_t> &CameraInstruction::min() const noexcept { return min_ctrl_; }
 
-/**
- * @brief Get the initial control value.
- *
- * @return initial control value
- */
 const vector<uint8_t> &CameraInstruction::init() const noexcept { return init_ctrl_; }
 
-/**
- * @brief Changes the disable status of the instruction.
- *
- * @param is_disable status to set
- */
 void CameraInstruction::set_disable(bool is_disable) noexcept { disable_ = is_disable; }
 
-/**
- * @brief Sets a new current control value, if it is valid.
- *
- * @param cur control to set
- *
- * @return true if success, otherwise false
- */
 bool CameraInstruction::set_cur(const vector<uint8_t> &cur) noexcept {
   if (cur_ctrl_.size() != cur.size()) return false;
 
@@ -147,13 +84,6 @@ bool CameraInstruction::set_cur(const vector<uint8_t> &cur) noexcept {
   return true;
 }
 
-/**
- * @brief If a minimum control instruction exists
- * and is not already the current,
- * sets it as the current control instruction with that value.
- *
- * @return true if success, otherwise false
- */
 bool CameraInstruction::set_min_cur() noexcept {
   if (min_ctrl_.empty() || cur_ctrl_ == min_ctrl_) return false;
 
@@ -162,15 +92,6 @@ bool CameraInstruction::set_min_cur() noexcept {
   return true;
 }
 
-/**
- * @brief If a maximum control instruction exists
- * and is not already the current,
- * set it as the current control instruction with that value.
- * If no maximum control exists,
- * set the maximum value possible (i.e. UINT8_MAX).
- *
- * @return true if success, otherwise false
- */
 bool CameraInstruction::set_max_cur() noexcept {
   if (cur_ctrl_ == max_ctrl_) return false;
 
@@ -182,10 +103,6 @@ bool CameraInstruction::set_max_cur() noexcept {
   return true;
 }
 
-/**
- * @brief Reset the current control
- * to the initial control value.
- */
 void CameraInstruction::reset() noexcept { cur_ctrl_.assign(init_ctrl_.begin(), init_ctrl_.end()); }
 
 string to_string(const CameraInstruction &inst) {

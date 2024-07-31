@@ -9,11 +9,6 @@ using namespace std;
 
 #include "camera/camerainstruction.hpp"
 
-/**
- * @brief Construct a new Tweaker:: Tweaker object
- *
- * @param camera on which to tweak instructions
- */
 Tweaker::Tweaker(shared_ptr<Camera> camera) : camera(std::move(camera)) {}
 
 /**
@@ -85,13 +80,6 @@ static optional<vector<uint8_t>> ask_for_new_cur(CameraInstruction &inst) {
   return new_cur;
 }
 
-/**
- * @brief Allow the user to tweak the instruction of its camera
- *
- * @param instructions the instructions to tweak
- *
- * @throw CameraException
- */
 void Tweaker::tweak(CameraInstructions &instructions) {
   while (true) {
     auto stop_feedback = camera->play();

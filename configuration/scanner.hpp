@@ -6,13 +6,22 @@ using namespace std;
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 
+/**
+ * @brief A `Scanner` object is used to scan the available `CameraInstruction`
+ * of a given camera.
+ */
 class Scanner {
- private:
+  // Camera on which scans for instructions
   shared_ptr<Camera> camera_;
 
  public:
   Scanner() = delete;
 
+  /**
+   * @brief Construct a new `Scanner` object
+   *
+   * @param camera on which scans the instructions
+   */
   explicit Scanner(shared_ptr<Camera> camera);
 
   ~Scanner() = default;
@@ -25,5 +34,10 @@ class Scanner {
 
   Scanner(Scanner &&other) = delete;
 
+  /**
+   * @brief Scans the available camera instructions
+   *
+   * @return the list of instructions
+   */
   CameraInstructions scan() noexcept;
 };

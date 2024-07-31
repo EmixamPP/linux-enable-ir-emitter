@@ -12,6 +12,13 @@ using namespace std;
 
 #include "camera/camerainstruction.hpp"
 
+// Progression line size
+constexpr unsigned PROGRESSION_LINE_SIZE = 20;
+
+// Number of points on the progression line
+constexpr unsigned PROGRESSION_NBR_POINTS = 5;
+
+// Flag to force exit the process
 std::atomic<bool> force_exit = false;
 
 /**
@@ -26,28 +33,9 @@ static void catch_ctrl_c() {
   });
 }
 
-/**
- * @brief Construct a new Finder:: Finder object
- *
- * @param camera on which try to find an instruction for the emitter
- * @param emitters number of emitters on the device
- * @param neg_answer_limit skip a pattern after neg_answer_limit negative
- * answer
- */
 Finder::Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer_limit)
     : camera_(std::move(camera)), emitters_(emitters), neg_answer_limit_(neg_answer_limit) {}
 
-/**
- * @brief Find an instruction which enable the ir emitter(s)
- * by changing its value.
- *
- * @param instructions to test and modify, disable ones are ignored or will be
- * marked as such
- *
- * @throw CameraException
- *
- * @return true if success otherwise false
- */
 bool Finder::find(CameraInstructions &instructions) {
   catch_ctrl_c();
 

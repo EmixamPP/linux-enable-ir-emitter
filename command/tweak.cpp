@@ -6,15 +6,6 @@
 #include "configuration/scanner.hpp"
 #include "configuration/tweaker.hpp"
 
-/**
- * @brief Let the user modify the configuration of a camera
- *
- * @param device path to the infrared camera, nothing for automatic detection
- * @param width of the capture resolution
- * @param height of the capture resolution
- *
- * @return exit code
- */
 ExitCode tweak(const optional<string> &device, int width, int height) {
   spdlog::debug("Executing tweak command.");
 

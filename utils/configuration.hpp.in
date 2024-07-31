@@ -7,17 +7,55 @@ using namespace std;
 #include "camera/camera.hpp"
 #include "camera/camerainstruction.hpp"
 
-namespace Configuration
-{
-    const string SAVE_FOLDER_CONFIG_PATH_ = "@configdir@/";
+namespace Configuration {
+// Path to the configuration folder
+const string SAVE_FOLDER_CONFIG_PATH_ = "@configdir@/";
 
-    bool Save(const string &device, const CameraInstructions &instructions, optional<string> path = {});
+/**
+ * @brief Save the configuration of a device
+ *
+ * @param device path of the camera
+ * @param instructions of the configuration
+ * @param path path where to store the configuration, nothing for default one
+ *
+ * @return true if success otherwise false
+ */
+bool Save(const string &device, const CameraInstructions &instructions, optional<string> path = {});
 
-    bool SaveInit(const string &device, const CameraInstructions &instructions);
+/**
+ * @brief Save the configuration of a device as initial
+ *
+ * @param device path of the camera
+ * @param instructions of the configuration
+ *
+ * @return true if success otherwise false
+ */
+bool SaveInit(const string &device, const CameraInstructions &instructions);
 
-    optional<CameraInstructions> Load(const string &device, optional<string> path = {}) noexcept;
+/**
+ * @brief Read the configuration file of a device.
+ *
+ * @param device path of the camera
+ *
+ * @return vector with the instructions of the configuration
+ * @return no value if an error happened
+ */
+optional<CameraInstructions> Load(const string &device, optional<string> path = {}) noexcept;
 
-    optional<CameraInstructions> LoadInit(const string &device) noexcept;
+/**
+ * @brief Read the configuration file of a device.
+ *
+ * @param device path of the camera
+ *
+ * @return vector with the instructions of the configuration
+ * @return no value if an error happened
+ */
+optional<CameraInstructions> LoadInit(const string &device) noexcept;
 
-    vector<string> ConfiguredDevices() noexcept;
-}
+/**
+ * @brief Get all the device configured, only based on the file name
+ *
+ * @return device path of the configured camera
+ */
+vector<string> ConfiguredDevices() noexcept;
+}  // namespace Configuration
