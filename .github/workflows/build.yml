@@ -5,12 +5,12 @@ on:
     inputs:
       buildtype:
         type: string
-        default: release
+        default: minsize
   workflow_call:
     inputs:
       buildtype:
         type: string
-        default: release
+        default: minsize
 
 jobs:
   build:
@@ -41,7 +41,21 @@ jobs:
 
       - name: Setup build
         run: |
-          meson setup build --buildtype ${{ inputs.buildtype }} --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+          meson setup build --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+          case "${{ inputs.buildtype }}" in
+            "minsize")
+              meson configure build --optimization=s
+            "release")
+              meson configure build --strip
+              ;;
+            "debug")
+              meson configure build --buildtype=debug
+              ;;
+            *)
+              echo "Build type ${{ inputs.buildtype }} not supported"
+              exit 1
+              ;;
+          esac
 
       - name: Compile
         run: |
