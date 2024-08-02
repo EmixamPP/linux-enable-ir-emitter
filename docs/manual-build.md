@@ -1,6 +1,8 @@
 ## Manual build
 See [docs/requirements.md](docs/requirements.md) for specifications and dependencies concerning build requirements.
 
+You plan to contribute? Read [CONTRIBUTING.md](../CONTRIBUTING.md) instead.
+
 Feel free to open an issue if you need help!
 
 1. Clone the project:
@@ -10,13 +12,10 @@ Feel free to open an issue if you need help!
     ```
 
 2. You want to build the project using static libraries?\
-    This is recommended to avoid breaking the tool after distro update, because they are directly included inside the generated executable.
+    Unless you are a packager, this is recommended to avoid breaking the tool after distro update, because they are directly included inside the generated executable.
     We provide a CMake file to easily build all the dependencies. Nothing will be installed on your system:
     ```
-    cd .github/workflows/deps
-    cmake . -B build -GNinja
-    ninja -C build
-    cd -
+    cd .github/workflows/deps && cmake -GNinja -B build && ninja -C build && cd -
     ```
 
 3. Setup the build:
@@ -29,14 +28,14 @@ Feel free to open an issue if you need help!
     meson setup build
     ```
 
-4. If you do not have Systemd but OpenRC:
+4. To make the executable as small as possible:
+   ```
+   meson configure build --optimization=s --strip
+   ```
+
+5. If you do not have Systemd but OpenRC:
     ```
     meson configure build -Dboot_service=openrc
-    ```
-
-5. You plan to contribute? Enable the debug build:
-    ```
-    meson configure build --buildtype debug
     ```
 
 6. Compile and install:
@@ -45,4 +44,4 @@ Feel free to open an issue if you need help!
     meson install -C build
     ```
 
-You can uninstall the tool by executing `sudo ninja uninstall -C build` (thus do not remove the build directory) or see [docs/uninstallation](uninstallation.md). 
+You can uninstall the tool by executing `sudo ninja uninstall -C build` (thus do not remove the build directory) or see [docs/uninstallation](uninstallation.md).
