@@ -5,12 +5,12 @@ on:
     inputs:
       buildtype:
         type: string
-        default: minsize
+        default: release
   workflow_call:
     inputs:
       buildtype:
         type: string
-        default: minsize
+        default: release
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/workflows/deps/install_dir
-          key: ${{ hashFiles('.github/deps/CMakeLists.txt') }}
+          key: ${{ hashFiles('.github/workflows/deps/CMakeLists.txt') }}
 
       - name: Build lib dependencis
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
@@ -43,10 +43,8 @@ jobs:
         run: |
           meson setup build --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
           case "${{ inputs.buildtype }}" in
-            "minsize")
-              meson configure build --optimization=s
             "release")
-              meson configure build --strip
+              meson configure build --optimization=s --strip
               ;;
             "debug")
               meson configure build --buildtype=debug

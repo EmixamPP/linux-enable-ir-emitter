@@ -5,6 +5,7 @@ project(
     license: 'MIT',
     default_options: [
         'cpp_std=c++17',
+        'buildtype=release',
         'warning_level=everything',
         'werror=true',
     ],

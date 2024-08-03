@@ -36,7 +36,7 @@ static void check_root() noexcept
  */
 static void setup_logger(bool verbose_console, bool enable_file)
 {
-    auto console_sink = make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    auto console_sink = make_shared<spdlog::sinks::stdout_color_sink_st>();
     console_sink->set_level(verbose_console ? spdlog::level::debug : spdlog::level::info);
     console_sink->set_pattern("%v");
 
@@ -46,7 +46,7 @@ static void setup_logger(bool verbose_console, bool enable_file)
     {
         try
         {
-            auto file_sink = make_shared<spdlog::sinks::daily_file_format_sink_mt>(LOG_FILE, 0, 0);
+            auto file_sink = make_shared<spdlog::sinks::daily_file_format_sink_st>(LOG_FILE, 0, 0);
             file_sink->set_level(spdlog::level::debug);
             file_sink->set_pattern("[%H:%M:%S] [%l] %v");
 

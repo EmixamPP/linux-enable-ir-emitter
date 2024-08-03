@@ -21,8 +21,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/workflows/deps/install_dir
-          key: ${{ hashFiles('.github/deps/CMakeLists.txt') }}
-          fail-on-cache-miss: true
+          key: ${{ hashFiles('.github/workflows/deps/CMakeLists.txt') }}
 
       - name: Setup
         run: |

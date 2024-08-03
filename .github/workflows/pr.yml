@@ -37,11 +37,11 @@ jobs:
 
             ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
+            ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':white_check_mark:' || ':x:' }}
+
             ## :mag: clang-tidy results: ${{ (needs.clang-tidy.result == 'success' && ':white_check_mark:') || (needs.clang-tidy.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
 
             ## :writing_hand: clang-format results: ${{ (needs.clang-format.result == 'success' && ':white_check_mark:') || (needs.clang-format.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
-
-            ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':white_check_mark:' || ':x:' }}
 
             ## :package: Artifacts:
             If the building step was successfull:
