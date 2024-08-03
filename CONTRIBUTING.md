@@ -18,7 +18,7 @@ To be sure that the modifications you made to the code will pass the CI during t
    ```
    meson compile −C build
    ```
-   your new version of `linux-enable-ir-emitter` is located in `build/`
+   your new version of `linux-enable-ir-emitter` is located in `build/src/`
 4. Format the files:
    ```
    ninja clang-format -C build
