@@ -5,10 +5,10 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install_dir" CACHE PATH "Default install prefix" FORCE)
 endif()
 
-option(OPENCV_GIT_TAG "Tag or branch used to checkout when cloning opencv" "master")
-option(YAML_GIT_TAG "Tag or branch used to checkout when cloning yaml-cpp" "master")
-option(ARGPARSE_GIT_TAG "Tag or branch used to checkout when cloning argparse" "master")
-option(SPDLOG_GIT_TAG "Tag or branch used to checkout when cloning argparse" "v1.x")
+set(OPENCV_GIT_TAG "4.9.0" CACHE STRING "Tag or branch used to checkout when cloning opencv")
+set(YAML_GIT_TAG "0.8.0" CACHE STRING "Tag or branch used to checkout when cloning yaml-cpp")
+set(ARGPARSE_GIT_TAG "v3.1" CACHE STRING "Tag or branch used to checkout when cloning argparse")
+set(SPDLOG_GIT_TAG "v1.14.1" CACHE STRING "Tag or branch used to checkout when cloning argparse")
 
 include(ExternalProject)
 

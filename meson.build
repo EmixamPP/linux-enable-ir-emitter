@@ -1,7 +1,7 @@
 project(
-    'linux-enable-ir-emitter', 
+    'linux-enable-ir-emitter',
     'cpp',
-    version: '6.0.0', 
+    version: '6.0.0',
     license: 'MIT',
     default_options: [
         'cpp_std=c++17',
@@ -13,15 +13,18 @@ project(
 
 # flag ajustement because of warning_level=everything
 add_project_arguments(
-    # fix clang-tidy
-    '-Wno-unknown-warning-option', '-Wno-unused-macros',
-    # ignore bugged and boring flags
-    '-Wno-pragmas', '-Wno-abi-tag', '-Wno-effc++',
-    '-Wno-padded', '-Wno-shadow', '-Wno-sign-promo', 
-    '-Wno-unused-const-variable', '-Wno-suggest-final-types',
-    '-Wno-suggest-final-methods', '-Wno-suggest-attribute=pure',
-    '-Wno-suggest-attribute=const', '-Wno-inline',
-    language: 'cpp'
+    '-Wno-unknown-warning-option', # fix clang-tidy
+    '-Wno-padded', # impossible to solve here
+    '-Wno-shadow', # without importance
+    '-Wno-abi-tag', # unworth increase of reading complexity
+    '-Wno-effc++', # unworth increase of reading complexity
+    '-Wno-unused-const-variable', # bugged
+    '-Wno-suggest-attribute=const', # bugged
+    '-Wno-inline', # let the compiler tries
+    '-Wno-suggest-attribute=pure', # unworth increase of reading complexity
+    '-Wno-suggest-final-types', # bugged
+    '-Wno-suggest-final-methods', # bugged
+    language: 'cpp',
 )
 
 ##############
@@ -38,47 +41,18 @@ spdlog_dep = dependency('spdlog', include_type: 'system')
 ############
 sysconf_dir = '/' / get_option('sysconfdir') / meson.project_name()
 log_dir = get_option('localstatedir') / 'log' / meson.project_name()
-cfg_data = configuration_data({
-    'version': meson.project_version(),
-    'configdir': sysconf_dir,
-    'log_file': log_dir / meson.project_name() + '.log',
-})
+cfg_data = configuration_data(
+    {
+        'version': meson.project_version(),
+        'configdir': sysconf_dir,
+        'log_file': log_dir / meson.project_name() + '.log',
+    },
+)
 
 ##############
 # Executable #
 ##############
-configure_file(
-    input : 'utils/configuration.hpp.in',
-    output : 'configuration.hpp',
-    configuration : cfg_data,
-)
-
-configure_file(
-    input : 'linux-enable-ir-emitter.cpp.in',
-    output : 'linux-enable-ir-emitter.cpp',
-    configuration : cfg_data,
-)
-
-executable(
-    'linux-enable-ir-emitter',
-    sources: [
-        meson.project_build_root() / 'linux-enable-ir-emitter.cpp',
-        'camera/autocamera.cpp',
-        'camera/camera.cpp',
-        'camera/camerainstruction.cpp',
-        'command/configure.cpp',
-        'command/run.cpp',
-        'command/test.cpp',
-        'command/tweak.cpp',
-        'configuration/finder.cpp',
-        'configuration/scanner.cpp',
-        'configuration/tweaker.cpp',
-        'utils/configuration.cpp',
-    ],
-    dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep, spdlog_dep],
-    install: true,
-    install_dir: get_option('bindir')
-)
+subdir('src')
 
 #################
 # Configuration #
@@ -91,13 +65,13 @@ install_emptydir(sysconf_dir)
 install_data(
     'autocomplete/linux-enable-ir-emitter.bash',
     rename: 'linux-enable-ir-emitter',
-    install_dir : get_option('datadir') / 'bash-completion/completions',
+    install_dir: get_option('datadir') / 'bash-completion/completions',
 )
 
 install_data(
     'autocomplete/linux-enable-ir-emitter.zsh',
     rename: '_linux-enable-ir-emitter',
-    install_dir : get_option('datadir') / 'zsh/site-functions',
+    install_dir: get_option('datadir') / 'zsh/site-functions',
 )
 
 ################
@@ -106,12 +80,12 @@ install_data(
 if get_option('boot_service') == 'systemd'
     install_data(
         'boot_service/systemd/linux-enable-ir-emitter.service',
-        install_dir : '/' / get_option('sysconfdir') / 'systemd/system',
+        install_dir: '/' / get_option('sysconfdir') / 'systemd/system',
     )
 elif get_option('boot_service') == 'openrc'
     install_data(
         'boot_service/openrc/linux-enable-ir-emitter',
-        install_dir : '/' / get_option('sysconfdir') / 'init.d',
+        install_dir: '/' / get_option('sysconfdir') / 'init.d',
     )
 endif
 
@@ -122,5 +96,5 @@ install_emptydir(log_dir)
 
 install_data(
     'LICENSE',
-    install_dir : get_option('datadir') / 'licences' / meson.project_name(),
+    install_dir: get_option('datadir') / 'licences' / meson.project_name(),
 )

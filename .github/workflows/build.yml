@@ -19,11 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load dependencies versions
-        uses: cardinalby/export-env-action@v2
-        with:
-          envFile: '.github/workflows/deps/version.env'
-
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -35,23 +30,30 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/workflows/deps/install_dir
-          key: ${{ env.OPENCV_GIT_TAG }}-${{ env.YAML_GIT_TAG }}-${{ env.ARGPARSE_GIT_TAG }}-${{ env.SPDLOG_GIT_TAG }}
+          key: ${{ hashFiles('.github/workflows/deps/CMakeLists.txt') }}
 
       - name: Build lib dependencis
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
           cd .github/workflows/deps
-          cmake . -B build -GNinja \
-            -DOPENCV_GIT_TAG=${{ env.OPENCV_GIT_TAG }} \
-            -DYAML_GIT_TAG=${{ env.YAML_GIT_TAG }} \
-            -DARGPARSE_GIT_TAG=${{ env.ARGPARSE_GIT_TAG }} \
-            -DSPDLOG_GIT_TAG=${{ env.SPDLOG_GIT_TAG }}
+          cmake . -B build -GNinja
           ninja -C build
-          cd -
 
       - name: Setup build
         run: |
-          meson setup build --buildtype ${{ inputs.buildtype }} --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+          meson setup build --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+          case "${{ inputs.buildtype }}" in
+            "release")
+              meson configure build --optimization=s --strip
+              ;;
+            "debug")
+              meson configure build --buildtype=debug
+              ;;
+            *)
+              echo "Build type ${{ inputs.buildtype }} not supported"
+              exit 1
+              ;;
+          esac
 
       - name: Compile
         run: |

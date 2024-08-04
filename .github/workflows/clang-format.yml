@@ -1,20 +1,15 @@
-name: "C++ Lint"
+name: "clang-format"
 
 on:
   workflow_dispatch:
   workflow_call:
 
 jobs:
-  lint:
-    name: C++ linting
+  clang-format:
+    name: clang-format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Load dependencies versions
-        uses: cardinalby/export-env-action@v2
-        with:
-          envFile: '.github/workflows/deps/version.env'
 
       - name: Install dependencies
         run: |
@@ -26,13 +21,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/workflows/deps/install_dir
-          key: ${{ env.OPENCV_GIT_TAG }}-${{ env.YAML_GIT_TAG }}-${{ env.ARGPARSE_GIT_TAG }}
-          fail-on-cache-miss: true
+          key: ${{ hashFiles('.github/workflows/deps/CMakeLists.txt') }}
 
       - name: Setup
         run: |
           meson setup build --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
 
-      - name: Lint
+      - name: Check
         run: |
-          ninja clang-tidy -C build
+          ninja clang-format -C build
