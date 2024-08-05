@@ -1,12 +1,10 @@
-#include "scanner.hpp"
-
 #include <iomanip>
 #include <iostream>
 using namespace std;
 
-#include <spdlog/spdlog.h>
-
 #include "camera/camerainstruction.hpp"
+#include "logger.hpp"
+#include "scanner.hpp"
 
 Scanner::Scanner(shared_ptr<Camera> camera) : camera_(std::move(camera)) {}
 

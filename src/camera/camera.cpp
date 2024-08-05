@@ -12,6 +12,7 @@
 #include <thread>
 using namespace std;
 
+// replace by std::format when C++20 supported by OpenCV
 #include <spdlog/fmt/fmt.h>
 
 #include "camerainstruction.hpp"

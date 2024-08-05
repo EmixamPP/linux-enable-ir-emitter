@@ -1,13 +1,11 @@
-#include "tweaker.hpp"
-
 #include <iostream>
 #include <optional>
 #include <sstream>
 using namespace std;
 
-#include <spdlog/spdlog.h>
-
 #include "camera/camerainstruction.hpp"
+#include "logger.hpp"
+#include "tweaker.hpp"
 
 Tweaker::Tweaker(shared_ptr<Camera> camera) : camera(std::move(camera)) {}
 
@@ -99,14 +97,14 @@ void Tweaker::tweak(CameraInstructions &instructions) {
     if (!new_cur.has_value()) continue;
 
     if (!inst.set_cur(new_cur.value())) {
-      spdlog::warn("Invalid value for the instruction.");
+      logger::warn("Invalid value for the instruction.");
       continue;
     }
 
     try {
       camera->apply(inst);
     } catch (const CameraException &e) {
-      spdlog::info("Please shutdown your computer, then boot and retry.");
+      logger::info("Please shutdown your computer, then boot and retry.");
       inst.set_cur(prev_cur);
       inst.set_disable(true);
       throw e;  // propagate to exit

@@ -1,5 +1,3 @@
-#include "finder.hpp"
-
 #include <atomic>
 #include <csignal>
 #include <fstream>
@@ -8,9 +6,9 @@
 #include <thread>
 using namespace std;
 
-#include <spdlog/spdlog.h>
-
 #include "camera/camerainstruction.hpp"
+#include "finder.hpp"
+#include "logger.hpp"
 
 // Progression line size
 constexpr unsigned PROGRESSION_LINE_SIZE = 20;
@@ -27,7 +25,7 @@ std::atomic<bool> force_exit = false;
 static void catch_ctrl_c() {
   signal(SIGINT, [](int signal) {
     if (signal == SIGINT) {
-      spdlog::info("The process will exit as soon as possible.");
+      logger::info("The process will exit as soon as possible.");
       force_exit = true;
     }
   });
@@ -44,7 +42,7 @@ bool Finder::find(CameraInstructions &instructions) {
   unsigned p = 0;  // progression
   for (auto &instruction : instructions) {
     if (instruction.is_disable()) {
-      spdlog::debug("Disable instruction skipped: {}.", to_string(instruction));
+      logger::debug("Disable instruction skipped: {}.", to_string(instruction));
       continue;
     }
 
@@ -58,30 +56,30 @@ bool Finder::find(CameraInstructions &instructions) {
 
         if (neg_answer_counter == neg_answer_limit_ - 1) instruction.set_max_cur();
 
-        spdlog::debug("Instruction applied: {}.", to_string(instruction));
+        logger::debug("Instruction applied: {}.", to_string(instruction));
 
         if (camera_->apply(instruction) && camera_->is_emitter_working()) {
-          spdlog::debug("The instruction makes emitter flash.");
+          logger::debug("The instruction makes emitter flash.");
           if (++configured == emitters_) {
-            spdlog::debug("All emitters are configured.");
+            logger::debug("All emitters are configured.");
             return true;
           }
         } else
-          spdlog::debug("The instruction is not valid.");
+          logger::debug("The instruction is not valid.");
 
         ++neg_answer_counter;
       }
 
       instruction.reset();
-      spdlog::debug("Reseting to the instruction: {}.", to_string(instruction));
+      logger::debug("Reseting to the instruction: {}.", to_string(instruction));
       camera_->apply(instruction);
 
       if (force_exit) return false;
     } catch (const CameraInstructionException &e) {
       continue;
     } catch (const CameraException &e) {
-      spdlog::error("Impossible to reset the camera.");
-      spdlog::info("Please shutdown your computer, then boot and retry.");
+      logger::error("Impossible to reset the camera.");
+      logger::info("Please shutdown your computer, then boot and retry.");
       instruction.reset();
       instruction.set_disable(true);
       throw e;  // propagate to exit

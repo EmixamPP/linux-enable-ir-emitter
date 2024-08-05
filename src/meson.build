@@ -1,12 +1,18 @@
 configure_file(
-    input: 'utils/configuration.hpp.in',
+    input: 'linux-enable-ir-emitter.cpp.in',
+    output: 'linux-enable-ir-emitter.cpp',
+    configuration: cfg_data,
+)
+
+configure_file(
+    input: 'configuration/configuration.hpp.in',
     output: 'configuration.hpp',
     configuration: cfg_data,
 )
 
 configure_file(
-    input: 'linux-enable-ir-emitter.cpp.in',
-    output: 'linux-enable-ir-emitter.cpp',
+    input: 'utils/logger.hpp.in',
+    output: 'logger.hpp',
     configuration: cfg_data,
 )
 
@@ -24,7 +30,7 @@ executable(
         'configuration/finder.cpp',
         'configuration/scanner.cpp',
         'configuration/tweaker.cpp',
-        'utils/configuration.cpp',
+        'configuration/configuration.cpp',
     ],
     dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep, spdlog_dep],
     install: true,
