@@ -22,8 +22,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-setuptools python3-wheel ninja-build g++ pkg-config libgtk-3-dev cmake
-          python -m pip install meson
+          sudo apt-get install -y meson gcc pkg-config libgtk-3-dev cmake
 
       - name: Cache lib dependencies
         id: deps-cache
