@@ -13,7 +13,7 @@
 ### Tools:
 * `meson >= 1.0.0`
 * `ninja-build`
-* `g++` (for `C++17`)
+* `gcc >= 10.0.0`
 
 ## Hardware requirements
 * An infrared camera with at least one emitter.

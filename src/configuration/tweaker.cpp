@@ -80,11 +80,11 @@ static optional<vector<uint8_t>> ask_for_new_cur(CameraInstruction &inst) {
 
 void Tweaker::tweak(CameraInstructions &instructions) {
   while (true) {
-    auto stop_feedback = camera->play();
+    auto video_feedback = camera->play();
 
     size_t choice = ask_for_choice(instructions);
     if (choice == instructions.size()) {
-      stop_feedback();
+      video_feedback.request_stop();
       break;
     }
     auto &inst = instructions.at(choice);
@@ -92,7 +92,7 @@ void Tweaker::tweak(CameraInstructions &instructions) {
     auto prev_cur = inst.cur();
     auto new_cur = ask_for_new_cur(inst);
 
-    stop_feedback();
+    video_feedback.request_stop();
 
     if (!new_cur.has_value()) continue;
 

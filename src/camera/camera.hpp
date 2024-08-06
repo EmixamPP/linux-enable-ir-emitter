@@ -3,6 +3,7 @@
 #include <linux/uvcvideo.h>
 
 #include <memory>
+#include <stop_token>
 #include <string>
 #include <vector>
 using namespace std;
@@ -158,14 +159,14 @@ class Camera {
   void disable_gui() noexcept;
 
   /**
-   * @brief Show a video feedback until the stop function is called.
-   * You should not use the camera object until the stop function is called.
+   * @brief Show a video feedback until the stop is requested.
+   * You should not use the camera object until the `request_stop()` is called.
    *
    * @throw CameraException if unable to open the camera device
    *
-   * @return a stop function
+   * @return the stop source
    */
-  function<void()> play();
+  std::stop_source play();
 
   /**
    * @brief Show a video feedback until the user exit by pressing any key.
