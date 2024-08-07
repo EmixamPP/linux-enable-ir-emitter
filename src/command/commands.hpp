@@ -15,7 +15,7 @@ using namespace std;
 /**
  * @brief Exit codes for the program.
  */
-enum ExitCode {
+enum ExitCode : uint8_t {
   SUCCESS = 0,
   FAILURE = 1,
   ROOT_REQUIRED = 2,
