@@ -1,5 +1,3 @@
-#include "camera.hpp"
-
 #include <fcntl.h>
 #include <linux/usb/video.h>
 #include <sys/ioctl.h>
@@ -7,13 +5,13 @@
 
 #include <cerrno>
 #include <filesystem>
+#include <format>
 #include <regex>
 #include <stdexcept>
 #include <thread>
 using namespace std;
 
-#include <spdlog/fmt/fmt.h>
-
+#include "camera.hpp"
 #include "camerainstruction.hpp"
 
 // Value associated the keyboard key for OK
@@ -34,7 +32,7 @@ void Camera::open_fd() {
   if (fd_ < 0) {
     errno = 0;
     fd_ = open(device_.c_str(), O_WRONLY);
-    if (fd_ < 0 || errno) throw CameraException(fmt::format("Cannot access to {}", device_));
+    if (fd_ < 0 || errno) throw CameraException(std::format("Cannot access to {}", device_));
   }
 }
 
@@ -49,7 +47,7 @@ void Camera::open_cap() {
   if (cap_->isOpened()) return;
 
   if (!cap_->open(index_, cv::CAP_V4L, cap_para_))
-    throw CameraException(fmt::format("OpenCV cannot access to {}", device_));
+    throw CameraException(std::format("OpenCV cannot access to {}", device_));
 }
 
 void Camera::close_cap() noexcept {
@@ -151,7 +149,7 @@ Camera::Camera(const string &device, int width, int height)
   if (regex_search(device_, match, DEVICE_PATTERN))
     index_ = stoi(match[1]);
   else
-    throw CameraException(fmt::format("Impossible to obtain the index of {}", device));
+    throw CameraException(std::format("Impossible to obtain the index of {}", device));
 }
 
 Camera::~Camera() {
@@ -163,25 +161,22 @@ string Camera::device() const noexcept { return device_; }
 
 void Camera::disable_gui() noexcept { no_gui_ = true; }
 
-function<void()> Camera::play() {
+std::stop_source Camera::play() {
   open_cap();
 
-  // joinable thread principle
-  shared_ptr<bool> stop = make_shared<bool>(false);
-  shared_ptr<thread> show_video = make_shared<thread>([this, stop]() {
+  jthread show_video([this](const std::stop_token &stop) {
     cv::Mat frame;
-    while (!(*stop)) {
+    while (!stop.stop_requested()) {
       cv::imshow("linux-enable-ir-emitter", read1_unsafe());
       cv::waitKey(IMAGE_DELAY);
     }
-  });
 
-  return [this, stop, show_video]() {
-    *stop = true;
-    show_video->join();
     cv::destroyAllWindows();
     close_cap();
-  };
+  });
+  show_video.detach();
+
+  return show_video.get_stop_source();
 }
 
 void Camera::play_forever() {
@@ -207,7 +202,7 @@ cv::Mat Camera::read1_unsafe() {
   auto retry = IMAGE_DELAY;
   while (frame.empty() && retry-- != 0) cap_->read(frame);
 
-  if (retry == 0) throw CameraException(fmt::format("Unable to read a frame from {}", device_));
+  if (retry == 0) throw CameraException(std::format("Unable to read a frame from {}", device_));
 
   return frame;
 }

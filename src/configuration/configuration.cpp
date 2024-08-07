@@ -6,10 +6,10 @@
 #include <string>
 using namespace std;
 
-#include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 
 #include "camera/camerainstruction.hpp"
+#include "logger.hpp"
 
 // Prefix path of a v4l device
 const string V4L_PREFIX = "/dev/v4l/by-path/";
@@ -38,9 +38,9 @@ static optional<CameraInstructions> read_from_file(const string &file_path) noex
     YAML::Node node = YAML::LoadFile(file_path);
     return node.as<CameraInstructions>();
   } catch (const YAML::BadFile &e) {
-    spdlog::debug("yaml error: {}.", e.what());
+    logger::debug("yaml error: {}.", e.what());
   } catch (...) {
-    spdlog::warn("Error while reading the configuration file at {}.", file_path);
+    logger::warn("Error while reading the configuration file at {}.", file_path);
   }
 
   return {};
@@ -64,7 +64,7 @@ static optional<string> V4LNameOf(const string &device) {
 
     if (names.empty()) return {};
   } catch (const filesystem::filesystem_error &e) {
-    spdlog::debug(e.what());
+    logger::debug(e.what());
   }
 
   return *names.begin();
@@ -81,7 +81,7 @@ static optional<string> PathOf(const string &device) noexcept {
   auto v4l_name = V4LNameOf(device);
   if (v4l_name) return Configuration::SAVE_FOLDER_CONFIG_PATH_ + v4l_name.value();
 
-  spdlog::error("Impossible to obtain the v4l name of {}.", device);
+  logger::error("Impossible to obtain the v4l name of {}.", device);
   return {};
 }
 
@@ -107,7 +107,7 @@ bool Configuration::Save(const string &device, const CameraInstructions &instruc
 
   if (path) {
     write_to_file(instructions, path.value());
-    spdlog::debug("Configuration for {} saved here: {}.", device, path.value());
+    logger::debug("Configuration for {} saved here: {}.", device, path.value());
     return true;
   }
 

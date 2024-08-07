@@ -1,20 +1,18 @@
 #include <algorithm>
 #include <vector>
-
-#include "commands.hpp"
 using namespace std;
 
-#include <spdlog/spdlog.h>
-
 #include "camera/camerainstruction.hpp"
+#include "commands.hpp"
+#include "logger.hpp"
 
 ExitCode run(const optional<string> &device, int width, int height) {
-  spdlog::debug("Executing run command.");
+  logger::debug("Executing run command.");
 
   auto devices = Configuration::ConfiguredDevices();
 
   if (devices.empty()) {
-    spdlog::warn("No device has been configured.");
+    logger::warn("No device has been configured.");
     return ExitCode::SUCCESS;
   }
 
@@ -25,7 +23,7 @@ ExitCode run(const optional<string> &device, int width, int height) {
     auto instructions = Configuration::Load(device);
     if (!instructions) {
       oneFailure = true;
-      spdlog::error("Failed to load a configuration for {}.", device);
+      logger::error("Failed to load a configuration for {}.", device);
       continue;
     }
 
@@ -34,15 +32,15 @@ ExitCode run(const optional<string> &device, int width, int height) {
     try {
       for (const auto &instruction : instructions.value()) {
         if (!instruction.is_disable()) {
-          spdlog::debug("Applying instruction {} on {}.", to_string(instruction), device);
+          logger::debug("Applying instruction {} on {}.", to_string(instruction), device);
           if (!camera.apply(instruction)) {
-            spdlog::error("Failed to apply the instruction {}.", to_string(instruction));
+            logger::error("Failed to apply the instruction {}.", to_string(instruction));
             oneFailure = true;
           }
         }
       }
     } catch (const CameraException &e) {
-      spdlog::critical(e.what());
+      logger::critical(e.what());
       exit(ExitCode::FILE_DESCRIPTOR_ERROR);
     }
   }

@@ -1,66 +1,24 @@
+#include <unistd.h>
+
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
-#include <unistd.h>
 using namespace std;
 
 #include <argparse/argparse.hpp>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/daily_file_sink.h>
 
 #include "command/commands.hpp"
-
-constexpr char LOG_FILE[] = "@log_file@";
+#include "logger.hpp"
 
 /**
  * @brief Exit if the program was not run with root privilege.
  */
-static void check_root() noexcept
-{
-    if (geteuid() != 0)
-    {
-        spdlog::critical("Please run with root privilege.");
-        exit(ExitCode::ROOT_REQUIRED);
-    }
-}
-
-/**
- * @brief Create a console + file spdlog logger
- * and set it as the default
- *
- * @param verbose_console set debug level for the console
- * @param enable_file enable log in file (trace level)
- *
- */
-static void setup_logger(bool verbose_console, bool enable_file)
-{
-    auto console_sink = make_shared<spdlog::sinks::stdout_color_sink_st>();
-    console_sink->set_level(verbose_console ? spdlog::level::debug : spdlog::level::info);
-    console_sink->set_pattern("%v");
-
-    std::vector<spdlog::sink_ptr> sinks{console_sink};
-
-    if (enable_file) // add file sink if possible
-    {
-        try
-        {
-            auto file_sink = make_shared<spdlog::sinks::daily_file_format_sink_st>(LOG_FILE, 0, 0);
-            file_sink->set_level(spdlog::level::debug);
-            file_sink->set_pattern("[%H:%M:%S] [%l] %v");
-
-            sinks.push_back(file_sink);
-        }
-        catch (const spdlog::spdlog_ex &e)
-        {
-            spdlog::warn("Impossible to use the log file {}. Ensure it is writable by the user.", LOG_FILE);
-        }
-    }
-
-    auto logger = make_shared<spdlog::logger>("logger", sinks.begin(), sinks.end());
-    logger->set_level(spdlog::level::debug);
-    spdlog::set_default_logger(logger);
+static void check_root() noexcept {
+  if (geteuid() != 0) {
+    logger::critical("Please run with root privilege.");
+    exit(ExitCode::ROOT_REQUIRED);
+  }
 }
 
 /**
@@ -68,42 +26,40 @@ static void setup_logger(bool verbose_console, bool enable_file)
  *
  * @return the parser object
  */
-static auto create_program_parser() noexcept
-{
-    auto program = make_shared<argparse::ArgumentParser>("linux-enable-ir-emitter", "@version@", argparse::default_arguments::help);
-    program->add_description("Provides support for infrared cameras.");
-    program->add_epilog("https://github.com/EmixamPP/linux-enable-ir-emitter");
+static auto create_program_parser() noexcept {
+  auto program = make_shared<argparse::ArgumentParser>("linux-enable-ir-emitter", "@version@",
+                                                       argparse::default_arguments::help);
+  program->add_description("Provides support for infrared cameras.");
+  program->add_epilog("https://github.com/EmixamPP/linux-enable-ir-emitter");
 
-    program->add_argument("-V", "--version")
-        .help("shows version message and exits")
-        .action([](const auto &)
-                {
-            cout << "linux-enable-ir-emitter @version@" << endl;
-            cout << "Developed by Maxime Dirksen - EmixamPP" << endl;
-            cout << "MIT License" << endl;
-            exit(ExitCode::SUCCESS); });
+  program->add_argument("-V", "--version")
+      .help("shows version message and exits")
+      .action([](const auto &) {
+        cout << "linux-enable-ir-emitter @version@" << endl;
+        cout << "Developed by Maxime Dirksen - EmixamPP" << endl;
+        cout << "MIT License" << endl;
+        exit(ExitCode::SUCCESS);
+      });
 
-    program->add_argument("-d", "--device")
-        .help("specify the camera, nothing for automatic")
-        .default_value("")
-        .nargs(1)
-        .metavar("device");
-    program->add_argument("-w", "--width")
-        .help("specify the width, -1 automatic")
-        .default_value(-1)
-        .scan<'i', int>()
-        .nargs(1)
-        .metavar("width");
-    program->add_argument("-t", "--height")
-        .help("specify the height, -1 for automatic")
-        .default_value(-1)
-        .scan<'i', int>()
-        .nargs(1)
-        .metavar("height");
-    program->add_argument("-v", "--verbose")
-        .help("enables verbose information")
-        .flag();
-    return program;
+  program->add_argument("-d", "--device")
+      .help("specify the camera, nothing for automatic")
+      .default_value("")
+      .nargs(1)
+      .metavar("device");
+  program->add_argument("-w", "--width")
+      .help("specify the width, -1 automatic")
+      .default_value(-1)
+      .scan<'i', int>()
+      .nargs(1)
+      .metavar("width");
+  program->add_argument("-t", "--height")
+      .help("specify the height, -1 for automatic")
+      .default_value(-1)
+      .scan<'i', int>()
+      .nargs(1)
+      .metavar("height");
+  program->add_argument("-v", "--verbose").help("enables verbose information").flag();
+  return program;
 }
 
 /**
@@ -111,30 +67,25 @@ static auto create_program_parser() noexcept
  *
  * @return the parser object
  */
-static auto create_configure_cmd_parser() noexcept
-{
-    auto configure_command = make_shared<argparse::ArgumentParser>("configure", "@version@", argparse::default_arguments::help);
+static auto create_configure_cmd_parser() noexcept {
+  auto configure_command = make_shared<argparse::ArgumentParser>("configure", "@version@",
+                                                                 argparse::default_arguments::help);
+  configure_command->add_argument("-m", "--manual").help("enables manual verification").flag();
+  configure_command->add_argument("-e", "--emitters")
+      .help("specify the number of emitters")
+      .default_value(1)
+      .scan<'i', int>()
+      .nargs(1)
+      .metavar("emitters");
+  configure_command->add_argument("-l", "--limit")
+      .help("specify the negative answer limit, use -1 for unlimited")
+      .default_value(10)
+      .scan<'i', int>()
+      .nargs(1)
+      .metavar("limit");
+  configure_command->add_argument("-g", "--no-gui").help("disables video feedback").flag();
 
-    configure_command->add_argument("-m", "--manual")
-        .help("enables manual verification")
-        .flag();
-    configure_command->add_argument("-e", "--emitters")
-        .help("specify the number of emitters")
-        .default_value(1)
-        .scan<'i', int>()
-        .nargs(1)
-        .metavar("emitters");
-    configure_command->add_argument("-l", "--limit")
-        .help("specify the negative answer limit, use -1 for unlimited")
-        .default_value(10)
-        .scan<'i', int>()
-        .nargs(1)
-        .metavar("limit");
-    configure_command->add_argument("-g", "--no-gui")
-        .help("disables video feedback")
-        .flag();
-
-    return configure_command;
+  return configure_command;
 }
 
 /**
@@ -142,10 +93,10 @@ static auto create_configure_cmd_parser() noexcept
  *
  * @return the parser object
  */
-static auto create_run_cmd_parser() noexcept
-{
-    auto run_command = make_shared<argparse::ArgumentParser>("run", "@version@", argparse::default_arguments::help);
-    return run_command;
+static auto create_run_cmd_parser() noexcept {
+  auto run_command =
+      make_shared<argparse::ArgumentParser>("run", "@version@", argparse::default_arguments::help);
+  return run_command;
 }
 
 /**
@@ -153,10 +104,10 @@ static auto create_run_cmd_parser() noexcept
  *
  * @return the parser object
  */
-static auto create_tweak_cmd_parser() noexcept
-{
-    auto tweak_command = make_shared<argparse::ArgumentParser>("tweak", "@version@", argparse::default_arguments::help);
-    return tweak_command;
+static auto create_tweak_cmd_parser() noexcept {
+  auto tweak_command = make_shared<argparse::ArgumentParser>("tweak", "@version@",
+                                                             argparse::default_arguments::help);
+  return tweak_command;
 }
 
 /**
@@ -164,67 +115,60 @@ static auto create_tweak_cmd_parser() noexcept
  *
  * @return the parser object
  */
-static auto create_test_cmd_parser() noexcept
-{
-    auto test_command = make_shared<argparse::ArgumentParser>("test", "@version@", argparse::default_arguments::help);
-    return test_command;
+static auto create_test_cmd_parser() noexcept {
+  auto test_command =
+      make_shared<argparse::ArgumentParser>("test", "@version@", argparse::default_arguments::help);
+  return test_command;
 }
 
-int main(int argc, char **argv)
-{
-    auto program = create_program_parser();
+int main(int argc, char **argv) {
+  auto program = create_program_parser();
 
-    auto configure_command = create_configure_cmd_parser();
-    program->add_subparser(*configure_command);
+  auto configure_command = create_configure_cmd_parser();
+  program->add_subparser(*configure_command);
 
-    auto run_command = create_run_cmd_parser();
-    program->add_subparser(*run_command);
+  auto run_command = create_run_cmd_parser();
+  program->add_subparser(*run_command);
 
-    auto tweak_command = create_tweak_cmd_parser();
-    program->add_subparser(*tweak_command);
+  auto tweak_command = create_tweak_cmd_parser();
+  program->add_subparser(*tweak_command);
 
-    auto test_command = create_test_cmd_parser();
-    program->add_subparser(*test_command);
+  auto test_command = create_test_cmd_parser();
+  program->add_subparser(*test_command);
 
-    try
-    {
-        program->parse_args(argc, argv);
-    }
-    catch (const exception &e)
-    {
-        cerr << e.what() << endl;
-        cerr << program << endl;
-        return ExitCode::FAILURE;
-    }
-
-    auto enable_file_log = program->is_subcommand_used(*configure_command) ||
-                           program->is_subcommand_used(*tweak_command);
-    setup_logger(program->get<bool>("verbose"), enable_file_log);
-
-    auto device = program->get<string>("device").empty() ? optional<string>() : program->get<string>("device");
-    auto width = program->get<int>("width");
-    auto height = program->get<int>("height");
-
-    if (program->is_subcommand_used(*configure_command))
-    {
-        auto manual = configure_command->get<bool>("manual");
-        auto emitters = static_cast<unsigned>(configure_command->get<int>("emitters"));
-        auto limit = static_cast<unsigned>(configure_command->get<int>("limit"));
-        auto no_gui = configure_command->get<bool>("no-gui");
-        check_root();
-        return configure(device, width, height, manual, emitters, limit, no_gui);
-    }
-    else if (program->is_subcommand_used(*run_command))
-        return run(device, width, height);
-    else if (program->is_subcommand_used(*tweak_command))
-    {
-        check_root();
-        return tweak(device, width, height);
-    }
-    else if (program->is_subcommand_used(*test_command))
-        return test(device, width, height);
-
-    cerr << "Subcommand choice is missing" << endl;
+  try {
+    program->parse_args(argc, argv);
+  } catch (const exception &e) {
+    cerr << e.what() << endl;
     cerr << program << endl;
     return ExitCode::FAILURE;
+  }
+
+  auto enable_file_log = program->is_subcommand_used(*configure_command) ||
+                         program->is_subcommand_used(*tweak_command);
+  logger::setup(program->get<bool>("verbose"), enable_file_log);
+
+  auto device =
+      program->get<string>("device").empty() ? optional<string>() : program->get<string>("device");
+  auto width = program->get<int>("width");
+  auto height = program->get<int>("height");
+
+  if (program->is_subcommand_used(*configure_command)) {
+    auto manual = configure_command->get<bool>("manual");
+    auto emitters = static_cast<unsigned>(configure_command->get<int>("emitters"));
+    auto limit = static_cast<unsigned>(configure_command->get<int>("limit"));
+    auto no_gui = configure_command->get<bool>("no-gui");
+    check_root();
+    return configure(device, width, height, manual, emitters, limit, no_gui);
+  } else if (program->is_subcommand_used(*run_command))
+    return run(device, width, height);
+  else if (program->is_subcommand_used(*tweak_command)) {
+    check_root();
+    return tweak(device, width, height);
+  } else if (program->is_subcommand_used(*test_command))
+    return test(device, width, height);
+
+  cerr << "Subcommand choice is missing" << endl;
+  cerr << program << endl;
+  return ExitCode::FAILURE;
 }
