@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
     program->parse_args(argc, argv);
   } catch (const exception &e) {
     cerr << e.what() << endl;
-    cerr << program << endl;
+    cerr << program->help().str();
     return ExitCode::FAILURE;
   }
 
@@ -169,6 +169,6 @@ int main(int argc, char **argv) {
     return test(device, width, height);
 
   cerr << "Subcommand choice is missing" << endl;
-  cerr << program << endl;
+  cerr << program->help().str();
   return ExitCode::FAILURE;
 }

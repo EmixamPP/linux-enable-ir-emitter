@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter',
     'cpp',
-    version: '6.0.1',
+    version: '6.0.2',
     license: 'MIT',
     default_options: [
         'cpp_std=c++20',
