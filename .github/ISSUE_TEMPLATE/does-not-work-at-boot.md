@@ -10,7 +10,7 @@ assignees: ''
 <!--- Please look at the docs before open an issue -->
 <!--- https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md -->
 
-**Output of `systemctl status linux-enable-ir-emitter`**
+**Output of `journalctl -b -u linux-enable-ir-emitter`**
 ```
 paste here
 ```
@@ -24,6 +24,6 @@ paste here
 <!-- describe here if you have -->
 
 **Additional info**
- - Computer (or camera) model: 
+ - Computer (or camera) model:
  - Linux distribution:
  - Version of linux-enable-ir-emitter: <!--- linux-enable-ir-emitter -V -->
