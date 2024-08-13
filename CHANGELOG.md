@@ -1,3 +1,6 @@
+# Jul 2024 - 6.0.2
+- Minor improvements
+- Fix missing help print
 # Fri Jun 14 2024 - 6.0.0
 - Usage of YAML to store camera configuration
 - Save of all the camera instructions

@@ -6,5 +6,8 @@ The name of a configuration file represents the v4l name of the device (the same
 ### Save
 Consequently, these configurations can be saved and restored in a future (re)installation of the system (no matter what the distro) by replacing them inside `/etc/linux-enable-ir-emitter/`.
 
+### Reset
+You may want to reset the changes you made to the camera configuration, using either the `configure` or the `tweak` command. To do this, in `/etc/linux-enable-ir-emitter/`, erase the contents of the `<device>` file with the contents of `<device>.ini`
+
 ### Delete
 If you want to delete a configuration for a device, you can delete the corresponding file inside `/etc/linux-enable-ir-emitter/`. There is no danger in doing so, after the next sleep, reboot or shutdown, the camera will be reset to its default value.

@@ -9,14 +9,13 @@
 
 #include "camera/camera.hpp"
 #include "configuration.hpp"
+#include "logger.hpp"
 using namespace std;
-
-#include <spdlog/spdlog.h>
 
 /**
  * @brief Exit codes for the program.
  */
-enum ExitCode {
+enum ExitCode : uint8_t {
   SUCCESS = 0,
   FAILURE = 1,
   ROOT_REQUIRED = 2,
@@ -45,11 +44,11 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
     // find a grayscale camera
     auto devices = T::Devices();
     for (const auto &device : devices) {
-      spdlog::debug("Checking if {} is a grayscale camera.", device);
+      logger::debug("Checking if {} is a grayscale camera.", device);
       try {
         camera = make_shared<T>(device, width, height);
         if (camera->is_gray_scale()) {
-          spdlog::debug("{} is a grayscale camera.", device);
+          logger::debug("{} is a grayscale camera.", device);
           break;
         }
       } catch (const CameraException &) {  // ignore
@@ -57,7 +56,7 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
     }
 
     if (!camera) {
-      spdlog::critical("No infrared camera has been found.");
+      logger::critical("No infrared camera has been found.");
       exit(ExitCode::FAILURE);
     }
   } else

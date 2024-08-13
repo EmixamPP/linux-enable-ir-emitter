@@ -1,12 +1,11 @@
 #include "autocamera.hpp"
 
 #include <cmath>
+#include <format>
 #include <memory>
 #include <utility>
 #include <vector>
 using namespace std;
-
-#include <spdlog/fmt/fmt.h>
 
 #include <opencv2/core.hpp>
 
@@ -83,7 +82,7 @@ long long unsigned AutoCamera::intensity_variation_sum() {
     frames = read_during(capture_time_ms_);
   }
 
-  if (retry == 0) throw CameraException(fmt::format("Unable to read frames from {}", device()));
+  if (retry == 0) throw CameraException(std::format("Unable to read frames from {}", device()));
 
   // compute lighting intensity for each pixel of each frame
   const vector<vector<int>> intensities = compute_intensities(frames);

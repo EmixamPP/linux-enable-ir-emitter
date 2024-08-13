@@ -1,13 +1,11 @@
-#include "tweaker.hpp"
-
 #include <iostream>
 #include <optional>
 #include <sstream>
 using namespace std;
 
-#include <spdlog/spdlog.h>
-
 #include "camera/camerainstruction.hpp"
+#include "logger.hpp"
+#include "tweaker.hpp"
 
 Tweaker::Tweaker(shared_ptr<Camera> camera) : camera(std::move(camera)) {}
 
@@ -82,11 +80,11 @@ static optional<vector<uint8_t>> ask_for_new_cur(CameraInstruction &inst) {
 
 void Tweaker::tweak(CameraInstructions &instructions) {
   while (true) {
-    auto stop_feedback = camera->play();
+    auto video_feedback = camera->play();
 
     size_t choice = ask_for_choice(instructions);
     if (choice == instructions.size()) {
-      stop_feedback();
+      video_feedback.request_stop();
       break;
     }
     auto &inst = instructions.at(choice);
@@ -94,19 +92,19 @@ void Tweaker::tweak(CameraInstructions &instructions) {
     auto prev_cur = inst.cur();
     auto new_cur = ask_for_new_cur(inst);
 
-    stop_feedback();
+    video_feedback.request_stop();
 
     if (!new_cur.has_value()) continue;
 
     if (!inst.set_cur(new_cur.value())) {
-      spdlog::warn("Invalid value for the instruction.");
+      logger::warn("Invalid value for the instruction.");
       continue;
     }
 
     try {
       camera->apply(inst);
     } catch (const CameraException &e) {
-      spdlog::info("Please shutdown your computer, then boot and retry.");
+      logger::info("Please shutdown your computer, then boot and retry.");
       inst.set_cur(prev_cur);
       inst.set_disable(true);
       throw e;  // propagate to exit

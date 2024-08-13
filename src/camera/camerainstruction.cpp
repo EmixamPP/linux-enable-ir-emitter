@@ -1,14 +1,12 @@
-#include "camerainstruction.hpp"
-
 #include <linux/usb/video.h>
 
+#include <format>
 #include <fstream>
 #include <utility>
 using namespace std;
 
-#include <spdlog/fmt/fmt.h>
-
 #include "camera.hpp"
+#include "camerainstruction.hpp"
 
 CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector, bool disable)
     : unit_(unit), selector_(selector), disable_(disable) {
@@ -106,16 +104,23 @@ bool CameraInstruction::set_max_cur() noexcept {
 void CameraInstruction::reset() noexcept { cur_ctrl_.assign(init_ctrl_.begin(), init_ctrl_.end()); }
 
 string to_string(const CameraInstruction &inst) {
-  return fmt::format("unit: {}, selector: {}, control: {}",
+  return std::format("unit: {}, selector: {}, control: {}",
                      to_string(static_cast<int>(inst.unit())),
                      to_string(static_cast<int>(inst.selector())), to_string(inst.cur()));
 }
 
-string to_string(const vector<uint8_t> &vec) { return fmt::format("{}", fmt::join(vec, " ")); }
+string to_string(const vector<uint8_t> &vec) {
+  string str;
+  for (size_t i = 0; i < vec.size(); ++i) {
+    str += to_string(static_cast<int>(vec[i]));
+    if (i + 1 < vec.size()) str += " ";
+  }
+  return str;
+}
 
 CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit,
                                                        uint8_t selector)
-    : message(fmt::format("Impossible to obtain the instruction on {} for unit: {} selector: {}.",
+    : message(std::format("Impossible to obtain the instruction on {} for unit: {} selector: {}.",
                           device, to_string(static_cast<int>(unit)),
                           to_string(static_cast<int>(selector)))) {}
 
