@@ -95,6 +95,11 @@ endif
 install_emptydir(log_dir)
 
 install_data(
+    'README.md',
+    install_dir: get_option('datadir') / 'doc' / meson.project_name(),
+)
+
+install_data(
     'LICENSE',
-    install_dir: get_option('datadir') / 'licences' / meson.project_name(),
+    install_dir: get_option('datadir') / 'doc' / meson.project_name(),
 )
