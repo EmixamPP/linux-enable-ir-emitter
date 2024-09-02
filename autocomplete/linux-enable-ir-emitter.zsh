@@ -19,7 +19,7 @@ _linux-enable-ir-emitter() {
 			_describe 'devices' opts
 			;;
 		level1)
-			opts=("run" "configure" "tweak" "test" "boot")
+			opts=("run" "configure" "tweak" "test")
 			_describe 'commands' opts
 			;;
 		level2)
