@@ -1,4 +1,5 @@
-# Jul 2024 - 6.0.2
+# Sun Sept 1 2024 - 6.0.3
+- Fix inconsistent file logging
 - Minor improvements
 - Fix missing help print
 # Fri Jun 14 2024 - 6.0.0
