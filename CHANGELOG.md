@@ -1,3 +1,5 @@
+# Fri Sept 30 2024 - 6.0.4
+- Fix tweak command crashes
 # Sun Sept 1 2024 - 6.0.3
 - Fix inconsistent file logging
 - Minor improvements
@@ -48,17 +50,17 @@
 - Add openrc support
 - Python >= 3.10
 # Son Feb 26 2023 - 4.5.0
-- Improvement of config generation 
+- Improvement of config generation
 # Fri Feb 24 2023 - 4.4.2
 - Fix command not found
 - Smaller size
 # Fri Feb 17 2023 - 4.4.0
 - Total rework of the implementation
 - Support multiple emitters camera
-- Memorize broken instructions to skip them 
+- Memorize broken instructions to skip them
 - Usage of /dev/v4l/by-path for persistence
 # Tue Sep 13 2022 - 4.1.5
-- Fix boot service for custom device 
+- Fix boot service for custom device
 # Thu Aug 11 2022 - 4.1.4
 - Force V4l2 backend in opencv
 - Improvement of config generation
@@ -67,11 +69,11 @@
 - Fix camera triggering issue
 - Fix device symlink boot service side effect
 # Sun Jun 19 2022 - 4.0.0
-- Rework, optimization and improvement of config generation 
+- Rework, optimization and improvement of config generation
 - Remove manual configuration commands
 - Remove option for integration into Howdy
 # Thu Dec 9 2021 - 3.2.5
-- Tweak for integration into Howdy(https://github.com/boltgolt/howdy)  
+- Tweak for integration into Howdy(https://github.com/boltgolt/howdy)
 - Bash auto completion
 - Better systemd support
 # Thu Nov 4 2021 - 3.2.2
