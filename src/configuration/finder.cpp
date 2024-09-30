@@ -64,7 +64,7 @@ bool Finder::find(CameraInstructions &instructions) {
             return true;
           }
         } else
-          logger::debug("The instruction is not valid.");
+          logger::debug("The instruction does not enable the emitter.");
 
         ++neg_answer_counter;
       }

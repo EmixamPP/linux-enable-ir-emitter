@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <filesystem>
 #include <format>
+#include <functional>
 #include <regex>
 #include <stdexcept>
 #include <thread>
@@ -161,10 +162,10 @@ string Camera::device() const noexcept { return device_; }
 
 void Camera::disable_gui() noexcept { no_gui_ = true; }
 
-std::stop_source Camera::play() {
-  open_cap();
+std::function<void()> Camera::play() {
+  auto show_video = std::make_shared<jthread>([this](const std::stop_token &stop) {
+    open_cap();
 
-  jthread show_video([this](const std::stop_token &stop) {
     cv::Mat frame;
     while (!stop.stop_requested()) {
       cv::imshow("linux-enable-ir-emitter", read1_unsafe());
@@ -174,9 +175,13 @@ std::stop_source Camera::play() {
     cv::destroyAllWindows();
     close_cap();
   });
-  show_video.detach();
 
-  return show_video.get_stop_source();
+  auto stop = [show_video]() {
+    show_video->request_stop();
+    show_video->join();
+  };
+
+  return stop;
 }
 
 void Camera::play_forever() {
