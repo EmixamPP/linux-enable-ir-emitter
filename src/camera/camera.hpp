@@ -160,13 +160,13 @@ class Camera {
 
   /**
    * @brief Show a video feedback until the stop is requested.
-   * You should not use the camera object until the `request_stop()` is called.
+   * You should not use the camera object until the stop function is called.
    *
    * @throw CameraException if unable to open the camera device
    *
-   * @return the stop source
+   * @return the stop function
    */
-  std::stop_source play();
+  std::function<void()> play();
 
   /**
    * @brief Show a video feedback until the user exit by pressing any key.

@@ -68,23 +68,22 @@ static optional<vector<uint8_t>> ask_for_new_cur(CameraInstruction &inst) {
     return {};
   }
 
+  vector<uint8_t> new_cur;
   istringstream iss(new_cur_str);
-  auto new_cur_parsed =
-      vector<int32_t>(istream_iterator<int32_t>{iss}, istream_iterator<int32_t>());
-
-  vector<uint8_t> new_cur(new_cur_parsed.size());
-  for (auto v : new_cur_parsed) new_cur.push_back(static_cast<uint8_t>(v));
+  std::transform(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(),
+                 std::back_inserter(new_cur),
+                 [](const std::string &val) { return static_cast<uint8_t>(std::stoi(val)); });
 
   return new_cur;
 }
 
 void Tweaker::tweak(CameraInstructions &instructions) {
   while (true) {
-    auto video_feedback = camera->play();
+    auto video_feedback_stop = camera->play();
 
     size_t choice = ask_for_choice(instructions);
     if (choice == instructions.size()) {
-      video_feedback.request_stop();
+      video_feedback_stop();
       break;
     }
     auto &inst = instructions.at(choice);
@@ -92,7 +91,7 @@ void Tweaker::tweak(CameraInstructions &instructions) {
     auto prev_cur = inst.cur();
     auto new_cur = ask_for_new_cur(inst);
 
-    video_feedback.request_stop();
+    video_feedback_stop();
 
     if (!new_cur.has_value()) continue;
 
