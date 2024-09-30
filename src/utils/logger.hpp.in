@@ -4,7 +4,7 @@
 #include <string_view>
 using namespace std;
 
-#include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
@@ -29,7 +29,7 @@ inline void setup(bool verbose_console, bool enable_file) {
   if (enable_file)  // add file sink if possible
   {
     try {
-      auto file_sink = make_shared<spdlog::sinks::daily_file_format_sink_st>(LOG_FILE, 0, 0);
+      auto file_sink = make_shared<spdlog::sinks::basic_file_sink_st>(LOG_FILE);
       file_sink->set_level(spdlog::level::debug);
       file_sink->set_pattern("[%H:%M:%S] [%l] %v");
 
@@ -47,26 +47,26 @@ inline void setup(bool verbose_console, bool enable_file) {
 
 template <typename... Args>
 void debug(std::string_view fmt, Args &&...args) {
-  spdlog::debug(fmt, std::forward<Args>(args)...);
+  spdlog::debug(SPDLOG_FMT_RUNTIME(fmt), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void info(std::string_view fmt, Args &&...args) {
-  spdlog::info(fmt, std::forward<Args>(args)...);
+  spdlog::info(SPDLOG_FMT_RUNTIME(fmt), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void warn(std::string_view fmt, Args &&...args) {
-  spdlog::warn(fmt, std::forward<Args>(args)...);
+  spdlog::warn(SPDLOG_FMT_RUNTIME(fmt), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void error(std::string_view fmt, Args &&...args) {
-  spdlog::error(fmt, std::forward<Args>(args)...);
+  spdlog::error(SPDLOG_FMT_RUNTIME(fmt), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void critical(std::string_view fmt, Args &&...args) {
-  spdlog::critical(fmt, std::forward<Args>(args)...);
+  spdlog::critical(SPDLOG_FMT_RUNTIME(fmt), std::forward<Args>(args)...);
 }
 }  // namespace logger
