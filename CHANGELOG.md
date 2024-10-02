@@ -1,3 +1,5 @@
+# Wed Oct 2 2024 - 6.0.5
+- Fix fmt lib compatibility
 # Fri Sept 30 2024 - 6.0.4
 - Fix tweak command crashes
 # Sun Sept 1 2024 - 6.0.3
