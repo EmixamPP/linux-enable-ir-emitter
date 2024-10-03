@@ -24,7 +24,7 @@ jobs:
             sed -i 's/\(set(YAML_GIT_TAG "\)[^"]*\(".*\)/\1${{ env.VERSION }}\2/' .github/workflows/deps/CMakeLists.txt
 
       - name: Create PR if new version
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
             token: ${{ secrets.PAT }}
             title: "chore(ci): update yaml to ${{ env.VERSION }}"
