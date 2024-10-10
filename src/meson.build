@@ -1,3 +1,11 @@
+cfg_data = configuration_data(
+    {
+        'version': meson.project_version(),
+        'configdir': config_dir,
+        'log_file': log_dir / meson.project_name() + '.log',
+    },
+)
+
 configure_file(
     input: 'linux-enable-ir-emitter.cpp.in',
     output: 'linux-enable-ir-emitter.cpp',
