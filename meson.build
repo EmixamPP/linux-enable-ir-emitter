@@ -39,25 +39,20 @@ spdlog_dep = dependency('spdlog', include_type: 'system')
 ############
 # Variable #
 ############
-sysconf_dir = get_option('sysconfdir') / meson.project_name()
+config_dir = get_option('sysconfdir') / meson.project_name()
 log_dir = get_option('localstatedir') / 'log' / meson.project_name()
-cfg_data = configuration_data(
-    {
-        'version': meson.project_version(),
-        'configdir': sysconf_dir,
-        'log_file': log_dir / meson.project_name() + '.log',
-    },
-)
 
 ##############
 # Executable #
 ##############
 subdir('src')
 
-#################
-# Configuration #
-#################
-install_emptydir(sysconf_dir)
+################
+# Config + Log #
+################
+install_emptydir(config_dir)
+
+install_emptydir(log_dir)
 
 ####################
 # Shell completion #
@@ -92,8 +87,6 @@ endif
 ##########
 # Others #
 ##########
-install_emptydir(log_dir)
-
 install_data(
     'README.md',
     install_dir: get_option('datadir') / 'doc' / meson.project_name(),
