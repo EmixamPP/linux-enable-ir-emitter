@@ -40,7 +40,7 @@ jobs:
 
       - name: Setup build
         run: |
-          meson setup build --libdir=lib --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+          meson setup build --sysconfdir /etc --prefer-static --pkg-config-path $(find .github -name "pkgconfig")
           case "${{ inputs.buildtype }}" in
             "release")
               meson configure build --optimization=s --strip
