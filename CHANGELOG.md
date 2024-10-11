@@ -1,3 +1,5 @@
+# Fri Oct 11 2024 - 6.0.6
+- Better building system compatibility
 # Wed Oct 2 2024 - 6.0.5
 - Fix fmt lib compatibility
 # Fri Sept 30 2024 - 6.0.4
