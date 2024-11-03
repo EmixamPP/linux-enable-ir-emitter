@@ -1,3 +1,6 @@
+############
+# Variable #
+############
 cfg_data = configuration_data(
     {
         'version': meson.project_version(),
@@ -24,6 +27,9 @@ configure_file(
     configuration: cfg_data,
 )
 
+##########
+# Source #
+##########
 executable(
     'linux-enable-ir-emitter',
     sources: [

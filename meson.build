@@ -51,7 +51,6 @@ subdir('src')
 # Config + Log #
 ################
 install_emptydir(config_dir)
-
 install_emptydir(log_dir)
 
 ####################
@@ -96,3 +95,10 @@ install_data(
     'LICENSE',
     install_dir: get_option('datadir') / 'doc' / meson.project_name(),
 )
+
+#########
+# Tests #
+#########
+if (get_option('tests'))
+    subdir('tests')
+endif

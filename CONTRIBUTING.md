@@ -8,23 +8,24 @@ Before opening a new issue, please check the [docs](docs/README.md) first in ord
 To be sure that the modifications you made to the code will pass the CI during the PR, please perform the following steps:
 1. Compile locally the dependencies:
     ```
-    cd .github/workflows/deps && cmake -GNinja -B build && ninja -C build && cd -
+    cd .github/workflows/deps && cmake -Bbuild -GNinja && ninja -C build && cd -
     ```
 2. Setup the build:
     ```
-    meson setup build --buildtype=debug --libdir=lib --prefer-static --pkg-config-path=$(find . -name "pkgconfig")`
+    meson setup build --buildtype=debug --sysconfdir /etc --prefer-static --pkg-config-path=$(find . -name "pkgconfig")
     ```
-3. Compile:
+3. Perform changea and compile:
    ```
    meson compile −C build
    ```
    your new version of `linux-enable-ir-emitter` is located in `build/src/`
-4. Format the files:
+4. Ensure tests pass:
+   ```
+   meson test -C build
+   ```
+
+   If `clang-format` fails, you can easily fix the errors with:
    ```
    ninja clang-format -C build
    ```
-5. Ensure clang-tidy pass:
-   ```
-   ninja clang-tidy -C build
-   ```
-6. Commit, push and please describe enough what you did in your PR description
+5. Commit, push and please describe enough what you did in your PR description
