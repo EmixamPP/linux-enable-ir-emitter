@@ -15,154 +15,161 @@ class Camera;
  * Based on these two last, the object can compute the next possible control value.
  *
  */
-class CameraInstruction {
+struct CameraInstruction {
+  using Unit = uint8_t;
+  using Selector = uint8_t;
+  using Control = vector<uint8_t>;
+
+ private:
   // Unit used on the camera to identify the control
-  uint8_t unit_;
+  Unit unit_;
 
   // Selector used on the camera to identify the control
-  uint8_t selector_;
+  Selector selector_;
 
   // Flag to mark the control as disable
   bool disable_;
 
   // Current control value
-  vector<uint8_t> cur_ctrl_;
+  Control cur_;
 
   // Initial control value
-  vector<uint8_t> init_ctrl_;
+  Control init_;
 
   // Maximum control value
-  vector<uint8_t> max_ctrl_;
+  Control max_;
 
   // Minimum control value
-  vector<uint8_t> min_ctrl_;
+  Control min_;
+
+  // the control block to modify (8 bits value)
+  unsigned ctrl_block_;
 
  public:
+  /**
+   * @brief Construct a new empty CameraInstruction object.
+   * Values for unit, selector and controls needs to be set.
+   */
   CameraInstruction() = default;
 
   /**
    * @brief Construct a new CameraInstruction object.
-   *
    * @param camera on which find the control instruction
    * @param unit of the instruction
    * @param selector of the instruction
-   *
-   * @throw CameraInstructionException if information are missing for controlling
-   * the device
+   * @param disable if the instruction considered disabled
+   * @throw CameraInstructionException if an error occurs
    */
-  explicit CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector, bool disable = false);
-
-  ~CameraInstruction() = default;
-
-  CameraInstruction &operator=(const CameraInstruction &) = default;
-
-  CameraInstruction(const CameraInstruction &) = default;
-
-  CameraInstruction &operator=(CameraInstruction &&) = default;
-
-  CameraInstruction(CameraInstruction &&) = default;
+  explicit CameraInstruction(Camera &camera, Unit unit, Selector selector, bool disable = false);
 
   /**
-   * @brief Compute the next possible control value.
-   *
-   * @return true if the next value has been set,
-   * false if the maximum control has already been set
+   * @brief Construct a new CameraInstruction object.
+   * @param unit of the instruction
+   * @param selector of the instruction
+   * @param cur current control
+   * @param init initial control
+   * @param max maximum control
+   * @param min minimum control
+   * @param disable if the instruction considered disabled
    */
-  bool next() noexcept;
-
-  /**
-   * @brief Get the disable status.
-   *
-   * @return true if the instruction is disable
-   */
-  bool is_disable() const noexcept;
+  explicit CameraInstruction(Unit unit, Selector selector, Control cur, Control init, Control max,
+                             Control min, bool disable);
 
   /**
    * @brief Get the unit of the instruction.
-   *
    * @return unit
    */
   uint8_t unit() const noexcept;
 
   /**
    * @brief Get the selector of the instruction.
-   *
    * @return selector
    */
   uint8_t selector() const noexcept;
 
   /**
-   * @brief Get the current control value.
-   *
+   * @brief Get the current control.
    * @return minimum control
    */
-  const vector<uint8_t> &cur() const noexcept;
+  const Control &cur() const noexcept;
+
+  /**
+   * @brief Sets a new current control, if they have the same size.
+   * @param cur control to set
+   * @throw CameraInstructionException if `disable()` is true
+   * @return true if success, otherwise false
+   */
+  bool set_cur(Control cur);
 
   /**
    * @brief Get the maximum of the instruction.
-   *
    * @return minimum control
    */
-  const vector<uint8_t> &max() const noexcept;
+  const Control &max() const noexcept;
+
+  /**
+   * @brief If a maximum control exists,
+   * set it as the current control with that value.
+   * If no maximum control exists, set the maximum possible (i.e. UINT8_MAX).
+   * @throw CameraInstructionException if `disable()` is true
+   * @return true if success, otherwise false
+   */
+  bool set_max_cur();
 
   /**
    * @brief Get the minimum of the instruction.
-   *
    * @return maximum control
    */
-  const vector<uint8_t> &min() const noexcept;
+  const Control &min() const noexcept;
 
   /**
-   * @brief Get the initial control value.
-   *
-   * @return initial control value
+   * @brief If a minimum control exists,
+   * sets it as the current control with that value.
+   * @throw CameraInstructionException if `disable()` is true
+   * @return true if success, otherwise false
    */
-  const vector<uint8_t> &init() const noexcept;
+  bool set_min_cur();
+
+  /**
+   * @brief Get the initial control.
+   * @return initial control
+   */
+  const Control &init() const noexcept;
+
+  /**
+   * @brief Get the disable status.
+   * @return true if the instruction is disable
+   */
+  bool is_disable() const noexcept;
 
   /**
    * @brief Changes the disable status of the instruction.
-   *
    * @param is_disable status to set
    */
   void set_disable(bool is_disable) noexcept;
 
   /**
-   * @brief Sets a new current control value, if it is valid.
-   *
-   * @param cur control to set
-   *
-   * @return true if success, otherwise false
-   */
-  bool set_cur(const vector<uint8_t> &cur) noexcept;
-
-  /**
-   * @brief If a minimum control instruction exists and is not already the current, sets it as the
-   * current control instruction with that value.
-   *
-   * @return true if success, otherwise false
-   */
-  bool set_min_cur() noexcept;
-
-  /**
-   * @brief If a maximum control instruction exists and is not already the current, set it as the
-   * current control instruction with that value. If no maximum control exists, set the maximum
-   * value possible (i.e. UINT8_MAX).
-   *
-   * @return true if success, otherwise false
-   */
-  bool set_max_cur() noexcept;
-
-  /**
    * @brief Reset the current control to the initial control value.
+   * @throw CameraInstructionException if `disable()` is true
    */
-  void reset() noexcept;
+  void reset();
 
-  friend struct YAML::convert<CameraInstruction>;
+  /**
+   * @brief Compute the next possible control,
+   * it is incremented individually for each control block,
+   * no combination will be done, for that use `set_cur()`
+   * @return true if a next value has been set,
+   * false if all control block have been incremented up to their `maximum()` or UINT8_MAX
+   * @throw CameraInstructionException if `disable()` is true
+   */
+  bool next();
 };
 
 string to_string(const CameraInstruction &inst);
 
-string to_string(const vector<uint8_t> &vec);
+string to_string(const CameraInstruction::Control &vec);
+
+string to_string(uint8_t v);
 
 using CameraInstructions = vector<CameraInstruction>;
 
@@ -175,7 +182,7 @@ class CameraInstructionException : public exception {
   string message;
 
  public:
-  explicit CameraInstructionException(const string &device, uint8_t unit, uint8_t selector);
+  explicit CameraInstructionException(const CameraInstruction &inst, const string &error);
 
   const char *what() const noexcept override;
 };
@@ -189,38 +196,31 @@ template <>
 struct convert<CameraInstruction> {
   static Node encode(const CameraInstruction &obj) {
     Node node;
-    node["disable"] = obj.disable_;
-    node["unit"] = static_cast<int>(obj.unit_);
-    node["selector"] = static_cast<int>(obj.selector_);
-
-    for (const auto &v : obj.cur_ctrl_) node["current"].push_back(static_cast<int>(v));
-
-    if (obj.cur_ctrl_ != obj.init_ctrl_)
-      for (const auto &v : obj.init_ctrl_) node["initial"].push_back(static_cast<int>(v));
-
-    for (const auto &v : obj.max_ctrl_) node["maximum"].push_back(static_cast<int>(v));
-
-    for (const auto &v : obj.min_ctrl_) node["minimum"].push_back(static_cast<int>(v));
-
+    node["disable"] = obj.is_disable();
+    node["unit"] = static_cast<int>(obj.unit());
+    node["selector"] = static_cast<int>(obj.selector());
+    for (const auto &v : obj.cur()) node["current"].push_back(static_cast<int>(v));
+    if (obj.cur() != obj.init())
+      for (const auto &v : obj.init()) node["initial"].push_back(static_cast<int>(v));
+    for (const auto &v : obj.max()) node["maximum"].push_back(static_cast<int>(v));
+    for (const auto &v : obj.min()) node["minimum"].push_back(static_cast<int>(v));
     return node;
   }
 
   static bool decode(const Node &node, CameraInstruction &obj) {
     try {
-      obj.disable_ = node["disable"].as<bool>();
-      obj.unit_ = node["unit"].as<uint8_t>();
-      obj.selector_ = node["selector"].as<uint8_t>();
-
-      obj.cur_ctrl_ = node["current"].as<vector<uint8_t>>();
-
-      if (node["initial"])
-        obj.init_ctrl_ = node["initial"].as<vector<uint8_t>>();
-      else
-        obj.init_ctrl_.assign(obj.cur_ctrl_.begin(), obj.cur_ctrl_.end());
-
-      if (node["maximum"]) obj.max_ctrl_ = node["maximum"].as<vector<uint8_t>>();
-
-      if (node["minimum"]) obj.min_ctrl_ = node["minimum"].as<vector<uint8_t>>();
+      auto disable = node["disable"].as<bool>();
+      auto unit = node["unit"].as<CameraInstruction::Unit>();
+      auto selector = node["selector"].as<CameraInstruction::Selector>();
+      auto cur = node["current"].as<CameraInstruction::Control>();
+      auto init = cur;
+      auto max = CameraInstruction::Control();
+      auto min = CameraInstruction::Control();
+      if (node["initial"]) init = node["initial"].as<CameraInstruction::Control>();
+      if (node["maximum"]) max = node["maximum"].as<CameraInstruction::Control>();
+      if (node["minimum"]) min = node["minimum"].as<CameraInstruction::Control>();
+      obj = CameraInstruction(unit, selector, std::move(cur), std::move(init), std::move(max),
+                              std::move(min), disable);
     } catch (...) {
       return false;
     }

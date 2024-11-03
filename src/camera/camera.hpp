@@ -25,7 +25,7 @@ class CameraException final : public exception {
   const char *what() const noexcept override;
 };
 
-class CameraInstruction;
+struct CameraInstruction;
 
 /**
  * @brief The `Camera` object allows to capture frames from a camera device for a specific amount,

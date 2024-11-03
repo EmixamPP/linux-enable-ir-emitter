@@ -3,7 +3,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <cerrno>
 #include <filesystem>
 #include <format>
 #include <functional>
@@ -31,9 +30,8 @@ void Camera::open_fd() {
   close_cap();
 
   if (fd_ < 0) {
-    errno = 0;
     fd_ = open(device_.c_str(), O_WRONLY);
-    if (fd_ < 0 || errno) throw CameraException(std::format("Cannot access to {}", device_));
+    if (fd_ < 0) throw CameraException(std::format("Cannot access to {}", device_));
   }
 }
 
@@ -57,12 +55,11 @@ void Camera::close_cap() noexcept {
 
 int Camera::execute_uvc_query(const uvc_xu_control_query &query) {
   open_fd();
-  errno = 0;
-  const int result = ioctl(fd_, UVCIOC_CTRL_QUERY, &query);
-  if (result == 1 || errno) {
+  auto res = ioctl(fd_, UVCIOC_CTRL_QUERY, &query);
+  if (res != 0) {
     // ioctl debug not really useful for automated configuration generation since
     // linux-enable-ir-emitter v3
-    // fprintf(stderr, "Ioctl error code: %d, errno: %d\n", result, errno);
+    // fprintf(stderr, "Ioctl error code: %d, errno: %d\n", res, errno);
     // switch (errno) {
     //   case ENOENT:
     //     fprintf(stderr,
