@@ -15,7 +15,8 @@ ExitCode test(const optional<string> &device, int width, int height) {
       logger::warn("The camera {} is not in grey scale. This is probably your regular camera.",
                    camera->device());
 
-    camera->play_forever();
+    camera->play_wait().get();
+
   } catch (const CameraException &e) {
     logger::critical(e.what());
     exit(ExitCode::FILE_DESCRIPTOR_ERROR);

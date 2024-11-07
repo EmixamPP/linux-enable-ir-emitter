@@ -16,7 +16,6 @@ using namespace std;
 
 // Value associated the keyboard key for OK
 constexpr int OK_KEY = 121;
-
 // Value associated to the keyboard key for NOT OK
 constexpr int NOK_KEY = 110;
 
@@ -26,35 +25,16 @@ constexpr int IMAGE_DELAY = 30;
 // Regex pattern checking if the device is valid
 const regex DEVICE_PATTERN("/dev/video([0-9]+)");
 
-void Camera::open_fd() {
-  close_cap();
-
-  if (fd_ < 0) {
-    fd_ = open(device_.c_str(), O_WRONLY);
-    if (fd_ < 0) throw CameraException(std::format("Cannot access to {}", device_));
-  }
+FileDescriptor::FileDescriptor(const string &device) {
+  fd_ = open(device.c_str(), O_WRONLY);
+  if (fd_ < 0) throw CameraException(device, "Cannot access the device.");
 }
 
-void Camera::close_fd() noexcept {
-  if (fd_ != -1) {
-    close(fd_);
-    fd_ = -1;
-  }
-}
+FileDescriptor::~FileDescriptor() { close(fd_); }
 
-void Camera::open_cap() {
-  if (cap_->isOpened()) return;
+FileDescriptor::operator int() const { return fd_; }
 
-  if (!cap_->open(index_, cv::CAP_V4L, cap_para_))
-    throw CameraException(std::format("OpenCV cannot access to {}", device_));
-}
-
-void Camera::close_cap() noexcept {
-  if (cap_->isOpened()) cap_->release();
-}
-
-int Camera::execute_uvc_query(const uvc_xu_control_query &query) {
-  open_fd();
+int Camera::execute_uvc_query(const uvc_xu_control_query &query) noexcept {
   auto res = ioctl(fd_, UVCIOC_CTRL_QUERY, &query);
   if (res != 0) {
     // ioctl debug not really useful for automated configuration generation since
@@ -88,71 +68,48 @@ int Camera::execute_uvc_query(const uvc_xu_control_query &query) {
 }
 
 bool Camera::is_emitter_working_ask() {
-  open_cap();
-
   cout << "Is the video flashing? Press Y or N in the window. " << flush;
-  int key = -1;
-  while (key != OK_KEY && key != NOK_KEY) {
-    cv::imshow("linux-enable-ir-emitter", read1_unsafe());
-    key = cv::waitKey(IMAGE_DELAY);
-  }
+  auto key = play_wait(true).get();
   cout << (key == OK_KEY ? "Y pressed." : "N pressed.") << endl;
-
-  cv::destroyAllWindows();
-  close_cap();
-
   return key == OK_KEY;
 }
 
 bool Camera::is_emitter_working_ask_no_gui() {
-  open_cap();
-  read1_unsafe();
+  auto stop = play();
 
   string answer;
-  cout << "Is the ir emitter flashing (not just turn on) ? Yes/No ? ";
+  cout << "Is the ir emitter flashing (not just turn on)? Yes/No? ";
   cin >> answer;
   transform(answer.begin(), answer.end(), answer.begin(), [](char c) { return tolower(c); });
-
   while (answer != "yes" && answer != "y" && answer != "no" && answer != "n") {
-    cout << "Yes/No ? ";
+    cout << "Yes/No? ";
     cin >> answer;
     transform(answer.begin(), answer.end(), answer.begin(), [](char c) { return tolower(c); });
   }
 
-  close_cap();
-
+  stop();
   return answer == "yes" || answer == "y";
 }
 
-Camera::Camera(const string &device, int width, int height)
-    : cap_para_({
-          cv::CAP_PROP_FOURCC,
-          cv::VideoWriter::fourcc('G', 'R', 'E', 'Y'),
-          cv::CAP_PROP_FRAME_WIDTH,
-          width,
-          cv::CAP_PROP_FRAME_HEIGHT,
-          height,
-      }) {
-  cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
-
-  if (!filesystem::exists(device)) throw CameraException(device + " does not exists.");
-
-  if (regex_match(device, DEVICE_PATTERN))
-    device_ = device;
-  else
-    // try to obtain the /dev/videoX form by taking the canonical path
-    device_ = filesystem::canonical(device).string();
-
+static auto device_index(const string &device) {
   smatch match;
-  if (regex_search(device_, match, DEVICE_PATTERN))
-    index_ = stoi(match[1]);
-  else
-    throw CameraException(std::format("Impossible to obtain the index of {}", device));
+  if (regex_search(device, match, DEVICE_PATTERN)) return stoi(match[1]);
+  throw CameraException(device, "Impossible to obtain the index of the device.");
 }
 
-Camera::~Camera() {
-  close_fd();
-  close_cap();
+Camera::Camera(const string &_device, int width, int height)
+    : device_(filesystem::canonical(_device)),
+      fd_(device_),
+      cap_(device_index(device_), cv::CAP_V4L,
+           {
+               cv::CAP_PROP_FOURCC,
+               cv::VideoWriter::fourcc('G', 'R', 'E', 'Y'),
+               cv::CAP_PROP_FRAME_WIDTH,
+               width,
+               cv::CAP_PROP_FRAME_HEIGHT,
+               height,
+           }) {
+  cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_ERROR);
 }
 
 string Camera::device() const noexcept { return device_; }
@@ -161,16 +118,15 @@ void Camera::disable_gui() noexcept { no_gui_ = true; }
 
 std::function<void()> Camera::play() {
   auto show_video = std::make_shared<jthread>([this](const std::stop_token &stop) {
-    open_cap();
-
-    cv::Mat frame;
     while (!stop.stop_requested()) {
-      cv::imshow("linux-enable-ir-emitter", read1_unsafe());
-      cv::waitKey(IMAGE_DELAY);
+      auto frame = read1();
+      if (!no_gui_) {
+        cv::imshow("linux-enable-ir-emitter", frame);
+      }
+      this_thread::sleep_for(chrono::milliseconds(IMAGE_DELAY));
     }
 
-    cv::destroyAllWindows();
-    close_cap();
+    if (!no_gui_) cv::destroyAllWindows();
   });
 
   auto stop = [show_video]() {
@@ -181,50 +137,39 @@ std::function<void()> Camera::play() {
   return stop;
 }
 
-void Camera::play_forever() {
-  open_cap();
+std::future<int> Camera::play_wait(bool yn_key_only) {
+  std::promise<int> key_prom;
+  auto key_future = key_prom.get_future();
 
-  cv::Mat frame;
-  int key = -1;
+  jthread([this, key_prom = std::move(key_prom), yn_key_only](const std::stop_token &stop) mutable {
+    int key = -1;
+    while (!stop.stop_requested() && (yn_key_only ? key != OK_KEY && key != NOK_KEY : key == -1)) {
+      auto frame = read1();
+      if (!no_gui_) {
+        cv::imshow("linux-enable-ir-emitter", frame);
+      }
+      key = cv::waitKey(IMAGE_DELAY);
+    }
 
-  cout << "Press any key in the window to close" << endl;
+    key_prom.set_value(key);
+    if (!no_gui_) cv::destroyAllWindows();
+  }).detach();
 
-  while (key == -1) {
-    cv::imshow("linux-enable-ir-emitter", read1_unsafe());
-    key = cv::waitKey(IMAGE_DELAY);
-  }
-
-  cv::destroyAllWindows();
-
-  close_cap();
-}
-
-cv::Mat Camera::read1_unsafe() {
-  cv::Mat frame;
-  auto retry = IMAGE_DELAY;
-  while (frame.empty() && retry-- != 0) cap_->read(frame);
-
-  if (retry == 0) throw CameraException(std::format("Unable to read a frame from {}", device_));
-
-  return frame;
+  return key_future;
 }
 
 cv::Mat Camera::read1() {
-  open_cap();
-  auto frame = read1_unsafe();
-  close_cap();
+  cv::Mat frame;
+  auto retry = IMAGE_DELAY;
+  while (frame.empty() && retry-- != 0) cap_.read(frame);
+  if (retry == 0) throw CameraException(device_, "Unable to read a frame.");
   return frame;
 }
 
 vector<cv::Mat> Camera::read_during(unsigned capture_time_ms) {
-  open_cap();
-
   vector<cv::Mat> frames;
   const auto stop_time = chrono::steady_clock::now() + chrono::milliseconds(capture_time_ms);
-  while (chrono::steady_clock::now() < stop_time) frames.push_back(read1_unsafe());
-
-  close_cap();
-
+  while (chrono::steady_clock::now() < stop_time) frames.push_back(read1());
   return frames;
 }
 
@@ -235,19 +180,17 @@ bool Camera::is_emitter_working() {
 
 bool Camera::is_gray_scale() {
   const cv::Mat frame = read1();
-
   if (frame.channels() != 3) return false;
-
-  for (int r = 0; r < frame.rows; ++r)
+  for (int r = 0; r < frame.rows; ++r) {
     for (int c = 0; c < frame.cols; ++c) {
       const cv::Vec3b &pixel = frame.at<cv::Vec3b>(r, c);
       if (pixel[0] != pixel[1] || pixel[0] != pixel[2]) return false;
     }
-
+  }
   return true;
 }
 
-bool Camera::apply(const CameraInstruction &instruction) {
+bool Camera::apply(const CameraInstruction &instruction) noexcept {
   const uvc_xu_control_query query = {
       instruction.unit(),
       instruction.selector(),
@@ -258,7 +201,7 @@ bool Camera::apply(const CameraInstruction &instruction) {
   return execute_uvc_query(query) == 0;
 }
 
-int Camera::uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control) {
+int Camera::uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept {
   const uvc_xu_control_query query = {
       unit, selector, UVC_SET_CUR, static_cast<uint16_t>(control.size()), control.data(),
   };
@@ -267,7 +210,7 @@ int Camera::uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &contr
 }
 
 int Camera::uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector,
-                          vector<uint8_t> &control) {
+                          vector<uint8_t> &control) noexcept {
   const uvc_xu_control_query query = {
       unit, selector, query_type, static_cast<uint16_t>(control.size()), control.data(),
   };
@@ -275,7 +218,7 @@ int Camera::uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector,
   return execute_uvc_query(query);
 }
 
-uint16_t Camera::uvc_len_query(uint8_t unit, uint8_t selector) {
+uint16_t Camera::uvc_len_query(uint8_t unit, uint8_t selector) noexcept {
   std::array<uint8_t, 2> data;
   const uvc_xu_control_query query = {
       unit, selector, UVC_GET_LEN, 2, data.data(),
@@ -288,7 +231,7 @@ uint16_t Camera::uvc_len_query(uint8_t unit, uint8_t selector) {
   return len;
 }
 
-vector<string> Camera::Devices() {
+vector<string> Camera::Devices() noexcept {
   vector<string> devices;
   auto paths = filesystem::directory_iterator("/dev");
   for (const auto &entry : paths) {
@@ -298,6 +241,7 @@ vector<string> Camera::Devices() {
   return devices;
 }
 
-CameraException::CameraException(const string &message) : message_(message) {}
+CameraException::CameraException(const string &device, const string &error)
+    : message_(std::format("Device={}: {}", device, error)) {}
 
 const char *CameraException::what() const noexcept { return message_.c_str(); }

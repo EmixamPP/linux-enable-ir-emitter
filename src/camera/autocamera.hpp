@@ -22,9 +22,7 @@ class AutoCamera final : public Camera {
 
   /**
    * @brief Obtain the intensity variation sum of camera captures
-   *
    * @throw CameraException if unable to read frames
-   *
    * @return the intensity variation sum
    */
   long long unsigned intensity_variation_sum();
@@ -36,7 +34,6 @@ class AutoCamera final : public Camera {
    * @brief Construct a new AutoCamera object
    * The difference with the regular Camera object is that this one
    * can automatically determine if the ir emitter is working or not.
-   *
    * @param device path of the camera
    * @param width of the capture resolution
    * @param height of the capture resolution
@@ -50,9 +47,7 @@ class AutoCamera final : public Camera {
   /**
    * @brief Check if the emitter is working,
    * if so, ask for manual confirmation
-   *
    * @throw CameraException if unable to read frames
-   *
    * @return true if yes, false if not
    */
   bool is_emitter_working() override;
@@ -60,9 +55,7 @@ class AutoCamera final : public Camera {
   /**
    * @brief Check if the emitter is working,
    * without asking for manual confirmation
-   *
    * @throw CameraException if unable to read frames
-   *
    * @return true if yes, false if not
    */
   bool is_emitter_working_no_confirm();

@@ -160,13 +160,17 @@ int main(int argc, char **argv) {
     auto no_gui = configure_command->get<bool>("no-gui");
     check_root();
     return configure(device, width, height, manual, emitters, limit, no_gui);
-  } else if (program->is_subcommand_used(*run_command))
+  }
+  if (program->is_subcommand_used(*run_command)) {
     return run(device, width, height);
-  else if (program->is_subcommand_used(*tweak_command)) {
+  }
+  if (program->is_subcommand_used(*tweak_command)) {
     check_root();
     return tweak(device, width, height);
-  } else if (program->is_subcommand_used(*test_command))
+  }
+  if (program->is_subcommand_used(*test_command)) {
     return test(device, width, height);
+  }
 
   cerr << "Subcommand choice is missing" << endl;
   cerr << program->help().str();

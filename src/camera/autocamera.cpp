@@ -82,7 +82,7 @@ long long unsigned AutoCamera::intensity_variation_sum() {
     frames = read_during(capture_time_ms_);
   }
 
-  if (retry == 0) throw CameraException(std::format("Unable to read frames from {}", device()));
+  if (retry == 0) throw CameraException(device(), std::format("Unable to read frames."));
 
   // compute lighting intensity for each pixel of each frame
   const vector<vector<int>> intensities = compute_intensities(frames);

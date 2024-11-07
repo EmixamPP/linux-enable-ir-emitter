@@ -2,7 +2,9 @@
 
 #include <linux/uvcvideo.h>
 
+#include <future>
 #include <memory>
+#include <optional>
 #include <stop_token>
 #include <string>
 #include <vector>
@@ -12,20 +14,21 @@ using namespace std;
 #include <opencv2/highgui.hpp>
 #include <opencv2/videoio.hpp>
 
-/**
- * @brief Exception thrown by `Camera` class.
- */
-class CameraException final : public exception {
- private:
-  string message_;
+struct CameraInstruction;
+
+class FileDescriptor {
+  // File descriptor
+  int fd_;
 
  public:
-  CameraException(const string &message);
-
-  const char *what() const noexcept override;
+  FileDescriptor(const string &device);
+  ~FileDescriptor();
+  operator int() const;
+  FileDescriptor(const FileDescriptor &) = delete;
+  FileDescriptor &operator=(const FileDescriptor &) = delete;
+  FileDescriptor(FileDescriptor &&) = delete;
+  FileDescriptor &operator=(FileDescriptor &&) = delete;
 };
-
-struct CameraInstruction;
 
 /**
  * @brief The `Camera` object allows to capture frames from a camera device for a specific amount,
@@ -35,108 +38,59 @@ struct CameraInstruction;
  * control it. Lastly, the class can also gives the list of all /dev/videoX devices.
  */
 class Camera {
- private:
   // Should the video feedback be not displayed
   bool no_gui_ = false;
-
-  // File descriptor of the camera device
-  int fd_ = -1;
-
-  // Index of the camera device
-  int index_;
 
   // Path of the camera device
   string device_;
 
-  // Parameters for the OpenCV VideoCapture `cap_` object
-  const vector<int> cap_para_;
+  // File descriptor of the camera device
+  FileDescriptor fd_;
 
-  // OpenCV VideoCapture object
-  const shared_ptr<cv::VideoCapture> cap_ = make_shared<cv::VideoCapture>();
-
-  /**
-   * @brief Open a file descriptor if not yet open.
-   *
-   * @throw CameraException if unable to open the camera device
-   */
-  void open_fd();
-
-  /**
-   * @brief Close the current file descriptor.
-   */
-  void close_fd() noexcept;
-
-  /**
-   * @brief Open a VideoCapture if not yet open
-   *
-   * @throw CameraException if unable to open the camera device
-   */
-  void open_cap();
-
-  /**
-   * @brief Close the current VideoCapture.
-   */
-  void close_cap() noexcept;
+  // OpenCV video capture of the camera device
+  cv::VideoCapture cap_;
 
   /**
    * @brief Execute an uvc query on the device indicated by the file descriptor.
-   *
    * @param query uvc query to execute
-   *
-   * @throw CameraException if unable to open the camera device
-   *
    * @return 1 if error, otherwise 0
    **/
-  int execute_uvc_query(const uvc_xu_control_query &query);
+  int execute_uvc_query(const uvc_xu_control_query &query) noexcept;
 
   /**
    * @brief Reads one frame.
-   * Must be called between `open_cap()` and `close_cap()`, otherwise it will cause exceptions.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @throw CameraException if unable to read a frame
    * @return the frame
    */
-  cv::Mat read1_unsafe();
+  cv::Mat read1();
 
   /**
    * @brief Show a video feedback to the user
    * and asks if the emitter is working.
    * Must be called between `open_cap()` and `close_cap()`.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @throw CameraException if unable to read a frame
    * @return true if yes, false if not
    */
   bool is_emitter_working_ask();
 
   /**
    * @brief Trigger the camera and asks if the emitter is working.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @throw CameraException if unable to read a frame
    * @return true if yes, false if not
    */
   bool is_emitter_working_ask_no_gui();
 
  public:
-  Camera() = delete;
-
   /**
    * @brief Construct a new Camera object.
-   *
    * @param device path of the camera
-   * @param width of the capture resolution
-   * @param height of the capture resolution
-   *
+   * @param width of the capture resolution (default: -1)
+   * @param height of the capture resolution (default: -1)
    * @throw CameraException if the device is invalid
    */
   explicit Camera(const string &device, int width = -1, int height = -1);
 
-  /**
-   * @brief Destroy the Camera object
-   */
-  virtual ~Camera();
+  virtual ~Camera() = default;
 
   Camera &operator=(const Camera &) = delete;
 
@@ -148,7 +102,6 @@ class Camera {
 
   /**
    * @brief Get the device.
-   *
    * @return device path
    */
   string device() const noexcept;
@@ -161,115 +114,97 @@ class Camera {
   /**
    * @brief Show a video feedback until the stop is requested.
    * You should not use the camera object until the stop function is called.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
-   * @return the stop function
+   * @throw CameraException if unable to read a frame
+   * @return the stop function that returns the key pressed by the user
    */
-  std::function<void()> play();
+  [[nodiscard]] std::function<void()> play();
 
   /**
-   * @brief Show a video feedback until the user exit by pressing any key.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @brief Show a video feedback until the use press a key.
+   * You should not use the camera object until the stop function is called.
+   * @param yn_key_only if true, the user can only exit by pressing Y or N key, but not others (default: false)
+   * @throw CameraException if unable to read a frame
+   * @return a promise that will be resolved by the value of the key pressed
    */
-  void play_forever();
-
-  /**
-   * @brief Reads one frame.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
-   * @return the frame
-   */
-  cv::Mat read1();
+  [[nodiscard]] std::future<int> play_wait(bool yn_key_only = false);
 
   /**
    * @brief Read multiple frames.
-   *
    * @param capture_time_ms for how long (ms) collect frames
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @throw CameraException if unable to read a frame
    * @return the frames
    */
   vector<cv::Mat> read_during(unsigned capture_time_ms);
 
   /**
    * @brief Check if the emitter is working by asking confirmation to the user.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @throw CameraException if unable to read a frame
    * @return true if yes, false if not
    */
   virtual bool is_emitter_working();
 
   /**
    * @brief Determine if the camera is in grayscale.
-   *
-   * @throw CameraException if unable to open the camera device
-   *
+   * @throw CameraException if unable to read a frame
    * @return true if so, otherwise false.
    */
   bool is_gray_scale();
 
   /**
    * @brief Apply an instruction on the camera.
-   *
    * @param instruction to apply
-   *
-   * @throw CameraException if unable to open the camera device
-   *
    * @return true if success, otherwise false
    */
-  bool apply(const CameraInstruction &instruction);
+  bool apply(const CameraInstruction &instruction) noexcept;
 
   /**
    * @brief Change the current uvc control value for the camera device
-   *
    * @param unit extension unit ID
    * @param selector control selector
    * @param control control value
-   *
-   * @throw CameraException if unable to open the camera device
-   *
    * @return 1 if error, otherwise 0
    */
-  int uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control);
+  int uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept;
 
   /**
    * @brief Get the current, maximal, resolution or minimal value of the uvc control for the camera
    *device.
-   *
    * @param query_type UVC_GET_MAX, UVC_GET_RES, UVC_GET_CUR or UVC_GET_MIN
    * @param unit extension unit ID
    * @param selector control selector
    * @param controlSize size of the uvc control
    * @param control control value
-   *
-   * @throw CameraException if unable to open the camera device
-   *
    * @return 1 if error, otherwise 0
    */
-  int uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector, vector<uint8_t> &control);
+  int uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector,
+                    vector<uint8_t> &control) noexcept;
 
   /**
    * @brief Get the size of the uvc control for the indicated device.
-   *
    * @param unit extension unit ID
    * @param selector control selector
-   *
-   * @throw CameraException if unable to open the camera device
-   *
    * @return size of the control, 0 if error
    */
-  uint16_t uvc_len_query(uint8_t unit, uint8_t selector);
+  uint16_t uvc_len_query(uint8_t unit, uint8_t selector) noexcept;
 
   /**
    * @brief Return all /dev/videoX devices
-   *
    * @return path to the device
    */
-  static vector<string> Devices();
+  static vector<string> Devices() noexcept;
+};
+
+using CameraPtr = shared_ptr<Camera>;
+
+/**
+ * @brief Exception thrown by `Camera` class.
+ */
+class CameraException final : public exception {
+ private:
+  string message_;
+
+ public:
+  CameraException(const string &device, const string &error);
+
+  const char *what() const noexcept override;
 };
