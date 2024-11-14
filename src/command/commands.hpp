@@ -7,8 +7,7 @@
 #include <regex>
 #include <string>
 
-#include "camera/camera.hpp"
-#include "configuration.hpp"
+#include "configuration/configuration.hpp"
 #include "logger.hpp"
 using namespace std;
 
@@ -19,7 +18,6 @@ enum ExitCode : uint8_t {
   SUCCESS = 0,
   FAILURE = 1,
   ROOT_REQUIRED = 2,
-  FILE_DESCRIPTOR_ERROR = 126,
 };
 
 /**
@@ -31,7 +29,7 @@ enum ExitCode : uint8_t {
  * @param height of the capture resolution
  * @param no_gui
  *
- * @throw CameraException if the device is invalid
+ * @throw Camera::Exception if the device is invalid
  *
  * @return a smart pointer to the created object
  */
@@ -51,7 +49,7 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
           logger::debug("{} is a grayscale camera.", device);
           break;
         }
-      } catch (const CameraException &) {  // ignore
+      } catch (const Camera::Exception &) {  // ignore
       }
     }
 
@@ -69,7 +67,6 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
 
 /**
  * @brief Finds a configuration for an infrared camera which enables its emitter(s).
- *
  * @param device path of the infrared camera, nothing for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
@@ -78,7 +75,6 @@ inline shared_ptr<T> CreateCamera(const optional<string> &device, int width, int
  * @param neg_answer_limit number of negative answer before the pattern is skiped. Use -1 for
  * unlimited
  * @param no_gui no gui video feedback
- *
  * @return exit code
  */
 ExitCode configure(const optional<string> &device, int width, int height, bool manual,
@@ -86,11 +82,9 @@ ExitCode configure(const optional<string> &device, int width, int height, bool m
 
 /**
  * @brief Execute a configuration.
- *
  * @param device path of the camera, nothing to execute all configurations
  * @param width of the capture resolution
  * @param height of the capture resolution
- *
  * @return exit code
  */
 ExitCode run(const optional<string> &device, int width, int height);
@@ -98,22 +92,18 @@ ExitCode run(const optional<string> &device, int width, int height);
 /**
  * @brief Test if the camera is in grayscale and if the emitter is working.
  * Also display a video feedback.
- *
  * @param device path to the infrared camera, nothing for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
- *
  * @return exit code
  */
 ExitCode test(const optional<string> &device, int width, int height);
 
 /**
  * @brief Let the user modify the configuration of a camera
- *
  * @param device path to the infrared camera, nothing for automatic detection
  * @param width of the capture resolution
  * @param height of the capture resolution
- *
  * @return exit code
  */
 ExitCode tweak(const optional<string> &device, int width, int height);

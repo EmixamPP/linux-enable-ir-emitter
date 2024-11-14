@@ -16,8 +16,8 @@ configure_file(
 )
 
 configure_file(
-    input: 'configuration/configuration.hpp.in',
-    output: 'configuration.hpp',
+    input: 'configuration/configuration.cpp.in',
+    output: 'configuration.cpp',
     configuration: cfg_data,
 )
 
@@ -44,7 +44,7 @@ executable(
         'configuration/finder.cpp',
         'configuration/scanner.cpp',
         'configuration/tweaker.cpp',
-        'configuration/configuration.cpp',
+        meson.current_build_dir() / 'configuration.cpp',
     ],
     dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep, spdlog_dep],
     install: true,

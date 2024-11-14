@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <format>
 #include <vector>
 using namespace std;
 
@@ -163,6 +164,17 @@ struct CameraInstruction {
    * @throw CameraInstructionException if `disable()` is true
    */
   bool next();
+
+  class Exception : public exception {
+    string message;
+
+   public:
+    template <typename... Args>
+    explicit Exception(const string &format, Args... args)
+        : message(std::vformat(format, std::make_format_args(args...))) {}
+
+    const char *what() const noexcept override { return message.c_str(); }
+  };
 };
 
 string to_string(const CameraInstruction &inst);
@@ -172,20 +184,6 @@ string to_string(const CameraInstruction::Control &vec);
 string to_string(uint8_t v);
 
 using CameraInstructions = vector<CameraInstruction>;
-
-/**
- * @brief Exception thrown by the `CameraInstruction`.
- *
- */
-class CameraInstructionException : public exception {
- private:
-  string message;
-
- public:
-  explicit CameraInstructionException(const CameraInstruction &inst, const string &error);
-
-  const char *what() const noexcept override;
-};
 
 /**
  * @brief Convert a `CameraInstruction` object to a YAML node.

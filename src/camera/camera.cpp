@@ -13,6 +13,7 @@ using namespace std;
 
 #include "camera.hpp"
 #include "camerainstruction.hpp"
+#include "logger.hpp"
 
 // Value associated the keyboard key for OK
 constexpr int OK_KEY = 121;
@@ -25,9 +26,8 @@ constexpr int IMAGE_DELAY = 30;
 // Regex pattern checking if the device is valid
 const regex DEVICE_PATTERN("/dev/video([0-9]+)");
 
-FileDescriptor::FileDescriptor(const string &device) {
-  fd_ = open(device.c_str(), O_WRONLY);
-  if (fd_ < 0) throw CameraException(device, "Cannot access the device.");
+FileDescriptor::FileDescriptor(const string &device) : fd_(open(device.c_str(), O_WRONLY)) {
+  if (fd_ < 0) throw Camera::Exception("Cannot access {}.", device);
 }
 
 FileDescriptor::~FileDescriptor() { close(fd_); }
@@ -67,38 +67,30 @@ int Camera::execute_uvc_query(const uvc_xu_control_query &query) noexcept {
   return 0;
 }
 
-bool Camera::is_emitter_working_ask() {
-  cout << "Is the video flashing? Press Y or N in the window. " << flush;
-  auto key = play_wait(true).get();
-  cout << (key == OK_KEY ? "Y pressed." : "N pressed.") << endl;
-  return key == OK_KEY;
-}
-
-bool Camera::is_emitter_working_ask_no_gui() {
-  auto stop = play();
-
-  string answer;
-  cout << "Is the ir emitter flashing (not just turn on)? Yes/No? ";
-  cin >> answer;
-  transform(answer.begin(), answer.end(), answer.begin(), [](char c) { return tolower(c); });
-  while (answer != "yes" && answer != "y" && answer != "no" && answer != "n") {
-    cout << "Yes/No? ";
-    cin >> answer;
-    transform(answer.begin(), answer.end(), answer.begin(), [](char c) { return tolower(c); });
+int Camera::show_frame_and_wait() {
+  cv::Mat frame = read1();
+  if (!no_gui_) {
+    cv::imshow("linux-enable-ir-emitter", frame);
   }
-
-  stop();
-  return answer == "yes" || answer == "y";
+  return cv::waitKey(IMAGE_DELAY);
 }
 
 static auto device_index(const string &device) {
   smatch match;
   if (regex_search(device, match, DEVICE_PATTERN)) return stoi(match[1]);
-  throw CameraException(device, "Impossible to obtain the index of the device.");
+  throw Camera::Exception("Impossible to obtain the index of {}.", device);
+}
+
+static auto cannonical_device(const string &device) {
+  try {
+    return filesystem::canonical(device);
+  } catch (const std::exception &e) {
+    throw Camera::Exception("Impossible to obtain the canonical path of {}.", device);
+  }
 }
 
 Camera::Camera(const string &_device, int width, int height)
-    : device_(filesystem::canonical(_device)),
+    : device_(cannonical_device(_device)),
       fd_(device_),
       cap_(device_index(device_), cv::CAP_V4L,
            {
@@ -116,53 +108,34 @@ string Camera::device() const noexcept { return device_; }
 
 void Camera::disable_gui() noexcept { no_gui_ = true; }
 
-std::function<void()> Camera::play() {
-  auto show_video = std::make_shared<jthread>([this](const std::stop_token &stop) {
-    while (!stop.stop_requested()) {
-      auto frame = read1();
-      if (!no_gui_) {
-        cv::imshow("linux-enable-ir-emitter", frame);
-      }
-      this_thread::sleep_for(chrono::milliseconds(IMAGE_DELAY));
-    }
+std::function<void()> Camera::play(ExceptionPtr &eptr, bool key_exit) noexcept {
+  auto show_video =
+      std::make_shared<jthread>([&eptr, key_exit, this](const std::stop_token &stop) mutable {
+        try {
+          while (!stop.stop_requested()) {
+            if (show_frame_and_wait() != -1 && key_exit) {
+              break;
+            }
+          }
+        } catch (Exception &e) {
+          eptr = std::make_shared<Exception>(std::move(e));
+        }
+        if (!no_gui_) cv::destroyAllWindows();
+      });
 
-    if (!no_gui_) cv::destroyAllWindows();
-  });
-
-  auto stop = [show_video]() {
-    show_video->request_stop();
+  auto stop = [show_video, key_exit]() {
+    if (!key_exit) show_video->request_stop();
     show_video->join();
   };
 
   return stop;
 }
 
-std::future<int> Camera::play_wait(bool yn_key_only) {
-  std::promise<int> key_prom;
-  auto key_future = key_prom.get_future();
-
-  jthread([this, key_prom = std::move(key_prom), yn_key_only](const std::stop_token &stop) mutable {
-    int key = -1;
-    while (!stop.stop_requested() && (yn_key_only ? key != OK_KEY && key != NOK_KEY : key == -1)) {
-      auto frame = read1();
-      if (!no_gui_) {
-        cv::imshow("linux-enable-ir-emitter", frame);
-      }
-      key = cv::waitKey(IMAGE_DELAY);
-    }
-
-    key_prom.set_value(key);
-    if (!no_gui_) cv::destroyAllWindows();
-  }).detach();
-
-  return key_future;
-}
-
 cv::Mat Camera::read1() {
   cv::Mat frame;
   auto retry = IMAGE_DELAY;
-  while (frame.empty() && retry-- != 0) cap_.read(frame);
-  if (retry == 0) throw CameraException(device_, "Unable to read a frame.");
+  while (frame.empty() && --retry != 0) cap_.read(frame);
+  if (retry == 0) throw Camera::Exception("Unable to read a frame from {}.", device_);
   return frame;
 }
 
@@ -174,8 +147,22 @@ vector<cv::Mat> Camera::read_during(unsigned capture_time_ms) {
 }
 
 bool Camera::is_emitter_working() {
-  bool res = no_gui_ ? is_emitter_working_ask_no_gui() : is_emitter_working_ask();
-  return res;
+  ExceptionPtr eptr;
+  auto stop = play(eptr);
+
+  string answer;
+  cout << "Is the ir emitter flashing (not just turn on)? Yes/No? ";
+  cin >> answer;
+  transform(answer.begin(), answer.end(), answer.begin(), [](char c) { return tolower(c); });
+  while (answer != "yes" && answer != "y" && answer != "no" && answer != "n") {
+    cout << "Yes/No? ";
+    cin >> answer;
+    transform(answer.begin(), answer.end(), answer.begin(), [](char c) { return tolower(c); });
+  }
+
+  stop();
+  if (eptr) throw *eptr;
+  return answer == "yes" || answer == "y";
 }
 
 bool Camera::is_gray_scale() {
@@ -201,7 +188,7 @@ bool Camera::apply(const CameraInstruction &instruction) noexcept {
   return execute_uvc_query(query) == 0;
 }
 
-int Camera::uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &control) noexcept {
+int Camera::uvc_set_query(Unit unit, Selector selector, Control &control) noexcept {
   const uvc_xu_control_query query = {
       unit, selector, UVC_SET_CUR, static_cast<uint16_t>(control.size()), control.data(),
   };
@@ -209,8 +196,8 @@ int Camera::uvc_set_query(uint8_t unit, uint8_t selector, vector<uint8_t> &contr
   return execute_uvc_query(query);
 }
 
-int Camera::uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector,
-                          vector<uint8_t> &control) noexcept {
+int Camera::uvc_get_query(uint8_t query_type, Unit unit, Selector selector,
+                          Control &control) noexcept {
   const uvc_xu_control_query query = {
       unit, selector, query_type, static_cast<uint16_t>(control.size()), control.data(),
   };
@@ -218,7 +205,7 @@ int Camera::uvc_get_query(uint8_t query_type, uint8_t unit, uint8_t selector,
   return execute_uvc_query(query);
 }
 
-uint16_t Camera::uvc_len_query(uint8_t unit, uint8_t selector) noexcept {
+uint16_t Camera::uvc_len_query(Unit unit, Selector selector) noexcept {
   std::array<uint8_t, 2> data;
   const uvc_xu_control_query query = {
       unit, selector, UVC_GET_LEN, 2, data.data(),
@@ -240,8 +227,3 @@ vector<string> Camera::Devices() noexcept {
   }
   return devices;
 }
-
-CameraException::CameraException(const string &device, const string &error)
-    : message_(std::format("Device={}: {}", device, error)) {}
-
-const char *CameraException::what() const noexcept { return message_.c_str(); }

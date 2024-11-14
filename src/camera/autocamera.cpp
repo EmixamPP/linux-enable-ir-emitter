@@ -75,14 +75,14 @@ long long unsigned AutoCamera::intensity_variation_sum() {
   vector<cv::Mat> frames = read_during(capture_time_ms_);
 
   auto retry = RETRY_CAPTURE;
-  while (frames.empty() && retry-- != 0) {
+  while (frames.empty() && --retry != 0) {
     // double the capture time,
     // to give the camera more time to capture frames
     capture_time_ms_ += CAPTURE_TIME_MS;
     frames = read_during(capture_time_ms_);
   }
 
-  if (retry == 0) throw CameraException(device(), std::format("Unable to read frames."));
+  if (retry == 0) throw Camera::Exception(device(), std::format("Unable to read frames."));
 
   // compute lighting intensity for each pixel of each frame
   const vector<vector<int>> intensities = compute_intensities(frames);

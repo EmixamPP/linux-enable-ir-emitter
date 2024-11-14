@@ -22,14 +22,12 @@ class AutoCamera final : public Camera {
 
   /**
    * @brief Obtain the intensity variation sum of camera captures
-   * @throw CameraException if unable to read frames
+   * @throw Camera::Exception if unable to read frames
    * @return the intensity variation sum
    */
   long long unsigned intensity_variation_sum();
 
  public:
-  AutoCamera() = delete;
-
   /**
    * @brief Construct a new AutoCamera object
    * The difference with the regular Camera object is that this one
@@ -47,7 +45,7 @@ class AutoCamera final : public Camera {
   /**
    * @brief Check if the emitter is working,
    * if so, ask for manual confirmation
-   * @throw CameraException if unable to read frames
+   * @throw Camera::Exception if unable to read frames
    * @return true if yes, false if not
    */
   bool is_emitter_working() override;
@@ -55,18 +53,13 @@ class AutoCamera final : public Camera {
   /**
    * @brief Check if the emitter is working,
    * without asking for manual confirmation
-   * @throw CameraException if unable to read frames
+   * @throw Camera::Exception if unable to read frames
    * @return true if yes, false if not
    */
   bool is_emitter_working_no_confirm();
 
   AutoCamera &operator=(const AutoCamera &) = delete;
-
   AutoCamera(const AutoCamera &) = delete;
-
   AutoCamera &operator=(AutoCamera &&other) = delete;
-
   AutoCamera(AutoCamera &&other) = delete;
-
-  static shared_ptr<AutoCamera> FindGrayscaleCamera(int width = -1, int height = -1);
 };

@@ -6,25 +6,29 @@ using namespace std;
 #include "camera.hpp"
 #include "camerainstruction.hpp"
 
-#define VALIDATE_OR_THROW(expr, error_msg) \
-  if (!(expr)) throw CameraInstructionException(*this, error_msg)
-
-#define NOT_DISABLE_OR_THROW() VALIDATE_OR_THROW(!disable_, "The camera instruction is disabled.")
+#define NOT_DISABLE_OR_THROW() \
+  if (disable_) throw Exception("The instruction unit {} selector {} is disabled.", unit_, selector_)
 
 CameraInstruction::CameraInstruction(Camera &camera, Unit unit, Selector selector, bool disable)
     : unit_(unit), selector_(selector), disable_(disable), ctrl_block_(0) {
   // get the control instruction length
   const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
-  VALIDATE_OR_THROW(ctrl_size != 0, "Impossible to query instruction size.");
+  if (ctrl_size == 0)
+    throw Exception("Impossible to query instruction size for unit {} and selector {} on {}", unit,
+                    selector, camera.device());
 
   // get the current control
   cur_.resize(ctrl_size);
   auto res = camera.uvc_get_query(UVC_GET_CUR, unit, selector, cur_);
-  VALIDATE_OR_THROW(res != 1, "Impossible to fetch current instruction.");
+  if (res == 1)
+    throw Exception("Impossible to fetch current instruction for unit {} and selector {} on {}",
+                    unit, selector, camera.device());
 
   // ensure the control can be modified
   res = camera.uvc_set_query(unit, selector, cur_);
-  VALIDATE_OR_THROW(res != 1, "Impossible to set current instruction.");
+  if (res == 1)
+    throw Exception("Impossible to set current instruction for unit {} and selector {} on {}", unit,
+                    selector, camera.device());
 
   // save the current as initial
   init_.assign(cur_.begin(), cur_.end());
@@ -141,10 +145,3 @@ string to_string(const CameraInstruction::Control &vec) {
 }
 
 string to_string(uint8_t v) { return to_string(static_cast<int>(v)); }
-
-CameraInstructionException::CameraInstructionException(const CameraInstruction &inst,
-                                                       const string &error)
-    : message(std::format("Unit={} Selector={}: {}.", to_string(inst.unit()),
-                          to_string(inst.selector()), error)) {}
-
-const char *CameraInstructionException::what() const noexcept { return message.c_str(); }

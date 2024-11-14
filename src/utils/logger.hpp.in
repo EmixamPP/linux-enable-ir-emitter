@@ -22,7 +22,7 @@ namespace logger {
 inline void setup(bool verbose_console, bool enable_file) {
   auto console_sink = make_shared<spdlog::sinks::stdout_color_sink_st>();
   console_sink->set_level(verbose_console ? spdlog::level::debug : spdlog::level::info);
-  console_sink->set_pattern("%v");
+  console_sink->set_pattern("[%l] %v");
 
   std::vector<spdlog::sink_ptr> sinks{console_sink};
 

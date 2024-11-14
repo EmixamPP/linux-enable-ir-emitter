@@ -6,11 +6,11 @@
 using namespace std;
 
 #include "camera/camerainstruction.hpp"
-#include "finder.hpp"
 #include "logger.hpp"
+#include "tools.hpp"
 
 // Progression line size
-constexpr unsigned PROGRESSION_LINE_SIZE = 20;
+constexpr unsigned PROGRESSION_LINE_SIZE = 40;
 
 // Number of points on the progression line
 constexpr unsigned PROGRESSION_NBR_POINTS = 5;
@@ -30,16 +30,13 @@ static void catch_ctrl_c() {
   });
 }
 
-Finder::Finder(shared_ptr<Camera> camera, unsigned emitters, unsigned neg_answer_limit)
-    : camera_(std::move(camera)), emitters_(emitters), neg_answer_limit_(neg_answer_limit) {}
-
-bool Finder::find(CameraInstructions &instructions) {
+bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_limit) {
   catch_ctrl_c();
 
   unsigned configured = 0;
 
   unsigned p = 0;  // progression
-  for (auto &instruction : instructions) {
+  for (auto &instruction : config) {
     if (instruction.is_disable()) {
       logger::debug("Disable instruction skipped: {}.", to_string(instruction));
       continue;
@@ -49,17 +46,17 @@ bool Finder::find(CameraInstructions &instructions) {
       instruction.set_min_cur();
 
       unsigned neg_answer_counter = 0;
-      while (!force_exit && neg_answer_counter < neg_answer_limit_ && instruction.next()) {
+      while (!force_exit && neg_answer_counter < neg_answer_limit && instruction.next()) {
         cout << '\r' << setw(PROGRESSION_LINE_SIZE) << ' ' << '\r';  // wipe previous
-        cout << "Searching" << string(++p % PROGRESSION_NBR_POINTS, '.') << '\r' << flush;
+        cout << "Searching, please be patient" << string(p++ % PROGRESSION_NBR_POINTS, '.') << '\r' << flush;
 
-        if (neg_answer_counter == neg_answer_limit_ - 1) instruction.set_max_cur();
+        if (neg_answer_counter == neg_answer_limit - 1) instruction.set_max_cur();
 
         logger::debug("Instruction applied: {}.", to_string(instruction));
 
-        if (camera_->apply(instruction) && camera_->is_emitter_working()) {
+        if (config.camera->apply(instruction) && config.camera->is_emitter_working()) {
           logger::debug("The instruction makes emitter flash.");
-          if (++configured == emitters_) {
+          if (++configured == emitters) {
             logger::debug("All emitters are configured.");
             return true;
           }
@@ -71,17 +68,20 @@ bool Finder::find(CameraInstructions &instructions) {
 
       instruction.reset();
       logger::debug("Reseting to the instruction: {}.", to_string(instruction));
-      camera_->apply(instruction);
+      if (!config.camera->apply(instruction)) {
+        logger::error("Impossible to reset the instruction: {}.", to_string(instruction));
+        logger::info("Please shutdown your computer, then boot and retry.");
+        instruction.set_disable(true);
+        return false;
+      }
 
       if (force_exit) return false;
-    } catch (const CameraInstructionException &e) {
-      continue;
-    } catch (const CameraException &e) {
-      logger::error("Impossible to reset the camera.");
+    } catch (const Camera::Exception &e) {
+      logger::error(e.what());
       logger::info("Please shutdown your computer, then boot and retry.");
       instruction.reset();
       instruction.set_disable(true);
-      throw e;  // propagate to exit
+      return false;
     }
   }
 

@@ -4,11 +4,9 @@ using namespace std;
 
 #include "camera/camerainstruction.hpp"
 #include "logger.hpp"
-#include "scanner.hpp"
+#include "tools.hpp"
 
-Scanner::Scanner(shared_ptr<Camera> camera) : camera_(std::move(camera)) {}
-
-CameraInstructions Scanner::scan() noexcept {
+CameraInstructions Tools::Scan(const CameraPtr &camera) noexcept {
   CameraInstructions instructions;
 
   for (unsigned _unit = 0; _unit < UINT8_MAX + 1; ++_unit) {
@@ -18,12 +16,11 @@ CameraInstructions Scanner::scan() noexcept {
           static_cast<uint8_t>(_selector);  // safe: 0 <= _selector <= UINT8_MAX
 
       try {
-        instructions.push_back(CameraInstruction(*camera_, unit, selector));
-      } catch (const CameraInstructionException &) {
+        instructions.push_back(CameraInstruction(*camera, unit, selector));
+      } catch (const CameraInstruction::Exception &) {
       }
     }
   }
-  cout << endl;
 
   return instructions;
 }
