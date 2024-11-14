@@ -1,98 +1,237 @@
-# Fri Oct 11 2024 - 6.0.6
-- Better building system compatibility
-# Wed Oct 2 2024 - 6.0.5
-- Fix fmt lib compatibility
-# Fri Sept 30 2024 - 6.0.4
-- Fix tweak command crashes
-# Sun Sept 1 2024 - 6.0.3
-- Fix inconsistent file logging
-- Minor improvements
-- Fix missing help print
-# Fri Jun 14 2024 - 6.0.0
-- Usage of YAML to store camera configuration
-- Save of all the camera instructions
-- Tweak manually any instructions of a camera
-- Specify camera resolution
-- Catch ctrl-c to avoid breaking camera
-- Zsh completion
-- Fix video feedback freeze
-- Better logging
-- Logging in file
-- Fix test command
-- Fix multiple v4l path for same device
-- OpenCV imshow exception
-- Remove boot command
-- Migrate all Python code to C++
-- Reduction in installation size
-- Fix size assertion exception
-# Wed Nov 1 2023 - 5.2.4
-- Fix config generated but not found
-- Fix for OpenCV exception thrown
-- Reduction in installation size
-# Fri Oct 20 2023 - 5.2.1
-- Fix unable to execute commands
-# Thu Oct 19 2023 - 5.2.0
-- New test command
-- Improve efficiency
-- Significant reduction in installation size
-# Mon Oct 9 2023 - 5.0.4
-- New advice and hint messages
-# Wed Aug 23 2023 - 5.0.2
-- Minor search fix
-- Longer search by default
-# Tue Aug 8 2023 - 5.0.0
-- Automatic ir camera detection
-- Automatic ir emitter configuration
-- Exhaustive search
-- Video feedback
-# Fri Jun 23 2023 - 4.8.2
-- Fix systemd hanging in some cases
-- More appropriate installation paths
-# Wed Jun 21 2023 - 4.8.0
-- Native SELinux compatibility
-# Tue Jun 20 2023 - 4.7.0
-- Add openrc support
-- Python >= 3.10
-# Son Feb 26 2023 - 4.5.0
-- Improvement of config generation
-# Fri Feb 24 2023 - 4.4.2
-- Fix command not found
-- Smaller size
-# Fri Feb 17 2023 - 4.4.0
-- Total rework of the implementation
-- Support multiple emitters camera
-- Memorize broken instructions to skip them
-- Usage of /dev/v4l/by-path for persistence
-# Tue Sep 13 2022 - 4.1.5
-- Fix boot service for custom device
-# Thu Aug 11 2022 - 4.1.4
-- Force V4l2 backend in opencv
-- Improvement of config generation
-# Mon Jul 4 2022 - 4.1.2
-- Asynchronous camera triggering
-- Fix camera triggering issue
-- Fix device symlink boot service side effect
-# Sun Jun 19 2022 - 4.0.0
-- Rework, optimization and improvement of config generation
-- Remove manual configuration commands
-- Remove option for integration into Howdy
-# Thu Dec 9 2021 - 3.2.5
-- Tweak for integration into Howdy(https://github.com/boltgolt/howdy)
-- Bash auto completion
-- Better systemd support
-# Thu Nov 4 2021 - 3.2.2
-- Support any device path format
-- Improve systemd service
-# Sat Oct 23 2021 - 3.2.0
-- Multiple device support
-# Thu Sep 23 2021 - 3.1.1
-- Limit in negative answers for a same pattern
-# Wed Sep 22 2021 - 3.1.0
-- New configuration system
-- Exit codes
-- Change configuration file location
-# Sun Aug 29 2021 - 2.1.0
-- New fix command, to resolve well know problems
-- Systemd service file modified to prevent /dev/video file descriptor error
-# Thu Aug 12 2021 - 2.0.1
-- Initial release
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Unit tests for instruction manipualtions
+- New `meson test` target including: unit tests + `clang-format` + `clang-tidy`
+
+### Modified
+- The user no longer has to type in the video feedback, but in the terminal
+- Better configuration handling
+- Better instruction search
+- Better error handling
+- Static linking of `libgcc` and `libstdc++` if `--prefer-static` `meson` option is enabled
+
+### Removed
+- `--werror` `meson` option no longer enabled by default
+
+## [6.0.6] - 2024-10-11
+### Fixed
+- Improved building system compatibility.
+
+## [6.0.5] - 2024-10-02
+### Fixed
+- Compatibility issue with `fmt` library.
+
+## [6.0.4] - 2024-09-30
+### Fixed
+- Crash in `tweak` command.
+
+## [6.0.3] - 2024-09-01
+### Fixed
+- Inconsistent file logging.
+- Missing help print.
+
+### Changed
+- Minor general improvements.
+
+## [6.0.0] - 2024-06-14
+### Added
+- YAML format support for storing camera configurations.
+- Ability to save all camera instructions.
+- Manual tweaking of camera instructions.
+- Option to specify camera resolution.
+- Zsh completion.
+- Logging in file.
+- Catch `ctrl-c` to prevent camera interruptions.
+
+### Fixed
+- Freeze in video feedback.
+- Issue with `test` command.
+- Handling of multiple v4l paths for the same device.
+
+### Removed
+- Boot command.
+- Python code completely migrated to C++.
+
+### Changed
+- Reduced installation size.
+- Enhanced logging system.
+
+## [5.2.4] - 2023-11-01
+### Fixed
+- Config generated but not found issue.
+- Exception thrown by `OpenCV`.
+- Reduced installation size.
+
+## [5.2.1] - 2023-10-20
+### Fixed
+- Unable to execute commands.
+
+## [5.2.0] - 2023-10-19
+### Added
+- New `test` command.
+
+### Changed
+- Improved efficiency.
+- Significantly reduced installation size.
+
+## [5.0.4] - 2023-10-09
+### Added
+- New advice and hint messages.
+
+## [5.0.2] - 2023-08-23
+### Fixed
+- Minor search issue.
+
+### Changed
+- Default longer search duration.
+
+## [5.0.0] - 2023-08-08
+### Added
+- Automatic IR camera detection.
+- Automatic IR emitter configuration.
+- Exhaustive search functionality.
+- Video feedback feature.
+
+## [4.8.2] - 2023-06-23
+### Fixed
+- Occasional systemd hanging issue.
+- Improved installation paths.
+
+## [4.8.0] - 2023-06-21
+### Added
+- Native SELinux compatibility.
+
+## [4.7.0] - 2023-06-20
+### Added
+- `OpenRC` support.
+
+### Changed
+- Requirement for Python version >= 3.10.
+
+## [4.5.0] - 2023-02-26
+### Changed
+- Config generation.
+
+## [4.4.2] - 2023-02-24
+### Fixed
+- Command not found error.
+
+### Changed
+- Reduced size.
+
+## [4.4.0] - 2023-02-17
+### Added
+- Support for multiple emitter cameras.
+- Persistent usage of `/dev/v4l/by-path`.
+
+### Fixed
+- Memorization of broken instructions for skipping.
+
+### Changed
+- Complete rework of implementation.
+
+## [4.1.5] - 2022-09-13
+### Fixed
+- Boot service for custom devices.
+
+## [4.1.4] - 2022-08-11
+### Added
+- Forced V4L2 backend in `OpenCV`.
+
+### Changed
+- Config generation.
+
+## [4.1.2] - 2022-07-04
+### Added
+- Asynchronous camera triggering.
+
+### Fixed
+- Camera triggering issue.
+- Device symlink boot service side effect.
+
+## [4.0.0] - 2022-06-19
+### Changed
+- Config generation through rework, optimization, and enhancement.
+
+### Removed
+- Manual configuration commands.
+- Integration option for Howdy.
+
+## [3.2.5] - 2021-12-09
+### Added
+- Bash auto-completion.
+- Better systemd support.
+
+### Changed
+- Integration with [Howdy](https://github.com/boltgolt/howdy).
+
+## [3.2.2] - 2021-11-04
+### Added
+- Support for any device path format.
+
+### Changed
+- Systemd service.
+
+## [3.2.0] - 2021-10-23
+### Added
+- Support for multiple devices.
+
+## [3.1.1] - 2021-09-23
+### Added
+- Limit for repeated negative answers to the same pattern.
+
+## [3.1.0] - 2021-09-22
+### Added
+- New configuration system.
+- Exit codes for better error handling.
+
+### Changed
+- Configuration file location.
+
+## [2.1.0] - 2021-08-29
+### Added
+- New `fix` command to resolve common issues.
+
+### Fixed
+- Systemd service file to prevent `/dev/video` file descriptor error.
+
+## [2.0.1] - 2021-08-12
+### Initial Release
+
+[Unreleased]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.6...HEAD
+[6.0.6]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.5...6.0.6
+[6.0.5]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.4...6.0.5
+[6.0.4]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.3...6.0.4
+[6.0.3]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.0...6.0.3
+[6.0.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/5.2.4...6.0.0
+[5.2.4]: https://github.com/emixampp/linux-enable-ir-emitter/compare/5.2.1...5.2.4
+[5.2.1]: https://github.com/emixampp/linux-enable-ir-emitter/compare/5.2.0...5.2.1
+[5.2.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/5.0.4...5.2.0
+[5.0.4]: https://github.com/emixampp/linux-enable-ir-emitter/compare/5.0.2...5.0.4
+[5.0.2]: https://github.com/emixampp/linux-enable-ir-emitter/compare/5.0.0...5.0.2
+[5.0.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.8.2...5.0.0
+[4.8.2]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.8.0...4.8.2
+[4.8.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.7.0...4.8.0
+[4.7.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.5.0...4.7.0
+[4.5.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.4.2...4.5.0
+[4.4.2]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.4.0...4.4.2
+[4.4.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.1.5...4.4.0
+[4.1.5]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.1.4...4.1.5
+[4.1.4]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.1.2...4.1.4
+[4.1.2]: https://github.com/emixampp/linux-enable-ir-emitter/compare/4.0.0...4.1.2
+[4.0.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/3.2.5...4.0.0
+[3.2.5]: https://github.com/emixampp/linux-enable-ir-emitter/compare/3.2.2...3.2.5
+[3.2.2]: https://github.com/emixampp/linux-enable-ir-emitter/compare/3.2.0...3.2.2
+[3.2.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/3.1.1...3.2.0
+[3.1.1]: https://github.com/emixampp/linux-enable-ir-emitter/compare/3.1.0...3.1.1
+[3.1.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/2.1.0...3.1.0
+[2.1.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/2.0.1...2.1.0
+[2.0.1]: https://github.com/emixampp/linux-enable-ir-emitter/releases/tag/2.0.1
