@@ -35,8 +35,8 @@ jobs:
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
           cd .github/workflows/deps
-          cmake . -B build -GNinja
-          ninja -C build
+          cmake -Bbuild -GNinja
+          cmake --build build
 
       - name: Setup build
         run: |
@@ -46,7 +46,7 @@ jobs:
               meson configure build --optimization=s --strip
               ;;
             "debug")
-              meson configure build --buildtype=debug
+              meson configure build --buildtype=debug --werror
               ;;
             *)
               echo "Build type ${{ inputs.buildtype }} not supported"
