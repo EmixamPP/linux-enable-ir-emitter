@@ -6,11 +6,12 @@ using namespace std;
 #include "camera.hpp"
 #include "camerainstruction.hpp"
 
-#define NOT_DISABLE_OR_THROW() \
-  if (disable_) throw Exception("The instruction unit {} selector {} is disabled.", unit_, selector_)
+#define NOT_DISABLE_OR_THROW()    \
+  if (status_ == Status::DISABLE) \
+  throw Exception("The instruction unit {} selector {} is disabled.", unit_, selector_)
 
-CameraInstruction::CameraInstruction(Camera &camera, Unit unit, Selector selector, bool disable)
-    : unit_(unit), selector_(selector), disable_(disable), ctrl_block_(0) {
+CameraInstruction::CameraInstruction(Camera &camera, Unit unit, Selector selector, Status status)
+    : unit_(unit), selector_(selector), status_(status), ctrl_block_(0) {
   // get the control instruction length
   const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
   if (ctrl_size == 0)
@@ -43,10 +44,10 @@ CameraInstruction::CameraInstruction(Camera &camera, Unit unit, Selector selecto
 }
 
 CameraInstruction::CameraInstruction(Unit unit, Selector selector, Control cur, Control init,
-                                     Control max, Control min, bool disable)
+                                     Control max, Control min, Status status)
     : unit_(unit),
       selector_(selector),
-      disable_(disable),
+      status_(status),
       cur_(std::move(cur)),
       init_(std::move(init)),
       max_(std::move(max)),
@@ -93,9 +94,9 @@ bool CameraInstruction::set_min_cur() {
 
 auto CameraInstruction::init() const noexcept -> const Control & { return init_; }
 
-bool CameraInstruction::is_disable() const noexcept { return disable_; }
+auto CameraInstruction::status() const noexcept -> Status { return status_; }
 
-void CameraInstruction::set_disable(bool is_disable) noexcept { disable_ = is_disable; }
+void CameraInstruction::set_status(Status status) noexcept { status_ = status; }
 
 void CameraInstruction::reset() {
   NOT_DISABLE_OR_THROW();
@@ -112,7 +113,7 @@ bool CameraInstruction::next() {
     // maximum value for the control block i
     const unsigned max_ctrl_i = max_.empty() ? UINT8_MAX : max_[ctrl_block_];
 
-    // maximum exceed or overflow occured
+    // maximum exceed or overflow occurred
     if (next_ctrl_i > max_ctrl_i) {
       // reset to initial
       cur_[ctrl_block_] = init_[ctrl_block_];
@@ -145,3 +146,24 @@ string to_string(const CameraInstruction::Control &vec) {
 }
 
 string to_string(uint8_t v) { return to_string(static_cast<int>(v)); }
+
+string to_string(CameraInstruction::Status status) {
+  switch (status) {
+    case CameraInstruction::Status::START:
+      return "start";
+    case CameraInstruction::Status::IDLE:
+      return "idle";
+    case CameraInstruction::Status::DISABLE:
+      return "disable";
+    default:
+      throw CameraInstruction::Exception("Unknown status value {}",
+                                         to_string(static_cast<int>(status)));
+  }
+}
+
+CameraInstruction::Status from_string(const std::string &status_str) {
+  if (status_str == "start") return CameraInstruction::Status::START;
+  if (status_str == "idle") return CameraInstruction::Status::IDLE;
+  if (status_str == "disable") return CameraInstruction::Status::DISABLE;
+  throw CameraInstruction::Exception("Unknown status string " + status_str);
+}

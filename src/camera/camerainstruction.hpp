@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <format>
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -21,6 +21,8 @@ struct CameraInstruction {
   using Selector = uint8_t;
   using Control = vector<uint8_t>;
 
+  enum Status : uint8_t { START = 0, IDLE = 1, DISABLE = 2 };
+
  private:
   // Unit used on the camera to identify the control
   Unit unit_;
@@ -29,7 +31,7 @@ struct CameraInstruction {
   Selector selector_;
 
   // Flag to mark the control as disable
-  bool disable_;
+  Status status_;
 
   // Current control value
   Control cur_;
@@ -58,10 +60,11 @@ struct CameraInstruction {
    * @param camera on which find the control instruction
    * @param unit of the instruction
    * @param selector of the instruction
-   * @param disable if the instruction considered disabled
-   * @throw CameraInstructionException if an error occurs
+   * @param status the status of the instruction (default: IDLE)
+   * @throw CameraInstruction:::Exception if an error occurs
    */
-  explicit CameraInstruction(Camera &camera, Unit unit, Selector selector, bool disable = false);
+  explicit CameraInstruction(Camera &camera, Unit unit, Selector selector,
+                             Status status = Status::IDLE);
 
   /**
    * @brief Construct a new CameraInstruction object.
@@ -71,10 +74,10 @@ struct CameraInstruction {
    * @param init initial control
    * @param max maximum control
    * @param min minimum control
-   * @param disable if the instruction considered disabled
+   * @param status the status of the instruction
    */
   explicit CameraInstruction(Unit unit, Selector selector, Control cur, Control init, Control max,
-                             Control min, bool disable);
+                             Control min, Status status);
 
   /**
    * @brief Get the unit of the instruction.
@@ -97,7 +100,7 @@ struct CameraInstruction {
   /**
    * @brief Sets a new current control, if they have the same size.
    * @param cur control to set
-   * @throw CameraInstructionException if `disable()` is true
+   * @throw CameraInstruction::Exception if `status()` is DISABLE
    * @return true if success, otherwise false
    */
   bool set_cur(Control cur);
@@ -112,7 +115,7 @@ struct CameraInstruction {
    * @brief If a maximum control exists,
    * set it as the current control with that value.
    * If no maximum control exists, set the maximum possible (i.e. UINT8_MAX).
-   * @throw CameraInstructionException if `disable()` is true
+   * @throw CameraInstruction::Exception if `status()` is DISABLE
    * @return true if success, otherwise false
    */
   bool set_max_cur();
@@ -126,7 +129,7 @@ struct CameraInstruction {
   /**
    * @brief If a minimum control exists,
    * sets it as the current control with that value.
-   * @throw CameraInstructionException if `disable()` is true
+   * @throw CameraInstruction::Exception if `status()` is DISABLE
    * @return true if success, otherwise false
    */
   bool set_min_cur();
@@ -138,20 +141,20 @@ struct CameraInstruction {
   const Control &init() const noexcept;
 
   /**
-   * @brief Get the disable status.
-   * @return true if the instruction is disable
+   * @brief Get the instruction status.
+   * @return the status
    */
-  bool is_disable() const noexcept;
+  Status status() const noexcept;
 
   /**
-   * @brief Changes the disable status of the instruction.
-   * @param is_disable status to set
+   * @brief Change the instruction status.
+   * @param status status to set
    */
-  void set_disable(bool is_disable) noexcept;
+  void set_status(Status status) noexcept;
 
   /**
    * @brief Reset the current control to the initial control value.
-   * @throw CameraInstructionException if `disable()` is true
+   * @throw CameraInstruction::Exception if `status()` is DISABLE
    */
   void reset();
 
@@ -161,7 +164,7 @@ struct CameraInstruction {
    * no combination will be done, for that use `set_cur()`
    * @return true if a next value has been set,
    * false if all control block have been incremented up to their `maximum()` or UINT8_MAX
-   * @throw CameraInstructionException if `disable()` is true
+   * @throw CameraInstruction::Exception if `status()` is DISABLE
    */
   bool next();
 
@@ -183,6 +186,16 @@ string to_string(const CameraInstruction::Control &vec);
 
 string to_string(uint8_t v);
 
+/**
+ * @throw CameraInstruction::Exception if the status is invalid
+ */
+string to_string(CameraInstruction::Status status);
+
+/**
+ * @throw CameraInstruction::Exception if the status is invalid
+ */
+CameraInstruction::Status from_string(const std::string &status_str);
+
 using CameraInstructions = vector<CameraInstruction>;
 
 /**
@@ -194,7 +207,7 @@ template <>
 struct convert<CameraInstruction> {
   static Node encode(const CameraInstruction &obj) {
     Node node;
-    node["disable"] = obj.is_disable();
+    node["status"] = to_string(obj.status());
     node["unit"] = static_cast<int>(obj.unit());
     node["selector"] = static_cast<int>(obj.selector());
     for (const auto &v : obj.cur()) node["current"].push_back(static_cast<int>(v));
@@ -207,7 +220,9 @@ struct convert<CameraInstruction> {
 
   static bool decode(const Node &node, CameraInstruction &obj) {
     try {
-      auto disable = node["disable"].as<bool>();
+      // DEPRECATED: FALLBACK FOR OLD `disable` FIELD
+      auto status = CameraInstruction::Status::START;
+      if (node["status"]) status = from_string(node["status"].as<string>());
       auto unit = node["unit"].as<CameraInstruction::Unit>();
       auto selector = node["selector"].as<CameraInstruction::Selector>();
       auto cur = node["current"].as<CameraInstruction::Control>();
@@ -218,7 +233,7 @@ struct convert<CameraInstruction> {
       if (node["maximum"]) max = node["maximum"].as<CameraInstruction::Control>();
       if (node["minimum"]) min = node["minimum"].as<CameraInstruction::Control>();
       obj = CameraInstruction(unit, selector, std::move(cur), std::move(init), std::move(max),
-                              std::move(min), disable);
+                              std::move(min), status);
     } catch (...) {
       return false;
     }

@@ -1,3 +1,12 @@
+##############
+# Dependency #
+##############
+opencv_dep = dependency('opencv4', include_type: 'system')
+gtk_dep = dependency('gtk+-3.0', static: false)
+yaml_dep = dependency('yaml-cpp', include_type: 'system')
+argparse_dep = dependency('argparse', include_type: 'system')
+spdlog_dep = dependency('spdlog', include_type: 'system')
+
 ############
 # Variable #
 ############
@@ -50,3 +59,26 @@ executable(
     install: true,
     install_dir: get_option('bindir'),
 )
+
+#########
+# Tests #
+#########
+if get_option('tests')
+    gtest_dep = dependency('gtest', static: false)
+    test_exe = executable(
+        'linux-enable-ir-emitter-test',
+        sources: [
+            '../tests/main.test.cpp',
+            '../tests/camerainstruction.test.cpp',
+            'camera/camera.cpp',
+            'camera/camerainstruction.cpp',
+        ],
+        dependencies: [gtest_dep, opencv_dep, gtk_dep, yaml_dep, spdlog_dep],
+        install: false,
+    )
+    test(
+        'linux-enable-ir-emitter', 
+        test_exe, 
+        timeout: 0
+    )
+endif

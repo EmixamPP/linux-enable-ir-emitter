@@ -30,7 +30,7 @@ If you like the project, do not hesitate to star the repository to support me, t
 
 If the configuration failed:
 1. But you saw the ir emitter flashing, reboot and switch to manual mode by with the `--manual` option.
-2. Also, try the exhaustive search by using the `--limit -1` option (caution: this may take several hours; do not combine it `--manual`).
+2. Also, try the exhaustive search by using the `--limit -1` option. Caution: this may take several hours; do not combine it `--manual`. Put something that reflects IR in front of the computer so you can leave.
 3. Otherwise, feel free to open a new issue, **but please consult the [docs](docs/README.md) first**.
 
 All criticism, ideas and contributions are welcome!

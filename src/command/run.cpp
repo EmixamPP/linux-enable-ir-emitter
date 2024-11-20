@@ -19,7 +19,7 @@ ExitCode run(const optional<string> &device, int width, int height) {
 
     for (const auto &conf : confs) {
       for (const auto &instruction : conf) {
-        if (!instruction.is_disable()) {
+        if (instruction.status() == CameraInstruction::Status::START) {
           logger::debug("Applying instruction {} on {}.", to_string(instruction),
                         conf.camera->device());
           if (!conf.camera->apply(instruction)) {

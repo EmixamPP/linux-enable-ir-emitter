@@ -43,25 +43,15 @@ if get_option('prefer_static')
     )
 endif
 
-
-##############
-# Dependency #
-##############
-opencv_dep = dependency('opencv4', include_type: 'system')
-gtk_dep = dependency('gtk+-3.0', static: false)
-yaml_dep = dependency('yaml-cpp', include_type: 'system')
-argparse_dep = dependency('argparse', include_type: 'system')
-spdlog_dep = dependency('spdlog', include_type: 'system')
-
 ############
 # Variable #
 ############
 config_dir = get_option('sysconfdir') / meson.project_name()
 log_dir = get_option('localstatedir') / 'log' / meson.project_name()
 
-##############
-# Executable #
-##############
+#####################
+# Executable + Test #
+#####################
 subdir('src')
 
 ################
@@ -113,9 +103,9 @@ install_data(
     install_dir: get_option('datadir') / 'doc' / meson.project_name(),
 )
 
-#########
-# Tests #
-#########
+###############
+# Extra Tests #
+###############
 if get_option('tests')
     subdir('tests')
 endif

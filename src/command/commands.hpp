@@ -14,11 +14,7 @@ using namespace std;
 /**
  * @brief Exit codes for the program.
  */
-enum ExitCode : uint8_t {
-  SUCCESS = 0,
-  FAILURE = 1,
-  ROOT_REQUIRED = 2,
-};
+enum ExitCode : uint8_t { SUCCESS = 0, FAILURE = 1, ROOT_REQUIRED = 2 };
 
 /**
  * @brief Creates a Camera or AutoCamera object.

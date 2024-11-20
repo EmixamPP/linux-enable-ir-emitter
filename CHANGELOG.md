@@ -8,18 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Unit tests for instruction manipualtions
-- New `meson test` target including: unit tests + `clang-format` + `clang-tidy`
+- Unit tests for instruction manipulations.
+- New `meson test` target including: unit tests + `clang-format` + `clang-tidy`.
 
 ### Modified
-- The user no longer has to type in the video feedback, but in the terminal
-- Better configuration handling
-- Better instruction search
-- Better error handling
-- Static linking of `libgcc` and `libstdc++` if `--prefer-static` `meson` option is enabled
+- The user no longer has to type in the video feedback, but in the terminal.
+- Better configuration handling.
+- Better instruction search.
+- Better error handling.
+- Static linking of `libgcc` and `libstdc++` if `--prefer-static` `meson` option is enabled.
+- `disable` configuration field is deprecated and renamed `status` for more flexibility. It accepts the strings: `start`, `idle`, `disable`.
+- The `run` command only applies instructions with the `start` `status`.
+- The `tweak` command displays all the time the video feedback.
 
 ### Removed
-- `--werror` `meson` option no longer enabled by default
+- `--werror` `meson` option no longer enabled by default.
+
+### Fixed
+- `OpenCV` error: `size.width>0 && size.height>0 in function 'imshow'`.
 
 ## [6.0.6] - 2024-10-11
 ### Fixed

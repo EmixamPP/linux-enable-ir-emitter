@@ -37,7 +37,7 @@ bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_l
 
   unsigned p = 0;  // progression
   for (auto &instruction : config) {
-    if (instruction.is_disable()) {
+    if (instruction.status() == CameraInstruction::Status::DISABLE) {
       logger::debug("Disable instruction skipped: {}.", to_string(instruction));
       continue;
     }
@@ -48,7 +48,8 @@ bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_l
       unsigned neg_answer_counter = 0;
       while (!force_exit && neg_answer_counter < neg_answer_limit && instruction.next()) {
         cout << '\r' << setw(PROGRESSION_LINE_SIZE) << ' ' << '\r';  // wipe previous
-        cout << "Searching, please be patient" << string(p++ % PROGRESSION_NBR_POINTS, '.') << '\r' << flush;
+        cout << "Searching, please be patient" << string(p++ % PROGRESSION_NBR_POINTS, '.') << '\r'
+             << flush;
 
         if (neg_answer_counter == neg_answer_limit - 1) instruction.set_max_cur();
 
@@ -71,7 +72,7 @@ bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_l
       if (!config.camera->apply(instruction)) {
         logger::error("Impossible to reset the instruction: {}.", to_string(instruction));
         logger::info("Please shutdown your computer, then boot and retry.");
-        instruction.set_disable(true);
+        instruction.set_status(CameraInstruction::Status::DISABLE);
         return false;
       }
 
@@ -80,7 +81,7 @@ bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_l
       logger::error(e.what());
       logger::info("Please shutdown your computer, then boot and retry.");
       instruction.reset();
-      instruction.set_disable(true);
+      instruction.set_status(CameraInstruction::Status::DISABLE);
       return false;
     }
   }

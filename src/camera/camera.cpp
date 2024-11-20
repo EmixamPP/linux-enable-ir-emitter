@@ -13,7 +13,6 @@ using namespace std;
 
 #include "camera.hpp"
 #include "camerainstruction.hpp"
-#include "logger.hpp"
 
 // Value associated the keyboard key for OK
 constexpr int OK_KEY = 121;

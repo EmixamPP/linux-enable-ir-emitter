@@ -15,8 +15,8 @@ static const CameraInstruction::Control BAD_NEW_CUR_0{1, 3, 2, 0, 0, 0, 0, 0};
 static const CameraInstruction::Control BAD_NEW_CUR_1{1, 3, 4, 0, 0, 0, 0, 0, 0};
 static const CameraInstruction::Control BAD_NEW_CUR_2{1, 2, 2, 0, 0, 0, 0, 0, 0};
 static const CameraInstruction::Control BAD_NEW_CUR_3{1, 3, 2, 1, 0, 0, 0, 0, 0};
-constexpr auto disable = true;
-constexpr auto not_disable = false;
+constexpr auto disable = CameraInstruction::Status::DISABLE;
+constexpr auto not_disable = CameraInstruction::Status::IDLE;
 
 TEST(CameraInstructionTest, set_cur) {
   CameraInstruction inst{UNIT, SELECTOR, INIT, INIT, MAX, MIN, not_disable};
@@ -34,7 +34,7 @@ TEST(CameraInstructionTest, set_cur_fail) {
 
 TEST(CameraInstructionTest, set_cur_error) {
   CameraInstruction inst{UNIT, SELECTOR, INIT, INIT, MAX, MIN, disable};
-  ASSERT_THROW(inst.set_cur(NEW_CUR), CameraInstructionException);
+  ASSERT_THROW(inst.set_cur(NEW_CUR), CameraInstruction::Exception);
 }
 
 TEST(CameraInstructionTest, set_cur_max) {
@@ -51,7 +51,7 @@ TEST(CameraInstructionTest, set_cur_no_max) {
 
 TEST(CameraInstructionTest, set_cur_max_error) {
   CameraInstruction inst{UNIT, SELECTOR, INIT, INIT, MAX, MIN, disable};
-  ASSERT_THROW(inst.set_max_cur(), CameraInstructionException);
+  ASSERT_THROW(inst.set_max_cur(), CameraInstruction::Exception);
 }
 
 TEST(CameraInstructionTest, set_cur_min) {
@@ -67,7 +67,7 @@ TEST(CameraInstructionTest, set_cur_min_fail) {
 
 TEST(CameraInstructionTest, set_cur_min_error) {
   CameraInstruction inst{UNIT, SELECTOR, INIT, INIT, MAX, MIN, disable};
-  ASSERT_THROW(inst.set_min_cur(), CameraInstructionException);
+  ASSERT_THROW(inst.set_min_cur(), CameraInstruction::Exception);
 }
 
 TEST(CameraInstructionTest, reset) {
@@ -79,7 +79,7 @@ TEST(CameraInstructionTest, reset) {
 
 TEST(CameraInstructionTest, reset_error) {
   CameraInstruction inst{UNIT, SELECTOR, NEW_CUR, INIT, MAX, MIN, disable};
-  ASSERT_THROW(inst.reset(), CameraInstructionException);
+  ASSERT_THROW(inst.reset(), CameraInstruction::Exception);
 }
 
 TEST(CameraInstructionTest, next) {
@@ -98,5 +98,5 @@ TEST(CameraInstructionTest, next) {
 
 TEST(CameraInstructionTest, next_error) {
   CameraInstruction inst{UNIT, SELECTOR, INIT, INIT, MAX, MIN, disable};
-  ASSERT_THROW(inst.next(), CameraInstructionException);
+  ASSERT_THROW(inst.next(), CameraInstruction::Exception);
 }
