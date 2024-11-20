@@ -43,7 +43,11 @@ bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_l
     }
 
     try {
-      instruction.set_min_cur();
+      // try to set the minimum control value
+      if(!instruction.set_min_cur()) {
+        // if not reset to the initial known value for the instruction
+        instruction.reset();
+      }
 
       unsigned neg_answer_counter = 0;
       while (!force_exit && neg_answer_counter < neg_answer_limit && instruction.next()) {
