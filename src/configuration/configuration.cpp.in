@@ -37,10 +37,11 @@ void Configuration::load(bool init) {
   try {
     YAML::Node node = YAML::LoadFile(path_);
     instructions_ = node.as<CameraInstructions>();
+    logger::debug("Configuration for {} loaded from {}.", camera->device(), path_);
   } catch (const Exception &e) {
     throw e;
   } catch (const std::exception &e) {
-    logger::debug(e.what());
+    logger::debug("YAML: {}", e.what());
     if (!init) {
       throw Exception("No configuration found for {} at {}.", camera->device(), path_);
     }

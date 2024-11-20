@@ -83,7 +83,7 @@ static auto device_index(const string &device) {
 static auto cannonical_device(const string &device) {
   try {
     return filesystem::canonical(device);
-  } catch (const std::exception &e) {
+  } catch (const exception &e) {
     throw Camera::Exception("Impossible to obtain the canonical path of {}.", device);
   }
 }
