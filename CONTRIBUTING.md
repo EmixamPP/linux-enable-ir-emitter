@@ -23,9 +23,10 @@ To be sure that the modifications you made to the code will pass the CI during t
    ```
    meson test -C build
    ```
+   Logs can be found at `build/meson-logs/testlog.txt`.
 
    If `clang-format` fails, you can easily fix the errors with:
    ```
-   ninja clang-format -C build
+   meson --internal clangformat . build
    ```
 5. Commit, push and please describe enough what you did in your PR description
