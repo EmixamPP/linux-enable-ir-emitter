@@ -57,6 +57,7 @@ bool Tools::Find(Configuration &config, unsigned emitters, unsigned neg_answer_l
 
         if (config.camera->apply(instruction) && config.camera->is_emitter_working()) {
           logger::debug("The instruction makes emitter flash.");
+          instruction.set_status(CameraInstruction::Status::START);
           if (++configured == emitters) {
             logger::debug("All emitters are configured.");
             return true;
