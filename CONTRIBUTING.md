@@ -12,9 +12,9 @@ To be sure that the modifications you made to the code will pass the CI during t
     ```
 2. Setup the build:
     ```
-    meson setup build --buildtype=debug --sysconfdir /etc --prefer-static --pkg-config-path=$(find . -name "pkgconfig")
+    meson setup build -Dtests=true --buildtype=debug --sysconfdir /etc --prefer-static --pkg-config-path=$(find . -name "pkgconfig")
     ```
-3. Perform changea and compile:
+3. Perform change and compile:
    ```
    meson compile −C build
    ```
