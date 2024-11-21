@@ -5,7 +5,6 @@ opencv_dep = dependency('opencv4', include_type: 'system')
 gtk_dep = dependency('gtk+-3.0', static: false)
 yaml_dep = dependency('yaml-cpp', include_type: 'system')
 argparse_dep = dependency('argparse', include_type: 'system')
-spdlog_dep = dependency('spdlog', include_type: 'system')
 
 ############
 # Variable #
@@ -31,8 +30,8 @@ configure_file(
 )
 
 configure_file(
-    input: 'utils/logger.hpp.in',
-    output: 'logger.hpp',
+    input: 'utils/_logger.hpp.in',
+    output: '_logger.hpp',
     configuration: cfg_data,
 )
 
@@ -55,7 +54,7 @@ executable(
         'configuration/tweaker.cpp',
         meson.current_build_dir() / 'configuration.cpp',
     ],
-    dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep, spdlog_dep],
+    dependencies: [opencv_dep, gtk_dep, yaml_dep, argparse_dep],
     install: true,
     install_dir: get_option('bindir'),
 )
@@ -73,7 +72,7 @@ if get_option('tests')
             'camera/camera.cpp',
             'camera/camerainstruction.cpp',
         ],
-        dependencies: [gtest_dep, opencv_dep, gtk_dep, yaml_dep, spdlog_dep],
+        dependencies: [gtest_dep, opencv_dep, gtk_dep, yaml_dep],
         install: false,
     )
     test(

@@ -4,8 +4,8 @@
 using namespace std;
 
 #include "camera/camerainstruction.hpp"
-#include "logger.hpp"
 #include "tools.hpp"
+#include "utils/logger.hpp"
 
 constexpr unsigned WAIT_FOR_ERROR_MS = 500;
 

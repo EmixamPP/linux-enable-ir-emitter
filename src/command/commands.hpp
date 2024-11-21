@@ -8,7 +8,7 @@
 #include <string>
 
 #include "configuration/configuration.hpp"
-#include "logger.hpp"
+#include "utils/logger.hpp"
 using namespace std;
 
 /**

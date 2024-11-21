@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - `--werror` `meson` option no longer enabled by default.
+- `spdlog` dependency not needed anymore.
 
 ### Fixed
 - `OpenCV` error: `size.width>0 && size.height>0 in function 'imshow'`.

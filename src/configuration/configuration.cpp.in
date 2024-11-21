@@ -9,7 +9,7 @@ using namespace std;
 #include "camera/camerainstruction.hpp"
 #include "configuration/configuration.hpp"
 #include "configuration/tools.hpp"
-#include "logger.hpp"
+#include "utils/logger.hpp"
 
 const string Configuration::V4L_PREFIX = "/dev/v4l/by-path/";
 const string Configuration::SAVE_FOLDER_CONFIG_PATH = "@configdir@/";
@@ -43,6 +43,7 @@ void Configuration::load(bool init) {
   } catch (const std::exception &e) {
     logger::debug("YAML: {}", e.what());
     if (!init) {
+      // if we shouldn't initialize, then throw an exception because the file should exist
       throw Exception("No configuration found for {} at {}.", camera->device(), path_);
     }
     instructions_ = Tools::Scan(camera);

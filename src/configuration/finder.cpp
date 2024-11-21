@@ -6,8 +6,8 @@
 using namespace std;
 
 #include "camera/camerainstruction.hpp"
-#include "logger.hpp"
 #include "tools.hpp"
+#include "utils/logger.hpp"
 
 // Progression line size
 constexpr unsigned PROGRESSION_LINE_SIZE = 40;
