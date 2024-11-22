@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: thollander/actions-comment-pull-request@v3
         with:
-          comment_tag: bot_comment
+          comment-tag: bot_comment
           mode: recreate
           message: |
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
