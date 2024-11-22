@@ -44,7 +44,10 @@ An instruction consists of X values between 0-255.
    * If you ir camera requires a specific resolution, specify it with the option `--width` and `--height`. E.g. `--width 640 --height 360`.
    * The tool should detect automatically your ir camera, but you can specify it with the option `--device`. E.g. `--device /dev/video2`; useful if you have multiple ir camera.
 2. You will see a video feedback and a menu of the available instructions.
-3. By default, some instructions may be marked as `[DISABLE]`, which means that they may make your camera unusable, so the tool will not use them automatically.
-4. Select one, then the status (enable/disable), the initial and current value for the instructions, as well as the minimum and maximum values (if exists) will be displayed.
-5. Input a new value and watch the video feedback to see the difference. You can also input `enable` or `disable` to change its status.
-6. If you made your camera unusable, it can request you to shut down, then boot and retry ($\neq$ reboot). You may also want to reset everything to default, for that see [docs/configurations](docs/configurations).
+3. Beside of each instruction, you will see the status of the instruction:
+   * If marked `[DISABLE]`, the instruction may make your camera unusable, so the tool will not use them automatically, we advise you do not touch it.
+   * If marked `[START]`, the instruction will be executed on the `linux-enable-ir-emitter run` command; and by extension when the systemd service is started (at boot).
+   * If marked `[IDLE]`, the instruction will not be executed on the `linux-enable-ir-emitter run` command.
+4. Select one, then the status (start/idle/disable), the initial and current value for the instructions, as well as the minimum and maximum values (if exists) will be displayed.
+5. Input a new value and watch the video feedback to see the difference. You can also input a different status.
+6. You may also want to reset everything to default, for that see [docs/configurations](docs/configurations).
