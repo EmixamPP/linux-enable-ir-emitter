@@ -38,7 +38,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.DEPS_DIR }}/install_dir
-          key: ${{ hashFiles('${{ env.DEPS_DIR }}/CMakeLists.txt') }}
+          key: ${{ hashFiles(format('{0}/{1}', env.DEPS_DIR, 'CMakeLists.txt')) }}
 
       - name: Build lib dependencis
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
