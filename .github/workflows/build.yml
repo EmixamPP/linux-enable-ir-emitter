@@ -32,7 +32,7 @@ jobs:
       - name: Install build dependencies
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: meson gcc pkg-config libgtk-3-dev cmake
+          packages: meson gcc pkg-config libgtk-3-dev libgtest-dev cmake
           version: 1.0
 
       - name: Restore cached lib dependencies
