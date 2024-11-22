@@ -17,7 +17,8 @@ jobs:
     name: Building
     runs-on: ubuntu-24.04
     env:
-      DEPS_DIR: .github/workflows/deps
+      DEPS_CMAKE: .github/workflows/deps/CMakeLists.txt
+      DEPS_INSTALL_DIR: .github/workflows/deps/install_dir
     outputs:
       compile: ${{ steps.compile.outcome }}
       unit-tests: ${{ steps.unit-tests.outcome }}
@@ -29,28 +30,37 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y meson gcc pkg-config libgtk-3-dev cmake
-
-      - name: Cache lib dependencies
-        id: deps-cache
-        uses: actions/cache@v4
+        uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          path: ${{ env.DEPS_DIR }}/install_dir
-          key: ${{ hashFiles(format('{0}/{1}', env.DEPS_DIR, 'CMakeLists.txt')) }}
+          packages: meson gcc pkg-config libgtk-3-dev cmake
+          version: 1.0
 
-      - name: Build lib dependencis
+      - name: Restore cached lib dependencies
+        id: deps-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.DEPS_INSTALL_DIR }}
+          key: ${{ hashFiles(env.DEPS_CMAKE) }}
+
+      - name: Build lib dependencies
+        id: deps-build
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
           cd ${{ env.DEPS_DIR }}
           cmake -Bbuild -GNinja
           cmake --build build
+      
+      - name: Cache lib dependencies
+        if: ${{ steps.deps-build.outcome == 'success' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.DEPS_INSTALL_DIR }}
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
 
       - name: Setup build
         id: setup
         run: |
-          meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_DIR }} -name "pkgconfig")
+          meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_INSTALL_DIR }} -name "pkgconfig")
           case "${{ inputs.buildtype }}" in
             "release")
               meson configure build --optimization=s --strip
