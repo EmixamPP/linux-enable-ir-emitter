@@ -11,8 +11,7 @@ jobs:
 
   comment:
     name: Bot comment
-    needs:
-      - build
+    needs: build
     runs-on: ubuntu-latest
     if: always()
     steps:

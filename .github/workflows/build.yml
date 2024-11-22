@@ -19,10 +19,10 @@ jobs:
     env:
       DEPS_DIR: .github/workflows/deps
     outputs:
-      compile: ${{ steps.output.outputs.compile }}
-      unit-tests: ${{ steps.output.outputs.unit_tests }}
-      clang-tidy: ${{ steps.output.outputs.clang_tidy }}
-      clang-format: ${{ steps.output.outputs.clang_format }}
+      compile: ${{ steps.compile.outcome }}
+      unit-tests: ${{ steps.unit-tests.outcome }}
+      clang-tidy: ${{ steps.clang-tidy.outcome }}
+      clang-format: ${{ steps.clang-format.outcome }}
       tarball_url: ${{ steps.upload-tarball.outputs.artifact_url }}
       logs_url: ${{ steps.upload-logs.outputs.artifact_url }}
     steps:
@@ -70,6 +70,7 @@ jobs:
           meson compile -C build
       
       - name: Create tarball
+        if: ${{ steps.compile.outcome == 'success' }}
         run: |
           VERSION=$(meson introspect --projectinfo build | jq -r '.version')
           TARBALL_NAME=linux-enable-ir-emitter-${{ inputs.buildtype }}-${VERSION}.systemd.x86-64.tar.gz
@@ -80,6 +81,7 @@ jobs:
 
       - name: Upload tarball
         id: upload-tarball
+        if: ${{ steps.compile.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARBALL_NAME }}
@@ -87,6 +89,7 @@ jobs:
 
       - name: Unit tests
         id: unit-tests
+        if: ${{ steps.compile.outcome == 'success' }}
         run: |
           meson test -C build linux-enable-ir-emitter --logbase unit-tests --print-errorlogs
       
@@ -111,12 +114,3 @@ jobs:
           path: |
             build/meson-logs/*
           if-no-files-found: ignore
-      
-      - name: Output steps results
-        if: always()
-        id: output
-        run: |
-          echo "compile=${{ steps.compile.outcome }}" >> $GITHUB_ENV
-          echo "unit_tests=${{ steps.unit-tests.outcome }}" >> $GITHUB_ENV
-          echo "clang_tidy=${{ steps.clang-tidy.outcome }}" >> $GITHUB_ENV
-          echo "clang_format=${{ steps.clang-format.outcome }}" >> $GITHUB_ENV
