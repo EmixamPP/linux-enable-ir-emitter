@@ -17,6 +17,7 @@ jobs:
     name: Building
     runs-on: ubuntu-24.04
     env:
+      DEPS_DIR: .github/workflows/deps
       DEPS_CMAKE: .github/workflows/deps/CMakeLists.txt
       DEPS_INSTALL_DIR: .github/workflows/deps/install_dir
     outputs:
