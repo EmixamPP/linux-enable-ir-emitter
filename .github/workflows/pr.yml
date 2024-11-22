@@ -9,22 +9,10 @@ jobs:
     with:
       buildtype: debug
 
-  clang-tidy:
-    needs:
-      - build
-    uses: ./.github/workflows/clang-tidy.yml
-
-  clang-format:
-    needs:
-      - build
-    uses: ./.github/workflows/clang-format.yml
-
   comment:
     name: Bot comment
     needs:
       - build
-      - clang-tidy
-      - clang-format
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -37,18 +25,19 @@ jobs:
 
             ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            ## :hammer_and_wrench: Building result: ${{ needs.build.result == 'success' && ':white_check_mark:' || ':x:' }}
-
-            ## :mag: clang-tidy results: ${{ (needs.clang-tidy.result == 'success' && ':white_check_mark:') || (needs.clang-tidy.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
-
-            ## :writing_hand: clang-format results: ${{ (needs.clang-format.result == 'success' && ':white_check_mark:') || (needs.clang-format.result == 'skipped' && ':no_entry_sign:') || ':x:' }}
-
-            ## :package: Artifacts:
-            If the building step was successfull:
-            1. Download the tarball in the artifacts section [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-            2. If new major version, [uninstall the previous version](docs/uninstallation.md) if you have one
-            3. Unzip: `unzip linux-enable-ir-emitter*.tar.gz.zip`
-            4. [Execute the install instructions](README.md#installation)
+            ## :hammer_and_wrench: Building result: ${{ (needs.build.outputs.compile == 'success' && ':white_check_mark:') || (needs.build.outputs.compile == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+            ### :package: Artifacts:
+            ${{ needs.build.outputs.compile == 'success' && '
+            1. [Download the tarball](${{ needs.build.outputs.tarball_url }}).
+            2. `unzip linux-enable-ir-emitter*.tar.gz.zip`
+            3. [Execute the install instructions](README.md#installation)
 
             During the execution the tool raises an exception?\
             Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type `bt` to show the error trace (`q` to exit).
+            ' || ':heavy_minus_sign:' }}
+
+            ## :test_tube: Unit tests results: ${{ (needs.build.outputs.unit-tests == 'success' && ':white_check_mark:') || (needs.build.outputs.unit-tests == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+
+            ## :stethoscope: clang-tidy results: ${{ (needs.clang-tidy.result == 'success' && ':white_check_mark:') || (needs.clang-tidy.result == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+
+            ## :art: clang-format results: ${{ (needs.clang-format.result == 'success' && ':white_check_mark:') || (needs.clang-format.result == 'skipped' && ':heavy_minus_sign:') || ':x:' }}

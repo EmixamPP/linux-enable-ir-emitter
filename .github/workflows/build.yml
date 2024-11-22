@@ -16,6 +16,15 @@ jobs:
   build:
     name: Building
     runs-on: ubuntu-24.04
+    env:
+      DEPS_DIR: .github/workflows/deps
+    outputs:
+      compile: ${{ steps.output.outputs.compile }}
+      unit-tests: ${{ steps.output.outputs.unit_tests }}
+      clang-tidy: ${{ steps.output.outputs.clang_tidy }}
+      clang-format: ${{ steps.output.outputs.clang_format }}
+      tarball_url: ${{ steps.upload-tarball.outputs.artifact_url }}
+      logs_url: ${{ steps.upload-logs.outputs.artifact_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,19 +37,20 @@ jobs:
         id: deps-cache
         uses: actions/cache@v4
         with:
-          path: .github/workflows/deps/install_dir
-          key: ${{ hashFiles('.github/workflows/deps/CMakeLists.txt') }}
+          path: ${{ env.DEPS_DIR }}/install_dir
+          key: ${{ hashFiles('${{ env.DEPS_DIR }}/CMakeLists.txt') }}
 
       - name: Build lib dependencis
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
-          cd .github/workflows/deps
+          cd ${{ env.DEPS_DIR }}
           cmake -Bbuild -GNinja
           cmake --build build
 
       - name: Setup build
+        id: setup
         run: |
-          meson setup build --sysconfdir /etc --prefer-static --pkg-config-path $(find .github -name "pkgconfig")
+          meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_DIR }} -name "pkgconfig")
           case "${{ inputs.buildtype }}" in
             "release")
               meson configure build --optimization=s --strip
@@ -55,21 +65,58 @@ jobs:
           esac
 
       - name: Compile
+        id: compile
         run: |
           meson compile -C build
-
+      
       - name: Create tarball
         run: |
-          DESTDIR=install_dir meson install -C build
-          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir .
-
-      - name: Retrieve version
-        run: |
           VERSION=$(meson introspect --projectinfo build | jq -r '.version')
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          TARBALL_NAME=linux-enable-ir-emitter-${{ inputs.buildtype }}-${VERSION}.systemd.x86-64.tar.gz
+          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_ENV"
+
+          DESTDIR=install_dir meson install -C build
+          tar -czvf build/${{ env.TARBALL_NAME }} -C build/install_dir .
 
       - name: Upload tarball
+        id: upload-tarball
         uses: actions/upload-artifact@v4
         with:
-          name: linux-enable-ir-emitter-${{ inputs.buildtype }}-${{ env.VERSION }}.systemd.x86-64.tar.gz
-          path: build/linux-enable-ir-emitter.systemd.x86-64.tar.gz
+          name: ${{ env.TARBALL_NAME }}
+          path: build/${{ env.TARBALL_NAME }}
+
+      - name: Unit tests
+        id: unit-tests
+        run: |
+          meson test -C build linux-enable-ir-emitter --logbase unit-tests --print-errorlogs
+      
+      - name: Clang-tidy
+        id: clang-tidy
+        if: ${{ steps.setup.outcome == 'success' }}
+        run: |
+          meson test -C build clang-tidy --logbase clang-tidy --print-errorlogs
+
+      - name: Clang-format
+        id: clang-format
+        if: ${{ steps.setup.outcome == 'success' }}
+        run: |
+          meson test -C build clang-format --logbase clang-format --print-errorlogs
+     
+      - name: Upload logs
+        id: upload-logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: tests-logs
+          path: |
+            build/meson-logs/*
+          if-no-files-found: ignore
+      
+      - name: Output steps results
+        if: always()
+        id: output
+        run: |
+          echo "compile=${{ steps.compile.outcome }}" >> $GITHUB_ENV
+          echo "unit_tests=${{ steps.unit-tests.outcome }}" >> $GITHUB_ENV
+          echo "clang_tidy=${{ steps.clang-tidy.outcome }}" >> $GITHUB_ENV
+          echo "clang_format=${{ steps.clang-format.outcome }}" >> $GITHUB_ENV

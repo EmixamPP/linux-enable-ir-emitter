@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project("linux-enable-ir-emitter dependencies")
+project("linux-enable-ir-emitter static dependencies")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install_dir" CACHE PATH "Default install prefix" FORCE)
