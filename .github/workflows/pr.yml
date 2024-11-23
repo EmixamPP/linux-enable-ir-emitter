@@ -14,28 +14,41 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: always()
+    env:
+      MESSAGE_FILE: ./message.md
     steps:
+      - name: Create message
+        run: |
+          function emoji() {
+            if [ "$1" == "success" ]; then
+              echo ':white_check_mark:'
+            elif [ "$1" == "skipped" ]; then
+              echo ':heavy_minus_sign:'
+            else
+              echo ':x:'
+            fi
+          }
+
+          function write() {
+            echo "$1" >> ${{ env.MESSAGE_FILE }}
+          }
+
+          write "## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}"
+          write "## :hammer_and_wrench: Building result: $(emoji ${{ needs.build.outputs.compile }})"
+          write "### :package: Artifacts: $(emoji ${{ needs.build.outputs.compile }})"
+          write "    1. [Download the tarball](needs.build.outputs.tarball-url)"
+          write "    2. `unzip linux-enable-ir-emitter*.tar.gz.zip`"
+          write "    3. [Execute the install instructions](README.md#installation)"
+          write ""
+          write "    During the execution the tool raises an exception?\"
+          write "    Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type `bt` to show the error trace (`q` to exit)"
+          write "## :test_tube: Unit tests results: $(emoji ${{ needs.build.outputs.unit-tests }})"
+          write "## :stethoscope: clang-tidy results: $(emoji ${{ needs.build.outputs.clang-tidy }})"
+          write "## :art: clang-format results: $(emoji ${{ needs.build.outputs.clang-format }})"
+          write "## :clipboard: Logs: [meson-logs.zip](${{ needs.build.outputs.logs-url }})"
+
       - uses: thollander/actions-comment-pull-request@v3
         with:
           comment-tag: bot_comment
           mode: recreate
-          message: |
-            ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
-
-            ## :hammer_and_wrench: Building result: ${{ (needs.build.outputs.compile == 'success' && ':white_check_mark:') || (needs.build.outputs.compile == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
-            ### :package: Artifacts: ${{ needs.build.outputs.compile == 'success' && '
-              1. [Download the tarball](needs.build.outputs.tarball-url).
-              2. `unzip linux-enable-ir-emitter*.tar.gz.zip`
-              3. [Execute the install instructions](README.md#installation)
-
-              During the execution the tool raises an exception?\
-              Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type `bt` to show the error trace (`q` to exit).
-            ' || ':heavy_minus_sign:' }}
-
-            ## :test_tube: Unit tests results: ${{ (needs.build.outputs.unit-tests == 'success' && ':white_check_mark:') || (needs.build.outputs.unit-tests == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
-
-            ## :stethoscope: clang-tidy results: ${{ (needs.build.outputs.clang-tidy == 'success' && ':white_check_mark:') || (needs.build.outputs.clang-tidy == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
-
-            ## :art: clang-format results: ${{ (needs.build.outputs.clang-format == 'success' && ':white_check_mark:') || (needs.build.outputs.clang-format == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
-
-            ## :clipboard: Logs: [meson-logs.zip](${{ needs.build.outputs.logs-url }})
+          file-path: ${{ env.MESSAGE_FILE }}
