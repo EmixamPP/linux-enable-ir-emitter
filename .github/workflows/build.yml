@@ -40,9 +40,9 @@ jobs:
       unit-tests: ${{ steps.unit-tests.outcome }}
       clang-tidy: ${{ steps.clang-tidy.outcome }}
       clang-format: ${{ steps.clang-format.outcome }}
+      version: ${{ steps.create-tarball.outputs.VERSION}}
       tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
       logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
-      version: ${{ env.VERSION }}
     steps:
       - uses: actions/checkout@v4
 
@@ -130,14 +130,17 @@ jobs:
             build/meson-logs/*
 
       - name: Create tarball
+        id: create-tarball
         if: ${{ steps.compile.outcome == 'success' }}
         run: |
-          VERSION=$(meson introspect --projectinfo build | jq -r '.version')
-          TARBALL_NAME=linux-enable-ir-emitter-${{ inputs.buildtype }}-${VERSION}.systemd.x86-64.tar.gz
-          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_ENV"
+          version=$(meson introspect --projectinfo build | jq -r '.version')
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+          tarball_name=linux-enable-ir-emitter-${{ inputs.buildtype }}-${version}.systemd.x86-64.tar.gz
+          echo "TARBALL_NAME=$tarball_name" >> "$GITHUB_ENV"
 
           DESTDIR=install_dir meson install -C build
-          tar -czvf build/${TARBALL_NAME} -C build/install_dir .
+          tar -czvf build/${tarball_name} -C build/install_dir .
 
       - name: Upload tarball
         id: upload-tarball
