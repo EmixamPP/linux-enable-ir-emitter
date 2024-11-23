@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft:
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      buildtype: release
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+
+      - name: Obtain version
+        run: |
+          VERSION=$(echo $tarball | grep -oP 'linux-enable-ir-emitter-\K[0-9]+\.[0-9]+\.[0-9]+')
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Create tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ env.VERSION }}',
+              sha: context.sha
+            })
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: linux-enable-ir-emitter*.tar.gz
+          tag_name: ${{ env.VERSION }}
+          fail_on_unmatched_files: true
+          draft: ${{ github.event.inputs.draft }}
+          make_latest: true
+          body: |
+            ## What's Changed
+            See [CHANGELOG.md](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/CHANGELOG.md)
+
+            ## Contributors
+            @EmixamPP
