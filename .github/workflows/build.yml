@@ -93,14 +93,6 @@ jobs:
           DESTDIR=install_dir meson install -C build
           tar -czvf build/${TARBALL_NAME} -C build/install_dir .
 
-      - name: Upload tarball
-        id: upload-tarball
-        if: ${{ steps.compile.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.TARBALL_NAME }}
-          path: build/${{ env.TARBALL_NAME }}
-
       - name: Unit tests
         id: unit-tests
         if: ${{ steps.compile.outcome == 'success' }}
@@ -131,3 +123,11 @@ jobs:
           path: |
             build/meson-logs/*
           if-no-files-found: ignore
+
+      - name: Upload tarball
+        id: upload-tarball
+        if: ${{ steps.compile.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TARBALL_NAME }}
+          path: build/${{ env.TARBALL_NAME }}

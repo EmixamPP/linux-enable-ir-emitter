@@ -8,6 +8,19 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       buildtype: debug
+  
+  post-build:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get build outputs
+        run: |
+          echo "Compile outcome: ${{ needs.build.outputs.compile }}"
+          echo "Unit tests outcome: ${{ needs.build.outputs.unit-tests }}"
+          echo "Clang-tidy outcome: ${{ needs.build.outputs.clang-tidy }}"
+          echo "Clang-format outcome: ${{ needs.build.outputs.clang-format }}"
+          echo "Tarball URL: ${{ needs.build.outputs.tarball_url }}"
+          echo "Logs URL: ${{ needs.build.outputs.logs_url }}"
 
   comment:
     name: Bot comment
