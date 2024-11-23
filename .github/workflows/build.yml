@@ -27,7 +27,6 @@ jobs:
       clang-format: ${{ steps.clang-format.outcome }}
       tarball_url: ${{ steps.upload-tarball.outputs.artifact_url }}
       logs_url: ${{ steps.upload-logs.outputs.artifact_url }}
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -90,7 +89,7 @@ jobs:
           echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_ENV"
 
           DESTDIR=install_dir meson install -C build
-          tar -czvf build/${{ env.TARBALL_NAME }} -C build/install_dir .
+          tar -czvf build/${TARBALL_NAME} -C build/install_dir .
 
       - name: Upload tarball
         id: upload-tarball
