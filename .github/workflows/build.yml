@@ -11,6 +11,19 @@ on:
       buildtype:
         type: string
         default: release
+    outputs:
+      compile:
+        value: ${{ jobs.build.outputs.compile }}
+      unit-tests:
+        value: ${{ jobs.build.outputs.unit-tests }}
+      clang-tidy:
+        value: ${{ jobs.build.outputs.clang-tidy }}
+      clang-format:
+        value: ${{ jobs.build.outputs.clang-format }}
+      tarball-url:
+        value: ${{ jobs.build.outputs.tarball_url }}
+      logs-url:
+        value: ${{ jobs.build.outputs.logs_url }}
 
 jobs:
   build:
