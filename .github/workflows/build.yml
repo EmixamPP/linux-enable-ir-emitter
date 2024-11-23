@@ -1,4 +1,4 @@
-name: Build
+name: Build, Test, Lint and Package
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    name: Building
+    name: Build, Test, Lint and Package
     runs-on: ubuntu-24.04
     env:
       DEPS_DIR: .github/workflows/deps
@@ -50,7 +50,7 @@ jobs:
           cd ${{ env.DEPS_DIR }}
           cmake -Bbuild -GNinja
           cmake --build build
-      
+
       - name: Cache lib dependencies
         if: ${{ steps.deps-build.outcome == 'success' }}
         uses: actions/cache/save@v4
@@ -60,6 +60,7 @@ jobs:
 
       - name: Setup build
         id: setup
+        continue-on-error: true
         run: |
           meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_INSTALL_DIR }} -name "pkgconfig")
           case "${{ inputs.buildtype }}" in
@@ -78,9 +79,10 @@ jobs:
       - name: Compile
         id: compile
         if : ${{ steps.setup.outcome == 'success' }}
+        continue-on-error: true
         run: |
           meson compile -C build
-      
+
       - name: Create tarball
         if: ${{ steps.compile.outcome == 'success' }}
         run: |
@@ -102,27 +104,30 @@ jobs:
       - name: Unit tests
         id: unit-tests
         if: ${{ steps.compile.outcome == 'success' }}
+        continue-on-error: true
         run: |
           meson test -C build linux-enable-ir-emitter --logbase unit-tests --print-errorlogs
-      
+
       - name: Clang-tidy
         id: clang-tidy
         if: ${{ steps.setup.outcome == 'success' }}
+        continue-on-error: true
         run: |
           meson test -C build clang-tidy --logbase clang-tidy --print-errorlogs
 
       - name: Clang-format
         id: clang-format
         if: ${{ steps.setup.outcome == 'success' }}
+        continue-on-error: true
         run: |
           meson test -C build clang-format --logbase clang-format --print-errorlogs
-     
+
       - name: Upload logs
         id: upload-logs
         if: ${{ steps.setup.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: tests-logs
+          name: meson-logs
           path: |
             build/meson-logs/*
           if-no-files-found: ignore

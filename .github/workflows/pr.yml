@@ -22,12 +22,11 @@ jobs:
           message: |
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
-            ## :clipboard: [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
             ## :hammer_and_wrench: Building result: ${{ (needs.build.outputs.compile == 'success' && ':white_check_mark:') || (needs.build.outputs.compile == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+            ### :clipboard: [Logs](${{ needs.build.outputs.logs-url }})
             ### :package: Artifacts:
             ${{ needs.build.outputs.compile == 'success' && '
-            1. [Download the tarball](${{ needs.build.outputs.tarball_url }}).
+            1. [Download the tarball](${{ needs.build.outputs.tarball-url }}).
             2. `unzip linux-enable-ir-emitter*.tar.gz.zip`
             3. [Execute the install instructions](README.md#installation)
 
@@ -37,6 +36,6 @@ jobs:
 
             ## :test_tube: Unit tests results: ${{ (needs.build.outputs.unit-tests == 'success' && ':white_check_mark:') || (needs.build.outputs.unit-tests == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
 
-            ## :stethoscope: clang-tidy results: ${{ (needs.clang-tidy.result == 'success' && ':white_check_mark:') || (needs.clang-tidy.result == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+            ## :stethoscope: clang-tidy results: ${{ (needs.build.outputs.clang-tidy == 'success' && ':white_check_mark:') || (needs.build.outputs.clang-tidy == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
 
-            ## :art: clang-format results: ${{ (needs.clang-format.result == 'success' && ':white_check_mark:') || (needs.clang-format.result == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+            ## :art: clang-format results: ${{ (needs.build.outputs.clang-format == 'success' && ':white_check_mark:') || (needs.build.outputs.clang-format == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
