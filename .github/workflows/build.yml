@@ -21,9 +21,9 @@ on:
       clang-format:
         value: ${{ jobs.build.outputs.clang-format }}
       tarball-url:
-        value: ${{ jobs.build.outputs.tarball_url }}
+        value: ${{ jobs.build.outputs.tarball-url }}
       logs-url:
-        value: ${{ jobs.build.outputs.logs_url }}
+        value: ${{ jobs.build.outputs.logs-url }}
 
 jobs:
   build:
@@ -38,8 +38,8 @@ jobs:
       unit-tests: ${{ steps.unit-tests.outcome }}
       clang-tidy: ${{ steps.clang-tidy.outcome }}
       clang-format: ${{ steps.clang-format.outcome }}
-      tarball_url: ${{ steps.upload-tarball.outputs.artifact_url }}
-      logs_url: ${{ steps.upload-logs.outputs.artifact_url }}
+      tarball-url: ${{ steps.upload-tarball.outputs.artifact_url }}
+      logs-url: ${{ steps.upload-logs.outputs.artifact_url }}
     steps:
       - uses: actions/checkout@v4
 

@@ -23,15 +23,13 @@ jobs:
             ## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}
 
             ## :hammer_and_wrench: Building result: ${{ (needs.build.outputs.compile == 'success' && ':white_check_mark:') || (needs.build.outputs.compile == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
-            ### :clipboard: [Logs](${{ needs.build.outputs.logs-url }})
-            ### :package: Artifacts:
-            ${{ needs.build.outputs.compile == 'success' && '
-            1. [Download the tarball](${{ needs.build.outputs.tarball-url }}).
-            2. `unzip linux-enable-ir-emitter*.tar.gz.zip`
-            3. [Execute the install instructions](README.md#installation)
+            ### :package: Artifacts: ${{ needs.build.outputs.compile == 'success' && '
+              1. [Download the tarball](needs.build.outputs.tarball-url).
+              2. `unzip linux-enable-ir-emitter*.tar.gz.zip`
+              3. [Execute the install instructions](README.md#installation)
 
-            During the execution the tool raises an exception?\
-            Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type `bt` to show the error trace (`q` to exit).
+              During the execution the tool raises an exception?\
+              Please send us the gdb backtrace: `sudo gdb --ex run --args linux-enable-ir-emitter <your command args>`, once the crash arrives, type `bt` to show the error trace (`q` to exit).
             ' || ':heavy_minus_sign:' }}
 
             ## :test_tube: Unit tests results: ${{ (needs.build.outputs.unit-tests == 'success' && ':white_check_mark:') || (needs.build.outputs.unit-tests == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
@@ -39,3 +37,5 @@ jobs:
             ## :stethoscope: clang-tidy results: ${{ (needs.build.outputs.clang-tidy == 'success' && ':white_check_mark:') || (needs.build.outputs.clang-tidy == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
 
             ## :art: clang-format results: ${{ (needs.build.outputs.clang-format == 'success' && ':white_check_mark:') || (needs.build.outputs.clang-format == 'skipped' && ':heavy_minus_sign:') || ':x:' }}
+
+            ## :clipboard: Logs: [meson-logs.zip](${{ needs.build.outputs.logs-url }})
