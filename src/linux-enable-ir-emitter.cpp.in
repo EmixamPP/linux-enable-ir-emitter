@@ -9,7 +9,7 @@ using namespace std;
 #include <argparse/argparse.hpp>
 
 #include "command/commands.hpp"
-#include "logger.hpp"
+#include "utils/logger.hpp"
 
 /**
  * @brief Exit if the program was not run with root privilege.
@@ -23,7 +23,6 @@ static void check_root() noexcept {
 
 /**
  * @brief Create the main parser
- *
  * @return the parser object
  */
 static auto create_program_parser() noexcept {
@@ -34,6 +33,7 @@ static auto create_program_parser() noexcept {
 
   program->add_argument("-V", "--version")
       .help("shows version message and exits")
+      .flag()
       .action([](const auto &) {
         cout << "linux-enable-ir-emitter @version@" << endl;
         cout << "Developed by Maxime Dirksen - EmixamPP" << endl;
@@ -64,7 +64,6 @@ static auto create_program_parser() noexcept {
 
 /**
  * @brief Create the parser for the configure command
- *
  * @return the parser object
  */
 static auto create_configure_cmd_parser() noexcept {
@@ -90,7 +89,6 @@ static auto create_configure_cmd_parser() noexcept {
 
 /**
  * @brief Create the parser for the run command
- *
  * @return the parser object
  */
 static auto create_run_cmd_parser() noexcept {
@@ -101,7 +99,6 @@ static auto create_run_cmd_parser() noexcept {
 
 /**
  * @brief Create the parser for the tweak command
- *
  * @return the parser object
  */
 static auto create_tweak_cmd_parser() noexcept {
@@ -112,7 +109,6 @@ static auto create_tweak_cmd_parser() noexcept {
 
 /**
  * @brief Create the parser for the run command
- *
  * @return the parser object
  */
 static auto create_test_cmd_parser() noexcept {
@@ -123,16 +119,12 @@ static auto create_test_cmd_parser() noexcept {
 
 int main(int argc, char **argv) {
   auto program = create_program_parser();
-
   auto configure_command = create_configure_cmd_parser();
   program->add_subparser(*configure_command);
-
   auto run_command = create_run_cmd_parser();
   program->add_subparser(*run_command);
-
   auto tweak_command = create_tweak_cmd_parser();
   program->add_subparser(*tweak_command);
-
   auto test_command = create_test_cmd_parser();
   program->add_subparser(*test_command);
 
@@ -144,9 +136,10 @@ int main(int argc, char **argv) {
     return ExitCode::FAILURE;
   }
 
-  auto enable_file_log = program->is_subcommand_used(*configure_command) ||
-                         program->is_subcommand_used(*tweak_command);
-  logger::setup(program->get<bool>("verbose"), enable_file_log);
+  if (program->get<bool>("verbose")) logger::set_level(Logger::Level::DEBUG);
+  if (program->is_subcommand_used(*configure_command) ||
+      program->is_subcommand_used(*tweak_command))
+    logger::enable_file();
 
   auto device =
       program->get<string>("device").empty() ? optional<string>() : program->get<string>("device");
@@ -160,13 +153,17 @@ int main(int argc, char **argv) {
     auto no_gui = configure_command->get<bool>("no-gui");
     check_root();
     return configure(device, width, height, manual, emitters, limit, no_gui);
-  } else if (program->is_subcommand_used(*run_command))
+  }
+  if (program->is_subcommand_used(*run_command)) {
     return run(device, width, height);
-  else if (program->is_subcommand_used(*tweak_command)) {
+  }
+  if (program->is_subcommand_used(*tweak_command)) {
     check_root();
     return tweak(device, width, height);
-  } else if (program->is_subcommand_used(*test_command))
+  }
+  if (program->is_subcommand_used(*test_command)) {
     return test(device, width, height);
+  }
 
   cerr << "Subcommand choice is missing" << endl;
   cerr << program->help().str();

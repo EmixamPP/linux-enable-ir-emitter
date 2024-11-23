@@ -1,40 +1,47 @@
 project(
     'linux-enable-ir-emitter',
     'cpp',
-    version: '6.0.6',
+    version: '6.0.6-dev',
     license: 'MIT',
     default_options: [
         'cpp_std=c++20',
         'buildtype=release',
         'warning_level=everything',
-        'werror=true',
     ],
 )
 
 # flag ajustement because of warning_level=everything
 add_project_arguments(
-    '-Wno-unknown-warning-option', # fix clang-tidy
-    '-Wno-padded', # impossible to solve here
-    '-Wno-shadow', # without importance
-    '-Wno-abi-tag', # unworth increase of reading complexity
-    '-Wno-effc++', # unworth increase of reading complexity
-    '-Wno-unused-const-variable', # bugged
-    '-Wno-suggest-attribute=const', # bugged
-    '-Wno-inline', # let the compiler tries
-    '-Wno-suggest-attribute=pure', # unworth increase of reading complexity
-    '-Wno-suggest-final-types', # bugged
-    '-Wno-suggest-final-methods', # bugged
+    # fix clang-tidy
+    '-Wno-unknown-warning-option',
+    # impossible to solve here
+    '-Wno-padded',
+    # without importance
+    '-Wno-shadow',
+    # unworth increase of reading complexity
+    '-Wno-abi-tag', 
+    '-Wno-effc++',
+    '-Wno-suggest-attribute=pure',
+    # let the compiler tries
+    '-Wno-inline',
+    # raised by stl
+    '-Wno-alloc-zero',
+    '-Wno-strict-overflow',
+    # bugged
+    '-Wno-unused-const-variable',
+    '-Wno-suggest-attribute=const',
+    '-Wno-suggest-final-types',
+    '-Wno-suggest-final-methods',
     language: 'cpp',
 )
 
-##############
-# Dependency #
-##############
-opencv_dep = dependency('opencv4', include_type: 'system')
-gtk_dep = dependency('gtk+-3.0', static: false)
-yaml_dep = dependency('yaml-cpp', include_type: 'system')
-argparse_dep = dependency('argparse', include_type: 'system')
-spdlog_dep = dependency('spdlog', include_type: 'system')
+if get_option('prefer_static')
+    add_project_link_arguments(
+        '-static-libgcc',
+        '-static-libstdc++',
+        language: 'cpp',
+    )
+endif
 
 ############
 # Variable #
@@ -42,16 +49,15 @@ spdlog_dep = dependency('spdlog', include_type: 'system')
 config_dir = get_option('sysconfdir') / meson.project_name()
 log_dir = get_option('localstatedir') / 'log' / meson.project_name()
 
-##############
-# Executable #
-##############
+#####################
+# Executable + Test #
+#####################
 subdir('src')
 
 ################
 # Config + Log #
 ################
 install_emptydir(config_dir)
-
 install_emptydir(log_dir)
 
 ####################
@@ -96,3 +102,10 @@ install_data(
     'LICENSE',
     install_dir: get_option('datadir') / 'doc' / meson.project_name(),
 )
+
+###############
+# Extra Tests #
+###############
+if get_option('tests')
+    subdir('tests')
+endif

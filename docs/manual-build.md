@@ -15,17 +15,17 @@ Feel free to open an issue if you need help!
     Unless you are a packager, this is recommended to avoid breaking the tool after distro update, because they are directly included inside the generated executable.
     We provide a CMake file to easily build all the dependencies. Nothing will be installed on your system:
     ```
-    cd .github/workflows/deps && cmake -GNinja -B build && ninja -C build && cd -
+    cd .github/workflows/deps && cmake -Bbuild -GNinja && cmake --build build && cd -
     ```
 
 3. Setup the build:
     * If you built the dependencies using the previous step:
     ```
-    meson setup build --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
+    meson setup build --sysconfdir /etc --prefer-static --pkg-config-path=$(find .github -name "pkgconfig")
     ```
     * Otherwise:
     ```
-    meson setup build
+    meson setup build --sysconfdir /etc
     ```
 
 4. To make the executable as small as possible:

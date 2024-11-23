@@ -1,127 +1,169 @@
 #include <linux/usb/video.h>
 
 #include <format>
-#include <fstream>
-#include <utility>
 using namespace std;
 
 #include "camera.hpp"
 #include "camerainstruction.hpp"
 
-CameraInstruction::CameraInstruction(Camera &camera, uint8_t unit, uint8_t selector, bool disable)
-    : unit_(unit), selector_(selector), disable_(disable) {
+#define NOT_DISABLE_OR_THROW()    \
+  if (status_ == Status::DISABLE) \
+  throw Exception("The instruction unit {} selector {} is disabled.", unit_, selector_)
+
+CameraInstruction::CameraInstruction(Camera &camera, Unit unit, Selector selector, Status status)
+    : unit_(unit), selector_(selector), status_(status), ctrl_block_(0) {
   // get the control instruction length
   const uint16_t ctrl_size = camera.uvc_len_query(unit, selector);
-  if (ctrl_size == 0) throw CameraInstructionException(camera.device(), unit, selector);
+  if (ctrl_size == 0)
+    throw Exception("Impossible to query instruction size for unit {} and selector {} on {}", unit,
+                    selector, camera.device());
 
-  // get the current control value
-  cur_ctrl_.resize(ctrl_size);
-  init_ctrl_.resize(ctrl_size);
-  if (camera.uvc_get_query(UVC_GET_CUR, unit, selector, cur_ctrl_) == 1)
-    throw CameraInstructionException(camera.device(), unit, selector);
-  init_ctrl_.assign(cur_ctrl_.begin(), cur_ctrl_.end());
+  // get the current control
+  cur_.resize(ctrl_size);
+  auto res = camera.uvc_get_query(UVC_GET_CUR, unit, selector, cur_);
+  if (res == 1)
+    throw Exception("Impossible to fetch current instruction for unit {} and selector {} on {}",
+                    unit, selector, camera.device());
 
   // ensure the control can be modified
-  if (camera.uvc_set_query(unit, selector, cur_ctrl_) == 1)
-    throw CameraInstructionException(camera.device(), unit, selector);
+  res = camera.uvc_set_query(unit, selector, cur_);
+  if (res == 1)
+    throw Exception("Impossible to set current instruction for unit {} and selector {} on {}", unit,
+                    selector, camera.device());
 
-  // try to get the maximum control value (it does not necessary exists)
-  max_ctrl_.resize(ctrl_size);
-  if (camera.uvc_get_query(UVC_GET_MAX, unit, selector, max_ctrl_) == 1) max_ctrl_.resize(0);
+  // save the current as initial
+  init_.assign(cur_.begin(), cur_.end());
 
-  // try get the minimum control value (it does not necessary exists)
-  min_ctrl_.resize(ctrl_size);
-  if (camera.uvc_get_query(UVC_GET_MIN, unit, selector, min_ctrl_) == 1) min_ctrl_.resize(0);
+  // try to get the maximum control (it does not necessary exists)
+  max_.resize(ctrl_size);
+  if (camera.uvc_get_query(UVC_GET_MAX, unit, selector, max_) != 0) min_.resize(0);
+
+  // try get the minimum control (it does not necessary exists)
+  min_.resize(ctrl_size);
+  if (camera.uvc_get_query(UVC_GET_MIN, unit, selector, min_) != 0) min_.resize(0);
 }
 
-bool CameraInstruction::next() noexcept {
-  if (cur_ctrl_ == max_ctrl_) return false;
-
-  for (size_t i = 0; i < cur_ctrl_.size(); ++i) {
-    const uint16_t next_ctrl_i = static_cast<uint16_t>(cur_ctrl_[i] + 1);
-    if (next_ctrl_i > max_ctrl_[i])
-      cur_ctrl_[i] = min_ctrl_.empty() ? init_ctrl_[i] : min_ctrl_[i];  // simulate "overflow"
-    else {
-      cur_ctrl_[i] = static_cast<uint8_t>(next_ctrl_i);
-      return true;
-    }
-  }
-
-  // all are in overflow (should never arrive!)
-  set_max_cur();
-  return false;
-}
-
-bool CameraInstruction::is_disable() const noexcept { return disable_; }
+CameraInstruction::CameraInstruction(Unit unit, Selector selector, Control cur, Control init,
+                                     Control max, Control min, Status status)
+    : unit_(unit),
+      selector_(selector),
+      status_(status),
+      cur_(std::move(cur)),
+      init_(std::move(init)),
+      max_(std::move(max)),
+      min_(std::move(min)),
+      ctrl_block_(0) {}
 
 uint8_t CameraInstruction::unit() const noexcept { return unit_; }
 
 uint8_t CameraInstruction::selector() const noexcept { return selector_; }
 
-const vector<uint8_t> &CameraInstruction::cur() const noexcept { return cur_ctrl_; }
+auto CameraInstruction::cur() const noexcept -> const Control & { return cur_; }
 
-const vector<uint8_t> &CameraInstruction::max() const noexcept { return max_ctrl_; }
+bool CameraInstruction::set_cur(Control cur) {
+  NOT_DISABLE_OR_THROW();
+  if (cur_.size() != cur.size()) return false;
 
-const vector<uint8_t> &CameraInstruction::min() const noexcept { return min_ctrl_; }
-
-const vector<uint8_t> &CameraInstruction::init() const noexcept { return init_ctrl_; }
-
-void CameraInstruction::set_disable(bool is_disable) noexcept { disable_ = is_disable; }
-
-bool CameraInstruction::set_cur(const vector<uint8_t> &cur) noexcept {
-  if (cur_ctrl_.size() != cur.size()) return false;
-
+  // check if each control block is between min and max included
   for (size_t i = 0; i < cur.size(); ++i) {
-    if ((!min_ctrl_.empty() && min_ctrl_[i] > cur[i]) ||
-        (!max_ctrl_.empty() && max_ctrl_[i] < cur[i]))
-      return false;
+    if ((!min_.empty() && min_[i] > cur[i]) || (!max_.empty() && max_[i] < cur[i])) return false;
+  }
+  cur_ = std::move(cur);
+  return true;
+}
+
+auto CameraInstruction::max() const noexcept -> const Control & { return max_; }
+
+bool CameraInstruction::set_max_cur() {
+  NOT_DISABLE_OR_THROW();
+  if (max_.empty())
+    cur_.assign(cur_.size(), UINT8_MAX);
+  else
+    cur_.assign(max_.begin(), max_.end());
+  return true;
+}
+
+auto CameraInstruction::min() const noexcept -> const Control & { return min_; }
+
+bool CameraInstruction::set_min_cur() {
+  NOT_DISABLE_OR_THROW();
+  if (min_.empty()) return false;
+  cur_.assign(min_.begin(), min_.end());
+  return true;
+}
+
+auto CameraInstruction::init() const noexcept -> const Control & { return init_; }
+
+auto CameraInstruction::status() const noexcept -> Status { return status_; }
+
+void CameraInstruction::set_status(Status status) noexcept { status_ = status; }
+
+void CameraInstruction::reset() {
+  NOT_DISABLE_OR_THROW();
+  cur_.assign(init_.begin(), init_.end());
+}
+
+bool CameraInstruction::next() {
+  NOT_DISABLE_OR_THROW();
+
+  // while not all control block have been modified
+  while (ctrl_block_ < cur_.size()) {
+    // next value for the control block i; 8 bits (cast to detect overflow)
+    const unsigned next_ctrl_i = static_cast<unsigned>(cur_[ctrl_block_] + 1);
+    // maximum value for the control block i
+    const unsigned max_ctrl_i = max_.empty() ? UINT8_MAX : max_[ctrl_block_];
+
+    // maximum exceed or overflow occurred
+    if (next_ctrl_i > max_ctrl_i) {
+      // reset to initial
+      cur_[ctrl_block_] = init_[ctrl_block_];
+      // move to the next control block
+      ++ctrl_block_;
+      continue;
+    }
+
+    // modify this control block and return
+    cur_[ctrl_block_] = static_cast<uint8_t>(next_ctrl_i);
+    return true;
   }
 
-  cur_ctrl_.assign(cur.begin(), cur.end());
-
-  return true;
+  // all control block have been incremented
+  return false;
 }
-
-bool CameraInstruction::set_min_cur() noexcept {
-  if (min_ctrl_.empty() || cur_ctrl_ == min_ctrl_) return false;
-
-  cur_ctrl_.assign(min_ctrl_.begin(), min_ctrl_.end());
-
-  return true;
-}
-
-bool CameraInstruction::set_max_cur() noexcept {
-  if (cur_ctrl_ == max_ctrl_) return false;
-
-  if (max_ctrl_.empty())
-    cur_ctrl_.assign(cur_ctrl_.size(), UINT8_MAX);
-  else
-    cur_ctrl_.assign(max_ctrl_.begin(), max_ctrl_.end());
-
-  return true;
-}
-
-void CameraInstruction::reset() noexcept { cur_ctrl_.assign(init_ctrl_.begin(), init_ctrl_.end()); }
 
 string to_string(const CameraInstruction &inst) {
-  return std::format("unit: {}, selector: {}, control: {}",
-                     to_string(static_cast<int>(inst.unit())),
-                     to_string(static_cast<int>(inst.selector())), to_string(inst.cur()));
+  return std::format("unit: {}, selector: {}, control: {}", to_string(inst.unit()),
+                     to_string(inst.selector()), to_string(inst.cur()));
 }
 
-string to_string(const vector<uint8_t> &vec) {
+string to_string(const CameraInstruction::Control &vec) {
   string str;
   for (size_t i = 0; i < vec.size(); ++i) {
-    str += to_string(static_cast<int>(vec[i]));
+    str += to_string(vec[i]);
     if (i + 1 < vec.size()) str += " ";
   }
   return str;
 }
 
-CameraInstructionException::CameraInstructionException(const string &device, uint8_t unit,
-                                                       uint8_t selector)
-    : message(std::format("Impossible to obtain the instruction on {} for unit: {} selector: {}.",
-                          device, to_string(static_cast<int>(unit)),
-                          to_string(static_cast<int>(selector)))) {}
+string to_string(uint8_t v) { return to_string(static_cast<int>(v)); }
 
-const char *CameraInstructionException::what() const noexcept { return message.c_str(); }
+string to_string(CameraInstruction::Status status) {
+  switch (status) {
+    case CameraInstruction::Status::START:
+      return "start";
+    case CameraInstruction::Status::IDLE:
+      return "idle";
+    case CameraInstruction::Status::DISABLE:
+      return "disable";
+    default:
+      throw CameraInstruction::Exception("Unknown status value {}",
+                                         to_string(static_cast<int>(status)));
+  }
+}
+
+CameraInstruction::Status from_string(const std::string &status_str) {
+  if (status_str == "start") return CameraInstruction::Status::START;
+  if (status_str == "idle") return CameraInstruction::Status::IDLE;
+  if (status_str == "disable") return CameraInstruction::Status::DISABLE;
+  throw CameraInstruction::Exception("Unknown status string " + status_str);
+}

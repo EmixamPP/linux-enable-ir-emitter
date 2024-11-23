@@ -13,7 +13,7 @@
 * `gtk3 devel`
 * `yaml-cpp devel`
 * `argparse devel`
-* `spdlog devel`
+* if meson flag `-Dtests=true`: `gest-devel`
 
 ## Hardware requirements
 * An infrared camera with at least one emitter.

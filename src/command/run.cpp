@@ -1,49 +1,37 @@
-#include <algorithm>
-#include <vector>
-using namespace std;
-
-#include "camera/camerainstruction.hpp"
 #include "commands.hpp"
-#include "logger.hpp"
 
 ExitCode run(const optional<string> &device, int width, int height) {
-  logger::debug("Executing run command.");
+  auto res = ExitCode::SUCCESS;
+  try {
+    logger::debug("Executing run command.");
 
-  auto devices = Configuration::ConfiguredDevices();
-
-  if (devices.empty()) {
-    logger::warn("No device has been configured.");
-    return ExitCode::SUCCESS;
-  }
-
-  if (device.has_value()) devices = {device.value()};
-
-  bool oneFailure = false;
-  for (const auto &device : devices) {
-    auto instructions = Configuration::Load(device);
-    if (!instructions) {
-      oneFailure = true;
-      logger::error("Failed to load a configuration for {}.", device);
-      continue;
+    Configurations confs;
+    if (device.has_value()) {
+      CameraPtr camera = CreateCamera<Camera>(device, width, height);
+      confs.push_back(Configuration(camera, false));
+    } else {
+      confs = Configuration::ConfiguredDevices();
     }
 
-    Camera camera(device, width, height);
+    if (confs.empty()) {
+      logger::warn("No device has been configured.");
+    }
 
-    try {
-      for (const auto &instruction : instructions.value()) {
-        if (!instruction.is_disable()) {
-          logger::debug("Applying instruction {} on {}.", to_string(instruction), device);
-          if (!camera.apply(instruction)) {
-            logger::error("Failed to apply the instruction {}.", to_string(instruction));
-            oneFailure = true;
+    for (const auto &conf : confs) {
+      for (const auto &instruction : conf) {
+        if (instruction.status() == CameraInstruction::Status::START) {
+          logger::debug("Applying instruction {} on {}.", to_string(instruction),
+                        conf.camera->device());
+          if (!conf.camera->apply(instruction)) {
+            logger::warn("Failed to apply the instruction.");
+            res = ExitCode::FAILURE;
           }
         }
       }
-    } catch (const CameraException &e) {
-      logger::critical(e.what());
-      exit(ExitCode::FILE_DESCRIPTOR_ERROR);
     }
-  }
 
-  return oneFailure ? ExitCode::FAILURE : ExitCode::SUCCESS;
+  } catch (const std::exception &e) {
+    logger::error(e.what());
+  }
+  return res;
 }

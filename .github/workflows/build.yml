@@ -1,4 +1,4 @@
-name: Build
+name: Build, Test, Lint and Package
 
 on:
   workflow_dispatch:
@@ -11,42 +11,77 @@ on:
       buildtype:
         type: string
         default: release
+    outputs:
+      compile:
+        value: ${{ jobs.build.outputs.compile }}
+      unit-tests:
+        value: ${{ jobs.build.outputs.unit-tests }}
+      clang-tidy:
+        value: ${{ jobs.build.outputs.clang-tidy }}
+      clang-format:
+        value: ${{ jobs.build.outputs.clang-format }}
+      tarball-url:
+        value: ${{ jobs.build.outputs.tarball-url }}
+      logs-url:
+        value: ${{ jobs.build.outputs.logs-url }}
 
 jobs:
   build:
-    name: Building
+    name: Build, Test, Lint and Package
     runs-on: ubuntu-24.04
+    env:
+      DEPS_DIR: .github/workflows/deps
+      DEPS_CMAKE: .github/workflows/deps/CMakeLists.txt
+      DEPS_INSTALL_DIR: .github/workflows/deps/install_dir
+    outputs:
+      compile: ${{ steps.compile.outcome }}
+      unit-tests: ${{ steps.unit-tests.outcome }}
+      clang-tidy: ${{ steps.clang-tidy.outcome }}
+      clang-format: ${{ steps.clang-format.outcome }}
+      tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
+      logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y meson gcc pkg-config libgtk-3-dev cmake
-
-      - name: Cache lib dependencies
-        id: deps-cache
-        uses: actions/cache@v4
+        uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          path: .github/workflows/deps/install_dir
-          key: ${{ hashFiles('.github/workflows/deps/CMakeLists.txt') }}
+          packages: meson gcc pkg-config libgtk-3-dev libgtest-dev cmake
+          version: 1.0
 
-      - name: Build lib dependencis
+      - name: Restore cached lib dependencies
+        id: deps-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.DEPS_INSTALL_DIR }}
+          key: ${{ hashFiles(env.DEPS_CMAKE) }}
+
+      - name: Build lib dependencies
+        id: deps-build
         if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
         run: |
-          cd .github/workflows/deps
-          cmake . -B build -GNinja
-          ninja -C build
+          cd ${{ env.DEPS_DIR }}
+          cmake -Bbuild -GNinja
+          cmake --build build
+
+      - name: Cache lib dependencies
+        if: ${{ steps.deps-build.outcome == 'success' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.DEPS_INSTALL_DIR }}
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
 
       - name: Setup build
+        id: setup
+        continue-on-error: true
         run: |
-          meson setup build --sysconfdir /etc --prefer-static --pkg-config-path $(find .github -name "pkgconfig")
+          meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_INSTALL_DIR }} -name "pkgconfig")
           case "${{ inputs.buildtype }}" in
             "release")
               meson configure build --optimization=s --strip
               ;;
             "debug")
-              meson configure build --buildtype=debug
+              meson configure build --buildtype=debug --werror
               ;;
             *)
               echo "Build type ${{ inputs.buildtype }} not supported"
@@ -55,21 +90,56 @@ jobs:
           esac
 
       - name: Compile
+        id: compile
+        if : ${{ steps.setup.outcome == 'success' }}
+        continue-on-error: true
         run: |
           meson compile -C build
 
-      - name: Create tarball
+      - name: Unit tests
+        id: unit-tests
+        if: ${{ steps.compile.outcome == 'success' }}
+        continue-on-error: true
         run: |
-          DESTDIR=install_dir meson install -C build
-          tar -czvf build/linux-enable-ir-emitter.systemd.x86-64.tar.gz -C build/install_dir .
+          meson test -C build linux-enable-ir-emitter --logbase unit-tests --print-errorlogs
 
-      - name: Retrieve version
+      - name: Clang-tidy
+        id: clang-tidy
+        if: ${{ steps.setup.outcome == 'success' }}
+        continue-on-error: true
         run: |
-          VERSION=$(meson introspect --projectinfo build | jq -r '.version')
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          meson test -C build clang-tidy --logbase clang-tidy --print-errorlogs
 
-      - name: Upload tarball
+      - name: Clang-format
+        id: clang-format
+        if: ${{ steps.setup.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          meson test -C build clang-format --logbase clang-format --print-errorlogs
+
+      - name: Upload logs
+        id: upload-logs
+        if: ${{ steps.setup.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-enable-ir-emitter-${{ inputs.buildtype }}-${{ env.VERSION }}.systemd.x86-64.tar.gz
-          path: build/linux-enable-ir-emitter.systemd.x86-64.tar.gz
+          name: meson-logs
+          path: |
+            build/meson-logs/*
+
+      - name: Create tarball
+        if: ${{ steps.compile.outcome == 'success' }}
+        run: |
+          VERSION=$(meson introspect --projectinfo build | jq -r '.version')
+          TARBALL_NAME=linux-enable-ir-emitter-${{ inputs.buildtype }}-${VERSION}.systemd.x86-64.tar.gz
+          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_ENV"
+
+          DESTDIR=install_dir meson install -C build
+          tar -czvf build/${TARBALL_NAME} -C build/install_dir .
+
+      - name: Upload tarball
+        id: upload-tarball
+        if: ${{ steps.compile.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TARBALL_NAME }}
+          path: build/${{ env.TARBALL_NAME }}
