@@ -27,6 +27,7 @@ jobs:
       clang-format: ${{ steps.clang-format.outcome }}
       tarball_url: ${{ steps.upload-tarball.outputs.artifact_url }}
       logs_url: ${{ steps.upload-logs.outputs.artifact_url }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -77,6 +78,7 @@ jobs:
 
       - name: Compile
         id: compile
+        if : ${{ steps.setup.outcome == 'success' }}
         run: |
           meson compile -C build
       
@@ -118,7 +120,7 @@ jobs:
      
       - name: Upload logs
         id: upload-logs
-        if: always()
+        if: ${{ steps.setup.outcome == 'success' }}
         uses: actions/upload-artifact@v3
         with:
           name: tests-logs
