@@ -24,6 +24,8 @@ on:
         value: ${{ jobs.build.outputs.tarball-url }}
       logs-url:
         value: ${{ jobs.build.outputs.logs-url }}
+      version:
+        value: ${{ jobs.build.outputs.version }}
 
 jobs:
   build:
@@ -40,6 +42,7 @@ jobs:
       clang-format: ${{ steps.clang-format.outcome }}
       tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
       logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
+      version: ${{ env.VERSION }}
     steps:
       - uses: actions/checkout@v4
 

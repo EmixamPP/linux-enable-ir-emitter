@@ -21,11 +21,6 @@ jobs:
       - name: Download tarball
         uses: actions/download-artifact@v4
 
-      - name: Obtain version
-        run: |
-          VERSION=$(echo $tarball | grep -oP 'linux-enable-ir-emitter-\K[0-9]+\.[0-9]+\.[0-9]+')
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
       - name: Create tag
         uses: actions/github-script@v5
         with:
@@ -33,7 +28,7 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'refs/tags/${{ env.VERSION }}',
+              ref: 'refs/tags/${{ needs.build.outputs.version }}',
               sha: context.sha
             })
 
@@ -41,7 +36,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: linux-enable-ir-emitter*.tar.gz
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.build.outputs.version }}
           fail_on_unmatched_files: true
           draft: ${{ github.event.inputs.draft }}
           make_latest: true
