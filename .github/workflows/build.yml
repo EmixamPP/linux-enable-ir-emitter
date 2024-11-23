@@ -38,8 +38,8 @@ jobs:
       unit-tests: ${{ steps.unit-tests.outcome }}
       clang-tidy: ${{ steps.clang-tidy.outcome }}
       clang-format: ${{ steps.clang-format.outcome }}
-      tarball-url: ${{ steps.upload-tarball.outputs.artifact_url }}
-      logs-url: ${{ steps.upload-logs.outputs.artifact_url }}
+      tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
+      logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -96,16 +96,6 @@ jobs:
         run: |
           meson compile -C build
 
-      - name: Create tarball
-        if: ${{ steps.compile.outcome == 'success' }}
-        run: |
-          VERSION=$(meson introspect --projectinfo build | jq -r '.version')
-          TARBALL_NAME=linux-enable-ir-emitter-${{ inputs.buildtype }}-${VERSION}.systemd.x86-64.tar.gz
-          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_ENV"
-
-          DESTDIR=install_dir meson install -C build
-          tar -czvf build/${TARBALL_NAME} -C build/install_dir .
-
       - name: Unit tests
         id: unit-tests
         if: ${{ steps.compile.outcome == 'success' }}
@@ -135,7 +125,16 @@ jobs:
           name: meson-logs
           path: |
             build/meson-logs/*
-          if-no-files-found: ignore
+
+      - name: Create tarball
+        if: ${{ steps.compile.outcome == 'success' }}
+        run: |
+          VERSION=$(meson introspect --projectinfo build | jq -r '.version')
+          TARBALL_NAME=linux-enable-ir-emitter-${{ inputs.buildtype }}-${VERSION}.systemd.x86-64.tar.gz
+          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_ENV"
+
+          DESTDIR=install_dir meson install -C build
+          tar -czvf build/${TARBALL_NAME} -C build/install_dir .
 
       - name: Upload tarball
         id: upload-tarball
