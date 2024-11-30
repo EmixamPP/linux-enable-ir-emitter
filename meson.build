@@ -19,7 +19,7 @@ add_project_arguments(
     # without importance
     '-Wno-shadow',
     # unworth increase of reading complexity
-    '-Wno-abi-tag', 
+    '-Wno-abi-tag',
     '-Wno-effc++',
     '-Wno-suggest-attribute=pure',
     # let the compiler tries
