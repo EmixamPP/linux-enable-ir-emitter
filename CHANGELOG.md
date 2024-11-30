@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `OpenCV` error: `size.width>0 && size.height>0 in function 'imshow'`.
+- The `run` command does not crash if one configuration cannot be applied on q device.
 
 ## [6.0.6] - 2024-10-11
 ### Fixed
