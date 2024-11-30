@@ -2,7 +2,7 @@ meson_exe = find_program('meson')
 
 test(
     'clang-tidy',
-    meson_exe, 
+    meson_exe,
     args: [
         '--internal',
         'clangtidy',
@@ -14,7 +14,7 @@ test(
 
 test(
     'clang-format',
-    meson_exe, 
+    meson_exe,
     args: [
         '--internal',
         'clangformat',
