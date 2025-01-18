@@ -5,7 +5,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install_dir" CACHE PATH "Default install prefix" FORCE)
 endif()
 
-set(OPENCV_GIT_TAG "4.10.0" CACHE STRING "Tag or branch used to checkout when cloning opencv")
+set(OPENCV_GIT_TAG "4.11.0" CACHE STRING "Tag or branch used to checkout when cloning opencv")
 set(YAML_GIT_TAG "0.8.0" CACHE STRING "Tag or branch used to checkout when cloning yaml-cpp")
 set(ARGPARSE_GIT_TAG "v3.1" CACHE STRING "Tag or branch used to checkout when cloning argparse")
 
