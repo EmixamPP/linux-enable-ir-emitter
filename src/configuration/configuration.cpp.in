@@ -81,7 +81,7 @@ Configuration::~Configuration() {
   }
 }
 
-CameraInstructions& Configuration::instructions() noexcept {
+CameraInstructions &Configuration::instructions() noexcept {
   save_on_del_ = true;
   return instructions_;
 }
@@ -102,13 +102,17 @@ CameraInstructions::const_iterator Configuration::end() const { return instructi
 
 Configurations Configuration::ConfiguredDevices() noexcept {
   Configurations confs;
-  for (const auto &conf : filesystem::directory_iterator(SAVE_FOLDER_CONFIG_PATH)) {
-    // do not consider saved initial config
-    if (conf.path().filename().extension().compare(".ini") == 0) continue;
+  try {
+    for (const auto &conf : filesystem::directory_iterator(SAVE_FOLDER_CONFIG_PATH)) {
+      // do not consider saved initial config
+      if (conf.path().filename().extension().compare(".ini") == 0) continue;
 
-    auto device = V4L_PREFIX + conf.path().filename().string();
-    CameraPtr camera = make_shared<Camera>(device);
-    confs.push_back(Configuration(camera, false));
+      auto device = V4L_PREFIX + conf.path().filename().string();
+      CameraPtr camera = make_shared<Camera>(device);
+      confs.push_back(Configuration(camera, false));
+    }
+  } catch (const std::exception &e) {
+    logger::warn(e.what());
   }
   return confs;
 }

@@ -76,8 +76,8 @@ if get_option('tests')
         install: false,
     )
     test(
-        'linux-enable-ir-emitter', 
-        test_exe, 
+        'linux-enable-ir-emitter',
+        test_exe,
         timeout: 0
     )
 endif

@@ -1,7 +1,7 @@
 project(
     'linux-enable-ir-emitter',
     'cpp',
-    version: '6.1.0',
+    version: '6.1.1',
     license: 'MIT',
     default_options: [
         'cpp_std=c++20',
@@ -19,7 +19,7 @@ add_project_arguments(
     # without importance
     '-Wno-shadow',
     # unworth increase of reading complexity
-    '-Wno-abi-tag', 
+    '-Wno-abi-tag',
     '-Wno-effc++',
     '-Wno-suggest-attribute=pure',
     # let the compiler tries

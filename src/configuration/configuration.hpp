@@ -71,7 +71,6 @@ class Configuration {
 
   /**
    * @brief Get all the device configured, only based on the file name
-   *
    * @return device path of the configured camera
    */
   static Configurations ConfiguredDevices() noexcept;

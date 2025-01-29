@@ -38,7 +38,7 @@ jobs:
           write "### :package: Artifacts: $(outcome_emoji ${{ needs.build.outputs.compile }})"
           write "1. [Download the tarball](${{ needs.build.outputs.tarball-url }})"
           write "2. \`unzip linux-enable-ir-emitter*.tar.gz.zip\`"
-          write "3. [Execute the install instructions](README.md#installation)"
+          write "3. [Execute the install instructions](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)"
           write ""
           write "During the execution the tool raises an exception?\\"
           write "Please send us the gdb backtrace: \`sudo gdb --ex run --args linux-enable-ir-emitter <your command args>\`, once the crash arrives, type \`bt\` to show the error trace (\`q\` to exit)"

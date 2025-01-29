@@ -26,7 +26,6 @@ jobs:
         uses: rickstaa/action-create-tag@v1
         with:
           tag: ${{ needs.build.outputs.version }}
-          force_push_tag: true
 
       - name: Create release
         uses: softprops/action-gh-release@v2
