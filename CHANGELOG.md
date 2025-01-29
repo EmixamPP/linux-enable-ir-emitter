@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [6.1.0] - 2025-01-29
 
 ### Added
 - Unit tests for instruction manipulations.
@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `disable` configuration field is deprecated and renamed `status` for more flexibility. It accepts the strings: `start`, `idle`, `disable`.
 - The `run` command only applies instructions with the `start` `status`.
 - The `tweak` command displays all the time the video feedback.
+- Bump OpenCV to v4.11.0
+- Bump argparse to v3.2
 
 ### Removed
 - `--werror` `meson` option no longer enabled by default.
