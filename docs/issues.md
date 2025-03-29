@@ -1,14 +1,14 @@
 ## Table of contents
 - [Table of contents](#table-of-contents)
-- [Please, first, ensure that you have the last version. Compare the latest release with `linux-enable-ir-emitter -V`](#please-first-ensure-that-you-have-the-last-version-compare-the-latest-release-with-linux-enable-ir-emitter--v)
+- [Please, first, ensure that you use the latest version provided here on GitHub, compare it with `linux-enable-ir-emitter -V`.](#please-first-ensure-that-you-use-the-latest-version-provided-here-on-github-compare-it-with-linux-enable-ir-emitter--v)
 - [The configuration has failed](#the-configuration-has-failed)
 - [The emitter does not work after successful configuration or after update](#the-emitter-does-not-work-after-successful-configuration-or-after-update)
 - [Exception thrown by OpenCV during the configuration](#exception-thrown-by-opencv-during-the-configuration)
 - [Other bugs](#other-bugs)
 
-## Please, first, ensure that you have the last version. Compare the [latest release](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest) with `linux-enable-ir-emitter -V`
+## Please, first, ensure that you use the [latest version provided here on GitHub](https://github.com/EmixamPP/linux-enable-ir-emitter/releases/latest), compare it with `linux-enable-ir-emitter -V`.
 
-## The configuration has failed 
+## The configuration has failed
 If you had the message `INFO: Please shut down your computer, then boot and retry.`, please follow these instructions first:
 1. Shutdown your computer, (not just rebooting).
 2. Remove the AC adapter and if possible the battery.

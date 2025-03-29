@@ -7,8 +7,10 @@ assignees: ''
 
 ---
 
-<!-- Please look at the docs before open an issue -->
-<!-- https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md -->
+**Before opening the issue**
+- [ ] I looked at the [docs](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md)
+- [ ] I installed the [release tarball provided here on Github](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)
+<!---Most of the issues comes from OpenCV distro packaging -->
 
 **Ouput of `cat /var/local/log/linux-enable-ir-emitter/linux-enable-ir-emitter.log`**
 ```
