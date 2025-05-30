@@ -12,18 +12,16 @@ on:
         type: string
         default: release
     outputs:
-      compile:
-        value: ${{ jobs.build.outputs.compile }}
-      unit-tests:
-        value: ${{ jobs.build.outputs.unit-tests }}
-      clang-tidy:
-        value: ${{ jobs.build.outputs.clang-tidy }}
-      clang-format:
-        value: ${{ jobs.build.outputs.clang-format }}
+      build:
+        value: ${{ jobs.build.outputs.build }}
+      tests:
+        value: ${{ jobs.build.outputs.tests }}
+      clippy:
+        value: ${{ jobs.build.outputs.clippy }}
+      format:
+        value: ${{ jobs.build.outputs.format }}
       tarball-url:
         value: ${{ jobs.build.outputs.tarball-url }}
-      logs-url:
-        value: ${{ jobs.build.outputs.logs-url }}
       version:
         value: ${{ jobs.build.outputs.version }}
 
@@ -31,121 +29,74 @@ jobs:
   build:
     name: Build, Test, Lint and Package
     runs-on: ubuntu-24.04
-    env:
-      DEPS_DIR: .github/workflows/deps
-      DEPS_CMAKE: .github/workflows/deps/CMakeLists.txt
-      DEPS_INSTALL_DIR: .github/workflows/deps/install_dir
     outputs:
-      compile: ${{ steps.compile.outcome }}
-      unit-tests: ${{ steps.unit-tests.outcome }}
-      clang-tidy: ${{ steps.clang-tidy.outcome }}
-      clang-format: ${{ steps.clang-format.outcome }}
+      build: ${{ steps.build.outcome }}
+      tests: ${{ steps.tests.outcome }}
+      clippy: ${{ steps.clippy.outcome }}
+      format: ${{ steps.format.outcome }}
       version: ${{ steps.create-tarball.outputs.VERSION}}
       tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
-      logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: meson gcc pkg-config libgtk-3-dev libgtest-dev cmake
+          packages: cargo cargo-clippy
           version: 1.0
+      # TODO add cargo-audit?
 
-      - name: Restore cached lib dependencies
+      - name: Restore cached cargo dependencies
         id: deps-cache
         uses: actions/cache/restore@v4
         with:
-          path: ${{ env.DEPS_INSTALL_DIR }}
-          key: ${{ hashFiles(env.DEPS_CMAKE) }}
-
-      - name: Build lib dependencies
-        id: deps-build
-        if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
-        run: |
-          cd ${{ env.DEPS_DIR }}
-          cmake -Bbuild -GNinja
-          cmake --build build
-
-      - name: Cache lib dependencies
-        if: ${{ steps.deps-build.outcome == 'success' }}
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.DEPS_INSTALL_DIR }}
-          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
-
-      - name: Setup build
-        id: setup
-        continue-on-error: true
-        run: |
-          meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_INSTALL_DIR }} -name "pkgconfig")
-          case "${{ inputs.buildtype }}" in
-            "release")
-              meson configure build --optimization=s --strip
-              ;;
-            "debug")
-              meson configure build --buildtype=debug --werror
-              ;;
-            *)
-              echo "Build type ${{ inputs.buildtype }} not supported"
-              exit 1
-              ;;
-          esac
-
-      - name: Compile
-        id: compile
-        if : ${{ steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson compile -C build
-
-      - name: Unit tests
-        id: unit-tests
-        if: ${{ steps.compile.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson test -C build linux-enable-ir-emitter --logbase unit-tests --print-errorlogs
-
-      - name: Clang-tidy
-        id: clang-tidy
-        if: ${{ steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson test -C build clang-tidy --logbase clang-tidy --print-errorlogs
-
-      - name: Clang-format
-        id: clang-format
-        if: ${{ steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson test -C build clang-format --logbase clang-format --print-errorlogs
-
-      - name: Upload logs
-        id: upload-logs
-        if: ${{ steps.setup.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: meson-logs
           path: |
-            build/meson-logs/*.txt
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build
+        id: build
+        continue-on-error: true
+        run: |
+          cargo build --${{ inputs.buildtype }}
+
+      - name: Tests
+        id: tests
+        if: ${{ steps.build.outcome == 'success' }}
+        continue-on-error: true
+        run: cargo test --${{ inputs.buildtype }}
+
+      - name: Clippy
+        id: clippy
+        continue-on-error: true
+        run: cargo clippy --${{ inputs.buildtype }} -- -D warnings
+
+      - name: Format
+        id: format
+        continue-on-error: true
+        run: cargo fmt --${{ inputs.buildtype }} -- --check
 
       - name: Create tarball
         id: create-tarball
-        if: ${{ steps.compile.outcome == 'success' }}
+        if: ${{ steps.build.outcome == 'success' }}
         run: |
-          version=$(meson introspect --projectinfo build | jq -r '.version')
+          version=$(cargo pkgid | sed 's/.*#//')
           echo "VERSION=$version" >> "$GITHUB_OUTPUT"
 
           tarball_name=linux-enable-ir-emitter-${version}-${{ inputs.buildtype }}.systemd.x86-64.tar.gz
           echo "TARBALL_NAME=$tarball_name" >> "$GITHUB_ENV"
 
-          DESTDIR=install_dir meson install -C build
-          tar -czvf build/${tarball_name} -C build/install_dir .
+          cargo install --path . --root build
+          tar -czvf ${tarball_name} -C build .
 
       - name: Upload tarball
         id: upload-tarball
-        if: ${{ steps.compile.outcome == 'success' }}
+        if: ${{ steps.create-tarball.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARBALL_NAME }}
-          path: build/${{ env.TARBALL_NAME }}
+          path: ${{ env.TARBALL_NAME }}

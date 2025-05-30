@@ -40,8 +40,7 @@ ExitCode configure(const optional<string> &device, int width, int height, bool m
 
   if (res != ExitCode::SUCCESS) {
     logger::error("The configuration failed.");
-    logger::info("Do not hesitate to visit the GitHub!");
-    logger::info("https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/docs/README.md");
+
   }
   return res;
 }

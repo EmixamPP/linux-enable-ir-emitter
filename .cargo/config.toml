@@ -1,0 +1,6 @@
+[env]
+LOG_PATH = "TODO.log"
+CONFIG_PATH="linux-enable-ir-emitter.ron"
+
+[install]
+root = "/usr"

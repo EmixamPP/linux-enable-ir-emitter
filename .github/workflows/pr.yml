@@ -34,18 +34,15 @@ jobs:
           }
 
           write "## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}"
-          write "## :hammer_and_wrench: Building result: $(outcome_emoji ${{ needs.build.outputs.compile }})"
-          write "### :package: Artifacts: $(outcome_emoji ${{ needs.build.outputs.compile }})"
+          write "## :hammer_and_wrench: Building result: $(outcome_emoji ${{ needs.build.outputs.build }})"
+          write "### :package: Artifacts: $(outcome_emoji ${{ needs.build.outputs.tarball-url }})"
           write "1. [Download the tarball](${{ needs.build.outputs.tarball-url }})"
           write "2. \`unzip linux-enable-ir-emitter*.tar.gz.zip\`"
           write "3. [Execute the install instructions](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)"
           write ""
-          write "During the execution the tool raises an exception?\\"
-          write "Please send us the gdb backtrace: \`sudo gdb --ex run --args linux-enable-ir-emitter <your command args>\`, once the crash arrives, type \`bt\` to show the error trace (\`q\` to exit)"
-          write "## :test_tube: Unit tests results: $(outcome_emoji ${{ needs.build.outputs.unit-tests }})"
-          write "## :stethoscope: clang-tidy results: $(outcome_emoji ${{ needs.build.outputs.clang-tidy }})"
-          write "## :art: clang-format results: $(outcome_emoji ${{ needs.build.outputs.clang-format }})"
-          write "## :clipboard: Logs: [meson-logs.zip](${{ needs.build.outputs.logs-url }})"
+          write "## :test_tube: Tests results: $(outcome_emoji ${{ needs.build.outputs.tests }})"
+          write "## :stethoscope: Clippy results: $(outcome_emoji ${{ needs.build.outputs.clippy }})"
+          write "## :art: Format results: $(outcome_emoji ${{ needs.build.outputs.format }})"
 
       - uses: thollander/actions-comment-pull-request@v3
         with:

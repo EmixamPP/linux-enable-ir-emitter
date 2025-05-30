@@ -5,7 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Complete rewrite in Rust for more robustness.
+
+### Fixed
+
+- Use /dev/v4l/by-id/ device path instead of /dev/v4l/by-path/ for better persistence on some system/hardware.
+
+### Removed
+
+- OpenCV is not used anymore for capturing V4L video stream, because of unreliability, and compatibility issues across distro.
+
 ## [6.1.1] - 2025-01-29
+
+### Fixed
 
 - The `run` command does not crash if one configuration cannot be applied on q device.
 

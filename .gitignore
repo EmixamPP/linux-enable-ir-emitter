@@ -1,6 +1,5 @@
-# Build
-build/
-install_dir/
+# Cargo
+target/
 
-# Others
+# IDE
 .vscode/

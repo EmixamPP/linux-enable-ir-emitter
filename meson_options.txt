@@ -1,2 +1,0 @@
-option('boot_service', type : 'combo', choices : ['systemd', 'openrc'], value : 'systemd')
-option('tests', type : 'boolean', value : false)
