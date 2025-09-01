@@ -1,2 +1,5 @@
 option('boot_service', type : 'combo', choices : ['systemd', 'openrc'], value : 'systemd')
 option('tests', type : 'boolean', value : false)
+option('config_dir', type : 'string', value : '/etc')
+option('create_config_dir', type : 'boolean', value : true)
+option('create_log_dir', type : 'boolean', value : true)
