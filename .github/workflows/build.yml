@@ -44,7 +44,7 @@ jobs:
       tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
       logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install build dependencies
         uses: awalsh128/cache-apt-pkgs-action@v1
