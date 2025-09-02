@@ -5,12 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.1.1] - 2025-01-29
+## [6.1.2] - 2025-09-01
+### Added
+- Add custom meson options: `config_dir`, `create_config_dir`, `create_log_dir`
 
+## [6.1.1] - 2025-01-29
+### Fixed
 - The `run` command does not crash if one configuration cannot be applied on q device.
 
 ## [6.1.0] - 2025-01-29
-
 ### Added
 - Unit tests for instruction manipulations.
 - New `meson test` target including: unit tests + `clang-format` + `clang-tidy`.
@@ -219,7 +222,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2021-08-12
 ### Initial Release
 
-[Unreleased]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.6...HEAD
+[Unreleased]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.1.2...HEAD
+[6.1.2]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.1.1...6.1.2
+[6.1.1]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.1.0...6.1.1
+[6.1.0]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.6...6.1.0
 [6.0.6]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.5...6.0.6
 [6.0.5]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.4...6.0.5
 [6.0.4]: https://github.com/emixampp/linux-enable-ir-emitter/compare/6.0.3...6.0.4
