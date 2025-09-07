@@ -8,12 +8,29 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 Download the latest [linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
 ```
 sudo tar -C / --no-same-owner -m -h -vxzf linux-enable-ir-emitter*.tar.gz
-sudo systemctl enable --now linux-enable-ir-emitter
 ```
 
-We also support the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
-
 To uninstall the tool, see [docs/uninstallation.md](docs/uninstallation.md) for the instructions.
+
+### Integration with Howdy
+In all file returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy":
+```
+auth optional pam_exec.so /usr/local/bin/linux-enable-ir-emitter run
+```
+
+Note that the path to the binary may vary depending on your installation method. You can determine the correct path by running `which linux-enable-ir-emitter`.
+
+### Integration with other program
+For version 6.x.x, we still provide a systemd service that, for most cameras, should be sufficient to keep the ir emitter enabled at all times:
+
+```
+sudo systemctl enable --now linux-enable-ir-emitter
+```
+Note that this approach is now deprecated and support will be removed from version 7.x.x.
+
+However, this approach is more of a workaround than a proper solution. Therefore, if your goal is to use Howdy, please refer to the previous section. Otherwise, you will need to find a way to run the command `linux-enable-ir-emitter run` before using the camera in your program.
+
+We also support the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
 
 ## How do I enable my infrared emitter?
 1. Stand in front of and close to the camera and make sure the room is well lit.
