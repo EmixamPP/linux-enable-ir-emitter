@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Download tarball
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
 
       - name: Create tag
         uses: rickstaa/action-create-tag@v1
