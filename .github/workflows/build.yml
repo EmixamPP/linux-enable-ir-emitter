@@ -123,7 +123,7 @@ jobs:
       - name: Upload logs
         id: upload-logs
         if: ${{ steps.setup.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: meson-logs
           path: |
@@ -145,7 +145,7 @@ jobs:
       - name: Upload tarball
         id: upload-tarball
         if: ${{ steps.compile.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.TARBALL_NAME }}
           path: build/${{ env.TARBALL_NAME }}
