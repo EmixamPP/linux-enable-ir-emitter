@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Download tarball
         uses: actions/download-artifact@v4
 
