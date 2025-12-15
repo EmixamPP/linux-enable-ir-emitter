@@ -11,7 +11,10 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 > If you plan to package this software for a Linux distribution, or to contribute code, please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Installation
-Download the latest [linux-enable-ir-emitter-x.x.x.x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
+Download the latest [linux-enable-ir-emitter-x.x.x-release-x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
+> [!NOTE]
+> Please try the 7.0.0-beta! Furthermore, this README has been updated for this version.
+
 ```
 tar -C $HOME/.local/bin --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
 ```
