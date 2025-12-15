@@ -296,6 +296,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_configuration_add_and_check_blacklist() {
         clean_config_dir();
         let xu = make_xu(&mut make_rng());
@@ -306,6 +307,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_configuration_add_to_savelist_and_get() {
         clean_config_dir();
         let xu = make_xu(&mut make_rng());

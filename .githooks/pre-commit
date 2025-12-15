@@ -14,7 +14,7 @@ set -ex
 cargo test
 cargo fmt $fmt_args
 cargo clippy $clippy_args -- --deny warnings
-CARGO_BUILD_RUSTDOCFLAGS="--deny warnings" cargo doc --document-private-items
+CARGO_BUILD_RUSTDOCFLAGS="--deny warnings" cargo doc --document-private-items --no-deps
 
 set +x
 
