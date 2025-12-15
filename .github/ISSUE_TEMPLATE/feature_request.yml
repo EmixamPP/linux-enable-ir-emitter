@@ -1,0 +1,45 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: ""
+labels: enhancement
+assignees: ""
+body:
+  - type: textarea
+    attributes:
+      label: Describe your feature request
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Why would it be useful or what problem can it solve?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe your implementation ideas
+      description: Optional
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: Computer (or camera) model
+      description: If applicable
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: Linux distribution
+      description: If applicable
+    validations:
+      required: false
+  - type: dropdown
+    attributes:
+      label: Installation method
+      description: If applicable
+      multiple: true
+      options:
+        - Distro package
+        - Prebuilt binary from GitHub Releases
+        - Built from source
+    validations:
+      required: false

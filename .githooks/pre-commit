@@ -1,0 +1,21 @@
+#!/bin/bash
+git diff --quiet
+dirty_workspace=$?
+fmt_args="--check"
+clippy_args=""
+if [ $dirty_workspace -eq 0 ]; then
+    fmt_args=""
+    clippy_args="--fix --allow-dirty"
+fi
+
+# Enable debug output and exit on error
+set -ex
+
+cargo test
+cargo fmt $fmt_args
+cargo clippy $clippy_args -- --deny warnings
+CARGO_BUILD_RUSTDOCFLAGS="--deny warnings" cargo doc --document-private-items
+
+set +x
+
+[ $dirty_workspace -eq 0 ] && git add .

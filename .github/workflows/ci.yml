@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request_target:
+  push:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  comment:
+    name: Bot comment
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    env:
+      MESSAGE_FILE: ./message.md
+    steps:
+      - name: Create message
+        run: |
+          function outcome_emoji() {
+            if [ "$1" == "success" ]; then
+              echo ':white_check_mark:'
+            elif [ "$1" == "skipped" ]; then
+              echo ':heavy_minus_sign:'
+            else
+              echo ':x:'
+            fi
+          }
+
+          function write() {
+            echo "$1" >> ${{ env.MESSAGE_FILE }}
+          }
+
+          write "## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}"
+          write "## :hammer_and_wrench: Building result: $(outcome_emoji ${{ needs.build.outputs.build }})"
+          write "### :package: Artifacts: $(outcome_emoji ${{ needs.build.outputs.artifact-url }})"
+          write "1. [Download the tarball](${{ needs.build.outputs.artifact-url }})"
+          write "2. \`unzip linux-enable-ir-emitter*.tar.gz.zip\`"
+          write "3. [Execute the install instructions](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)"
+          write ""
+          write "## :test_tube: Tests results: $(outcome_emoji ${{ needs.build.outputs.tests }})"
+          write "## :stethoscope: Clippy results: $(outcome_emoji ${{ needs.build.outputs.clippy }})"
+          write "## :art: Format results: $(outcome_emoji ${{ needs.build.outputs.format }})"
+          write "## :books: Doc results: $(outcome_emoji ${{ needs.build.outputs.doc }})"
+          write "## :scissors: Shear results: $(outcome_emoji ${{ needs.build.outputs.shear }})"
+
+      - uses: thollander/actions-comment-pull-request@v3
+        with:
+          comment-tag: bot_comment
+          mode: recreate
+          file-path: ${{ env.MESSAGE_FILE }}

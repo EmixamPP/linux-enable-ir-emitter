@@ -1,16 +1,42 @@
 # <p align=center>linux-enable-ir-emitter</p>
 
-Provides support for infrared cameras that are not directly enabled out-of-the box (at the very least, the kernel must recognize your infrared camera). The purpose of this repository is to enable the emitter when the infrared camera is invoked.
+Provides support for infrared cameras that are not directly enabled out-of-the box on Linux (at the very least, the kernel must recognize your infrared camera). The purpose of this repository is to enable the emitter when the infrared camera is invoked.
 
-`linux-enable-ir-emitter` can automatically configure almost any (UVC) infrared emitter.
+`linux-enable-ir-emitter` can automatically configure almost any UVC infrared camera.
+
+> [!IMPORTANT]
+> Please read the documentation below carefully. It can save you a lot of time and help you successfully enable your infrared camera.
+
+> [!NOTE]
+> If you plan to package this software for a Linux distribution, or to contribute code, please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Installation
-Download the latest [linux-enable-ir-emitter-x.x.x.systemd.x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
+Download the latest [linux-enable-ir-emitter-x.x.x.x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
 ```
-sudo tar -C / --no-same-owner -m -h -vxzf linux-enable-ir-emitter*.tar.gz
+tar -C $HOME/.local/bin --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
+```
+If not already done, add `$HOME/.local/bin` to your PATH, e.g.:
+```
+echo 'export PATH=$HOME/.local/bin:$PATH' >> $HOME/.bashrc && source $HOME/.bashrc
 ```
 
-To uninstall the tool, see [docs/uninstallation.md](docs/uninstallation.md) for the instructions.
+The installation consists of 3 files:
+* The executable: `$HOME/.local/bin/linux-enable-ir-emitter`
+* The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`
+* The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`
+
+### Integration with Howdy
+In all files returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy", replacing `<USER>` with your actual username:
+```
+auth optional pam_exec.so /home/<USER>/.local/bin/linux-enable-ir-emitter run
+```
+
+The path to the binary may vary depending on your installation method. You can determine the correct absolute path by running `which linux-enable-ir-emitter` and use that path instead.
+
+### Integration with other program
+You will need to execute the `linux-enable-ir-emitter run` command before the program that uses the infrared camera.
+
+Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --fd <FD>`.
 
 ### Integration with Howdy
 In all file returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy":
@@ -33,38 +59,38 @@ However, this approach is more of a workaround than a proper solution. Therefore
 We also support the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
 
 ## How do I enable my infrared emitter?
-1. Stand in front of and close to the camera and make sure the room is well lit.
-2. Make sure you are not using the camera during the execution.
-3. Be patient, do not kill the process (you could break the camera); it is not stuck if you see the `Searching...` output blinking. If you really have to, press `CTRL+C`, the tool will stop safely as soon as possible (you may have to answer a last question see 5.).
-4. Run `sudo linux-enable-ir-emitter configure`.
-    * If you have many emitters on the camera, specify it with the option `--emitters`. E.g. `--emitters 2`.
-    * If your ir camera requires a specific resolution, specify it with the option `--width` and `--height`. E.g. `--width 640 --height 360`.
-    * The tool should automatically detect your ir camera, but you can specify it with the option `--device`. E.g. `--device /dev/video2`; useful if you have multiple ir camera.
-5. You will see a video feedback, answer to the asked questions by pressing Y or N inside the window (click on it to give the focus if it is not the case).
-6. Sometimes, it can request you to shut down, then boot and retry ($\neq$ reboot)
+1. `linux-enable-ir-emitter configure`
+2. Select the *IR Enabler* tool. It will iterate through the UVC camera controls and modify them to try to find the one that enables the IR emitter.
+3. (Optional) Configure your *Device settings*:
+   * *Path*: by default, a grey camera will be selected (if any). If you have multiple cameras, you can change the path.
+   * *Number of emitters*: if your camera has multiple IR emitters, specify it here.
+   * *Emitters*: number of emitters on your camera (default: 1).
+   * *Resolution height/width*: by default, the camera driver will select a resolution for you. You can change it if needed.
+   * *FPS*: by default, the camera driver will select a frame rate for you. You can change it if needed.
+4. (Optional) Configure the *Search settings*:
+   * *Manual mode*: if enabled, our stream analyzer will not be used to detect if the IR emitter is working. Instead, you will have to confirm manually using the camera preview or the IR emitter itself. **Enable this mode if the configuration failed the first time.**
+   * *Images to analyze in auto validation*: number of images used by the stream analyzer to decide if the IR emitter is working. A larger value can lead to more reliable results, but will take more time. Increase this value if the lighting condition is variable. **It is best not to change this value if you are not sure.**
+   * *Light difference significance factor*: factor used by the stream analyzer to decide if the IR emitter is working. A larger value can lead to fewer false positives if the light condition is variable. **It is best not to change this value if you are not sure.**
+   * *Rejection threshold*: after how many failed attempts the byte control under test is considered not the one that enables the IR emitter. A larger value can lead to more reliable results, but will take more time. **Increase this value a bit if the configuration is failing.**
+   * *Increment step*: increment step used to explore the control space. A larger value will make the search faster, but can miss some possibilities. **Increase this value a bit if the configuration is taking too long.**
+5. *Continue* and read carefully the popup message.
+   > [!WARNING]
+   > The camera firmware may get corrupted during the process. You acknowledge that you understand the risks and that you are the only responsible if something goes wrong.
+7. Answer the asked questions by pressing Y or N. There is a camera preview that can help to see if the IR emitter is blinking (the video will flash).
+8. Sometimes, the tool can exit and request you to shut down, then boot and retry ($\neq$ reboot), in case a camera control was not able to be reset. Next time, that control will be skipped.
+9. :crossed_fingers: Let's wait a bit... Hopefully, your IR emitter is now working!
 
-If you like the project, do not hesitate to star the repository to support me, thank you!
+:star: If you like the project, do not hesitate to star the repository to support me, thank you!
 
-If the configuration failed:
-1. But you saw the ir emitter flashing, reboot and switch to manual mode by with the `--manual` option.
-2. Also, try the exhaustive search by using the `--limit -1` option. Caution: this may take several hours; do not combine it `--manual`. Put something that reflects IR in front of the computer so you can leave.
-3. Otherwise, feel free to open a new issue, **but please consult the [docs](docs/README.md) first**.
+> [!TIP]
+> If the configuration failed, you can retry by tweaking some search parameters (read the section above) or use the advanced *tweak* tool (see below). Feel free to open an issue if you need any help! I will be glad to assist you.
+
 
 All criticism, ideas and contributions are welcome!
 
 ## How do I tweak my camera?
-Some cameras provide instructions for changing the brightness of the ir emitter.
-You will need to find the corresponding instructions and set the correct value manually.
-An instruction consists of X values between 0-255.
+Note: Some cameras provide UVC controls for changing the brightness of the ir emitter.
+You will need to find the corresponding controls and set the correct value manually.
+A control consists of X values between 0-255.
 
-1. Run `sudo linux-enable-ir-emitter tweak`
-   * If you ir camera requires a specific resolution, specify it with the option `--width` and `--height`. E.g. `--width 640 --height 360`.
-   * The tool should detect automatically your ir camera, but you can specify it with the option `--device`. E.g. `--device /dev/video2`; useful if you have multiple ir camera.
-2. You will see a video feedback and a menu of the available instructions.
-3. Beside of each instruction, you will see the status of the instruction:
-   * If marked `[DISABLE]`, the instruction may make your camera unusable, so the tool will not use them automatically, we advise you do not touch it.
-   * If marked `[START]`, the instruction will be executed on the `linux-enable-ir-emitter run` command; and by extension when the systemd service is started (at boot).
-   * If marked `[IDLE]`, the instruction will not be executed on the `linux-enable-ir-emitter run` command.
-4. Select one, then the status (start/idle/disable), the initial and current value for the instructions, as well as the minimum and maximum values (if exists) will be displayed.
-5. Input a new value and watch the video feedback to see the difference. You can also input a different status.
-6. You may also want to reset everything to default, for that see [docs/configurations](docs/configurations).
+**Under total rework, will come back soon**

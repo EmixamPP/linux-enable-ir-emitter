@@ -3,149 +3,130 @@ name: Build, Test, Lint and Package
 on:
   workflow_dispatch:
     inputs:
-      buildtype:
-        type: string
-        default: release
+      release:
+        type: boolean
+        description: 'Build with release profile'
+        default: false
   workflow_call:
     inputs:
-      buildtype:
-        type: string
-        default: release
+      release:
+        type: boolean
+        default: false
     outputs:
-      compile:
-        value: ${{ jobs.build.outputs.compile }}
-      unit-tests:
-        value: ${{ jobs.build.outputs.unit-tests }}
-      clang-tidy:
-        value: ${{ jobs.build.outputs.clang-tidy }}
-      clang-format:
-        value: ${{ jobs.build.outputs.clang-format }}
-      tarball-url:
-        value: ${{ jobs.build.outputs.tarball-url }}
-      logs-url:
-        value: ${{ jobs.build.outputs.logs-url }}
+      build:
+        value: ${{ jobs.build.outputs.build }}
+      tests:
+        value: ${{ jobs.build.outputs.tests }}
+      clippy:
+        value: ${{ jobs.build.outputs.clippy }}
+      format:
+        value: ${{ jobs.build.outputs.format }}
+      doc:
+        value: ${{ jobs.build.outputs.doc }}
+      shear:
+        value: ${{ jobs.build.outputs.shear }}
+      artifact-url:
+        value: ${{ jobs.build.outputs.artifact-url }}
       version:
         value: ${{ jobs.build.outputs.version }}
 
 jobs:
   build:
     name: Build, Test, Lint and Package
-    runs-on: ubuntu-24.04
-    env:
-      DEPS_DIR: .github/workflows/deps
-      DEPS_CMAKE: .github/workflows/deps/CMakeLists.txt
-      DEPS_INSTALL_DIR: .github/workflows/deps/install_dir
+    runs-on: ubuntu-latest
     outputs:
-      compile: ${{ steps.compile.outcome }}
-      unit-tests: ${{ steps.unit-tests.outcome }}
-      clang-tidy: ${{ steps.clang-tidy.outcome }}
-      clang-format: ${{ steps.clang-format.outcome }}
-      version: ${{ steps.create-tarball.outputs.VERSION}}
-      tarball-url: ${{ steps.upload-tarball.outputs.artifact-url }}
-      logs-url: ${{ steps.upload-logs.outputs.artifact-url }}
+      build: ${{ steps.build.outcome }}
+      tests: ${{ steps.tests.outcome }}
+      clippy: ${{ steps.clippy.outcome }}
+      format: ${{ steps.format.outcome }}
+      doc: ${{ steps.doc.outcome }}
+      shear: ${{ steps.shear.outcome }}
+      version: ${{ steps.create-artifacts.outputs.VERSION}}
+      artifact-url: ${{ steps.upload-x86.outputs.artifact-url }}
+    env:
+      build-type: ${{ inputs.release && 'release' || 'dev' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - name: Install build dependencies
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: meson gcc pkg-config libgtk-3-dev libgtest-dev cmake
-          version: 1.0
-
-      - name: Restore cached lib dependencies
+      - name: Restore cached cargo dependencies
         id: deps-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
-          path: ${{ env.DEPS_INSTALL_DIR }}
-          key: ${{ hashFiles(env.DEPS_CMAKE) }}
-
-      - name: Build lib dependencies
-        id: deps-build
-        if: ${{ steps.deps-cache.outputs.cache-hit != 'true' }}
-        run: |
-          cd ${{ env.DEPS_DIR }}
-          cmake -Bbuild -GNinja
-          cmake --build build
-
-      - name: Cache lib dependencies
-        if: ${{ steps.deps-build.outcome == 'success' }}
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.DEPS_INSTALL_DIR }}
-          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
-
-      - name: Setup build
-        id: setup
-        continue-on-error: true
-        run: |
-          meson setup build -Dtests=true --sysconfdir=/etc --prefer-static --pkg-config-path=$(find ${{ env.DEPS_INSTALL_DIR }} -name "pkgconfig")
-          case "${{ inputs.buildtype }}" in
-            "release")
-              meson configure build --optimization=s --strip
-              ;;
-            "debug")
-              meson configure build --buildtype=debug --werror
-              ;;
-            *)
-              echo "Build type ${{ inputs.buildtype }} not supported"
-              exit 1
-              ;;
-          esac
-
-      - name: Compile
-        id: compile
-        if : ${{ steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson compile -C build
-
-      - name: Unit tests
-        id: unit-tests
-        if: ${{ steps.compile.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson test -C build linux-enable-ir-emitter --logbase unit-tests --print-errorlogs
-
-      - name: Clang-tidy
-        id: clang-tidy
-        if: ${{ steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson test -C build clang-tidy --logbase clang-tidy --print-errorlogs
-
-      - name: Clang-format
-        id: clang-format
-        if: ${{ steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          meson test -C build clang-format --logbase clang-format --print-errorlogs
-
-      - name: Upload logs
-        id: upload-logs
-        if: ${{ steps.setup.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: meson-logs
           path: |
-            build/meson-logs/*.txt
+            ~/.cargo/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Create tarball
-        id: create-tarball
-        if: ${{ steps.compile.outcome == 'success' }}
+      - name: Install dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         run: |
-          version=$(meson introspect --projectinfo build | jq -r '.version')
+          # TODO: rustup target add aarch64-unknown-linux-gnu
+          # Linting tools
+          cargo install cargo-shear
+
+      - name: Build
+        id: build
+        if: always()
+        run: cargo build --profile ${{ env.build-type }} --locked
+
+      - name: Tests
+        id: tests
+        if: always()
+        run: cargo test --profile ${{ env.build-type }} --locked
+
+      - name: Clippy
+        id: clippy
+        if: always()
+        run: cargo clippy --profile ${{ env.build-type }} --locked -- --deny warnings
+
+      - name: Format
+        id: format
+        if: always()
+        run: cargo fmt -- --check
+
+      - name: Doc
+        id: doc
+        if: always()
+        env:
+          CARGO_BUILD_RUSTDOCFLAGS: "--deny warnings"
+        run: cargo doc --profile ${{ env.build-type }} --document-private-items --locked
+
+      - name: Shear
+        if: always()
+        id: shear
+        run: cargo shear
+
+      - name: Create artifacts
+        id: create-artifacts
+        if: ${{ steps.build.outcome == 'success' }}
+        run: |
+          version=$(cargo pkgid | sed 's/.*#//')
           echo "VERSION=$version" >> "$GITHUB_OUTPUT"
 
-          tarball_name=linux-enable-ir-emitter-${version}-${{ inputs.buildtype }}.systemd.x86-64.tar.gz
-          echo "TARBALL_NAME=$tarball_name" >> "$GITHUB_ENV"
+          if [ "${{ env.build-type }}" == "release" ]; then
+            buildtype="release"
+          else
+            buildtype="debug"
+          fi
 
-          DESTDIR=install_dir meson install -C build
-          tar -czvf build/${tarball_name} -C build/install_dir .
+          artifact_x86=linux-enable-ir-emitter-${version}-${buildtype}-x86-64.tar.gz
+          echo "ARTIFACT_X86=$artifact_x86" >> "$GITHUB_ENV"
+          tar -czvf ${artifact_x86} -C target/${buildtype} linux-enable-ir-emitter
 
-      - name: Upload tarball
-        id: upload-tarball
-        if: ${{ steps.compile.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
+      - name: Upload x86
+        id: upload-x86
+        if: ${{ steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.TARBALL_NAME }}
-          path: build/${{ env.TARBALL_NAME }}
+          name: ${{ env.ARTIFACT_X86 }}
+          path: ${{ env.ARTIFACT_X86 }}
+          if-no-files-found: error
+
+      - name: Save cached cargo dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
