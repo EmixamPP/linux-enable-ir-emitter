@@ -89,7 +89,7 @@ jobs:
         if: always()
         env:
           CARGO_BUILD_RUSTDOCFLAGS: "--deny warnings"
-        run: cargo doc --profile ${{ env.build-type }} --document-private-items --locked
+        run: cargo doc --profile ${{ env.build-type }} --document-private-items --no-deps --locked
 
       - name: Shear
         if: always()
