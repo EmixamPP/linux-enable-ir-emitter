@@ -24,7 +24,7 @@ jobs:
             sed -i 's/\(set(OPENCV_GIT_TAG "\)[^"]*\(".*\)/\1${{ env.VERSION }}\2/' .github/workflows/deps/CMakeLists.txt
 
       - name: Create PR if new version
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
             token: ${{ secrets.PAT }}
             title: "chore(ci): update opencv to ${{ env.VERSION }}"
