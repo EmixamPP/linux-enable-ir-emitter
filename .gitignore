@@ -1,6 +1,2 @@
-# Build
-build/
-install_dir/
-
-# Others
+target/
 .vscode/

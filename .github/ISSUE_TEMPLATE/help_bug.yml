@@ -1,0 +1,59 @@
+name: Help Wanted or Bug Report
+description: Describe your situation to receive help
+title: ""
+labels: ""
+assignees: ""
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This structured issue template is designed to help you provide the necessary information for us to assist you effectively.
+        Please fill out the fields below with as much detail as possible.
+  - type: checkboxes
+    attributes:
+      label: Documentation
+      description: You read the [documentation](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/README.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+  - type: textarea
+    attributes:
+      label: Output of `linux-enable-ir-emitter --config`
+      render: toml
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Output of `linux-enable-ir-emitter --log`
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Output of `linux-enable-ir-emitter --grey-devices`
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Computer (or camera) model
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Linux distribution
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Installation method
+      multiple: true
+      options:
+        - Distro package
+        - Prebuilt binary from GitHub Releases
+        - Built from source
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: Give more information if you have.
