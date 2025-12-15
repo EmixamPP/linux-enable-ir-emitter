@@ -27,7 +27,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: linux-enable-ir-emitter-*/*
+          files: linux-enable-ir-emitter-*.tar.gz
           tag_name: ${{ needs.build.outputs.version }}
           fail_on_unmatched_files: true
           draft: true
