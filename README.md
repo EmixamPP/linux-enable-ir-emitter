@@ -42,7 +42,8 @@ You will need to execute the `linux-enable-ir-emitter run` command before the pr
 Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --device <DEVICE> --fd <FD>`.
 
 ## How do I enable my infrared emitter?
-1. `linux-enable-ir-emitter configure`
+0. For a better experience, use a large terminal window.
+1. Execute the command: `linux-enable-ir-emitter configure`
 2. Select the *IR Enabler* tool. It will iterate through the UVC camera controls and modify them to try to find the one that enables the IR emitter.
 3. (Optional) Configure your *Device settings*:
    * *Path*: by default, a grey camera will be selected (if any). If you have multiple cameras, you can change the path.
