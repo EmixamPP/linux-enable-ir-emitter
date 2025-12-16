@@ -81,11 +81,9 @@ impl Enabler {
     }
 
     /// Gets all the writable controls and not blacklisted controls from the device.
-    fn controls(&self) -> Result<Vec<XuControl>> {
-        let controls = self
-            .device
+    fn controls(&self) -> Vec<XuControl> {
+        self.device
             .controls()
-            .context("failed to get device controls")?
             .into_iter()
             .filter(|c| {
                 if c.writable() && !self.configuration.is_blacklisted(c) {
@@ -95,8 +93,7 @@ impl Enabler {
                     false
                 }
             })
-            .collect();
-        Ok(controls)
+            .collect()
     }
 
     /// Tries to find a configuration for the controls that enables the IR emitter(s).
@@ -108,7 +105,7 @@ impl Enabler {
             bail!("the IR emitter is already working");
         }
 
-        let mut controls = self.controls()?;
+        let mut controls = self.controls();
         self.send(Message::Controls(controls.clone())).await?;
 
         for ctrl in &mut controls {

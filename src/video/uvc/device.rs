@@ -1,6 +1,6 @@
 use crate::video::uvc::XuControl;
 
-use std::io::{Error, ErrorKind, Result};
+use std::io::{Error, Result};
 use std::os::fd::AsFd;
 use std::path::{Path, PathBuf};
 
@@ -80,23 +80,19 @@ impl Device {
     }
 
     /// Tries to get all the control descriptions of the device.
-    ///
-    /// An empty list will be returned if the device has no controls.
-    pub fn controls(&self) -> Result<Vec<XuControl>> {
+    /// An empty list will be returned if the device no controls can be found
+    pub fn controls(&self) -> Vec<XuControl> {
         let mut controls = Vec::new();
         // Search for all possible combination of unit and selector
         for unit in 0..255 {
             for selector in 0..255 {
                 match self.find_control(unit, selector) {
                     Ok(control) => controls.push(control),
-                    Err(err) => match err.kind() {
-                        ErrorKind::NotFound | ErrorKind::PermissionDenied => {}
-                        _ => return Err(err),
-                    },
+                    Err(_) => {} // Ignore all errors
                 }
             }
         }
-        Ok(controls)
+        controls
     }
 
     /// Tries to apply the control to the device.
@@ -204,13 +200,8 @@ impl std::fmt::Display for Device {
                 .as_ref()
                 .map_or("unknown".into(), |p| p.display().to_string())
         )?;
-        match self.controls() {
-            Err(err) => writeln!(f, "   Failed to get the controls: {err:?}")?,
-            Ok(controls) => {
-                for control in controls {
-                    writeln!(f, "   {}", control)?;
-                }
-            }
+        for control in self.controls() {
+            writeln!(f, "   {}", control)?;
         }
         Ok(())
     }
