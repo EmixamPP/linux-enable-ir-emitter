@@ -47,7 +47,7 @@ Alternatively, if you can and/or want to integrate better with the program that 
 3. (Optional) Configure your *Device settings*:
    * *Path*: by default, a grey camera will be selected (if any). If you have multiple cameras, you can change the path.
    * *Number of emitters*: if your camera has multiple IR emitters, specify it here.
-   * *Emitters*: number of emitters on your camera (default: 1).
+   * *Emitters*: number of emitters on your camera.
    * *Resolution height/width*: by default, the camera driver will select a resolution for you. You can change it if needed.
    * *FPS*: by default, the camera driver will select a frame rate for you. You can change it if needed.
 4. (Optional) Configure the *Search settings*:

@@ -1,8 +1,5 @@
 name: Help Wanted or Bug Report
 description: Describe your situation to receive help
-title: ""
-labels: ""
-assignees: ""
 body:
   - type: markdown
     attributes:
