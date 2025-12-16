@@ -9,25 +9,25 @@ body:
   - type: checkboxes
     attributes:
       label: Documentation
-      description: You read the [documentation](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/README.md).
       options:
-        - label: I agree to follow this project's Code of Conduct
+        - label: I read carefully the [documentation](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/README.md).
           required: true
   - type: textarea
     attributes:
       label: Output of `linux-enable-ir-emitter --config`
-      render: toml
+      render: TOML
     validations:
       required: true
   - type: textarea
     attributes:
       label: Output of `linux-enable-ir-emitter --log`
-      render: shell
+      render: Shell
     validations:
       required: true
   - type: textarea
     attributes:
       label: Output of `linux-enable-ir-emitter --grey-devices`
+      render: Text
     validations:
       required: true
   - type: input
