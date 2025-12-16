@@ -86,9 +86,8 @@ impl Device {
         // Search for all possible combination of unit and selector
         for unit in 0..255 {
             for selector in 0..255 {
-                match self.find_control(unit, selector) {
-                    Ok(control) => controls.push(control),
-                    Err(_) => {} // Ignore all errors
+                if let Ok(control) = self.find_control(unit, selector) {
+                    controls.push(control)
                 }
             }
         }

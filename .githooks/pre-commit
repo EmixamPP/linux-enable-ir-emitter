@@ -9,7 +9,7 @@ if [ $dirty_workspace -eq 0 ]; then
 fi
 
 # Enable debug output and exit on error
-set -ex
+set -exo pipefail
 
 cargo test
 cargo fmt $fmt_args
