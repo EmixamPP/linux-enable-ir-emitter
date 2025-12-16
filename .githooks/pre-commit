@@ -2,7 +2,7 @@
 git diff --quiet
 dirty_workspace=$?
 fmt_args="--check"
-clippy_args=""
+clippy_args="--no-deps"
 if [ $dirty_workspace -eq 0 ]; then
     fmt_args=""
     clippy_args="--fix --allow-dirty"

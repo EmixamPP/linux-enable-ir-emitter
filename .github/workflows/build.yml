@@ -56,6 +56,8 @@ jobs:
             ~/.cargo/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -63,6 +65,7 @@ jobs:
           # TODO: rustup target add aarch64-unknown-linux-gnu
           # Linting tools
           cargo install cargo-shear
+          cargo fetch --locked
 
       - name: Build
         id: build
@@ -77,7 +80,7 @@ jobs:
       - name: Clippy
         id: clippy
         if: always()
-        run: cargo clippy --profile ${{ env.build-type }} --locked -- --deny warnings
+        run: cargo clippy --profile ${{ env.build-type }} --no-deps --locked -- --deny warnings
 
       - name: Format
         id: format
@@ -129,4 +132,4 @@ jobs:
           path: |
             ~/.cargo/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
