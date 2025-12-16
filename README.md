@@ -39,27 +39,7 @@ The path to the binary may vary depending on your installation method. You can d
 ### Integration with other program
 You will need to execute the `linux-enable-ir-emitter run` command before the program that uses the infrared camera.
 
-Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --fd <FD>`.
-
-### Integration with Howdy
-In all file returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy":
-```
-auth optional pam_exec.so /usr/local/bin/linux-enable-ir-emitter run
-```
-
-Note that the path to the binary may vary depending on your installation method. You can determine the correct path by running `which linux-enable-ir-emitter`.
-
-### Integration with other program
-For version 6.x.x, we still provide a systemd service that, for most cameras, should be sufficient to keep the ir emitter enabled at all times:
-
-```
-sudo systemctl enable --now linux-enable-ir-emitter
-```
-Note that this approach is now deprecated and support will be removed from version 7.x.x.
-
-However, this approach is more of a workaround than a proper solution. Therefore, if your goal is to use Howdy, please refer to the previous section. Otherwise, you will need to find a way to run the command `linux-enable-ir-emitter run` before using the camera in your program.
-
-We also support the OpenRC service manager. See [docs/manual-build.md](docs/manual-build.md) for information on how to build the project.
+Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --device <DEVICE> --fd <FD>`.
 
 ## How do I enable my infrared emitter?
 1. `linux-enable-ir-emitter configure`
@@ -79,9 +59,9 @@ We also support the OpenRC service manager. See [docs/manual-build.md](docs/manu
 5. *Continue* and read carefully the popup message.
    > [!WARNING]
    > The camera firmware may get corrupted during the process. You acknowledge that you understand the risks and that you are the only responsible if something goes wrong.
-7. Answer the asked questions by pressing Y or N. There is a camera preview that can help to see if the IR emitter is blinking (the video will flash).
-8. Sometimes, the tool can exit and request you to shut down, then boot and retry ($\neq$ reboot), in case a camera control was not able to be reset. Next time, that control will be skipped.
-9. :crossed_fingers: Let's wait a bit... Hopefully, your IR emitter is now working!
+6. Answer the asked questions by pressing Y or N. There is a camera preview that can help to see if the IR emitter is blinking (the video will flash).
+7. Sometimes, the tool can exit and request you to shut down, then boot and retry ($\neq$ reboot), in case a camera control was not able to be reset. Next time, that control will be skipped.
+8. :crossed_fingers: Let's wait a bit... Hopefully, your IR emitter is now working!
 
 :star: If you like the project, do not hesitate to star the repository to support me, thank you!
 
