@@ -29,9 +29,9 @@ async fn main() -> Result<()> {
             log::debug!("Version {}.", env!("CARGO_PKG_VERSION"));
             configure::configure().await
         }
-        Some(Commands::Run { device, fd }) => {
+        Some(Commands::Run { device, fd, config }) => {
             logger::init_term()?;
-            run::run(device.as_deref(), fd)
+            run::run(device.as_deref(), fd, config.as_deref())
         }
         None => Ok(()),
     }
@@ -76,5 +76,12 @@ enum Commands {
             requires = "device"
         )]
         fd: Option<i32>,
+        #[arg(
+            short,
+            long,
+            help = "Specify the configuration file to use. Default: use the default configuration path.",
+            default_value = None,
+        )]
+        config: Option<std::path::PathBuf>,
     },
 }

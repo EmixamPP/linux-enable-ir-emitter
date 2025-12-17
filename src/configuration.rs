@@ -1,7 +1,7 @@
 use crate::video::uvc::XuControl;
 
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, anyhow};
 use derive_more::AsRef;
@@ -13,23 +13,23 @@ static _CONFIG: &str = env!("CONFIG");
 #[cfg(test)]
 pub const _CONFIG: &str = "target/tmp/linux-enable-ir-emitter.toml";
 
-fn config_file_path() -> Result<String> {
+fn config_file_path() -> Result<PathBuf> {
     Ok(shellexpand::env(_CONFIG)
         .context("failed to expend shell variable in log file path")?
-        .to_string())
+        .to_string()
+        .into())
 }
 
 pub fn print_config() -> Result<()> {
     let config_file = config_file_path()?;
     let content_str =
         std::fs::read_to_string(&config_file).context("failed to read configuration file")?;
-    print!("# {}\n\n{}", config_file, content_str);
+    print!("# {}\n\n{}", config_file.display(), content_str);
     Ok(())
 }
 
 mod path {
     use super::*;
-    use std::path::PathBuf;
 
     #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Clone, AsRef)]
     pub struct V4LPath(PathBuf);
@@ -118,18 +118,25 @@ impl Configurations {
         let config_str =
             toml::to_string(&self.devices).context("failed to serialize configuration")?;
         let config_file = config_file_path()?;
-        log::debug!("Saving configuration at {}:\n{}", config_file, config_str);
+        log::debug!(
+            "Saving configuration at {}:\n{}",
+            config_file.display(),
+            config_str
+        );
         std::fs::write(config_file, config_str).context("failed to write configuration file")
     }
 
-    /// Load an existing configurations or create an empty one.
+    /// Load an existing configurations at the default location or create an empty one.
     pub fn load() -> Result<Self> {
-        Ok(match std::fs::read_to_string(config_file_path()?) {
-            Ok(config_str) => Self {
-                devices: toml::from_str(&config_str)
-                    .context("failed to parse configuration file")?,
-            },
-            Err(_) => Self::default(),
+        Ok(Self::load_from(&config_file_path()?).unwrap_or_default())
+    }
+
+    /// Load an existing configurations at a specified path.
+    pub fn load_from(config: &Path) -> Result<Self> {
+        log::info!("Loading configuration from {}.", config.display());
+        let config_str = std::fs::read_to_string(config)?;
+        Ok(Self {
+            devices: toml::from_str(&config_str).context("failed to parse configuration file")?,
         })
     }
 
@@ -140,9 +147,8 @@ impl Configurations {
     /// Initializes an existing configuration if it does not exist.
     fn initialize_config_dir() -> Result<()> {
         let config_file = config_file_path()?;
-        log::debug!("Configuration located at: {}", config_file);
-        let config_dir = Path::new(&config_file).parent();
-        if let Some(config_dir) = config_dir {
+        log::debug!("Configuration located at: {}", config_file.display());
+        if let Some(config_dir) = config_file.parent() {
             std::fs::create_dir_all(config_dir).context("failed to create configuration directory")
         } else {
             Ok(())

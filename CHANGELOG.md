@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New TUI interface for improved user experience and understanding.
 - `tweak` command is now accessible via the `configure` command.
 - Better balance between configuration search time and exhaustiveness.
+- Full rootless capabilities.
 
 ### Added
 - More debug commands to help users to report issues: `--config`, `--log`, `--grey-devices`.
