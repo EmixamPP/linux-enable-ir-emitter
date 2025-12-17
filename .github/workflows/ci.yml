@@ -5,14 +5,13 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Check
     uses: ./.github/workflows/build.yml
 
   pr:
     name: PR
     needs: build
     runs-on: ubuntu-latest
-    if: github.head_ref
     env:
       MESSAGE_FILE: ./message.md
     steps:
