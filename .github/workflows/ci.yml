@@ -1,22 +1,28 @@
 name: CI
 
 on:
-  pull_request_target:
   push:
 
 jobs:
   build:
+    name: Build
     uses: ./.github/workflows/build.yml
 
-  comment:
-    name: Bot comment
+  pr:
+    name: PR
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_target'
+    if: github.head_ref
     env:
       MESSAGE_FILE: ./message.md
     steps:
-      - name: Create message
+      - name: Check if in PR
+        uses: insurgent-lab/is-in-pr-action@v0.2.0
+        id: is-pr
+
+      - name: Create PR comment
+        id: create-comment
+        if: ${{ steps.is-pr.outputs.result == 'true' }}
         run: |
           function outcome_emoji() {
             if [ "$1" == "success" ]; then
@@ -32,12 +38,14 @@ jobs:
             echo "$1" >> ${{ env.MESSAGE_FILE }}
           }
 
-          write "## :arrow_right: Commit ${{ github.event.pull_request.head.sha }}"
+          write "## :arrow_right: Commit ${{ github.sha }}"
           write "## :hammer_and_wrench: Building result: $(outcome_emoji ${{ needs.build.outputs.build }})"
-          write "### :package: Artifacts: $(outcome_emoji ${{ needs.build.outputs.artifact-url }})"
-          write "1. [Download the tarball](${{ needs.build.outputs.artifact-url }})"
-          write "2. \`unzip linux-enable-ir-emitter*.tar.gz.zip\`"
-          write "3. [Execute the install instructions](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)"
+          if [ "${{ needs.build.outputs.build }}" == "success" ]; then
+            write "### :package: Artifacts:"
+            write "1. [Download the tarball](${{ needs.build.outputs.artifact-url }})"
+            write "2. \`unzip linux-enable-ir-emitter*.tar.gz.zip\`"
+            write "3. [Execute the install instructions](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)"
+          fi
           write ""
           write "## :test_tube: Tests results: $(outcome_emoji ${{ needs.build.outputs.tests }})"
           write "## :stethoscope: Clippy results: $(outcome_emoji ${{ needs.build.outputs.clippy }})"
@@ -45,7 +53,9 @@ jobs:
           write "## :books: Doc results: $(outcome_emoji ${{ needs.build.outputs.doc }})"
           write "## :scissors: Shear results: $(outcome_emoji ${{ needs.build.outputs.shear }})"
 
-      - uses: thollander/actions-comment-pull-request@v3
+      - name: Comment on PR
+        uses: thollander/actions-comment-pull-request@v3
+        if: ${{ steps.create-comment.outcome == 'success' }}
         with:
           comment-tag: bot_comment
           mode: recreate

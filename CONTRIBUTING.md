@@ -3,7 +3,7 @@ Thank you for considering contributing to our project! We appreciate your intere
 
 ## Packaging Guidelines
 When building a package for distribution, please ensure the following:
-1. You modified the configuration and log file paths in [.cargo/config.toml](.cargo/config.toml) to match the packaging standards of the target distribution.
+1. You can modify the configuration and log file paths in [.cargo/config.toml](.cargo/config.toml) to match the packaging standards of the target distribution. Note that the defaults allow rootless utilization.
 2. The only external *compile time* dependency needed are
    * `gcc`
    * `libclang`

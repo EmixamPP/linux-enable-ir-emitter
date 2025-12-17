@@ -1,6 +1,6 @@
 [package]
 name = "linux-enable-ir-emitter"
-version = "7.0.0-beta1"
+version = "7.0.0-beta2"
 edition = "2024"
 authors = ["Maxime Dirksen (EmixamPP)"]
 license = "MIT"

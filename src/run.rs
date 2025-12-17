@@ -10,12 +10,17 @@ use std::path::Path;
 ///
 /// Does not return an error if no configuration exists for the device.
 ///
-pub fn run(device: Option<&Path>, fd: Option<i32>) -> Result<()> {
+pub fn run(device: Option<&Path>, fd: Option<i32>, config: Option<&Path>) -> Result<()> {
     if fd.is_some() && device.is_none() {
         bail!("if a file descriptor is provided, a device path must also be provided");
     }
 
-    let config = Configurations::load()?;
+    let config = if let Some(config) = config {
+        Configurations::load_from(config)?
+    } else {
+        Configurations::load()?
+    };
+
     for (path, conf) in config.devices() {
         if let Some(d) = device
             && d != path.as_ref()

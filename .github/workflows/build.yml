@@ -1,4 +1,4 @@
-name: Build, Test, Lint and Package
+name: Build, Test, Lint & Package
 
 on:
   workflow_dispatch:
@@ -50,6 +50,7 @@ jobs:
 
       - name: Restore cached cargo dependencies
         id: deps-cache
+        if: ${{ !inputs.release }}
         uses: actions/cache/restore@v5
         with:
           path: |
