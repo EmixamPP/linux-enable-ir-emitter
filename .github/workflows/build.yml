@@ -50,6 +50,7 @@ jobs:
 
       - name: Restore cached cargo dependencies
         id: deps-cache
+        if: ${{ !inputs.release }}
         uses: actions/cache/restore@v5
         with:
           path: |
