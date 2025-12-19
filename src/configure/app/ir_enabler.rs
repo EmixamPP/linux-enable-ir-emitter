@@ -1,6 +1,6 @@
 use super::helper::*;
 use crate::configure::ui::ir_enabler::{IrEnablerCtx, View, ui};
-use crate::configure::ui::keys::*;
+use crate::configure::ui::{DeviceSettingsCtx, SearchSettingsCtx};
 use crate::video::ir::analyzer::{
     self, IsIrWorking as AnalyzerResponse, Message as AnalyzerRequest, StreamAnalyzer,
 };
@@ -23,6 +23,13 @@ use tokio::{
     sync::mpsc::{Receiver, Sender},
     task,
 };
+
+const KEY_YES: KeyCode = KeyCode::Char('y');
+const KEY_NO: KeyCode = KeyCode::Char('n');
+const KEY_EXIT: KeyCode = KeyCode::Esc;
+const KEY_NAVIGATE: KeyCode = KeyCode::Tab;
+const KEY_CONTINUE: KeyCode = KeyCode::Enter;
+const KEY_DELETE: KeyCode = KeyCode::Backspace;
 
 #[derive(Debug)]
 pub struct Config {
@@ -422,13 +429,13 @@ impl App {
     }
 
     /// Handles a key event based on the current application state.
-    async fn handle_key_press(&mut self, key: Key) -> Result<()> {
+    async fn handle_key_press(&mut self, key: KeyCode) -> Result<()> {
         match self.state() {
             State::Menu => match key {
                 KEY_EXIT => self.set_state(State::Failure),
                 KEY_NAVIGATE => self.next_setting(),
                 KEY_DELETE => self.edit_setting(None),
-                Key(KeyCode::Char(c)) => self.edit_setting(Some(c)),
+                KeyCode::Char(c) => self.edit_setting(Some(c)),
                 KEY_CONTINUE => self.set_state(State::ConfirmStart),
                 _ => {}
             },
@@ -458,7 +465,7 @@ impl App {
     /// In both of the two case, also changes the state to [`State::Running`].
     ///
     /// Otherwise, does nothing.
-    async fn confirm_working(&mut self, k: Key) -> Result<()> {
+    async fn confirm_working(&mut self, k: KeyCode) -> Result<()> {
         let mut response = IREnablerResponse::No;
         if k == KEY_YES {
             response = IREnablerResponse::Yes;
@@ -477,7 +484,7 @@ impl App {
     /// and sends [`IREnablerResponse::Abort`] to the configurator task.
     ///
     /// If the key is [`KEY_NO`], change the state back to [`State::Running`].
-    async fn abort_or_continue(&mut self, k: Key) -> Result<()> {
+    async fn abort_or_continue(&mut self, k: KeyCode) -> Result<()> {
         match k {
             KEY_NO | KEY_EXIT => self.set_state(self.prev_state()),
             KEY_YES => {
@@ -498,7 +505,7 @@ impl App {
     /// If the key is [`KEY_NO`], change the state back to the previous state.
     ///
     /// Returns directly an error if the video stream is already started.
-    fn start_or_back(&mut self, k: Key) -> Result<()> {
+    fn start_or_back(&mut self, k: KeyCode) -> Result<()> {
         // check that the path exists
         if !self.is_device_valid() {
             self.set_state(State::Menu);
@@ -594,6 +601,18 @@ impl IrEnablerCtx for App {
     fn show_menu_start_prompt(&self) -> bool {
         self.state() == State::ConfirmStart
     }
+    fn controls_list_state(&mut self) -> &mut ListState {
+        &mut self.controls_list_state
+    }
+    fn controls(&self) -> &[XuControl] {
+        &self.controls
+    }
+    fn image(&self) -> Option<&Image> {
+        self.image.as_ref()
+    }
+}
+
+impl DeviceSettingsCtx for App {
     fn device_settings_list_state(&mut self) -> &mut ListState {
         &mut self.device_settings_list_state
     }
@@ -615,6 +634,9 @@ impl IrEnablerCtx for App {
     fn fps(&self) -> Option<u32> {
         self.config.fps
     }
+}
+
+impl SearchSettingsCtx for App {
     fn search_settings_list_state(&mut self) -> &mut ListState {
         &mut self.search_settings_list_state
     }
@@ -633,15 +655,6 @@ impl IrEnablerCtx for App {
     fn inc_step(&self) -> u8 {
         self.config.inc_step
     }
-    fn controls_list_state(&mut self) -> &mut ListState {
-        &mut self.controls_list_state
-    }
-    fn controls(&self) -> &[XuControl] {
-        &self.controls
-    }
-    fn image(&self) -> Option<&Image> {
-        self.image.as_ref()
-    }
 }
 
 #[cfg(test)]
@@ -655,16 +668,16 @@ mod tests {
         App::new()
     }
 
-    fn make_key_event(keycode: Key) -> KeyEvent {
+    fn make_key_event(keycode: KeyCode) -> KeyEvent {
         KeyEvent {
-            code: keycode.into(),
+            code: keycode,
             modifiers: KeyModifiers::NONE,
             kind: KeyEventKind::Press,
             state: crossterm::event::KeyEventState::NONE,
         }
     }
 
-    fn make_term_key_event(keycode: Key) -> Event {
+    fn make_term_key_event(keycode: KeyCode) -> Event {
         Event::Key(make_key_event(keycode))
     }
 
