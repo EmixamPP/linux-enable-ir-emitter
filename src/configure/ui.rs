@@ -50,6 +50,7 @@ mod keys {
     pub const KEY_CONTINUE: Key = Key::new(KeyCode::Enter, "Continue", Color::Green);
     pub const KEY_YES: Key = Key::new(KeyCode::Char('y'), "Yes", Color::Green);
     pub const KEY_NO: Key = Key::new(KeyCode::Char('n'), "No", Color::Red);
+    pub const KEY_EDIT: Key = Key::new(KeyCode::Enter, "Edit", Color::Green);
 }
 
 #[cfg(test)]

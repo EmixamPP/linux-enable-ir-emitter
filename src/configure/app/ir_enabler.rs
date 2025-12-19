@@ -341,7 +341,7 @@ impl App {
     async fn handle_term_event(&mut self, event: Event) -> Result<()> {
         match event {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                self.handle_key_press(key_event.code.into()).await?;
+                self.handle_key_press(key_event.code).await?;
             }
             _ => {}
         };
