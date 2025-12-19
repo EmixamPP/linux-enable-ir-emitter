@@ -1,4 +1,5 @@
 use crate::configure::app::ir_enabler::App as IREnablerApp;
+use crate::configure::app::tweaker::App as TweakerApp;
 use crate::configure::ui::tool_menu::ui;
 
 use anyhow::Result;
@@ -56,7 +57,7 @@ impl App {
     ) -> Result<&'static str> {
         match self.state {
             State::IREnablerSelected => IREnablerApp::new().run(terminal).await,
-            State::UVCTweakerSelected => anyhow::bail!("UVC Tweaker is not yet implemented"),
+            State::UVCTweakerSelected => TweakerApp::new().run(terminal).await,
         }
     }
 }
