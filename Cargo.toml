@@ -6,7 +6,7 @@ authors = ["Maxime Dirksen (EmixamPP)"]
 license = "MIT"
 
 [dependencies]
-ansi-to-tui = "7.0.0"
+ansi-to-tui = "8.0.0"
 ansipix = { git = "https://github.com/EmixamPP/ansipix.git", rev = "4e29437ea3fc23ea451a50b90cafdf7c519ffacb" }
 anyhow = "1.0.98"
 clap = { version = "4.5", features = ["derive"] }
