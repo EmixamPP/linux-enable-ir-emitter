@@ -66,22 +66,22 @@ jobs:
           # TODO: rustup target add aarch64-unknown-linux-gnu
           # Linting tools
           cargo install cargo-shear
-          cargo fetch --locked
+          cargo fetch
 
       - name: Build
         id: build
         if: always()
-        run: cargo build --profile ${{ env.build-type }} --locked
+        run: cargo build --profile ${{ env.build-type }}
 
       - name: Tests
         id: tests
         if: always()
-        run: cargo test --profile ${{ env.build-type }} --locked
+        run: cargo test --profile ${{ env.build-type }}
 
       - name: Clippy
         id: clippy
         if: always()
-        run: cargo clippy --profile ${{ env.build-type }} --no-deps --locked -- --deny warnings
+        run: cargo clippy --profile ${{ env.build-type }} --no-deps -- --deny warnings
 
       - name: Format
         id: format
@@ -93,7 +93,7 @@ jobs:
         if: always()
         env:
           CARGO_BUILD_RUSTDOCFLAGS: "--deny warnings"
-        run: cargo doc --profile ${{ env.build-type }} --document-private-items --no-deps --locked
+        run: cargo doc --profile ${{ env.build-type }} --document-private-items --no-deps
 
       - name: Shear
         if: always()
