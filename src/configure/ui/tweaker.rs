@@ -2,6 +2,7 @@ use super::{
     keys::{KEY_CONTINUE, KEY_EDIT, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, keys_to_line},
     popup_area, render_device_menu, render_main_window, render_video_preview,
 };
+use crate::video::uvc::XuControl;
 use crate::{configure::ui::DeviceSettingsCtx, video::stream::Image};
 
 use ratatui::{
@@ -13,20 +14,22 @@ use ratatui::{
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
-pub enum View {
+pub enum View<'a> {
     #[default]
     Menu,
     Main,
+    Edition(&'a XuControl),
 }
 
 pub trait TweakerCtx {
-    fn view(&self) -> View;
+    fn view(&self) -> View<'_>;
     fn show_save_exit_prompt(&self) -> bool;
 
     fn controls_list_state(&mut self) -> &mut ListState;
     fn controls(&self) -> &[crate::video::uvc::XuControl];
 
     fn image(&self) -> Option<&Image>;
+    fn error_message(&self) -> Option<&String>;
 }
 
 /// Renders a confirmation popup to exit the process without saving.
@@ -112,6 +115,9 @@ where
                 render_save_exit_popup(frame, main_area);
             }
         }
+        View::Edition(_control) => {
+            //TODO
+        }
     }
 }
 
@@ -121,8 +127,8 @@ mod tests {
     use crate::assert_ui_snapshot;
 
     #[derive(Default)]
-    struct App {
-        view: View,
+    struct App<'a> {
+        view: View<'a>,
         show_save_exit_prompt: bool,
         device_settings_list_state: ListState,
         controls_list_state: ListState,
@@ -135,8 +141,8 @@ mod tests {
         image: Option<Image>,
     }
 
-    impl TweakerCtx for App {
-        fn view(&self) -> View {
+    impl<'a> TweakerCtx for App<'a> {
+        fn view(&self) -> View<'_> {
             self.view
         }
         fn show_save_exit_prompt(&self) -> bool {
@@ -151,9 +157,12 @@ mod tests {
         fn image(&self) -> Option<&Image> {
             self.image.as_ref()
         }
+        fn error_message(&self) -> Option<&String> {
+            None // TODO test
+        }
     }
 
-    impl DeviceSettingsCtx for App {
+    impl<'a> DeviceSettingsCtx for App<'a> {
         fn device_settings_list_state(&mut self) -> &mut ListState {
             &mut self.device_settings_list_state
         }
