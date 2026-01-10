@@ -16,12 +16,16 @@ jobs:
       MESSAGE_FILE: ./message.md
     steps:
       - name: Check if in PR
-        uses: insurgent-lab/is-in-pr-action@v0.2.0
-        id: is-pr
+        id: pr-number
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_number=$(gh pr view --json number -q .number || echo '')
+          echo "PR_NUMBER=$pr_number" >> $GITHUB_OUTPUT
 
       - name: Create PR comment
         id: create-comment
-        if: ${{ steps.is-pr.outputs.result == 'true' }}
+        if: ${{ steps.pr-number.outputs.PR_NUMBER != '' }}
         run: |
           function outcome_emoji() {
             if [ "$1" == "success" ]; then
@@ -59,3 +63,4 @@ jobs:
           comment-tag: bot_comment
           mode: recreate
           file-path: ${{ env.MESSAGE_FILE }}
+          pr-number: ${{ steps.pr-number.outputs.PR_NUMBER }}

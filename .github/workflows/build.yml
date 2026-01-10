@@ -114,7 +114,7 @@ jobs:
           fi
 
           artifact_x86=linux-enable-ir-emitter-${version}-${buildtype}-x86-64.tar.gz
-          echo "ARTIFACT_X86=$artifact_x86" >> "$GITHUB_ENV"
+          echo "ARTIFACT_X86=$artifact_x86" >> "$GITHUB_OUTPUT"
           tar -czvf ${artifact_x86} -C target/${buildtype} linux-enable-ir-emitter
 
       - name: Upload x86
@@ -122,8 +122,8 @@ jobs:
         if: ${{ steps.build.outcome == 'success' }}
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.ARTIFACT_X86 }}
-          path: ${{ env.ARTIFACT_X86 }}
+          name: ${{ steps.create-artifacts.outputs.ARTIFACT_X86 }}
+          path: ${{ steps.create-artifacts.outputs.ARTIFACT_X86 }}
           if-no-files-found: error
 
       - name: Save cached cargo dependencies
