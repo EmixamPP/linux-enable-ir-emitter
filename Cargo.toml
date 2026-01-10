@@ -19,7 +19,7 @@ image = { version = "0.25.8", default-features = false, features = [
     "png",
 ] }
 log = "0.4"
-ratatui = { version = "0.29.0" }
+ratatui = { version = "0.30.0" }
 rustix = { version = "1.1", default-features = false, features = ["std", "fs"] }
 serde = { version = "1.0.228", features = ["derive"] }
 shellexpand = "3.1.1"
