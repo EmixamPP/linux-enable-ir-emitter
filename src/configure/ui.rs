@@ -16,15 +16,25 @@ mod keys {
     };
 
     #[derive(Debug, Clone, Copy)]
+    enum KeyRepr {
+        Code(KeyCode),
+        Str(&'static str),
+    }
+
+    #[derive(Debug, Clone, Copy)]
     pub struct Key {
-        code: KeyCode,
+        repr: KeyRepr,
         name: &'static str,
         color: Color,
     }
 
     impl Key {
         const fn new(code: KeyCode, name: &'static str, color: Color) -> Self {
-            Self { code, name, color }
+            Self { repr: KeyRepr::Code(code), name, color }
+        }
+
+        const fn custom(repr: &'static str, name: &'static str, color: Color) -> Self {
+            Self { repr: KeyRepr::Str(repr), name, color }
         }
     }
 
@@ -33,7 +43,10 @@ mod keys {
         for (i, key) in keys.iter().enumerate() {
             spans.push(format!("{} <", key.name).bold());
             spans.push(Span::styled(
-                key.code.to_string(),
+                match key.repr {
+                    KeyRepr::Code(code) => code.to_string(),
+                    KeyRepr::Str(s) => s.to_string(),
+                },
                 Style::default().fg(key.color),
             ));
             spans.push(">".bold());
@@ -46,6 +59,7 @@ mod keys {
     }
 
     pub const KEY_EXIT: Key = Key::new(KeyCode::Esc, "Quit", Color::Red);
+    pub const KEYS_NAVIGATE: Key = Key::custom("↑↓", "Navigate", Color::Yellow);
     pub const KEY_NAVIGATE: Key = Key::new(KeyCode::Tab, "Navigate", Color::Yellow);
     pub const KEY_CONTINUE: Key = Key::new(KeyCode::Enter, "Continue", Color::Green);
     pub const KEY_YES: Key = Key::new(KeyCode::Char('y'), "Yes", Color::Green);
@@ -62,7 +76,7 @@ mod tests {
     #[test]
     fn test_render_keys() {
         assert_ui_snapshot!(|frame| {
-            let keys = [KEY_EXIT, KEY_NAVIGATE, KEY_CONTINUE, KEY_YES, KEY_NO];
+            let keys = [KEY_EXIT, KEYS_NAVIGATE, KEY_CONTINUE, KEY_YES, KEY_NO];
 
             let chunks =
                 Layout::vertical(vec![Constraint::Length(1); keys.len()]).split(frame.area());

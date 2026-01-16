@@ -3,7 +3,7 @@ source: src/configure/ui.rs
 expression: terminal.backend()
 ---
 "Quit <Esc>                                                                                          "
-"Navigate <Tab>                                                                                      "
+"Navigate <↑↓>                                                                                       "
 "Continue <Enter>                                                                                    "
 "Yes <y>                                                                                             "
 "No <n>                                                                                              "
