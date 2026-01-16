@@ -1,9 +1,9 @@
 use crate::configure::app::ir_enabler::App as IREnablerApp;
-use crate::configure::ui::keys::{KEY_CONTINUE, KEY_EXIT, KEY_NAVIGATE};
+use crate::configure::app::tweaker::App as TweakerApp;
 use crate::configure::ui::tool_menu::ui;
 
 use anyhow::Result;
-use crossterm::event;
+use crossterm::event::{self, KeyCode};
 use crossterm::event::{Event, KeyEventKind};
 
 /// Application state for the tool menu.
@@ -31,10 +31,10 @@ impl App {
             terminal.draw(|f| ui(f, self))?;
             match event::read()? {
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                    match key_event.code.into() {
-                        KEY_NAVIGATE => self.next_tool(),
-                        KEY_CONTINUE => return self.start_tool(terminal).await,
-                        KEY_EXIT => return Ok(""),
+                    match key_event.code {
+                        KeyCode::Tab => self.next_tool(),
+                        KeyCode::Enter => return self.start_tool(terminal).await,
+                        KeyCode::Esc => return Ok(""),
                         _ => {}
                     }
                 }
@@ -57,7 +57,7 @@ impl App {
     ) -> Result<&'static str> {
         match self.state {
             State::IREnablerSelected => IREnablerApp::new().run(terminal).await,
-            State::UVCTweakerSelected => anyhow::bail!("UVC Tweaker is not yet implemented"),
+            State::UVCTweakerSelected => TweakerApp::new().run(terminal).await,
         }
     }
 }

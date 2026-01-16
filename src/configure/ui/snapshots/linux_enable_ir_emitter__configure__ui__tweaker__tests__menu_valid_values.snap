@@ -1,5 +1,5 @@
 ---
-source: src/configure/ui/ir_enabler.rs
+source: src/configure/ui/tweaker.rs
 expression: terminal.backend()
 ---
 "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ linux-enable-ir-emitter ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
@@ -8,7 +8,11 @@ expression: terminal.backend()
 "┃                                                                                                  ┃"
 "┃                                                                                                  ┃"
 "┃                                                                                                  ┃"
-"┃              The tool will iterate through the UVC camera controls and modify them.              ┃"
+"┃                                                                                                  ┃"
+"┃                                                                                                  ┃"
+"┃                                                                                                  ┃"
+"┃                                                                                                  ┃"
+"┃                      The tool allows you to modify the UVC camera controls.                      ┃"
 "┃┌ Device settings ───────────────────────────────────────────────────────────────────────────────┐┃"
 "┃│ Path: /dev/video2                                                                              │┃"
 "┃│ Number of emitters: 1                                                                          │┃"
@@ -16,14 +20,10 @@ expression: terminal.backend()
 "┃│ Resolution width: 1280                                                                         │┃"
 "┃│ FPS: 30                                                                                        │┃"
 "┃└────────────────────────────────────────────────────────────────────────────────────────────────┘┃"
-"┃┌ Search settings (advanced) ────────────────────────────────────────────────────────────────────┐┃"
-"┃│ Manual validation: true                                                                        │┃"
-"┃│ Images to analyze in auto validation: 30                                                       │┃"
-"┃│ Light difference significance factor: 50                                                       │┃"
-"┃│ Rejection threshold per control: 5                                                             │┃"
-"┃│ Increment step: 1                                                                              │┃"
-"┃└────────────────────────────────────────────────────────────────────────────────────────────────┘┃"
 "┃         For more explanation, visit https://github.com/EmixamPP/linux-enable-ir-emitter          ┃"
+"┃                                                                                                  ┃"
+"┃                                                                                                  ┃"
+"┃                                                                                                  ┃"
 "┃                                                                                                  ┃"
 "┃                                                                                                  ┃"
 "┃                                                                                                  ┃"
