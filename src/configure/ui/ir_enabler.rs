@@ -1,6 +1,6 @@
 use super::{
     DeviceSettingsCtx, SearchSettingsCtx,
-    keys::{KEY_CONTINUE, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, keys_to_line},
+    keys::{KEY_CONTINUE, KEY_EXIT, KEYS_NAVIGATE, KEY_NO, KEY_YES, keys_to_line},
     popup_area, render_full_menu, render_main_window, render_video_preview,
 };
 use crate::video::stream::Image;
@@ -141,7 +141,7 @@ where
 {
     match app.view() {
         View::Menu => {
-            let main_area = render_main_window(frame, &[KEY_NAVIGATE, KEY_CONTINUE, KEY_EXIT]);
+            let main_area = render_main_window(frame, &[KEYS_NAVIGATE, KEY_CONTINUE, KEY_EXIT]);
             render_full_menu(
                 frame,
                 main_area,

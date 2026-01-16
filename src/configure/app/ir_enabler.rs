@@ -27,7 +27,8 @@ use tokio::{
 const KEY_YES: KeyCode = KeyCode::Char('y');
 const KEY_NO: KeyCode = KeyCode::Char('n');
 const KEY_EXIT: KeyCode = KeyCode::Esc;
-const KEY_NAVIGATE: KeyCode = KeyCode::Tab;
+const KEY_NAVIGATE_UP: KeyCode = KeyCode::Up;
+const KEY_NAVIGATE_DOWN: KeyCode = KeyCode::Down;
 const KEY_CONTINUE: KeyCode = KeyCode::Enter;
 const KEY_DELETE: KeyCode = KeyCode::Backspace;
 
@@ -433,7 +434,8 @@ impl App {
         match self.state() {
             State::Menu => match key {
                 KEY_EXIT => self.set_state(State::Failure),
-                KEY_NAVIGATE => self.next_setting(),
+                KEY_NAVIGATE_UP => self.prev_setting(),
+                KEY_NAVIGATE_DOWN => self.next_setting(),
                 KEY_DELETE => self.edit_setting(None),
                 KeyCode::Char(c) => self.edit_setting(Some(c)),
                 KEY_CONTINUE => self.set_state(State::ConfirmStart),
@@ -541,15 +543,22 @@ impl App {
                 self.device_settings_list_state.select(None);
                 self.search_settings_list_state.select_first();
             }
-        } else if let Some(i) = self.search_settings_list_state.selected() {
-            if i < 3 {
-                self.search_settings_list_state.select_next();
+        } else {
+            self.search_settings_list_state.select_next();
+        }
+    }
+
+    /// Moves the selection to the previous setting in the settings lists.
+    fn prev_setting(&mut self) {
+        if let Some(i) = self.search_settings_list_state.selected() {
+            if i > 0 {
+                self.search_settings_list_state.select_previous();
             } else {
                 self.search_settings_list_state.select(None);
-                self.device_settings_list_state.select_first();
+                self.device_settings_list_state.select_last();
             }
         } else {
-            self.device_settings_list_state.select_first();
+            self.device_settings_list_state.select_previous();
         }
     }
 
@@ -726,7 +735,7 @@ mod tests {
     }
 
     #[test]
-    fn test_next_setting_device_to_search_and_back() {
+    fn test_next_setting_device_to_search() {
         let mut app = make_app();
         // Move through device settings (0..4)
         for i in 0..4 {
@@ -737,14 +746,47 @@ mod tests {
         app.next_setting();
         assert!(app.device_settings_list_state.selected().is_none());
         assert_eq!(app.search_settings_list_state.selected(), Some(0));
-        // Move through search settings (0..2)
+        // Move through search settings (0..3)
         for i in 0..3 {
             app.next_setting();
             assert_eq!(app.search_settings_list_state.selected(), Some(i + 1));
         }
-        // After 2, should wrap to device settings first
+        // After 3 we should stay at the last search setting
         app.next_setting();
+        assert_eq!(app.search_settings_list_state.selected(), Some(4));
+    }
+
+    #[test]
+    fn test_prev_setting_device_to_search() {
+        let mut app = make_app();
+        // Start at the end of search settings
+        app.device_settings_list_state.select(None);
+        app.search_settings_list_state.select(Some(4));
+
+        // Move through search settings (4..0)
+        for i in (1..=4).rev() {
+            assert_eq!(app.search_settings_list_state.selected(), Some(i));
+            app.prev_setting();
+        }
+
+        // At index 0 of search settings, prev_setting should move to device settings last
+        assert_eq!(app.search_settings_list_state.selected(), Some(0));
+        app.prev_setting();
         assert!(app.search_settings_list_state.selected().is_none());
+
+        // NOTE: select_last() sets to usize::MAX until screen is rendered to know that it is actually 4
+        assert_eq!(app.device_settings_list_state.selected(), Some(usize::MAX));
+        // so let's cheat
+        app.device_settings_list_state.select(Some(4));
+
+        // Move through device settings (4..0)
+        for i in (1..=4).rev() {
+            app.prev_setting();
+            assert_eq!(app.device_settings_list_state.selected(), Some(i - 1));
+        }
+
+        // At the first device setting, we should stay there
+        app.prev_setting();
         assert_eq!(app.device_settings_list_state.selected(), Some(0));
     }
 
@@ -893,7 +935,7 @@ mod tests {
         let mut app = make_app();
         app.set_state(State::Menu);
         app.device_settings_list_state.select(Some(0));
-        let key_event = make_term_key_event(KEY_NAVIGATE);
+        let key_event = make_term_key_event(KEY_NAVIGATE_DOWN);
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.device_settings_list_state.selected(), Some(1));

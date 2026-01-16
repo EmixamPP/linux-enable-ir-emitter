@@ -205,7 +205,7 @@ mod tests {
         assert_ui_snapshot!(|frame| {
             let _ = render_main_window(
                 frame,
-                &[keys::KEY_NAVIGATE, keys::KEY_CONTINUE, keys::KEY_EXIT],
+                &[keys::KEYS_NAVIGATE, keys::KEY_CONTINUE, keys::KEY_EXIT],
             );
         });
     }
