@@ -1,5 +1,8 @@
 use super::{
-    keys::{KEY_CONTINUE, KEY_EDIT, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, keys_to_line},
+    keys::{
+        KEY_CONTINUE, KEY_EDIT, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, KEYS_EDITING_NAVIGATE,
+        keys_to_line,
+    },
     popup_area, render_device_menu, render_main_window, render_video_preview,
 };
 use crate::video::uvc::XuControl;
@@ -9,16 +12,19 @@ use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::Line,
+    text::{Line, Span},
     widgets::{Block, BorderType, Clear, HighlightSpacing, List, ListItem, ListState, Paragraph},
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
 pub enum View<'a> {
+    /// Device menu view
     #[default]
     Menu,
+    /// Main view with configuration mode waiting
     Main,
-    Edition(&'a XuControl),
+    /// Main view, editing a specific byte of a control
+    Edition(&'a XuControl, usize),
 }
 
 pub trait TweakerCtx {
@@ -64,21 +70,78 @@ where
         Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).areas(area);
 
     let list_block = Block::bordered().title(" UVC Controls ".bold());
+    let selected_index = app.controls_list_state().selected();
+    let current_view = app.view();
+
     let items: Vec<ListItem> = app
         .controls()
         .iter()
-        .map(|ctrl| {
+        .enumerate()
+        .map(|(i, ctrl)| {
+            let is_selected = selected_index == Some(i);
+            let is_editing = matches!(
+                current_view,
+                View::Edition(edited_ctrl, _)
+                    if edited_ctrl.unit() == ctrl.unit()
+                        && edited_ctrl.selector() == ctrl.selector()
+            );
+
             let mut lines = vec![
                 Line::from(format!(
                     "unit: {} selector: {}",
                     ctrl.unit(),
                     ctrl.selector()
-                )),
-                Line::from(format!("   initial: {:?}", ctrl.init())),
-                Line::from(format!("   current: {:?}", ctrl.cur())),
+                ))
+                .style(if is_editing {
+                    Style::default().fg(Color::Yellow)
+                } else if is_selected {
+                    Style::default().fg(Color::Cyan)
+                } else {
+                    Style::default()
+                }),
             ];
-            if let Some(max) = ctrl.max() {
-                lines.push(Line::from(format!("   maximum: {:?}", max)));
+
+            let (initial_line, current_line, maximum_line_opt) = match current_view {
+                View::Edition(c, byte_index)
+                    if c.unit() == ctrl.unit() && c.selector() == ctrl.selector() =>
+                {
+                    let mut cur_spans = vec![Span::raw("[")];
+                    for (j, v) in ctrl.cur().iter().enumerate() {
+                        if j == byte_index {
+                            cur_spans.push(Span::styled(
+                                v.to_string(),
+                                Style::default()
+                                    .add_modifier(ratatui::style::Modifier::REVERSED)
+                                    .fg(Color::Yellow),
+                            ));
+                        } else {
+                            cur_spans.push(Span::raw(v.to_string()));
+                        }
+                        if j < ctrl.cur().len() - 1 {
+                            cur_spans.push(Span::raw(", "));
+                        }
+                    }
+                    cur_spans.push(Span::raw("]"));
+
+                    (
+                        Line::from(format!("      initial: {:?}", ctrl.init())),
+                        Line::from(cur_spans),
+                        ctrl.max()
+                            .map(|m| Line::from(format!("      maximum: {:?}", m))),
+                    )
+                }
+                _ => (
+                    Line::from(format!("      initial: {:?}", ctrl.init())),
+                    Line::from(format!("      current: {:?}", ctrl.cur())),
+                    ctrl.max()
+                        .map(|m| Line::from(format!("      maximum: {:?}", m))),
+                ),
+            };
+
+            lines.push(initial_line);
+            lines.push(current_line);
+            if let Some(max_line) = maximum_line_opt {
+                lines.push(max_line);
             }
             ListItem::new(lines)
         })
@@ -108,23 +171,25 @@ where
                 "The tool allows you to modify the UVC camera controls.",
             );
         }
-        View::Main | View::Edition(_) => {
+        View::Main | View::Edition(_, _) => {
             let keys = match app.view() {
                 View::Main => vec![KEY_NAVIGATE, KEY_EDIT, KEY_EXIT],
+                View::Edition(_, _) => vec![KEYS_EDITING_NAVIGATE, KEY_EXIT],
                 _ => vec![KEY_EXIT],
             };
             let main_area = render_main_window(frame, &keys);
             render_main(frame, main_area, app);
-            
+
             if let Some(err) = app.error_message() {
                 let error_block = Block::bordered()
                     .title(Line::from(" Error ").bold())
                     .border_type(BorderType::Double)
                     .border_style(Style::default().fg(Color::Red));
                 let area = popup_area(main_area, 3, 50);
-                let p = Paragraph::new(Line::from(err.as_str()).style(Style::default().fg(Color::Red)))
-                    .block(error_block)
-                    .centered();
+                let p =
+                    Paragraph::new(Line::from(err.as_str()).style(Style::default().fg(Color::Red)))
+                        .block(error_block)
+                        .centered();
                 frame.render_widget(Clear, area);
                 frame.render_widget(p, area);
             } else if app.show_save_exit_prompt() {
