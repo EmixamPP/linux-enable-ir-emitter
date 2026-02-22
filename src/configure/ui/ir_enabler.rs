@@ -1,6 +1,6 @@
 use super::{
     DeviceSettingsCtx, SearchSettingsCtx,
-    keys::{KEY_CONTINUE, KEY_EXIT, KEYS_NAVIGATE, KEY_NO, KEY_YES, keys_to_line},
+    keys::{KEY_CONTINUE, KEY_EXIT, KEY_NO, KEY_YES, KEYS_NAVIGATE, keys_to_line},
     popup_area, render_full_menu, render_main_window, render_video_preview,
 };
 use crate::video::stream::Image;

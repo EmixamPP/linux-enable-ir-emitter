@@ -30,11 +30,19 @@ mod keys {
 
     impl Key {
         const fn new(code: KeyCode, name: &'static str, color: Color) -> Self {
-            Self { repr: KeyRepr::Code(code), name, color }
+            Self {
+                repr: KeyRepr::Code(code),
+                name,
+                color,
+            }
         }
 
         const fn custom(repr: &'static str, name: &'static str, color: Color) -> Self {
-            Self { repr: KeyRepr::Str(repr), name, color }
+            Self {
+                repr: KeyRepr::Str(repr),
+                name,
+                color,
+            }
         }
     }
 
@@ -60,6 +68,7 @@ mod keys {
 
     pub const KEY_EXIT: Key = Key::new(KeyCode::Esc, "Quit", Color::Red);
     pub const KEYS_NAVIGATE: Key = Key::custom("↑↓", "Navigate", Color::Yellow);
+    pub const KEYS_EDITING_NAVIGATE: Key = Key::custom("←↑↓→", "Navigate/Modify", Color::Yellow);
     pub const KEY_NAVIGATE: Key = Key::new(KeyCode::Tab, "Navigate", Color::Yellow);
     pub const KEY_CONTINUE: Key = Key::new(KeyCode::Enter, "Continue", Color::Green);
     pub const KEY_YES: Key = Key::new(KeyCode::Char('y'), "Yes", Color::Green);

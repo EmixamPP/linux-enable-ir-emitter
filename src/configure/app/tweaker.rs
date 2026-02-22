@@ -24,6 +24,8 @@ const KEY_EXIT: KeyCode = KeyCode::Esc;
 const KEY_NAVIGATE: KeyCode = KeyCode::Tab;
 const KEY_NAVIGATE_UP: KeyCode = KeyCode::Up;
 const KEY_NAVIGATE_DOWN: KeyCode = KeyCode::Down;
+const KEY_NAVIGATE_LEFT: KeyCode = KeyCode::Left;
+const KEY_NAVIGATE_RIGHT: KeyCode = KeyCode::Right;
 const KEY_CONTINUE: KeyCode = KeyCode::Enter;
 const KEY_DELETE: KeyCode = KeyCode::Backspace;
 // TODO add key to delete from the config
@@ -61,8 +63,8 @@ pub enum State {
     Menu,
     /// Configuration is waiting
     Waiting,
-    /// Editing a XuControl at index
-    Editing(usize),
+    /// Actively editing a specific byte of a XuControl
+    Editing(usize, usize),
     /// Confirm to save or not the configuration before exiting
     SaveBeforeExit,
     /// Exit
@@ -163,6 +165,14 @@ impl App {
                 Ok(self._device.get().unwrap())
             }
         }
+    }
+
+    /// Applies a specific control to the active device.
+    fn apply_control(&mut self, control_index: usize) -> Result<()> {
+        let mut control = self.controls[control_index].clone();
+        self.get_device()?
+            .apply_control(&mut control)
+            .context("failed to apply control")
     }
 
     /// Spawns a new asynchronous task that continuously captures video frames from the stream device
@@ -272,10 +282,10 @@ impl App {
                 if key == KEY_EXIT {
                     self.set_state(State::SaveBeforeExit)
                 } else if key == KEY_CONTINUE {
-                    if let Some(selected) = self.controls_list_state.selected() {
-                        if selected < self.controls.len() {
-                            self.set_state(State::Editing(selected));
-                        }
+                    if let Some(selected) = self.controls_list_state.selected()
+                        && selected < self.controls.len()
+                    {
+                        self.set_state(State::Editing(selected, 0));
                     }
                 } else if key == KEY_NAVIGATE || key == KEY_NAVIGATE_DOWN {
                     self.controls_list_state.select_next();
@@ -283,12 +293,39 @@ impl App {
                     self.controls_list_state.select_previous();
                 }
             }
-            State::Editing(_index) => {
-                // TODO modify the control depending on the key
-                if key == KEY_EXIT {
+            State::Editing(c_ptr, b_ptr) => {
+                let c_idx = *c_ptr;
+                let mut b_idx = *b_ptr;
+                let cur_len = self.controls[c_idx].cur().len();
+
+                if key == KEY_EXIT || key == KEY_CONTINUE {
                     self.set_state(State::Waiting);
-                } else {
-                    self.error = Some("Editing controls is not yet fully implemented".to_string());
+                } else if key == KEY_NAVIGATE_LEFT {
+                    if b_idx > 0 {
+                        b_idx -= 1;
+                        self.set_state(State::Editing(c_idx, b_idx));
+                    }
+                } else if key == KEY_NAVIGATE_RIGHT {
+                    if b_idx + 1 < cur_len {
+                        b_idx += 1;
+                        self.set_state(State::Editing(c_idx, b_idx));
+                    }
+                } else if key == KEY_NAVIGATE_UP || key == KEY_NAVIGATE_DOWN {
+                    let control = &mut self.controls[c_idx];
+                    let current_val = control.cur()[b_idx];
+
+                    let max_val = control.max().map_or(255, |m| *m.get(b_idx).unwrap_or(&255));
+
+                    let new_val = match key {
+                        KEY_NAVIGATE_UP => current_val.saturating_add(1).min(max_val),
+                        _ => current_val.saturating_sub(1),
+                    };
+
+                    control.cur_mut()[b_idx] = new_val;
+                    if let Err(e) = self.apply_control(c_idx) {
+                        self.error = Some(e.to_string());
+                        self.controls[c_idx].cur_mut()[b_idx] = current_val;
+                    }
                 }
             }
             State::SaveBeforeExit => self.save_before_exit(key).await?,
@@ -369,7 +406,7 @@ impl TweakerCtx for App {
             State::Waiting => View::Main,
             State::SaveBeforeExit => View::Main,
             State::Exit => View::Menu,
-            State::Editing(index) => View::Edition(&self.controls[*index]),
+            State::Editing(index, byte_index) => View::Edition(&self.controls[*index], *byte_index),
         }
     }
     fn controls_list_state(&mut self) -> &mut ListState {
