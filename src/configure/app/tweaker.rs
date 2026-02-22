@@ -22,6 +22,8 @@ const KEY_YES: KeyCode = KeyCode::Char('y');
 const KEY_NO: KeyCode = KeyCode::Char('n');
 const KEY_EXIT: KeyCode = KeyCode::Esc;
 const KEY_NAVIGATE: KeyCode = KeyCode::Tab;
+const KEY_NAVIGATE_UP: KeyCode = KeyCode::Up;
+const KEY_NAVIGATE_DOWN: KeyCode = KeyCode::Down;
 const KEY_CONTINUE: KeyCode = KeyCode::Enter;
 const KEY_DELETE: KeyCode = KeyCode::Backspace;
 // TODO add key to delete from the config
@@ -54,13 +56,13 @@ impl Default for Config {
 
 /// Application states.
 #[derive(Debug)]
-pub enum State<'a> {
+pub enum State {
     /// Configuration settings menu
     Menu,
     /// Configuration is waiting
     Waiting,
-    /// Editing a XuControl
-    Editing(&'a XuControl),
+    /// Editing a XuControl at index
+    Editing(usize),
     /// Confirm to save or not the configuration before exiting
     SaveBeforeExit,
     /// Exit
@@ -68,14 +70,14 @@ pub enum State<'a> {
 }
 
 /// "Enabler" application.
-pub struct App<'a> {
+pub struct App {
     /// Receiver for captured images from the video stream task.
     image_rx: Receiver<Image>,
     /// Sender used by the video stream task for captured images.
     image_tx: Option<Sender<Image>>,
     /// Current application state.
     /// Should be accessed through [`Self::state()`]
-    _state: State<'a>,
+    _state: State,
     /// List of all the video devices that support grey scale pixel format.
     grey_devices: Vec<PathBuf>,
     /// List of all the device controls that can be modified.
@@ -94,13 +96,15 @@ pub struct App<'a> {
     error: Option<String>,
 }
 
-impl<'a> App<'a> {
+impl App {
     /// Creates a new "Tweaker" application.
     pub fn new() -> Self {
         let mut device_settings_list_state = ListState::default();
         device_settings_list_state.select_first(); // already select the first item
 
         let (image_tx, image_rx) = mpsc::channel(1); // do not increase, we drop images to avoid "video lag"
+        let mut controls_list_state = ListState::default();
+        controls_list_state.select_first();
         Self {
             _state: State::Menu,
             config: Config::default(),
@@ -110,7 +114,7 @@ impl<'a> App<'a> {
             image_rx,
             error: None,
             controls: Vec::new(),
-            controls_list_state: ListState::default(),
+            controls_list_state,
             grey_devices: Vec::new(),
             _device: OnceCell::new(),
         }
@@ -133,12 +137,12 @@ impl<'a> App<'a> {
     }
 
     /// Returns the current application state.
-    pub fn state(&self) -> &State<'_> {
+    pub fn state(&self) -> &State {
         &self._state
     }
 
     /// Sets the current application state and updates the previous state.
-    fn set_state(&mut self, state: State<'a>) {
+    fn set_state(&mut self, state: State) {
         self._state = state;
     }
 
@@ -250,10 +254,15 @@ impl<'a> App<'a> {
 
     /// Handles a key event based on the current application state.
     async fn handle_key_press(&mut self, key: KeyCode) -> Result<()> {
+        if self.error.is_some() {
+            self.error = None;
+            return Ok(());
+        }
         match self.state() {
             State::Menu => match key {
                 KEY_EXIT => self.set_state(State::Exit),
-                KEY_NAVIGATE => self.next_setting(),
+                KEY_NAVIGATE | KEY_NAVIGATE_DOWN => self.next_setting(),
+                KEY_NAVIGATE_UP => self.prev_setting(),
                 KEY_DELETE => self.edit_setting(None),
                 KeyCode::Char(c) => self.edit_setting(Some(c)),
                 KEY_CONTINUE => self.start_or_back()?,
@@ -262,12 +271,24 @@ impl<'a> App<'a> {
             State::Waiting => {
                 if key == KEY_EXIT {
                     self.set_state(State::SaveBeforeExit)
+                } else if key == KEY_CONTINUE {
+                    if let Some(selected) = self.controls_list_state.selected() {
+                        if selected < self.controls.len() {
+                            self.set_state(State::Editing(selected));
+                        }
+                    }
+                } else if key == KEY_NAVIGATE || key == KEY_NAVIGATE_DOWN {
+                    self.controls_list_state.select_next();
+                } else if key == KEY_NAVIGATE_UP {
+                    self.controls_list_state.select_previous();
                 }
             }
-            State::Editing(_control) => {
+            State::Editing(_index) => {
                 // TODO modify the control depending on the key
                 if key == KEY_EXIT {
                     self.set_state(State::Waiting);
+                } else {
+                    self.error = Some("Editing controls is not yet fully implemented".to_string());
                 }
             }
             State::SaveBeforeExit => self.save_before_exit(key).await?,
@@ -320,6 +341,11 @@ impl<'a> App<'a> {
         self.device_settings_list_state.select_next();
     }
 
+    /// Moves the selection to the previous setting in the settings lists.
+    fn prev_setting(&mut self) {
+        self.device_settings_list_state.select_previous();
+    }
+
     /// Edits the currently selected setting in the settings lists by adding or removing a character.
     ///
     /// If `ch` is `Some(c)`, adds the character `c` (depending on the setting type).
@@ -336,14 +362,14 @@ impl<'a> App<'a> {
     }
 }
 
-impl<'a> TweakerCtx for App<'a> {
+impl TweakerCtx for App {
     fn view(&self) -> View<'_> {
         match self.state() {
             State::Menu => View::Menu,
             State::Waiting => View::Main,
             State::SaveBeforeExit => View::Main,
             State::Exit => View::Menu,
-            State::Editing(control) => View::Edition(control),
+            State::Editing(index) => View::Edition(&self.controls[*index]),
         }
     }
     fn controls_list_state(&mut self) -> &mut ListState {
@@ -363,7 +389,7 @@ impl<'a> TweakerCtx for App<'a> {
     }
 }
 
-impl<'a> DeviceSettingsCtx for App<'a> {
+impl DeviceSettingsCtx for App {
     fn device_settings_list_state(&mut self) -> &mut ListState {
         &mut self.device_settings_list_state
     }

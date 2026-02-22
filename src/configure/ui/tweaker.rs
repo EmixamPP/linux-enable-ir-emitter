@@ -108,15 +108,28 @@ where
                 "The tool allows you to modify the UVC camera controls.",
             );
         }
-        View::Main => {
-            let main_area = render_main_window(frame, &[KEY_NAVIGATE, KEY_EDIT, KEY_EXIT]);
+        View::Main | View::Edition(_) => {
+            let keys = match app.view() {
+                View::Main => vec![KEY_NAVIGATE, KEY_EDIT, KEY_EXIT],
+                _ => vec![KEY_EXIT],
+            };
+            let main_area = render_main_window(frame, &keys);
             render_main(frame, main_area, app);
-            if app.show_save_exit_prompt() {
+            
+            if let Some(err) = app.error_message() {
+                let error_block = Block::bordered()
+                    .title(Line::from(" Error ").bold())
+                    .border_type(BorderType::Double)
+                    .border_style(Style::default().fg(Color::Red));
+                let area = popup_area(main_area, 3, 50);
+                let p = Paragraph::new(Line::from(err.as_str()).style(Style::default().fg(Color::Red)))
+                    .block(error_block)
+                    .centered();
+                frame.render_widget(Clear, area);
+                frame.render_widget(p, area);
+            } else if app.show_save_exit_prompt() {
                 render_save_exit_popup(frame, main_area);
             }
-        }
-        View::Edition(_control) => {
-            //TODO
         }
     }
 }
