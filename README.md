@@ -16,22 +16,18 @@ Download the latest asset [linux-enable-ir-emitter-x.x.x-release-x86-64.tar.gz](
 > Please try the 7.0.0-beta! Furthermore, this README has been updated for this version.
 
 ```
-tar -C $HOME/.local/bin --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
-```
-If not already done, add `$HOME/.local/bin` to your `$PATH`, e.g.:
-```
-echo 'export PATH=$HOME/.local/bin:$PATH' >> $HOME/.bashrc && source $HOME/.bashrc
+tar -C /usr/local/bin/ --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
 ```
 
 The installation consists of 3 files:
-* The executable: `$HOME/.local/bin/linux-enable-ir-emitter`
+* The executable: `/usr/local/bin/linux-enable-ir-emitter`
 * The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`
 * The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`
 
 ### Integration with Howdy
 In all files returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy", replacing `<USER>` with your actual username:
 ```
-auth optional pam_exec.so /home/<USER>/.local/bin/linux-enable-ir-emitter run --config /home/<USER>/.config/linux-enable-ir-emitter.toml
+auth optional pam_exec.so /usr/local/bin/linux-enable-ir-emitter run --config /home/<USER>/.config/linux-enable-ir-emitter.toml
 ```
 
 > [!TIP]
