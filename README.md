@@ -31,15 +31,15 @@ auth optional pam_exec.so /usr/local/bin/linux-enable-ir-emitter run --config /h
 ```
 
 > [!TIP]
-> The installation paths may vary depending on your installation method. You can determine the correct binary absolute paths by running `which linux-enable-ir-emitter` and use that path instead. For the configuration path, it will be written when you can execute `linux-enable-ir-emitter --config`.
+> The installation path may vary depending on your installation method. You can determine the correct binary absolute path by running `which linux-enable-ir-emitter` and use it instead. For the configuration path, it will be written when you execute `linux-enable-ir-emitter --config`.
 
 ### Integration with other program
 You will need to execute the `linux-enable-ir-emitter run` command before the program that uses the infrared camera.
 
 Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --device <DEVICE> --fd <FD>`.
 
-> [!Important]
-> You will need to pass the config path as argument to `linux-enable-ir-emitter run --config <CONFIG_PATH>` **when executed as root** if `linux-enable-ir-emitter configure` was executed as a normal user.
+> [!IMPORTANT]
+> You will need to pass the config path as argument to `linux-enable-ir-emitter run --config <CONFIG_PATH>` **when executed as root**, if `linux-enable-ir-emitter configure` was executed as a normal user.
 
 ## How do I enable my infrared emitter?
 0. For a better experience, use a large terminal window.

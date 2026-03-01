@@ -1,6 +1,6 @@
 use super::helper::*;
 use crate::configure::ui::ir_enabler::{IrEnablerCtx, View, ui};
-use crate::configure::ui::keys::*;
+use crate::configure::ui::{DeviceSettingsCtx, SearchSettingsCtx};
 use crate::video::ir::analyzer::{
     self, IsIrWorking as AnalyzerResponse, Message as AnalyzerRequest, StreamAnalyzer,
 };
@@ -23,6 +23,14 @@ use tokio::{
     sync::mpsc::{Receiver, Sender},
     task,
 };
+
+const KEY_YES: KeyCode = KeyCode::Char('y');
+const KEY_NO: KeyCode = KeyCode::Char('n');
+const KEY_EXIT: KeyCode = KeyCode::Esc;
+const KEY_NAVIGATE_UP: KeyCode = KeyCode::Up;
+const KEY_NAVIGATE_DOWN: KeyCode = KeyCode::Down;
+const KEY_CONTINUE: KeyCode = KeyCode::Enter;
+const KEY_DELETE: KeyCode = KeyCode::Backspace;
 
 #[derive(Debug)]
 pub struct Config {
@@ -334,7 +342,7 @@ impl App {
     async fn handle_term_event(&mut self, event: Event) -> Result<()> {
         match event {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                self.handle_key_press(key_event.code.into()).await?;
+                self.handle_key_press(key_event.code).await?;
             }
             _ => {}
         };
@@ -422,13 +430,14 @@ impl App {
     }
 
     /// Handles a key event based on the current application state.
-    async fn handle_key_press(&mut self, key: Key) -> Result<()> {
+    async fn handle_key_press(&mut self, key: KeyCode) -> Result<()> {
         match self.state() {
             State::Menu => match key {
                 KEY_EXIT => self.set_state(State::Failure),
-                KEY_NAVIGATE => self.next_setting(),
+                KEY_NAVIGATE_UP => self.prev_setting(),
+                KEY_NAVIGATE_DOWN => self.next_setting(),
                 KEY_DELETE => self.edit_setting(None),
-                Key(KeyCode::Char(c)) => self.edit_setting(Some(c)),
+                KeyCode::Char(c) => self.edit_setting(Some(c)),
                 KEY_CONTINUE => self.set_state(State::ConfirmStart),
                 _ => {}
             },
@@ -458,7 +467,7 @@ impl App {
     /// In both of the two case, also changes the state to [`State::Running`].
     ///
     /// Otherwise, does nothing.
-    async fn confirm_working(&mut self, k: Key) -> Result<()> {
+    async fn confirm_working(&mut self, k: KeyCode) -> Result<()> {
         let mut response = IREnablerResponse::No;
         if k == KEY_YES {
             response = IREnablerResponse::Yes;
@@ -477,7 +486,7 @@ impl App {
     /// and sends [`IREnablerResponse::Abort`] to the configurator task.
     ///
     /// If the key is [`KEY_NO`], change the state back to [`State::Running`].
-    async fn abort_or_continue(&mut self, k: Key) -> Result<()> {
+    async fn abort_or_continue(&mut self, k: KeyCode) -> Result<()> {
         match k {
             KEY_NO | KEY_EXIT => self.set_state(self.prev_state()),
             KEY_YES => {
@@ -498,7 +507,7 @@ impl App {
     /// If the key is [`KEY_NO`], change the state back to the previous state.
     ///
     /// Returns directly an error if the video stream is already started.
-    fn start_or_back(&mut self, k: Key) -> Result<()> {
+    fn start_or_back(&mut self, k: KeyCode) -> Result<()> {
         // check that the path exists
         if !self.is_device_valid() {
             self.set_state(State::Menu);
@@ -534,15 +543,22 @@ impl App {
                 self.device_settings_list_state.select(None);
                 self.search_settings_list_state.select_first();
             }
-        } else if let Some(i) = self.search_settings_list_state.selected() {
-            if i < 3 {
-                self.search_settings_list_state.select_next();
+        } else {
+            self.search_settings_list_state.select_next();
+        }
+    }
+
+    /// Moves the selection to the previous setting in the settings lists.
+    fn prev_setting(&mut self) {
+        if let Some(i) = self.search_settings_list_state.selected() {
+            if i > 0 {
+                self.search_settings_list_state.select_previous();
             } else {
                 self.search_settings_list_state.select(None);
-                self.device_settings_list_state.select_first();
+                self.device_settings_list_state.select_last();
             }
         } else {
-            self.device_settings_list_state.select_first();
+            self.device_settings_list_state.select_previous();
         }
     }
 
@@ -594,6 +610,18 @@ impl IrEnablerCtx for App {
     fn show_menu_start_prompt(&self) -> bool {
         self.state() == State::ConfirmStart
     }
+    fn controls_list_state(&mut self) -> &mut ListState {
+        &mut self.controls_list_state
+    }
+    fn controls(&self) -> &[XuControl] {
+        &self.controls
+    }
+    fn image(&self) -> Option<&Image> {
+        self.image.as_ref()
+    }
+}
+
+impl DeviceSettingsCtx for App {
     fn device_settings_list_state(&mut self) -> &mut ListState {
         &mut self.device_settings_list_state
     }
@@ -615,6 +643,9 @@ impl IrEnablerCtx for App {
     fn fps(&self) -> Option<u32> {
         self.config.fps
     }
+}
+
+impl SearchSettingsCtx for App {
     fn search_settings_list_state(&mut self) -> &mut ListState {
         &mut self.search_settings_list_state
     }
@@ -633,15 +664,6 @@ impl IrEnablerCtx for App {
     fn inc_step(&self) -> u8 {
         self.config.inc_step
     }
-    fn controls_list_state(&mut self) -> &mut ListState {
-        &mut self.controls_list_state
-    }
-    fn controls(&self) -> &[XuControl] {
-        &self.controls
-    }
-    fn image(&self) -> Option<&Image> {
-        self.image.as_ref()
-    }
 }
 
 #[cfg(test)]
@@ -655,16 +677,16 @@ mod tests {
         App::new()
     }
 
-    fn make_key_event(keycode: Key) -> KeyEvent {
+    fn make_key_event(keycode: KeyCode) -> KeyEvent {
         KeyEvent {
-            code: keycode.into(),
+            code: keycode,
             modifiers: KeyModifiers::NONE,
             kind: KeyEventKind::Press,
             state: crossterm::event::KeyEventState::NONE,
         }
     }
 
-    fn make_term_key_event(keycode: Key) -> Event {
+    fn make_term_key_event(keycode: KeyCode) -> Event {
         Event::Key(make_key_event(keycode))
     }
 
@@ -713,7 +735,7 @@ mod tests {
     }
 
     #[test]
-    fn test_next_setting_device_to_search_and_back() {
+    fn test_next_setting_device_to_search() {
         let mut app = make_app();
         // Move through device settings (0..4)
         for i in 0..4 {
@@ -724,14 +746,47 @@ mod tests {
         app.next_setting();
         assert!(app.device_settings_list_state.selected().is_none());
         assert_eq!(app.search_settings_list_state.selected(), Some(0));
-        // Move through search settings (0..2)
+        // Move through search settings (0..3)
         for i in 0..3 {
             app.next_setting();
             assert_eq!(app.search_settings_list_state.selected(), Some(i + 1));
         }
-        // After 2, should wrap to device settings first
+        // After 3 we should stay at the last search setting
         app.next_setting();
+        assert_eq!(app.search_settings_list_state.selected(), Some(4));
+    }
+
+    #[test]
+    fn test_prev_setting_device_to_search() {
+        let mut app = make_app();
+        // Start at the end of search settings
+        app.device_settings_list_state.select(None);
+        app.search_settings_list_state.select(Some(4));
+
+        // Move through search settings (4..0)
+        for i in (1..=4).rev() {
+            assert_eq!(app.search_settings_list_state.selected(), Some(i));
+            app.prev_setting();
+        }
+
+        // At index 0 of search settings, prev_setting should move to device settings last
+        assert_eq!(app.search_settings_list_state.selected(), Some(0));
+        app.prev_setting();
         assert!(app.search_settings_list_state.selected().is_none());
+
+        // NOTE: select_last() sets to usize::MAX until screen is rendered to know that it is actually 4
+        assert_eq!(app.device_settings_list_state.selected(), Some(usize::MAX));
+        // so let's cheat
+        app.device_settings_list_state.select(Some(4));
+
+        // Move through device settings (4..0)
+        for i in (1..=4).rev() {
+            app.prev_setting();
+            assert_eq!(app.device_settings_list_state.selected(), Some(i - 1));
+        }
+
+        // At the first device setting, we should stay there
+        app.prev_setting();
         assert_eq!(app.device_settings_list_state.selected(), Some(0));
     }
 
@@ -880,7 +935,7 @@ mod tests {
         let mut app = make_app();
         app.set_state(State::Menu);
         app.device_settings_list_state.select(Some(0));
-        let key_event = make_term_key_event(KEY_NAVIGATE);
+        let key_event = make_term_key_event(KEY_NAVIGATE_DOWN);
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.device_settings_list_state.selected(), Some(1));
