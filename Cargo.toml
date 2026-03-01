@@ -8,7 +8,7 @@ license = "MIT"
 [dependencies]
 ansi-to-tui = "8.0.1"
 ansipix = { git = "https://github.com/EmixamPP/ansipix.git", rev = "4e29437ea3fc23ea451a50b90cafdf7c519ffacb" }
-anyhow = "1.0.100"
+anyhow = "1.0.102"
 clap = { version = "4.5", features = ["derive"] }
 crossterm = { version = "0.29.0", features = ["event-stream"] }
 derive_more = { version = "2.1.1", features = ["from", "into", "as_ref"] }
