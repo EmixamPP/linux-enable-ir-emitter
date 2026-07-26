@@ -4,6 +4,27 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 
 `linux-enable-ir-emitter` can automatically configure almost any UVC infrared camera.
 
+> [!NOTE]
+> This tool drives **UVC** infrared cameras. It cannot configure **MIPI CSI-2** IR
+> sensors behind an **Intel IPU6/IPU7**, which are common on laptops from Meteor
+> Lake onward (various Dell XPS and Latitude models, and some HP and Lenovo
+> machines). Those sensors are not USB webcams: on the Synaptics SVP7500 designs
+> the only USB interface is vendor-specific and carries an I2C tunnel, so
+> `uvcvideo` binds nothing and there are no UVC controls to iterate. The symptom
+> is "no camera found" or "no working configuration", which looks like a bug here
+> but is not one.
+>
+> To tell which kind you have:
+>
+> ```bash
+> ls /sys/bus/usb/drivers/uvcvideo/       # your camera listed -> this tool applies
+> v4l2-ctl --list-devices | grep -A2 ipu  # an IPU device shown -> it does not
+> ```
+>
+> For the MIPI/IPU case with a Himax HM1092 behind a Synaptics SVP7500 bridge,
+> there is a working stack at
+> [svp7500-camera-fix-pack](https://github.com/jibsta210/svp7500-camera-fix-pack).
+
 > [!IMPORTANT]
 > Please read the documentation below carefully. It can save you a lot of time and help you successfully enable your infrared camera.
 
