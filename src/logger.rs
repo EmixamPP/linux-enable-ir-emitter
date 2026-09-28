@@ -7,7 +7,7 @@ use std::path::PathBuf;
 #[cfg(not(test))]
 static _LOG: &str = env!("LOG");
 #[cfg(test)]
-pub const _LOG: &str = "target/tmp/linux-enable-ir-emitter.log";
+pub const _LOG: &str = "target/test/linux-enable-ir-emitter.log";
 
 fn log_file_path() -> Result<String> {
     Ok(shellexpand::env(_LOG)
