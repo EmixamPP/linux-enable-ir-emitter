@@ -1,60 +1,45 @@
 use super::{
-    DeviceSettingsCtx, SearchSettingsCtx,
-    keys::{KEY_CONTINUE, KEY_EXIT, KEY_NO, KEY_YES, KEYS_NAVIGATE, keys_to_line},
-    popup_area, render_full_menu, render_main_window, render_video_preview,
+    keys::{
+        KEY_CONTINUE, KEY_EDIT, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, KEYS_EDITING_NAVIGATE,
+        keys_to_line,
+    },
+    popup_area, render_device_menu, render_main_window, render_video_preview,
 };
-use crate::video::stream::Image;
+use crate::video::uvc::XuControl;
+use crate::{configure::ui::DeviceSettingsCtx, video::stream::Image};
 
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::{Line, Text, ToLine},
+    text::{Line, Span},
     widgets::{Block, BorderType, Clear, HighlightSpacing, List, ListItem, ListState, Paragraph},
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
-pub enum View {
+pub enum View<'a> {
+    /// Device menu view
     #[default]
     Menu,
+    /// Main view with configuration mode waiting
     Main,
+    /// Main view, editing a specific byte of a control
+    Edition(&'a XuControl, usize),
 }
 
-pub trait IrEnablerCtx {
-    fn view(&self) -> View;
-    fn show_working_question(&self) -> bool;
-    fn show_main_abort_prompt(&self) -> bool;
-    fn show_menu_start_prompt(&self) -> bool;
+pub trait TweakerCtx {
+    fn view(&self) -> View<'_>;
+    fn show_save_exit_prompt(&self) -> bool;
 
     fn controls_list_state(&mut self) -> &mut ListState;
     fn controls(&self) -> &[crate::video::uvc::XuControl];
+
     fn image(&self) -> Option<&Image>;
+    fn error_message(&self) -> Option<&String>;
 }
 
-/// Renders a confirmation popup to start the enabling process.
-fn render_confirm_start_popup(frame: &mut Frame, area: Rect) {
-    let block = Block::bordered().border_type(BorderType::Double);
-    let area = popup_area(area, 12, 70);
-    frame.render_widget(Clear, area);
-    frame.render_widget(block, area);
-
-    let [info_area, command_area] = Layout::vertical([Constraint::Fill(0), Constraint::Length(1)])
-        .margin(1)
-        .areas(area);
-
-    let info_text = Text::from(
-        "Be patient, never abort the process without the dedicated key;\nyou could break the camera firmware.\nIf the process is stuck, e.g. displayed values are not updating\nsomething is wrong, you can abort the process.\n\nFor better results, stand in front of the camera\nand ensure the room has good, constant lighting.\n\nDo you want to start?",
-    );
-    let paragraph = Paragraph::new(info_text).centered();
-    frame.render_widget(paragraph, info_area);
-
-    let command_line = keys_to_line(&[KEY_YES, KEY_NO]);
-    let command_paragraph = Paragraph::new(command_line).centered();
-    frame.render_widget(command_paragraph, command_area);
-}
-
-/// Renders a confirmation popup to abort the process.
-fn render_confirm_abort_popup(frame: &mut Frame, area: Rect) {
+/// Renders a confirmation popup to exit the process without saving.
+fn render_save_exit_popup(frame: &mut Frame, area: Rect) {
     let block = Block::bordered().border_type(BorderType::Double);
     let area = popup_area(area, 4, 50);
     frame.render_widget(Clear, area);
@@ -65,7 +50,7 @@ fn render_confirm_abort_popup(frame: &mut Frame, area: Rect) {
             .margin(1)
             .areas(area);
 
-    let paragraph = Paragraph::new("Are you sure you want to abort the process?").centered();
+    let paragraph = Paragraph::new("Do you want to save this configuration?").centered();
     frame.render_widget(paragraph, info_area);
 
     let command_line = keys_to_line(&[KEY_YES, KEY_NO]);
@@ -79,47 +64,84 @@ fn render_confirm_abort_popup(frame: &mut Frame, area: Rect) {
 /// Returns the area used for the list of controls.
 fn render_main<A>(frame: &mut Frame, area: Rect, app: &mut A)
 where
-    A: IrEnablerCtx,
+    A: TweakerCtx,
 {
-    let [mut list_area, video_area] =
+    let [list_area, video_area] =
         Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).areas(area);
 
-    let [question_area, new_list_area] =
-        Layout::vertical([Constraint::Length(4), Constraint::Fill(0)]).areas(list_area);
-    list_area = new_list_area;
-    let question_block = Block::bordered().title(" Question ".bold());
+    let list_block = Block::bordered().title(" UVC Controls ".bold());
+    let selected_index = app.controls_list_state().selected();
+    let current_view = app.view();
 
-    let question_text = if app.show_working_question() {
-        Text::from(vec![
-            "Is the camera emitter or preview blinking?"
-                .to_line()
-                .light_yellow(),
-            keys_to_line(&[KEY_YES, KEY_NO]),
-        ])
-    } else {
-        Text::from("Please wait...")
-    };
-    let question_paragraph = Paragraph::new(question_text)
-        .block(question_block)
-        .centered();
-    frame.render_widget(question_paragraph, question_area);
-
-    let list_block = Block::bordered().title(" Modifiable UVC Controls ".bold());
     let items: Vec<ListItem> = app
         .controls()
         .iter()
-        .map(|ctrl| {
+        .enumerate()
+        .map(|(i, ctrl)| {
+            let is_selected = selected_index == Some(i);
+            let is_editing = matches!(
+                current_view,
+                View::Edition(edited_ctrl, _)
+                    if edited_ctrl.unit() == ctrl.unit()
+                        && edited_ctrl.selector() == ctrl.selector()
+            );
+
             let mut lines = vec![
                 Line::from(format!(
                     "unit: {} selector: {}",
                     ctrl.unit(),
                     ctrl.selector()
-                )),
-                Line::from(format!("   initial: {:?}", ctrl.init())),
-                Line::from(format!("   current: {:?}", ctrl.cur())),
+                ))
+                .style(if is_editing {
+                    Style::default().fg(Color::Yellow)
+                } else if is_selected {
+                    Style::default().fg(Color::Cyan)
+                } else {
+                    Style::default()
+                }),
             ];
-            if let Some(max) = ctrl.max() {
-                lines.push(Line::from(format!("   maximum: {:?}", max)));
+
+            let (initial_line, current_line, maximum_line_opt) = match current_view {
+                View::Edition(c, byte_index)
+                    if c.unit() == ctrl.unit() && c.selector() == ctrl.selector() =>
+                {
+                    let mut cur_spans = vec![Span::raw("[")];
+                    for (j, v) in ctrl.cur().iter().enumerate() {
+                        if j == byte_index {
+                            cur_spans.push(Span::styled(
+                                v.to_string(),
+                                Style::default()
+                                    .add_modifier(ratatui::style::Modifier::REVERSED)
+                                    .fg(Color::Yellow),
+                            ));
+                        } else {
+                            cur_spans.push(Span::raw(v.to_string()));
+                        }
+                        if j < ctrl.cur().len() - 1 {
+                            cur_spans.push(Span::raw(", "));
+                        }
+                    }
+                    cur_spans.push(Span::raw("]"));
+
+                    (
+                        Line::from(format!("      initial: {:?}", ctrl.init())),
+                        Line::from(cur_spans),
+                        ctrl.max()
+                            .map(|m| Line::from(format!("      maximum: {:?}", m))),
+                    )
+                }
+                _ => (
+                    Line::from(format!("      initial: {:?}", ctrl.init())),
+                    Line::from(format!("      current: {:?}", ctrl.cur())),
+                    ctrl.max()
+                        .map(|m| Line::from(format!("      maximum: {:?}", m))),
+                ),
+            };
+
+            lines.push(initial_line);
+            lines.push(current_line);
+            if let Some(max_line) = maximum_line_opt {
+                lines.push(max_line);
             }
             ListItem::new(lines)
         })
@@ -137,26 +159,41 @@ where
 /// Renders the application UI based on the current application state.
 pub fn ui<A>(frame: &mut Frame, app: &mut A)
 where
-    A: IrEnablerCtx + DeviceSettingsCtx + SearchSettingsCtx,
+    A: TweakerCtx + DeviceSettingsCtx,
 {
     match app.view() {
         View::Menu => {
-            let main_area = render_main_window(frame, &[KEYS_NAVIGATE, KEY_CONTINUE, KEY_EXIT]);
-            render_full_menu(
+            let main_area = render_main_window(frame, &[KEY_NAVIGATE, KEY_CONTINUE, KEY_EXIT]);
+            render_device_menu(
                 frame,
                 main_area,
                 app,
-                "The tool will iterate through the UVC camera controls and modify them.",
+                "The tool allows you to modify the UVC camera controls.",
             );
-            if app.show_menu_start_prompt() {
-                render_confirm_start_popup(frame, main_area);
-            }
         }
-        View::Main => {
-            let main_area = render_main_window(frame, &[KEY_EXIT]);
+        View::Main | View::Edition(_, _) => {
+            let keys = match app.view() {
+                View::Main => vec![KEY_NAVIGATE, KEY_EDIT, KEY_EXIT],
+                View::Edition(_, _) => vec![KEYS_EDITING_NAVIGATE, KEY_EXIT],
+                _ => vec![KEY_EXIT],
+            };
+            let main_area = render_main_window(frame, &keys);
             render_main(frame, main_area, app);
-            if app.show_main_abort_prompt() {
-                render_confirm_abort_popup(frame, main_area);
+
+            if let Some(err) = app.error_message() {
+                let error_block = Block::bordered()
+                    .title(Line::from(" Error ").bold())
+                    .border_type(BorderType::Double)
+                    .border_style(Style::default().fg(Color::Red));
+                let area = popup_area(main_area, 3, 50);
+                let p =
+                    Paragraph::new(Line::from(err.as_str()).style(Style::default().fg(Color::Red)))
+                        .block(error_block)
+                        .centered();
+                frame.render_widget(Clear, area);
+                frame.render_widget(p, area);
+            } else if app.show_save_exit_prompt() {
+                render_save_exit_popup(frame, main_area);
             }
         }
     }
@@ -168,11 +205,9 @@ mod tests {
     use crate::assert_ui_snapshot;
 
     #[derive(Default)]
-    struct App {
-        view: View,
-        show_working_question: bool,
-        show_main_abort_prompt: bool,
-        show_menu_start_prompt: bool,
+    struct App<'a> {
+        view: View<'a>,
+        show_save_exit_prompt: bool,
         device_settings_list_state: ListState,
         controls_list_state: ListState,
         device_valid: (String, bool),
@@ -180,28 +215,16 @@ mod tests {
         width: Option<u32>,
         emitters: usize,
         fps: Option<u32>,
-        search_settings_list_state: ListState,
-        limit: Option<u16>,
-        manual: bool,
-        analyzer_img_count: u64,
-        ref_intensity_var_coef: u64,
-        inc_step: u8,
         controls: Vec<crate::video::uvc::XuControl>,
         image: Option<Image>,
     }
 
-    impl IrEnablerCtx for App {
-        fn view(&self) -> View {
+    impl<'a> TweakerCtx for App<'a> {
+        fn view(&self) -> View<'_> {
             self.view
         }
-        fn show_working_question(&self) -> bool {
-            self.show_working_question
-        }
-        fn show_main_abort_prompt(&self) -> bool {
-            self.show_main_abort_prompt
-        }
-        fn show_menu_start_prompt(&self) -> bool {
-            self.show_menu_start_prompt
+        fn show_save_exit_prompt(&self) -> bool {
+            self.show_save_exit_prompt
         }
         fn controls_list_state(&mut self) -> &mut ListState {
             &mut self.controls_list_state
@@ -212,9 +235,12 @@ mod tests {
         fn image(&self) -> Option<&Image> {
             self.image.as_ref()
         }
+        fn error_message(&self) -> Option<&String> {
+            None // TODO test
+        }
     }
 
-    impl DeviceSettingsCtx for App {
+    impl<'a> DeviceSettingsCtx for App<'a> {
         fn device_settings_list_state(&mut self) -> &mut ListState {
             &mut self.device_settings_list_state
         }
@@ -235,27 +261,6 @@ mod tests {
         }
     }
 
-    impl SearchSettingsCtx for App {
-        fn search_settings_list_state(&mut self) -> &mut ListState {
-            &mut self.search_settings_list_state
-        }
-        fn limit(&self) -> Option<u16> {
-            self.limit
-        }
-        fn manual(&self) -> bool {
-            self.manual
-        }
-        fn ref_intensity_var_coef(&self) -> u64 {
-            self.ref_intensity_var_coef
-        }
-        fn analyzer_img_count(&self) -> u64 {
-            self.analyzer_img_count
-        }
-        fn inc_step(&self) -> u8 {
-            self.inc_step
-        }
-    }
-
     #[test]
     fn test_menu_empty() {
         assert_ui_snapshot!(|frame| {
@@ -273,20 +278,6 @@ mod tests {
             app.width = Some(1280);
             app.emitters = 1;
             app.fps = Some(30);
-            app.limit = Some(5);
-            app.manual = true;
-            app.ref_intensity_var_coef = 50;
-            app.inc_step = 1;
-            app.analyzer_img_count = 30;
-            ui(frame, &mut app);
-        });
-    }
-
-    #[test]
-    fn test_menu_strart() {
-        assert_ui_snapshot!(|frame| {
-            let mut app = App::default();
-            app.show_menu_start_prompt = true;
             ui(frame, &mut app);
         });
     }
@@ -301,21 +292,11 @@ mod tests {
     }
 
     #[test]
-    fn test_main_with_question() {
-        assert_ui_snapshot!(|frame| {
-            let mut app = App::default();
-            app.view = View::Main;
-            app.show_working_question = true;
-            ui(frame, &mut app);
-        });
-    }
-
-    #[test]
     fn test_main_with_abort_prompt() {
         assert_ui_snapshot!(|frame| {
             let mut app = App::default();
             app.view = View::Main;
-            app.show_main_abort_prompt = true;
+            app.show_save_exit_prompt = true;
             ui(frame, &mut app);
         });
     }

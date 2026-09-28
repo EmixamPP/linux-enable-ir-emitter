@@ -65,7 +65,7 @@ jobs:
         run: |
           # TODO: rustup target add aarch64-unknown-linux-gnu
           # Linting tools
-          cargo install cargo-shear
+          cargo install cargo-shear --locked
           cargo fetch
 
       - name: Build
@@ -120,11 +120,12 @@ jobs:
       - name: Upload x86
         id: upload-x86
         if: ${{ steps.build.outcome == 'success' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.create-artifacts.outputs.ARTIFACT_X86 }}
           path: ${{ steps.create-artifacts.outputs.ARTIFACT_X86 }}
           if-no-files-found: error
+          archive: false
 
       - name: Save cached cargo dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
