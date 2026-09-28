@@ -452,11 +452,7 @@ impl App {
                 KEY_EXIT => self.set_state(State::ConfirmAbort),
                 key => self.confirm_working(key).await?,
             },
-            State::ConfirmWorking => {
-                if key == KEY_EXIT {
-                    self.set_state(State::ConfirmAbort)
-                }
-            }
+            State::ConfirmWorking if key == KEY_EXIT => self.set_state(State::ConfirmAbort),
             _ => {}
         }
         Ok(())
