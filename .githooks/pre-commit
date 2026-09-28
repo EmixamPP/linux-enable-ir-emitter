@@ -17,5 +17,3 @@ cargo clippy $clippy_args -- --deny warnings
 CARGO_BUILD_RUSTDOCFLAGS="--deny warnings" cargo doc --document-private-items --no-deps
 
 set +x
-
-[ $dirty_workspace -eq 0 ] && git add .
