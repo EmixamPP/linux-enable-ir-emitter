@@ -47,7 +47,7 @@ jobs:
           write "## :hammer_and_wrench: Building result: $(outcome_emoji ${{ needs.build.outputs.build }})"
           if [ "${{ needs.build.outputs.build }}" == "success" ]; then
             write "### :package: Artifacts:"
-            write "1. [Download the tarball](${{ needs.build.outputs.artifact-url }})"
+            write "1. Download the tarball: [x86-64](${{ needs.build.outputs.artifact-url }}) or [aarch64](${{ needs.build.outputs.artifact-url-aarch64 }})"
             write "2. [Execute the install instructions](https://github.com/EmixamPP/linux-enable-ir-emitter?tab=readme-ov-file#installation)"
           fi
           write ""

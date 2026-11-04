@@ -27,6 +27,8 @@ on:
         value: ${{ jobs.build.outputs.shear }}
       artifact-url:
         value: ${{ jobs.build.outputs.artifact-url }}
+      artifact-url-aarch64:
+        value: ${{ jobs.build.outputs.artifact-url-aarch64 }}
       version:
         value: ${{ jobs.build.outputs.version }}
 
@@ -43,8 +45,12 @@ jobs:
       shear: ${{ steps.shear.outcome }}
       version: ${{ steps.create-artifacts.outputs.VERSION}}
       artifact-url: ${{ steps.upload-x86.outputs.artifact-url }}
+      artifact-url-aarch64: ${{ steps.upload-aarch64.outputs.artifact-url }}
     env:
       build-type: ${{ inputs.release && 'release' || 'dev' }}
+      aarch64-target: aarch64-unknown-linux-gnu
+      # v4l2-sys-mit generates its bindings with bindgen, which needs the aarch64 kernel headers
+      BINDGEN_EXTRA_CLANG_ARGS_aarch64_unknown_linux_gnu: -I/usr/aarch64-linux-gnu/include
     steps:
       - uses: actions/checkout@v6
 
@@ -60,10 +66,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Install aarch64 toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+          rustup target add ${{ env.aarch64-target }}
+
       - name: Install dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
         run: |
-          # TODO: rustup target add aarch64-unknown-linux-gnu
           # Linting tools
           cargo install cargo-shear --locked
           cargo fetch
@@ -72,6 +83,11 @@ jobs:
         id: build
         if: always()
         run: cargo build --profile ${{ env.build-type }}
+
+      - name: Build aarch64
+        id: build-aarch64
+        if: always()
+        run: cargo build --profile ${{ env.build-type }} --target ${{ env.aarch64-target }}
 
       - name: Tests
         id: tests
@@ -117,6 +133,12 @@ jobs:
           echo "ARTIFACT_X86=$artifact_x86" >> "$GITHUB_OUTPUT"
           tar -czvf ${artifact_x86} -C target/${buildtype} linux-enable-ir-emitter
 
+          if [ "${{ steps.build-aarch64.outcome }}" == "success" ]; then
+            artifact_aarch64=linux-enable-ir-emitter-${version}-${buildtype}-aarch64.tar.gz
+            echo "ARTIFACT_AARCH64=$artifact_aarch64" >> "$GITHUB_OUTPUT"
+            tar -czvf ${artifact_aarch64} -C target/${{ env.aarch64-target }}/${buildtype} linux-enable-ir-emitter
+          fi
+
       - name: Upload x86
         id: upload-x86
         if: ${{ steps.build.outcome == 'success' }}
@@ -124,6 +146,16 @@ jobs:
         with:
           name: ${{ steps.create-artifacts.outputs.ARTIFACT_X86 }}
           path: ${{ steps.create-artifacts.outputs.ARTIFACT_X86 }}
+          if-no-files-found: error
+          archive: false
+
+      - name: Upload aarch64
+        id: upload-aarch64
+        if: ${{ steps.build.outcome == 'success' && steps.build-aarch64.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.create-artifacts.outputs.ARTIFACT_AARCH64 }}
+          path: ${{ steps.create-artifacts.outputs.ARTIFACT_AARCH64 }}
           if-no-files-found: error
           archive: false
 
