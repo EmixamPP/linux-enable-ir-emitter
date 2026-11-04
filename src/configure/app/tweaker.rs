@@ -1,4 +1,5 @@
 use super::helper::*;
+use crate::configuration::Configuration;
 use crate::configure::ui::DeviceSettingsCtx;
 use crate::configure::ui::tweaker::{TweakerCtx, View, ui};
 use crate::video::stream::{Image, Stream, grey_devices};
@@ -374,15 +375,21 @@ impl App {
     }
 
     /// Set the state to exit, if:
-    /// the key is [`KEY_YES`], save the current configuration,
-    /// or the key is [`KEY_NO`], discard the current configuration
+    /// the key is [`KEY_YES`], save the modified controls,
+    /// or the key is [`KEY_NO`], discard the modified controls
     ///
-    /// For any other key, set the state back to [`State::Waiting`].
+    /// For any other key, or if the saving fails, set the state back to [`State::Waiting`].
     async fn save_before_exit(&mut self, k: KeyCode) -> Result<()> {
-        // TODO
         match k {
             KEY_NO => (),
-            KEY_YES => (),
+            KEY_YES => {
+                if let Err(err) = self.save_modified_controls() {
+                    log::error!("Error while saving configuration: {err:?}");
+                    self.error = Some(format!("{err:#}"));
+                    self.set_state(State::Waiting);
+                    return Ok(());
+                }
+            }
             _ => {
                 self.set_state(State::Waiting);
                 return Ok(());
@@ -390,6 +397,29 @@ impl App {
         }
         self.set_state(State::Exit);
         Ok(())
+    }
+
+    /// Saves in the device configuration the controls whose current value
+    /// differs from the value read when the device was opened.
+    fn save_modified_controls(&self) -> Result<()> {
+        let modified: Vec<&XuControl> = self
+            .controls
+            .iter()
+            .filter(|ctrl| ctrl.cur() != ctrl.init())
+            .collect();
+        if modified.is_empty() {
+            log::info!("No control modified, nothing to save.");
+            return Ok(());
+        }
+
+        let mut configuration = Configuration::new(&self.config.device);
+        for ctrl in modified {
+            log::info!("Saving control: {ctrl}.");
+            configuration.add_to_savelist(ctrl);
+        }
+        configuration
+            .save()
+            .context("failed to save the configuration")
     }
 
     /// If the configuration is valid, tries to spawn the video stream task
@@ -489,5 +519,69 @@ impl DeviceSettingsCtx for App {
     }
     fn fps(&self) -> Option<u32> {
         self.config.fps
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::configuration::_CONFIG;
+    use serial_test::serial;
+
+    const DEVICE: &str = "/dev/video_tweaker_test";
+
+    /// Makes an app with one unchanged control and one modified control.
+    fn make_app() -> App {
+        let _ = std::fs::remove_file(_CONFIG);
+        let mut app = App::new();
+        app.config.device = PathBuf::from(DEVICE);
+        let unchanged = XuControl::new(1, 1, vec![1, 2], None, None, None, None, true).unwrap();
+        let mut modified = XuControl::new(2, 2, vec![3, 4], None, None, None, None, true).unwrap();
+        modified.cur_mut()[1] = 5;
+        app.controls = vec![unchanged, modified];
+        app.set_state(State::SaveBeforeExit);
+        app
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_yes_saves_modified_controls() {
+        let mut app = make_app();
+        app.save_before_exit(KEY_YES).await.unwrap();
+        assert!(matches!(app.state(), State::Exit));
+
+        let saved = Configuration::new(DEVICE).get_savelist();
+        assert_eq!(saved.len(), 1);
+        assert_eq!(saved[0].unit(), 2);
+        assert_eq!(saved[0].selector(), 2);
+        assert_eq!(saved[0].cur(), &[3, 5]);
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_yes_without_modification() {
+        let mut app = make_app();
+        app.controls[1].reset();
+        app.save_before_exit(KEY_YES).await.unwrap();
+        assert!(matches!(app.state(), State::Exit));
+        assert!(Configuration::new(DEVICE).get_savelist().is_empty());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_no_discards() {
+        let mut app = make_app();
+        app.save_before_exit(KEY_NO).await.unwrap();
+        assert!(matches!(app.state(), State::Exit));
+        assert!(Configuration::new(DEVICE).get_savelist().is_empty());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_other_key_goes_back() {
+        let mut app = make_app();
+        app.save_before_exit(KeyCode::Char('x')).await.unwrap();
+        assert!(matches!(app.state(), State::Waiting));
+        assert!(Configuration::new(DEVICE).get_savelist().is_empty());
     }
 }

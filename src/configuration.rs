@@ -185,8 +185,10 @@ impl Configuration {
         }
     }
 
-    /// Adds a control to the savelist.
+    /// Adds a control to the savelist, replacing any previously saved value of this control.
     pub fn add_to_savelist(&mut self, control: &XuControl) {
+        self.savelist
+            .retain(|sc| sc.unit != control.unit() || sc.selector != control.selector());
         self.savelist.insert(control.into());
     }
 
@@ -323,6 +325,20 @@ mod tests {
         assert_eq!(list.len(), 1);
         assert_eq!(list[0].unit(), xu.unit());
         assert_eq!(list[0].selector(), xu.selector());
+        assert_eq!(list[0].cur(), xu.cur());
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_add_to_savelist_replaces_value() {
+        clean_config_dir();
+        let mut xu = make_xu(&mut make_rng());
+        let mut config = Configuration::new("/dev/video0");
+        config.add_to_savelist(&xu);
+        xu.cur_mut()[0] = xu.cur()[0].wrapping_add(1);
+        config.add_to_savelist(&xu);
+        let list = config.get_savelist();
+        assert_eq!(list.len(), 1);
         assert_eq!(list[0].cur(), xu.cur());
     }
 
