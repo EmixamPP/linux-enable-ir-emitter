@@ -5,20 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [7.0.0-beta]
+## [7.0.0] - 2026-11-04
 ### Changed
 - Complete rewrite in Rust, bringing more robustness and performance.
 - New TUI interface for improved user experience and understanding.
-- `tweak` command is now accessible via the `configure` command.
+- `tweak` command is now accessible via the `configure` command, as the *UVC Tweaker* tool.
 - Better balance between configuration search time and exhaustiveness.
 - Full rootless capabilities.
+- `--config`, `--log` and `--grey-devices` cannot be combined with each other or with a command anymore.
 
 ### Added
 - More debug commands to help users to report issues: `--config`, `--log`, `--grey-devices`.
 - Migration script for the configuration file from v6 to v7 format.
+- Prebuilt binary for ARM 64-bit (aarch64) processors.
+- The help is displayed when no command or option is given.
+- The *UVC Tweaker* saves the modified controls when exiting, they are applied by the `run` command.
+- A loading message is displayed while the UVC controls are listed, which can take a few seconds.
+- The log file is moved to `<log>.old` once bigger than 1 MiB.
 
 ### Fixed
 - Use `/dev/v4l/by-id/` device path instead of `/dev/v4l/by-path/` under the hood for better persistence on some system/hardware.
+- `run --device /dev/videoX` now matches the configuration saved for that device.
+- The `run` command applies the other devices and controls if one cannot be applied.
+- An unreadable configuration file is not overwritten anymore when saving.
+- Saving a control replaces its previously saved value instead of adding a duplicate.
+- A resolution supported by the camera could be reported as not supported.
+- The number of emitters and the increment step must be at least 1.
+- Quitting the *IR Enabler* menu does not report a failure anymore.
+- The real error is displayed instead of a generic "closed unexpectedly" message when the video stream or the search fails.
 
 ### Removed
 - OpenCV is not used anymore for capturing V4L video stream, because of unreliability, and compatibility issues across distro.
@@ -30,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.1.1] - 2025-01-29
 ### Fixed
-- The `run` command does not crash if one configuration cannot be applied on q device.
+- The `run` command does not crash if one configuration cannot be applied on a device.
 
 ## [6.1.0] - 2025-01-29
 ### Added
