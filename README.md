@@ -19,6 +19,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 > ```bash
 > ls /sys/bus/usb/drivers/uvcvideo/       # your camera listed -> this tool applies
 > v4l2-ctl --list-devices | grep -A2 ipu  # an IPU device shown -> it does not
+> linux-enable-ir-emitter --grey-devices  # your IR camera listed with UVC controls -> this tool applies
 > ```
 >
 > For the MIPI/IPU case with a Himax HM1092 behind a Synaptics SVP7500 bridge,
@@ -42,8 +43,8 @@ tar -C /usr/local/bin/ --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
 
 The installation consists of 3 files:
 * The executable: `/usr/local/bin/linux-enable-ir-emitter`
-* The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`
-* The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`
+* The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`, you can print them with `linux-enable-ir-emitter --log`
+* The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`, you can print it with `linux-enable-ir-emitter --config`
 
 ### Integration with Howdy
 In all files returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy", replacing `<USER>` with your actual username:
@@ -67,9 +68,8 @@ Alternatively, if you can and/or want to integrate better with the program that 
 1. Execute the command: `linux-enable-ir-emitter configure`
 2. Select the *IR Enabler* tool. It will iterate through the UVC camera controls and modify them to try to find the one that enables the IR emitter.
 3. (Optional) Configure your *Device settings*:
-   * *Path*: by default, a grey camera will be selected (if any). If you have multiple cameras, you can change the path.
+   * *Path*: by default, a grey camera will be selected (if any). If you have multiple cameras, you can change the path. To know which ones are grey cameras, execute `linux-enable-ir-emitter --grey-devices`.
    * *Number of emitters*: if your camera has multiple IR emitters, specify it here.
-   * *Emitters*: number of emitters on your camera.
    * *Resolution height/width*: by default, the camera driver will select a resolution for you. You can change it if needed.
    * *FPS*: by default, the camera driver will select a frame rate for you. You can change it if needed.
 4. (Optional) Configure the *Search settings*:
@@ -83,19 +83,42 @@ Alternatively, if you can and/or want to integrate better with the program that 
    > The camera firmware may get corrupted during the process. You acknowledge that you understand the risks and that you are the only responsible if something goes wrong.
 6. Answer the asked questions by pressing Y or N. There is a camera preview that can help to see if the IR emitter is blinking (the video will flash).
 7. Sometimes, the tool can exit and request you to shut down, then boot and retry ($\neq$ reboot), in case a camera control was not able to be reset. Next time, that control will be skipped.
-8. :crossed_fingers: Let's wait a bit... Hopefully, your IR emitter is now working!
+8. :crossed_fingers: Let's wait a bit... Hopefully, your IR emitter is now working! The control that enabled it is saved, you can see it with `linux-enable-ir-emitter --config`.
 
 :star: If you like the project, do not hesitate to star the repository to support me, thank you!
 
 > [!TIP]
-> If the configuration failed, you can retry by tweaking some search parameters (read the section above) or use the advanced *tweak* tool (see below). Feel free to open an issue if you need any help! I will be glad to assist you.
+> If the configuration failed, you can retry by tweaking some search parameters (read the section above) or use the advanced *tweak* tool (see below). Feel free to open an issue if you need any help! I will be glad to assist you. Please join the output of `linux-enable-ir-emitter --log` to it.
 
 
 All criticism, ideas and contributions are welcome!
 
 ## How do I tweak my camera?
-Note: Some cameras provide UVC controls for changing the brightness of the ir emitter.
-You will need to find the corresponding controls and set the correct value manually.
-A control consists of X values between 0-255.
+Some cameras provide UVC controls for other things than just turning the IR emitter on, like changing its brightness. Or maybe the *IR Enabler* did not manage to find the right value for your camera. In these cases, you can find the corresponding controls and set the correct value manually with the *UVC Tweaker* tool.
 
-**Under total rework, will come back soon**
+A control is identified by a *unit* and a *selector*, and consists of one or several bytes, each one being a value between 0-255.
+
+0. For a better experience, use a large terminal window.
+1. Execute the command: `linux-enable-ir-emitter configure`
+2. Select the *UVC Tweaker* tool.
+3. (Optional) Configure your *Device settings*, they are the same as for the *IR Enabler* (read the section above).
+4. *Continue*. The camera preview starts directly, but listing the UVC controls can take a few seconds (*Loading the UVC controls...*), the tool has to ask the camera for every possible control.
+5. For each control, the list shows:
+   * *initial*: the value when the tool started.
+   * *current*: the value currently applied to the camera.
+   * *maximum*: the maximum value of each byte, if the camera reports it.
+6. Navigate between the controls with the arrow keys or Tab, and press Enter to *Edit* one.
+7. While editing, use Left/Right to select a byte, and Up/Down to increase/decrease its value. **The value is directly applied to the camera**, so you can watch the camera preview (or the IR emitter itself) to see the effect. A byte cannot go above its *maximum*.
+8. Press Enter to *Save* the value and go back to the list of controls.
+9. If the camera refuses a value, an *Error* popup is shown and the control is reset to its previous value. Press any key to close it. Some controls are read-only, you can see which ones with `linux-enable-ir-emitter --grey-devices` (`writable=false`).
+10. Press Esc when you are done, and answer whether you want to save the configuration by pressing Y or N:
+    * Y: only the controls whose *current* value is different from their *initial* value are saved, they will be applied by `linux-enable-ir-emitter run`. If a control was already saved before (e.g. by the *IR Enabler*), its value is replaced.
+    * N: nothing is saved. The modified values stay applied to the camera until it is reset (e.g. after a shutdown).
+    * Any other key: go back to the list of controls.
+11. You can check what has been saved with `linux-enable-ir-emitter --config`.
+
+> [!WARNING]
+> Same as for the *IR Enabler*: the camera firmware may get corrupted by writing random values to the controls. You acknowledge that you understand the risks and that you are the only responsible if something goes wrong.
+
+> [!TIP]
+> If you already know which control enables your IR emitter (e.g. found with the *IR Enabler*, see `linux-enable-ir-emitter --config`), start by looking at that one. Its other values may change the brightness or the blinking pattern of the emitter.
