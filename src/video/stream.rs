@@ -56,18 +56,25 @@ impl Stream {
             format = v4l_device.set_format(&format)?;
         }
 
-        // Try to set the resolution if provided
-        if let Some(width) = width {
-            format.width = width;
+        // Try to set the resolution if provided.
+        // Width and height are set together, because the driver may adjust
+        // an intermediate resolution, made of the new width and the old height, that it does not support.
+        if width.is_some() || height.is_some() {
+            if let Some(width) = width {
+                format.width = width;
+            }
+            if let Some(height) = height {
+                format.height = height;
+            }
             format = v4l_device.set_format(&format)?;
-            if format.width != width {
+            if let Some(width) = width
+                && format.width != width
+            {
                 bail!("device does not support the requested width: {width}");
             }
-        }
-        if let Some(height) = height {
-            format.height = height;
-            format = v4l_device.set_format(&format)?;
-            if format.height != height {
+            if let Some(height) = height
+                && format.height != height
+            {
                 bail!("device does not support the requested height: {height}");
             }
         }
