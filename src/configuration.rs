@@ -19,6 +19,61 @@ fn config_file_path() -> Result<PathBuf> {
         .into())
 }
 
+/// A user for whom the tool is executed by PAM, e.g. through `pam_exec`.
+#[derive(Debug, PartialEq, Eq)]
+pub struct PamUser {
+    name: String,
+    uid: u32,
+    home: PathBuf,
+}
+
+impl PamUser {
+    /// Returns the user being authenticated if the tool is executed by PAM,
+    /// i.e. if the `PAM_USER` and `PAM_TYPE` environment variables are set by `pam_exec`.
+    pub fn from_env() -> Result<Option<Self>> {
+        let (Ok(name), Ok(_)) = (std::env::var("PAM_USER"), std::env::var("PAM_TYPE")) else {
+            return Ok(None);
+        };
+        let output = std::process::Command::new("getent")
+            .args(["passwd", &name])
+            .output()
+            .context("failed to execute getent to find the user home directory")?;
+        if !output.status.success() {
+            anyhow::bail!("unknown user {name:?}");
+        }
+        Self::from_passwd(&String::from_utf8_lossy(&output.stdout)).map(Some)
+    }
+
+    /// Parses a passwd entry, e.g. `name:x:1000:1000:Full Name:/home/name:/bin/bash`.
+    fn from_passwd(entry: &str) -> Result<Self> {
+        let fields: Vec<&str> = entry.trim_end().split(':').collect();
+        if fields.len() < 7 {
+            anyhow::bail!("invalid passwd entry {entry:?}");
+        }
+        Ok(Self {
+            name: fields[0].to_string(),
+            uid: fields[2].parse().context("invalid uid in passwd entry")?,
+            home: PathBuf::from(fields[5]),
+        })
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Returns the configuration file path of the user, i.e. the default path expanded with their home directory.
+    fn config_file_path(&self) -> PathBuf {
+        let home = self.home.to_string_lossy();
+        shellexpand::env_with_context_no_errors(_CONFIG, |var| match var {
+            "HOME" => Some(home.to_string()),
+            "USER" => Some(self.name.clone()),
+            _ => std::env::var(var).ok(),
+        })
+        .to_string()
+        .into()
+    }
+}
+
 pub fn print_config() -> Result<()> {
     let config_file = config_file_path()?;
     let content_str =
@@ -88,6 +143,38 @@ impl Configurations {
         if !config_file.exists() {
             log::debug!("No configuration file at {}.", config_file.display());
             return Ok(Self::default());
+        }
+        Self::load_from(&config_file)
+    }
+
+    /// Load the configurations of a user for whom the tool is executed by PAM, or an empty one if there is none.
+    ///
+    /// Since PAM executes the tool as root, the file must be a regular file owned by the user or root,
+    /// so a user cannot make root read another file.
+    pub fn load_for(user: &PamUser) -> Result<Self> {
+        let config_file = user.config_file_path();
+        let metadata = match std::fs::symlink_metadata(&config_file) {
+            Ok(metadata) => metadata,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                log::debug!("No configuration file at {}.", config_file.display());
+                return Ok(Self::default());
+            }
+            Err(err) => {
+                return Err(err).with_context(|| {
+                    format!(
+                        "failed to read configuration file {}",
+                        config_file.display()
+                    )
+                });
+            }
+        };
+        use std::os::unix::fs::MetadataExt as _;
+        if !metadata.is_file() || (metadata.uid() != user.uid && metadata.uid() != 0) {
+            anyhow::bail!(
+                "refusing to read {}: it must be a regular file owned by {} or root",
+                config_file.display(),
+                user.name
+            );
         }
         Self::load_from(&config_file)
     }
@@ -307,6 +394,75 @@ mod tests {
     // Make a RNG with a fixed seed for reproducible tests.
     fn make_rng() -> rand_chacha::ChaCha8Rng {
         rand::SeedableRng::seed_from_u64(666)
+    }
+
+    #[test]
+    fn test_pam_user_from_passwd() {
+        let user =
+            PamUser::from_passwd("alice:x:1001:1001:Alice,,,:/home/alice:/bin/bash\n").unwrap();
+        assert_eq!(
+            user,
+            PamUser {
+                name: "alice".into(),
+                uid: 1001,
+                home: "/home/alice".into()
+            }
+        );
+        assert!(PamUser::from_passwd("alice:x:notanumber:1001::/home/alice:/bin/bash").is_err());
+        assert!(PamUser::from_passwd("garbage").is_err());
+    }
+
+    #[test]
+    fn test_pam_user_config_file_path() {
+        let user = PamUser {
+            name: "alice".into(),
+            uid: 1001,
+            home: "/home/alice".into(),
+        };
+        // in tests, the configuration path does not depend on the home directory
+        assert_eq!(user.config_file_path(), PathBuf::from(_CONFIG));
+    }
+
+    #[test]
+    #[serial]
+    fn test_configurations_load_for_pam_user() {
+        use std::os::unix::fs::MetadataExt as _;
+        clean_config_dir();
+        let me = std::fs::metadata(".").unwrap().uid();
+        let owner = PamUser {
+            name: "owner".into(),
+            uid: me,
+            home: "/nonexistent".into(),
+        };
+        let other = PamUser {
+            name: "other".into(),
+            uid: me + 1,
+            home: "/nonexistent".into(),
+        };
+
+        // no file: empty configuration
+        assert!(
+            Configurations::load_for(&owner)
+                .unwrap()
+                .devices()
+                .is_empty()
+        );
+
+        let mut config = Configuration::new("/dev/video0");
+        config.add_to_savelist(&make_xu(&mut make_rng()));
+        config.save().unwrap();
+        assert_eq!(Configurations::load_for(&owner).unwrap().devices().len(), 1);
+        // the file is not owned by this user (nor root, unless the tests run as root)
+        if me != 0 {
+            assert!(Configurations::load_for(&other).is_err());
+        }
+
+        // a symlink is refused, even to a file owned by the user
+        let config_file = config_file_path().unwrap();
+        let target = config_file.with_extension("target");
+        std::fs::rename(&config_file, &target).unwrap();
+        std::os::unix::fs::symlink(std::fs::canonicalize(&target).unwrap(), &config_file).unwrap();
+        assert!(Configurations::load_for(&owner).is_err());
     }
 
     #[test]

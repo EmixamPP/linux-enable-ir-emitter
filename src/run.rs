@@ -1,4 +1,4 @@
-use crate::configuration::{Configuration, Configurations};
+use crate::configuration::{Configuration, Configurations, PamUser};
 use crate::device_id::DeviceId;
 use crate::video::uvc::Device;
 
@@ -12,6 +12,9 @@ use std::path::Path;
 /// If a configuration cannot be applied on a device, the other devices are still configured,
 /// and an error is returned at the end.
 ///
+/// Without a `config`, if executed by PAM (e.g. `pam_exec`), the configuration of the user being authenticated is used,
+/// otherwise the one of the current user.
+///
 /// Does not return an error if no configuration exists for the device.
 pub fn run(device: Option<&Path>, fd: Option<i32>, config: Option<&Path>) -> Result<()> {
     if fd.is_some() && device.is_none() {
@@ -20,6 +23,10 @@ pub fn run(device: Option<&Path>, fd: Option<i32>, config: Option<&Path>) -> Res
 
     let configs = if let Some(config) = config {
         Configurations::load_from(config)?
+    } else if let Some(user) = PamUser::from_env()? {
+        // executed by PAM as root, use the configuration of the user being authenticated
+        log::debug!("Executed by PAM for user {}.", user.name());
+        Configurations::load_for(&user)?
     } else {
         Configurations::load()?
     };
