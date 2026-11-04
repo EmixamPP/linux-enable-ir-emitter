@@ -81,7 +81,11 @@ where
     if let Some(emitters) = app.emitters() {
         items.push(ListItem::new(Line::from(vec![
             "Number of emitters: ".into(),
-            emitters.to_string().green(),
+            if emitters > 0 {
+                emitters.to_string().green()
+            } else {
+                format!("{emitters} (must be at least 1)").red()
+            },
         ])));
     }
     items.extend([
@@ -140,7 +144,11 @@ where
         ])),
         ListItem::new(Line::from(vec![
             "Increment step: ".into(),
-            app.inc_step().to_string().green(),
+            if app.inc_step() > 0 {
+                app.inc_step().to_string().green()
+            } else {
+                format!("{} (must be at least 1)", app.inc_step()).red()
+            },
         ])),
     ])
     .highlight_style(Style::default().fg(Color::Yellow))

@@ -68,6 +68,12 @@ impl Enabler {
         request_tx: Sender<Message>,
         response_rx: Receiver<IsIrWorking>,
     ) -> Result<Self> {
+        if config.emitters == 0 {
+            bail!("the number of emitters must be at least 1");
+        }
+        if config.inc_step == 0 {
+            bail!("the increment step must be at least 1");
+        }
         Ok(Self {
             configuration: Configuration::new(&config.device),
             device: Device::open(config.device)?,

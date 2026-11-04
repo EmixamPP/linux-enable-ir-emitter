@@ -509,8 +509,8 @@ impl App {
     ///
     /// Returns directly an error if the video stream is already started.
     fn start_or_back(&mut self, k: KeyCode) -> Result<()> {
-        // check that the path exists
-        if !self.is_device_valid() {
+        // check that the path exists and that the settings are valid
+        if !self.is_device_valid() || !self.are_settings_valid() {
             self.set_state(State::Menu);
             return Ok(());
         }
@@ -533,6 +533,11 @@ impl App {
     /// Check that the current device is grey scale.
     fn is_device_valid(&self) -> bool {
         self.grey_devices.contains(&self.config.device)
+    }
+
+    /// Check that the number of emitters and the increment step are at least 1.
+    fn are_settings_valid(&self) -> bool {
+        self.config.emitters > 0 && self.config.inc_step > 0
     }
 
     /// Moves the selection to the next setting in the settings lists.
@@ -1023,6 +1028,22 @@ mod tests {
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.state(), State::Running);
+    }
+
+    #[tokio::test]
+    async fn test_handle_key_event_start_or_back_invalid_settings() {
+        for (emitters, inc_step) in [(0, 1), (1, 0)] {
+            let mut app = make_app();
+            app.set_state(State::ConfirmStart);
+            app.config.device = "/dev/video0".into();
+            app.grey_devices.push("/dev/video0".into());
+            app.config.emitters = emitters;
+            app.config.inc_step = inc_step;
+            let key_event = make_term_key_event(KEY_YES);
+            let res = app.handle_term_event(key_event).await;
+            assert!(res.is_ok(), "{:?}", res.err());
+            assert_eq!(app.state(), State::Menu);
+        }
     }
 
     #[tokio::test]
