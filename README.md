@@ -5,26 +5,22 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 `linux-enable-ir-emitter` can automatically configure almost any UVC infrared camera.
 
 > [!NOTE]
-> This tool drives **UVC** infrared cameras. It cannot configure **MIPI CSI-2** IR
-> sensors behind an **Intel IPU6/IPU7**, which are common on laptops from Meteor
-> Lake onward (various Dell XPS and Latitude models, and some HP and Lenovo
-> machines). Those sensors are not USB webcams: on the Synaptics SVP7500 designs
-> the only USB interface is vendor-specific and carries an I2C tunnel, so
-> `uvcvideo` binds nothing and there are no UVC controls to iterate. The symptom
-> is "no camera found" or "no working configuration", which looks like a bug here
-> but is not one.
+> This tool drives **UVC** infrared cameras. On some newer laptops, the IR sensor is behind a vendor-specific IPU protocol.
 >
 > To tell which kind you have:
 >
 > ```bash
+> linux-enable-ir-emitter --grey-devices  # your camera listed -> this tool applies
+> # Alternatively if linux-enable-ir-emitter is not yet installed:
 > ls /sys/bus/usb/drivers/uvcvideo/       # your camera listed -> this tool applies
 > v4l2-ctl --list-devices | grep -A2 ipu  # an IPU device shown -> it does not (v4l2-ctl is provided by the v4l-utils package)
-> linux-enable-ir-emitter --grey-devices  # your IR camera listed with UVC controls -> this tool applies
 > ```
 >
-> For the MIPI/IPU case with a Himax HM1092 behind a Synaptics SVP7500 bridge,
-> there is a working stack at
-> [svp7500-camera-fix-pack](https://github.com/jibsta210/svp7500-camera-fix-pack).
+> <details><summary>Projects for IPU cameras:</summary>
+>
+> * [svp7500-camera-fix-pack](https://github.com/jibsta210/svp7500-camera-fix-pack) for the Himax HM1092 behind a Synaptics SVP7500 bridge
+>
+></details>
 
 > [!IMPORTANT]
 > Please read the documentation below carefully. It can save you a lot of time and help you successfully enable your infrared camera.
@@ -33,48 +29,89 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 > If you plan to package this software for a Linux distribution, or to contribute code, please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Installation
-Download the latest asset from the [releases](https://github.com/EmixamPP/linux-enable-ir-emitter/releases), depending on your processor architecture:
+
+Download the latest asset from the [releases](https://github.com/EmixamPP/linux-enable-ir-emitter/releases), depending on your processor architecture (`uname -m`):
+
 * `linux-enable-ir-emitter-x.x.x-release-x86-64.tar.gz` for Intel and AMD processors (most computers)
 * `linux-enable-ir-emitter-x.x.x-release-aarch64.tar.gz` for ARM 64-bit processors
 
-You can check your architecture with `uname -m`. Then execute:
-```
-tar -C /usr/local/bin/ --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
+Then execute:
+
+```sh
+sudo tar -C /usr/local/bin/ --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
 ```
 
 The installation consists of 3 files:
+
 * The executable: `/usr/local/bin/linux-enable-ir-emitter`
 * The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`, you can print them with `linux-enable-ir-emitter --log`. Once bigger than 1 MiB, they are moved to `linux-enable-ir-emitter.log.old`.
 * The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`, you can print it with `linux-enable-ir-emitter --config`
 
 ### Migration from v6
+
+```sh
+   linux-enable-ir-emitter migrate
+```
+
+<details><summary>Click for more details</summary>
+
 The configuration format of the v7 is not compatible with the v6 one. If you used the v6, you can migrate your configuration:
+
 1. Install the v7 (see above), but keep the v6 configuration directory `/etc/linux-enable-ir-emitter/`.
-2. Make sure your camera is connected (always the case for a built-in camera), then execute as your normal user, **not with sudo**, since the v7 configuration is saved in your home directory: `linux-enable-ir-emitter migrate`
+2. Make sure your camera is connected and not used, then execute as your normal user, **not with sudo**, since the v7 configuration is saved in your home directory:
+
+   ```sh
+   linux-enable-ir-emitter migrate
+   ```
+
    * Only the controls applied by the v6 are migrated. The controls disabled in the v6 are blacklisted, so the *IR Enabler* will not modify them.
    * If the v6 configurations are located elsewhere (e.g. installed by a distro package), add `--from <DIRECTORY>`.
    * You can safely run it again: a camera that already has a v7 configuration is skipped.
+
 3. Check the result with `linux-enable-ir-emitter --config`.
 4. Uninstall the v6 by following its [uninstallation instructions](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/6.1.2/docs/uninstallation.md). The v7 does not use a boot service anymore, see the integrations below.
 
+</details>
+
 ### Integration with Howdy
-In all files returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy", replacing `<USER>` with your actual username:
-```
-auth optional pam_exec.so /usr/local/bin/linux-enable-ir-emitter run --config /home/<USER>/.config/linux-enable-ir-emitter.toml
+
+Once howdy is installed and configured, execute:
+
+```sh
+sudo linux-enable-ir-emitter setup-howdy
 ```
 
-> [!TIP]
-> The installation path may vary depending on your installation method. You can determine the correct binary absolute path by running `which linux-enable-ir-emitter` and use it instead. For the configuration path, it will be written when you execute `linux-enable-ir-emitter --config`.
+<details><summary>Click for more details</summary>
+The following line is added before howdy, in all the files of `/etc/pam.d/`.
+
+  ```txt
+  auth optional pam_exec.so quiet <path_to_bin>/linux-enable-ir-emitter run
+  ```
+
+* Since polkit 126, password prompts are executed in a sandbox without access to the camera nor to the home directories. Therefore, a systemd drop-in is added to allow access to the video devices, and the home directories in read-only: `/etc/systemd/system/polkit-agent-helper@.service.d/linux-enable-ir-emitter.conf` containing:
+
+```ini
+[Service]
+PrivateDevices=no
+DeviceAllow=char-video4linux rw
+ProtectHome=read-only
+```
+
+You can remove all the changes with `sudo linux-enable-ir-emitter setup-howdy --undo`.
+
+</details>
 
 ### Integration with other program
+
 You will need to execute the `linux-enable-ir-emitter run` command before the program that uses the infrared camera.
 
 Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --device <DEVICE> --fd <FD>`.
 
 > [!IMPORTANT]
-> You will need to pass the config path as argument to `linux-enable-ir-emitter run --config <CONFIG_PATH>` **when executed as root**, if `linux-enable-ir-emitter configure` was executed as a normal user.
+> You will need to pass the config path as argument to `linux-enable-ir-emitter run --config <CONFIG_PATH>` **when executed as root outside PAM**, if `linux-enable-ir-emitter configure` was executed as a normal user. When executed by PAM, the configuration of the user who is authenticating is used automatically.
 
 ## How do I enable my infrared emitter?
+
 0. For a better experience, use a large terminal window.
 1. Execute the command: `linux-enable-ir-emitter configure`
 2. Select the *IR Enabler* tool. It will iterate through the UVC camera controls and modify them to try to find the one that enables the IR emitter.
@@ -101,10 +138,10 @@ Alternatively, if you can and/or want to integrate better with the program that 
 > [!TIP]
 > If the configuration failed, you can retry by tweaking some search parameters (read the section above) or use the advanced *tweak* tool (see below). Feel free to open an issue if you need any help! I will be glad to assist you. Please join the output of `linux-enable-ir-emitter --log` to it.
 
-
 All criticism, ideas and contributions are welcome!
 
 ## How do I tweak my camera?
+
 Some cameras provide UVC controls for other things than just turning the IR emitter on, like changing its brightness. Or maybe the *IR Enabler* did not manage to find the right value for your camera. In these cases, you can find the corresponding controls and set the correct value manually with the *UVC Tweaker* tool.
 
 A control is identified by a *unit* and a *selector*, and consists of one or several bytes, each one being a value between 0-255.
@@ -130,6 +167,3 @@ A control is identified by a *unit* and a *selector*, and consists of one or sev
 
 > [!WARNING]
 > Same as for the *IR Enabler*: the camera firmware may get corrupted by writing random values to the controls. You acknowledge that you understand the risks and that you are the only responsible if something goes wrong.
-
-> [!TIP]
-> If you already know which control enables your IR emitter (e.g. found with the *IR Enabler*, see `linux-enable-ir-emitter --config`), start by looking at that one. Its other values may change the brightness or the blinking pattern of the emitter.

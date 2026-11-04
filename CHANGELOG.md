@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [7.0.0] - 2026-11-04
+
 ### Changed
+
 - Complete rewrite in Rust, bringing more robustness and performance.
 - New TUI interface for improved user experience and understanding.
 - `tweak` command is now accessible via the `configure` command, as the *UVC Tweaker* tool.
@@ -15,15 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--config`, `--log` and `--grey-devices` cannot be combined with each other or with a command anymore.
 
 ### Added
+
 - More debug commands to help users to report issues: `--config`, `--log`, `--grey-devices`.
 - `migrate` command to migrate the configurations from the v6 to the v7 format.
+- `setup-howdy` command to integrate with howdy in PAM, and to allow the polkit password prompts, sandboxed since polkit 126.
+- When executed by PAM, the `run` command uses the configuration of the user being authenticated, so the PAM line does not need `--config` anymore.
 - Prebuilt binary for ARM 64-bit (aarch64) processors.
 - The help is displayed when no command or option is given.
 - The *UVC Tweaker* saves the modified controls when exiting, they are applied by the `run` command.
 - A loading message is displayed while the UVC controls are listed, which can take a few seconds.
-- The log file is moved to `<log>.old` once bigger than 1 MiB.
 
 ### Fixed
+
 - The devices are identified by their USB vendor, product, serial number, interface and index, instead of their `/dev/v4l/by-path/` path, for better persistence. The configurations saved with a `/dev/...` path by the beta versions are still applied, and are replaced when configuring the device again. This fixes the IR camera not enabled after a reboot when it shares its USB device with the RGB camera.
 - `run --device /dev/videoX` now matches the configuration saved for that device.
 - The `run` command applies the other devices and controls if one cannot be applied.
@@ -35,23 +40,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The real error is displayed instead of a generic "closed unexpectedly" message when the video stream or the search fails.
 
 ### Removed
+
 - OpenCV is not used anymore for capturing V4L video stream, because of unreliability, and compatibility issues across distro.
 - Removing `test` command.
 
 ## [6.1.2] - 2025-09-01
+
 ### Added
+
 - Add custom meson options: `config_dir`, `create_config_dir`, `create_log_dir`
 
 ## [6.1.1] - 2025-01-29
+
 ### Fixed
+
 - The `run` command does not crash if one configuration cannot be applied on a device.
 
 ## [6.1.0] - 2025-01-29
+
 ### Added
+
 - Unit tests for instruction manipulations.
 - New `meson test` target including: unit tests + `clang-format` + `clang-tidy`.
 
 ### Modified
+
 - The user no longer has to type in the video feedback, but in the terminal.
 - Better configuration handling.
 - Better instruction search.
@@ -64,39 +77,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump argparse to v3.2
 
 ### Removed
+
 - `--werror` `meson` option no longer enabled by default.
 - `spdlog` dependency not needed anymore.
 
 ### Fixed
+
 - `OpenCV` error: `size.width>0 && size.height>0 in function 'imshow'`.
 
 ## [6.0.6] - 2024-10-11
 
 ### Fixed
+
 - Improved building system compatibility.
 
 ## [6.0.5] - 2024-10-02
 
 ### Fixed
+
 - Compatibility issue with `fmt` library.
 
 ## [6.0.4] - 2024-09-30
 
 ### Fixed
+
 - Crash in `tweak` command.
 
 ## [6.0.3] - 2024-09-01
 
 ### Fixed
+
 - Inconsistent file logging.
 - Missing help print.
 
 ### Changed
+
 - Minor general improvements.
 
 ## [6.0.0] - 2024-06-14
 
 ### Added
+
 - YAML format support for storing camera configurations.
 - Ability to save all camera instructions.
 - Manual tweaking of camera instructions.
@@ -106,21 +127,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Catch `ctrl-c` to prevent camera interruptions.
 
 ### Fixed
+
 - Freeze in video feedback.
 - Issue with `test` command.
 - Handling of multiple v4l paths for the same device.
 
 ### Removed
+
 - Boot command.
 - Python code completely migrated to C++.
 
 ### Changed
+
 - Reduced installation size.
 - Enhanced logging system.
 
 ## [5.2.4] - 2023-11-01
 
 ### Fixed
+
 - Config generated but not found issue.
 - Exception thrown by `OpenCV`.
 - Reduced installation size.
@@ -128,33 +153,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [5.2.1] - 2023-10-20
 
 ### Fixed
+
 - Unable to execute commands.
 
 ## [5.2.0] - 2023-10-19
 
 ### Added
+
 - New `test` command.
 
 ### Changed
+
 - Improved efficiency.
 - Significantly reduced installation size.
 
 ## [5.0.4] - 2023-10-09
 
 ### Added
+
 - New advice and hint messages.
 
 ## [5.0.2] - 2023-08-23
 
 ### Fixed
+
 - Minor search issue.
 
 ### Changed
+
 - Default longer search duration.
 
 ## [5.0.0] - 2023-08-08
 
 ### Added
+
 - Automatic IR camera detection.
 - Automatic IR emitter configuration.
 - Exhaustive search functionality.
@@ -163,120 +195,147 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.8.2] - 2023-06-23
 
 ### Fixed
+
 - Occasional systemd hanging issue.
 - Improved installation paths.
 
 ## [4.8.0] - 2023-06-21
 
 ### Added
+
 - Native SELinux compatibility.
 
 ## [4.7.0] - 2023-06-20
 
 ### Added
+
 - `OpenRC` support.
 
 ### Changed
+
 - Requirement for Python version >= 3.10.
 
 ## [4.5.0] - 2023-02-26
 
 ### Changed
+
 - Config generation.
 
 ## [4.4.2] - 2023-02-24
 
 ### Fixed
+
 - Command not found error.
 
 ### Changed
+
 - Reduced size.
 
 ## [4.4.0] - 2023-02-17
 
 ### Added
+
 - Support for multiple emitter cameras.
 - Persistent usage of `/dev/v4l/by-path`.
 
 ### Fixed
+
 - Memorization of broken instructions for skipping.
 
 ### Changed
+
 - Complete rework of implementation.
 
 ## [4.1.5] - 2022-09-13
 
 ### Fixed
+
 - Boot service for custom devices.
 
 ## [4.1.4] - 2022-08-11
 
 ### Added
+
 - Forced V4L2 backend in `OpenCV`.
 
 ### Changed
+
 - Config generation.
 
 ## [4.1.2] - 2022-07-04
 
 ### Added
+
 - Asynchronous camera triggering.
 
 ### Fixed
+
 - Camera triggering issue.
 - Device symlink boot service side effect.
 
 ## [4.0.0] - 2022-06-19
 
 ### Changed
+
 - Config generation through rework, optimization, and enhancement.
 
 ### Removed
+
 - Manual configuration commands.
 - Integration option for Howdy.
 
 ## [3.2.5] - 2021-12-09
 
 ### Added
+
 - Bash auto-completion.
 - Better systemd support.
 
 ### Changed
+
 - Integration with [Howdy](https://github.com/boltgolt/howdy).
 
 ## [3.2.2] - 2021-11-04
 
 ### Added
+
 - Support for any device path format.
 
 ### Changed
+
 - Systemd service.
 
 ## [3.2.0] - 2021-10-23
 
 ### Added
+
 - Support for multiple devices.
 
 ## [3.1.1] - 2021-09-23
 
 ### Added
+
 - Limit for repeated negative answers to the same pattern.
 
 ## [3.1.0] - 2021-09-22
 
 ### Added
+
 - New configuration system.
 - Exit codes for better error handling.
 
 ### Changed
+
 - Configuration file location.
 
 ## [2.1.0] - 2021-08-29
 
 ### Added
+
 - New `fix` command to resolve common issues.
 
 ### Fixed
+
 - Systemd service file to prevent `/dev/video` file descriptor error.
 
 ## [2.0.1] - 2021-08-12
