@@ -58,6 +58,9 @@ impl Default for Config {
     }
 }
 
+/// The device opened in the background, along with its controls.
+type LoadedDevice = Result<(Device, Vec<XuControl>)>;
+
 /// Application states.
 #[derive(Debug)]
 pub enum State {
@@ -99,7 +102,7 @@ pub struct App {
     /// The optional error that occurred during last control configuration.
     error: Option<String>,
     /// Receiver for the device and its controls, while they are being loaded in the background.
-    controls_rx: Option<oneshot::Receiver<Result<(Device, Vec<XuControl>)>>>,
+    controls_rx: Option<oneshot::Receiver<LoadedDevice>>,
 }
 
 impl App {
@@ -191,7 +194,7 @@ impl App {
     /// Returns an error if the device could not be opened.
     fn handle_controls(
         &mut self,
-        result: Result<Result<(Device, Vec<XuControl>)>, oneshot::error::RecvError>,
+        result: Result<LoadedDevice, oneshot::error::RecvError>,
     ) -> Result<()> {
         self.controls_rx = None;
         let (device, controls) =
