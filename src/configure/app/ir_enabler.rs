@@ -275,19 +275,22 @@ impl App {
             .take()
             .context("configurator task already started")?;
 
+        // kept to report the error if the configurator fails, since it owns the other sender
+        let error_tx = search_msg_tx.clone();
+
         task::spawn(async move {
-            let mut configurator = match Enabler::new(config, search_msg_tx, response_rx) {
-                Ok(cfg) => cfg,
-                Err(err) => {
-                    log::error!("{err:?}");
-                    return;
-                }
+            let result = match Enabler::new(config, search_msg_tx, response_rx) {
+                Ok(mut configurator) => configurator.configure().await,
+                Err(err) => Err(err.context("failed to start the configuration")),
             };
 
-            if let Err(err) = configurator.configure().await {
-                log::error!("Error while configuring: {err:?}",);
+            if let Err(err) = result {
+                log::error!("Error while configuring: {err:?}");
+                let _ = error_tx
+                    .send(IREnablerRequest::Error(format!("{err:#}")))
+                    .await;
             } else {
-                log::debug!("Exiting configurator task exited.");
+                log::debug!("Configurator task exited.");
             }
         });
 
@@ -406,6 +409,7 @@ impl App {
                 IREnablerRequest::AlreadyWorking => bail!("the IR emitter is already working"),
                 IREnablerRequest::Success => self.set_state(State::Success),
                 IREnablerRequest::Failure => self.set_state(State::Failure),
+                IREnablerRequest::Error(err) => bail!(err),
             }
             Ok(())
         } else {
@@ -1330,6 +1334,30 @@ mod tests {
         let res = app.handle_search_msg(msg).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.state(), State::Failure);
+    }
+
+    #[tokio::test]
+    async fn test_handle_search_msg_error() {
+        let mut app = make_app();
+        let msg = Some(IREnablerRequest::Error("cannot open device".to_string()));
+        let err = app.handle_search_msg(msg).await.unwrap_err();
+        assert_eq!(err.to_string(), "cannot open device");
+    }
+
+    #[tokio::test]
+    async fn test_spawn_search_task_reports_start_error() {
+        let mut app = make_app();
+        app.config.device = "/dev/video_does_not_exist".into();
+        app.spawn_search_task().unwrap();
+        match app.search_msg_rx.recv().await {
+            Some(IREnablerRequest::Error(err)) => {
+                assert!(
+                    err.starts_with("failed to start the configuration"),
+                    "{err}"
+                )
+            }
+            other => panic!("unexpected message: {other:?}"),
+        }
     }
 
     #[tokio::test]

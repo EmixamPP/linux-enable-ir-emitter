@@ -23,6 +23,8 @@ pub enum Message {
     Success,
     /// The configuration ended and failed. Does not expect a response.
     Failure,
+    /// The configuration stopped because of an error. Does not expect a response.
+    Error(String),
 }
 
 /// Responses to a [`Message::IsIrWorking`] from the [`Enabler`].
