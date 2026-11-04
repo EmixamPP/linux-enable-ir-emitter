@@ -94,11 +94,14 @@ impl Enabler {
             .controls()
             .into_iter()
             .filter(|c| {
-                if c.writable() && !self.configuration.is_blacklisted(c) {
-                    true
-                } else {
-                    log::info!("Ignoring read-only control: {}", c);
+                if !c.writable() {
+                    log::info!("Ignoring read-only control: {c}");
                     false
+                } else if self.configuration.is_blacklisted(c) {
+                    log::info!("Ignoring blacklisted control: {c}");
+                    false
+                } else {
+                    true
                 }
             })
             .collect()
