@@ -74,9 +74,9 @@ pub enum State {
 /// "Enabler" application.
 pub struct App {
     /// Receiver for captured images from the video stream task.
-    image_rx: Receiver<Image>,
+    image_rx: Receiver<Result<Image>>,
     /// Sender used by the video stream task for captured images.
-    image_tx: Option<Sender<Image>>,
+    image_tx: Option<Sender<Result<Image>>>,
     /// Current application state.
     /// Should be accessed through [`Self::state()`]
     _state: State,
@@ -196,6 +196,8 @@ impl App {
                 Ok(s) => s,
                 Err(err) => {
                     log::error!("Error opening video stream: {err:?}");
+                    let _ =
+                        image_tx.blocking_send(Err(err.context("failed to open the video stream")));
                     return;
                 }
             };
@@ -204,13 +206,15 @@ impl App {
             loop {
                 match stream.capture() {
                     Ok(img) => {
-                        if image_tx.blocking_send(img).is_err() {
+                        if image_tx.blocking_send(Ok(img)).is_err() {
                             log::debug!("Exiting video stream task.");
                             return;
                         }
                     }
                     Err(err) => {
                         log::error!("Error while capturing image: {err:?}");
+                        let _ =
+                            image_tx.blocking_send(Err(err.context("failed to capture an image")));
                         return;
                     }
                 }
@@ -252,9 +256,10 @@ impl App {
 
     /// Handles a new captured image.
     ///
-    /// Returns an error if the image is None.
-    fn handle_image(&mut self, image: Option<Image>) -> Result<()> {
+    /// Returns the stream error if capturing failed, or an error if the stream is closed.
+    fn handle_image(&mut self, image: Option<Result<Image>>) -> Result<()> {
         if let Some(image) = image {
+            let image = image?;
             self.image = Some(image);
             Ok(())
         } else {

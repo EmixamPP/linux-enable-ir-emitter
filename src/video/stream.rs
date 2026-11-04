@@ -49,10 +49,11 @@ impl Stream {
         format.fourcc = FourCC::new(b"GREY");
         format = v4l_device.set_format(&format)?;
 
+        // allow YUYV format in debug mode for testing with any webcams
+        #[cfg(debug_assertions)]
         if format.fourcc != FourCC::new(b"GREY") {
-            // allow YUYV format in debug mode for testing with any webcams
-            #[cfg(not(debug_assertions))]
-            bail!("device does not support GREY scale pixel format");
+            format.fourcc = FourCC::new(b"YUYV");
+            format = v4l_device.set_format(&format)?;
         }
 
         // Try to set the resolution if provided
@@ -69,6 +70,14 @@ impl Stream {
             if format.height != height {
                 bail!("device does not support the requested height: {height}");
             }
+        }
+
+        // The resolution can make the driver fall back to another pixel format
+        if !Self::is_supported_fourcc(format.fourcc) {
+            bail!(
+                "device does not support GREY scale pixel format (got {})",
+                format.fourcc
+            );
         }
 
         // Set the capture parameters for the V4L device
@@ -97,6 +106,11 @@ impl Stream {
         stream.stream.set_timeout(CAPTURE_TIME_OUT);
 
         Ok(stream)
+    }
+
+    /// Returns whether images in the given pixel format can be converted to grey images.
+    fn is_supported_fourcc(fourcc: FourCC) -> bool {
+        fourcc == FourCC::new(b"GREY") || (cfg!(debug_assertions) && fourcc == FourCC::new(b"YUYV"))
     }
 
     /// Tries to obtain an image of the device stream.

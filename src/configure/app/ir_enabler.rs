@@ -99,9 +99,9 @@ pub enum State {
 /// "Enabler" application.
 pub struct App {
     /// Receiver for captured images from the video stream task.
-    image_rx: Receiver<Image>,
+    image_rx: Receiver<Result<Image>>,
     /// Sender used by the video stream task for captured images.
-    image_tx: Option<Sender<Image>>,
+    image_tx: Option<Sender<Result<Image>>>,
     /// Receiver for state and requests from the configurator task.
     search_msg_rx: Receiver<IREnablerRequest>,
     /// Sender used by the configurator task to share its state and requests.
@@ -228,6 +228,8 @@ impl App {
                 Ok(s) => s,
                 Err(err) => {
                     log::error!("Error opening video stream: {err:?}");
+                    let _ =
+                        image_tx.blocking_send(Err(err.context("failed to open the video stream")));
                     return;
                 }
             };
@@ -236,13 +238,15 @@ impl App {
             loop {
                 match stream.capture() {
                     Ok(img) => {
-                        if image_tx.blocking_send(img).is_err() {
+                        if image_tx.blocking_send(Ok(img)).is_err() {
                             log::debug!("Exiting video stream task.");
                             return;
                         }
                     }
                     Err(err) => {
                         log::error!("Error while capturing image: {err:?}");
+                        let _ =
+                            image_tx.blocking_send(Err(err.context("failed to capture an image")));
                         return;
                     }
                 }
@@ -351,9 +355,10 @@ impl App {
 
     /// Handles a new captured image.
     ///
-    /// Returns an error if the image is None.
-    fn handle_image(&mut self, image: Option<Image>) -> Result<()> {
+    /// Returns the stream error if capturing failed, or an error if the stream is closed.
+    fn handle_image(&mut self, image: Option<Result<Image>>) -> Result<()> {
         if let Some(image) = image {
+            let image = image?;
             // ignore if too many images are buffered
             let _ = self
                 .analyzer_request_tx
@@ -720,7 +725,7 @@ mod tests {
     fn test_handle_image_sets_image() {
         let mut app = make_app();
         let img = Image::new_rgba8(1, 1);
-        assert!(app.handle_image(Some(img.clone())).is_ok());
+        assert!(app.handle_image(Some(Ok(img.clone()))).is_ok());
         assert_eq!(app.image, Some(img));
     }
 
@@ -728,6 +733,16 @@ mod tests {
     fn test_handle_image_none() {
         let mut app = make_app();
         assert!(app.handle_image(None).is_err());
+    }
+
+    #[test]
+    fn test_handle_image_stream_error() {
+        let mut app = make_app();
+        let err = app
+            .handle_image(Some(Err(anyhow!("unsupported pixel format"))))
+            .unwrap_err();
+        assert_eq!(err.to_string(), "unsupported pixel format");
+        assert!(app.image.is_none());
     }
 
     #[test]
