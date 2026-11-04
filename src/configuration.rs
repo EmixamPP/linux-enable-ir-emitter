@@ -15,7 +15,7 @@ pub const _CONFIG: &str = "target/tmp/linux-enable-ir-emitter.toml";
 
 fn config_file_path() -> Result<PathBuf> {
     Ok(shellexpand::env(_CONFIG)
-        .context("failed to expend shell variable in log file path")?
+        .context("failed to expand shell variables in configuration file path")?
         .to_string()
         .into())
 }
@@ -27,6 +27,8 @@ pub fn print_config() -> Result<()> {
     print!("# {}\n\n{}", config_file.display(), content_str);
     Ok(())
 }
+
+pub use path::V4LPath;
 
 mod path {
     use super::*;
@@ -42,6 +44,8 @@ mod path {
         }
 
         fn find_v4l_path(device: &Path) -> Option<PathBuf> {
+            // resolve symlinks, so that a persistent path is also matched
+            let device = device.canonicalize().ok()?;
             if let Ok(entries) = std::fs::read_dir(Path::new(V4L_DEV_DIR)) {
                 for entry in entries.filter_map(Result::ok) {
                     if let Ok(target) = entry.path().canonicalize()
@@ -126,15 +130,24 @@ impl Configurations {
         std::fs::write(config_file, config_str).context("failed to write configuration file")
     }
 
-    /// Load an existing configurations at the default location or create an empty one.
+    /// Load an existing configurations at the default location or create an empty one if there is none.
+    ///
+    /// Returns an error if the configuration file exists but cannot be read or parsed,
+    /// so that it is never overwritten by mistake.
     pub fn load() -> Result<Self> {
-        Ok(Self::load_from(&config_file_path()?).unwrap_or_default())
+        let config_file = config_file_path()?;
+        if !config_file.exists() {
+            log::debug!("No configuration file at {}.", config_file.display());
+            return Ok(Self::default());
+        }
+        Self::load_from(&config_file)
     }
 
     /// Load an existing configurations at a specified path.
     pub fn load_from(config: &Path) -> Result<Self> {
         log::info!("Loading configuration from {}.", config.display());
-        let config_str = std::fs::read_to_string(config)?;
+        let config_str = std::fs::read_to_string(config)
+            .with_context(|| format!("failed to read configuration file {}", config.display()))?;
         Ok(Self {
             devices: toml::from_str(&config_str).context("failed to parse configuration file")?,
         })
@@ -175,7 +188,7 @@ impl Configuration {
         match Self::load(&device) {
             Ok(config) => config,
             Err(err) => {
-                log::debug!("No existing configuration found: {err:?}.");
+                log::debug!("No existing configuration loaded: {err:?}.");
                 Self {
                     savelist: Set::new(),
                     blacklist: Set::new(),
@@ -185,14 +198,26 @@ impl Configuration {
         }
     }
 
-    /// Adds a control to the savelist.
+    /// Adds a control to the savelist, replacing any previously saved value of this control.
     pub fn add_to_savelist(&mut self, control: &XuControl) {
+        self.savelist
+            .retain(|sc| sc.unit != control.unit() || sc.selector != control.selector());
         self.savelist.insert(control.into());
     }
 
     /// Adds a control to the blacklist.
     pub fn add_to_blacklist(&mut self, control: &XuControl) {
         self.blacklist.insert(control.into());
+    }
+
+    /// Returns true if no control is saved nor blacklisted.
+    pub fn is_empty(&self) -> bool {
+        self.savelist.is_empty() && self.blacklist.is_empty()
+    }
+
+    /// Returns the persistent path of the device of this configuration.
+    pub fn device(&self) -> &Path {
+        self.device.as_ref()
     }
 
     /// Returns true if the control is blacklisted.
@@ -237,8 +262,13 @@ impl Configuration {
         }
     }
 
+    /// Saves this configuration, keeping the configurations of the other devices.
+    ///
+    /// Returns an error, without writing anything, if the existing configuration file cannot be read.
     pub fn save(&self) -> Result<()> {
-        let mut configs = Configurations::load().unwrap_or_default();
+        let mut configs = Configurations::load().context(
+            "the existing configuration file cannot be read, please fix or remove it before saving",
+        )?;
 
         // do not serialize empty configuration
         if self.savelist.is_empty() && self.blacklist.is_empty() {
@@ -324,6 +354,44 @@ mod tests {
         assert_eq!(list[0].unit(), xu.unit());
         assert_eq!(list[0].selector(), xu.selector());
         assert_eq!(list[0].cur(), xu.cur());
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_add_to_savelist_replaces_value() {
+        clean_config_dir();
+        let mut xu = make_xu(&mut make_rng());
+        let mut config = Configuration::new("/dev/video0");
+        config.add_to_savelist(&xu);
+        xu.cur_mut()[0] = xu.cur()[0].wrapping_add(1);
+        config.add_to_savelist(&xu);
+        let list = config.get_savelist();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list[0].cur(), xu.cur());
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_save_keeps_unreadable_file() {
+        clean_config_dir();
+        let config_file = config_file_path().unwrap();
+        std::fs::create_dir_all(config_file.parent().unwrap()).unwrap();
+        let garbage = "this is [ not toml";
+        std::fs::write(&config_file, garbage).unwrap();
+
+        assert!(Configurations::load().is_err());
+
+        let mut config = Configuration::new("/dev/video0");
+        config.add_to_savelist(&make_xu(&mut make_rng()));
+        assert!(config.save().is_err());
+        assert_eq!(std::fs::read_to_string(&config_file).unwrap(), garbage);
+    }
+
+    #[test]
+    #[serial]
+    fn test_configurations_load_missing_file_is_empty() {
+        clean_config_dir();
+        assert!(Configurations::load().unwrap().devices().is_empty());
     }
 
     #[test]

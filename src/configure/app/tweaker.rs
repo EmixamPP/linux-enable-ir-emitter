@@ -1,0 +1,585 @@
+use super::helper::*;
+use crate::configuration::Configuration;
+use crate::configure::ui::DeviceSettingsCtx;
+use crate::configure::ui::tweaker::{TweakerCtx, View, ui};
+use crate::video::stream::{Image, Stream, grey_devices};
+use crate::video::uvc::{Device, XuControl};
+
+use std::cell::OnceCell;
+use std::path::PathBuf;
+
+use anyhow::{Context, Result, anyhow, bail};
+use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind};
+use futures::{FutureExt, StreamExt, future::OptionFuture};
+use ratatui::{DefaultTerminal, widgets::ListState};
+use tokio::{
+    select,
+    sync::mpsc,
+    sync::mpsc::{Receiver, Sender},
+    sync::oneshot,
+    task,
+};
+
+const KEY_YES: KeyCode = KeyCode::Char('y');
+const KEY_NO: KeyCode = KeyCode::Char('n');
+const KEY_EXIT: KeyCode = KeyCode::Esc;
+const KEY_NAVIGATE: KeyCode = KeyCode::Tab;
+const KEY_NAVIGATE_UP: KeyCode = KeyCode::Up;
+const KEY_NAVIGATE_DOWN: KeyCode = KeyCode::Down;
+const KEY_NAVIGATE_LEFT: KeyCode = KeyCode::Left;
+const KEY_NAVIGATE_RIGHT: KeyCode = KeyCode::Right;
+const KEY_CONTINUE: KeyCode = KeyCode::Enter;
+const KEY_DELETE: KeyCode = KeyCode::Backspace;
+
+#[derive(Debug)]
+pub struct Config {
+    /// Path to the video device.
+    pub device: PathBuf,
+    /// Height of the video stream.
+    pub height: Option<u32>,
+    /// Width of the video stream.
+    pub width: Option<u32>,
+    /// Frames per second of the video stream.
+    pub fps: Option<u32>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            device: PathBuf::from("/dev/video"),
+            height: None,
+            width: None,
+            fps: None,
+        }
+    }
+}
+
+/// The device opened in the background, along with its controls.
+type LoadedDevice = Result<(Device, Vec<XuControl>)>;
+
+/// Application states.
+#[derive(Debug)]
+pub enum State {
+    /// Configuration settings menu
+    Menu,
+    /// Configuration is waiting
+    Waiting,
+    /// Actively editing a specific byte of a XuControl
+    Editing(usize, usize),
+    /// Confirm to save or not the configuration before exiting
+    SaveBeforeExit,
+    /// Exit
+    Exit,
+}
+
+/// "Tweaker" application.
+pub struct App {
+    /// Receiver for captured images from the video stream task.
+    image_rx: Receiver<Result<Image>>,
+    /// Sender used by the video stream task for captured images.
+    image_tx: Option<Sender<Result<Image>>>,
+    /// Current application state.
+    /// Should be accessed through [`Self::state()`]
+    _state: State,
+    /// List of all the video devices that support grey scale pixel format.
+    grey_devices: Vec<PathBuf>,
+    /// List of all the device controls that can be modified.
+    controls: Vec<XuControl>,
+    /// State of the list of device controls.
+    controls_list_state: ListState,
+    /// Settings for the whole application.
+    config: Config,
+    /// State of the list of device settings.
+    device_settings_list_state: ListState,
+    /// The last captured image from the video stream.
+    image: Option<Image>,
+    /// Device open to apply controls. Should be accessed through [`Self::get_device()`].
+    _device: OnceCell<Device>,
+    /// The optional error that occurred during last control configuration.
+    error: Option<String>,
+    /// Receiver for the device and its controls, while they are being loaded in the background.
+    controls_rx: Option<oneshot::Receiver<LoadedDevice>>,
+}
+
+impl App {
+    /// Creates a new "Tweaker" application.
+    pub fn new() -> Self {
+        let mut device_settings_list_state = ListState::default();
+        device_settings_list_state.select_first(); // already select the first item
+
+        let (image_tx, image_rx) = mpsc::channel(1); // do not increase, we drop images to avoid "video lag"
+        let mut controls_list_state = ListState::default();
+        controls_list_state.select_first();
+        Self {
+            _state: State::Menu,
+            config: Config::default(),
+            device_settings_list_state,
+            image: None,
+            image_tx: Some(image_tx),
+            image_rx,
+            error: None,
+            controls: Vec::new(),
+            controls_list_state,
+            grey_devices: Vec::new(),
+            _device: OnceCell::new(),
+            controls_rx: None,
+        }
+    }
+
+    /// Initializes the application by detecting grey scale video devices.
+    /// Returns an error if no grey scale video device is found.
+    fn init(&mut self) -> Result<()> {
+        let grey_devices = grey_devices();
+        log::debug!("Grey scale video devices: {:?}.", grey_devices);
+        if grey_devices.is_empty() {
+            bail!(
+                "no V4L grey scale video device found (the system probably does not support your infrared camera)"
+            );
+        } else {
+            self.config.device = grey_devices[0].clone();
+            self.grey_devices = grey_devices;
+        }
+        Ok(())
+    }
+
+    /// Returns the current application state.
+    pub fn state(&self) -> &State {
+        &self._state
+    }
+
+    /// Sets the current application state and updates the previous state.
+    fn set_state(&mut self, state: State) {
+        self._state = state;
+    }
+
+    /// Gets the video device specified in the config.
+    ///
+    /// If this is the first time, open it.
+    fn get_device(&mut self) -> Result<&Device> {
+        match self._device.get() {
+            Some(device) => Ok(device),
+            None => {
+                let device = Device::open(&self.config.device)
+                    .with_context(|| format!("failed to open device {:?}", self.config.device))?;
+                self._device.set(device).unwrap(); // safe because we checked that it was None
+                Ok(self._device.get().unwrap())
+            }
+        }
+    }
+
+    /// Spawns a new blocking task that opens the device and loads its list of controls,
+    /// which can take a while, then sends them through [`Self::controls_rx`].
+    fn spawn_controls_task(&mut self) {
+        let path = self.config.device.clone();
+        let (controls_tx, controls_rx) = oneshot::channel();
+        self.controls_rx = Some(controls_rx);
+
+        task::spawn_blocking(move || {
+            let result = Device::open(&path)
+                .with_context(|| format!("failed to open device {path:?}"))
+                .map(|device| {
+                    let controls = device.controls();
+                    (device, controls)
+                });
+            let _ = controls_tx.send(result);
+        });
+    }
+
+    /// Handles the device and its controls once loaded.
+    ///
+    /// Returns an error if the device could not be opened.
+    fn handle_controls(
+        &mut self,
+        result: Result<LoadedDevice, oneshot::error::RecvError>,
+    ) -> Result<()> {
+        self.controls_rx = None;
+        let (device, controls) =
+            result.context("the controls loading has stopped unexpectedly")??;
+        self.controls = controls;
+        let _ = self._device.set(device);
+        Ok(())
+    }
+
+    /// Applies a specific control to the active device.
+    fn apply_control(&mut self, control_index: usize) -> Result<()> {
+        let mut control = self.controls[control_index].clone();
+        self.get_device()?
+            .apply_control(&mut control)
+            .context("failed to apply control")
+    }
+
+    /// Spawns a new asynchronous task that continuously captures video frames from the stream device
+    /// and sends them through [`Self::image_tx`].
+    ///
+    /// Returns an error if the video stream is already started.
+    fn spawn_video_stream_task(&mut self) -> Result<()> {
+        let device = self.config.device.clone();
+        let width = self.config.width;
+        let height = self.config.height;
+        let fps = self.config.fps;
+
+        // we take the sender, so if the task exit, the receiver will be notified
+        let image_tx = self
+            .image_tx
+            .take()
+            .context("video stream task already started")?;
+
+        task::spawn_blocking(move || {
+            let mut stream = match Stream::open(device, width, height, fps) {
+                Ok(s) => s,
+                Err(err) => {
+                    log::error!("Error opening video stream: {err:?}");
+                    let _ =
+                        image_tx.blocking_send(Err(err.context("failed to open the video stream")));
+                    return;
+                }
+            };
+            log::debug!("{stream}");
+
+            loop {
+                match stream.capture() {
+                    Ok(img) => {
+                        if image_tx.blocking_send(Ok(img)).is_err() {
+                            log::debug!("Exiting video stream task.");
+                            return;
+                        }
+                    }
+                    Err(err) => {
+                        log::error!("Error while capturing image: {err:?}");
+                        let _ =
+                            image_tx.blocking_send(Err(err.context("failed to capture an image")));
+                        return;
+                    }
+                }
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Runs the application.
+    pub async fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<&'static str> {
+        self.init()?;
+        let mut term_event_stream = EventStream::new();
+
+        // Draw the UI then wait an event in loop
+        loop {
+            terminal.draw(|f| ui(f, self))?;
+            select! {
+                Some(event) = term_event_stream.next().fuse() => self.handle_term_event(event?).await?,
+                image = self.image_rx.recv() => self.handle_image(image)?,
+                Some(controls) = OptionFuture::from(self.controls_rx.as_mut()) => self.handle_controls(controls)?,
+            }
+
+            if matches!(self.state(), State::Exit) {
+                return Ok("Tweaker exited successfully.");
+            }
+        }
+    }
+
+    /// Handles terminal events.
+    async fn handle_term_event(&mut self, event: Event) -> Result<()> {
+        match event {
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
+                self.handle_key_press(key_event.code).await?;
+            }
+            _ => {}
+        };
+        Ok(())
+    }
+
+    /// Handles a new captured image.
+    ///
+    /// Returns the stream error if capturing failed, or an error if the stream is closed.
+    fn handle_image(&mut self, image: Option<Result<Image>>) -> Result<()> {
+        if let Some(image) = image {
+            let image = image?;
+            self.image = Some(image);
+            Ok(())
+        } else {
+            Err(anyhow!("the video stream has been closed unexpectedly"))
+        }
+    }
+
+    /// Handles a key event based on the current application state.
+    async fn handle_key_press(&mut self, key: KeyCode) -> Result<()> {
+        if self.error.is_some() {
+            self.error = None;
+            return Ok(());
+        }
+        match self.state() {
+            State::Menu => match key {
+                KEY_EXIT => self.set_state(State::Exit),
+                KEY_NAVIGATE | KEY_NAVIGATE_DOWN => self.next_setting(),
+                KEY_NAVIGATE_UP => self.prev_setting(),
+                KEY_DELETE => self.edit_setting(None),
+                KeyCode::Char(c) => self.edit_setting(Some(c)),
+                KEY_CONTINUE => self.start_or_back()?,
+                _ => {}
+            },
+            State::Waiting => {
+                if key == KEY_EXIT {
+                    self.set_state(State::SaveBeforeExit)
+                } else if key == KEY_CONTINUE {
+                    if let Some(selected) = self.controls_list_state.selected()
+                        && selected < self.controls.len()
+                    {
+                        self.set_state(State::Editing(selected, 0));
+                    }
+                } else if key == KEY_NAVIGATE || key == KEY_NAVIGATE_DOWN {
+                    self.controls_list_state.select_next();
+                } else if key == KEY_NAVIGATE_UP {
+                    self.controls_list_state.select_previous();
+                }
+            }
+            State::Editing(c_ptr, b_ptr) => {
+                let c_idx = *c_ptr;
+                let mut b_idx = *b_ptr;
+                let cur_len = self.controls[c_idx].cur().len();
+
+                if key == KEY_EXIT || key == KEY_CONTINUE {
+                    self.set_state(State::Waiting);
+                } else if key == KEY_NAVIGATE_LEFT {
+                    if b_idx > 0 {
+                        b_idx -= 1;
+                        self.set_state(State::Editing(c_idx, b_idx));
+                    }
+                } else if key == KEY_NAVIGATE_RIGHT {
+                    if b_idx + 1 < cur_len {
+                        b_idx += 1;
+                        self.set_state(State::Editing(c_idx, b_idx));
+                    }
+                } else if key == KEY_NAVIGATE_UP || key == KEY_NAVIGATE_DOWN {
+                    let control = &mut self.controls[c_idx];
+                    let current_val = control.cur()[b_idx];
+
+                    let max_val = control.max().map_or(255, |m| *m.get(b_idx).unwrap_or(&255));
+
+                    let new_val = match key {
+                        KEY_NAVIGATE_UP => current_val.saturating_add(1).min(max_val),
+                        _ => current_val.saturating_sub(1),
+                    };
+
+                    control.cur_mut()[b_idx] = new_val;
+                    if let Err(e) = self.apply_control(c_idx) {
+                        self.error = Some(e.to_string());
+                        self.controls[c_idx].cur_mut()[b_idx] = current_val;
+                    }
+                }
+            }
+            State::SaveBeforeExit => self.save_before_exit(key).await?,
+            _ => {}
+        }
+        Ok(())
+    }
+
+    /// Set the state to exit, if:
+    /// the key is [`KEY_YES`], save the modified controls,
+    /// or the key is [`KEY_NO`], discard the modified controls
+    ///
+    /// For any other key, or if the saving fails, set the state back to [`State::Waiting`].
+    async fn save_before_exit(&mut self, k: KeyCode) -> Result<()> {
+        match k {
+            KEY_NO => (),
+            KEY_YES => {
+                if let Err(err) = self.save_modified_controls() {
+                    log::error!("Error while saving configuration: {err:?}");
+                    self.error = Some(format!("{err:#}"));
+                    self.set_state(State::Waiting);
+                    return Ok(());
+                }
+            }
+            _ => {
+                self.set_state(State::Waiting);
+                return Ok(());
+            }
+        }
+        self.set_state(State::Exit);
+        Ok(())
+    }
+
+    /// Saves in the device configuration the controls whose current value
+    /// differs from the value read when the device was opened.
+    fn save_modified_controls(&self) -> Result<()> {
+        let modified: Vec<&XuControl> = self
+            .controls
+            .iter()
+            .filter(|ctrl| ctrl.cur() != ctrl.init())
+            .collect();
+        if modified.is_empty() {
+            log::info!("No control modified, nothing to save.");
+            return Ok(());
+        }
+
+        let mut configuration = Configuration::new(&self.config.device);
+        for ctrl in modified {
+            log::info!("Saving control: {ctrl}.");
+            configuration.add_to_savelist(ctrl);
+        }
+        configuration
+            .save()
+            .context("failed to save the configuration")
+    }
+
+    /// If the configuration is valid, tries to spawn the video stream task
+    /// and change the state to [`State::Waiting`]. If it fails, returns the error.
+    ///
+    /// Returns directly an error if the video stream is already started.
+    fn start_or_back(&mut self) -> Result<()> {
+        // check that the path exists
+        if !self.is_device_valid() {
+            return Ok(());
+        }
+        self.spawn_video_stream_task()?;
+        self.spawn_controls_task();
+        self.set_state(State::Waiting);
+        Ok(())
+    }
+
+    /// Check that the current device is grey scale.
+    fn is_device_valid(&self) -> bool {
+        self.grey_devices.contains(&self.config.device)
+    }
+
+    /// Moves the selection to the next setting in the settings lists.
+    fn next_setting(&mut self) {
+        self.device_settings_list_state.select_next();
+    }
+
+    /// Moves the selection to the previous setting in the settings lists.
+    fn prev_setting(&mut self) {
+        self.device_settings_list_state.select_previous();
+    }
+
+    /// Edits the currently selected setting in the settings lists by adding or removing a character.
+    ///
+    /// If `ch` is `Some(c)`, adds the character `c` (depending on the setting type).
+    /// If `ch` is `None`, removes the last character.
+    fn edit_setting(&mut self, ch: Option<char>) {
+        match self.device_settings_list_state.selected() {
+            Some(0) => add_or_remove_char_from_path(&mut self.config.device, ch, 10),
+            Some(1) => add_or_remove_char_from_opt_numeric(&mut self.config.height, ch),
+            Some(2) => add_or_remove_char_from_opt_numeric(&mut self.config.width, ch),
+            Some(3) => add_or_remove_char_from_opt_numeric(&mut self.config.fps, ch),
+            _ => {}
+        }
+    }
+}
+
+impl TweakerCtx for App {
+    fn view(&self) -> View<'_> {
+        match self.state() {
+            State::Menu => View::Menu,
+            State::Waiting => View::Main,
+            State::SaveBeforeExit => View::Main,
+            State::Exit => View::Menu,
+            State::Editing(index, byte_index) => View::Edition(&self.controls[*index], *byte_index),
+        }
+    }
+    fn controls_list_state(&mut self) -> &mut ListState {
+        &mut self.controls_list_state
+    }
+    fn controls(&self) -> &[XuControl] {
+        &self.controls
+    }
+    fn controls_loading(&self) -> bool {
+        self.controls_rx.is_some()
+    }
+    fn image(&self) -> Option<&Image> {
+        self.image.as_ref()
+    }
+    fn show_save_exit_prompt(&self) -> bool {
+        matches!(self.state(), State::SaveBeforeExit)
+    }
+    fn error_message(&self) -> Option<&String> {
+        self.error.as_ref()
+    }
+}
+
+impl DeviceSettingsCtx for App {
+    fn device_settings_list_state(&mut self) -> &mut ListState {
+        &mut self.device_settings_list_state
+    }
+    fn device_valid(&self) -> (String, bool) {
+        (
+            self.config.device.to_string_lossy().to_string(),
+            self.is_device_valid(),
+        )
+    }
+    fn height(&self) -> Option<u32> {
+        self.config.height
+    }
+    fn width(&self) -> Option<u32> {
+        self.config.width
+    }
+    fn emitters(&self) -> Option<usize> {
+        None
+    }
+    fn fps(&self) -> Option<u32> {
+        self.config.fps
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::configuration::_CONFIG;
+    use serial_test::serial;
+
+    const DEVICE: &str = "/dev/video_tweaker_test";
+
+    /// Makes an app with one unchanged control and one modified control.
+    fn make_app() -> App {
+        let _ = std::fs::remove_file(_CONFIG);
+        let mut app = App::new();
+        app.config.device = PathBuf::from(DEVICE);
+        let unchanged = XuControl::new(1, 1, vec![1, 2], None, None, None, None, true).unwrap();
+        let mut modified = XuControl::new(2, 2, vec![3, 4], None, None, None, None, true).unwrap();
+        modified.cur_mut()[1] = 5;
+        app.controls = vec![unchanged, modified];
+        app.set_state(State::SaveBeforeExit);
+        app
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_yes_saves_modified_controls() {
+        let mut app = make_app();
+        app.save_before_exit(KEY_YES).await.unwrap();
+        assert!(matches!(app.state(), State::Exit));
+
+        let saved = Configuration::new(DEVICE).get_savelist();
+        assert_eq!(saved.len(), 1);
+        assert_eq!(saved[0].unit(), 2);
+        assert_eq!(saved[0].selector(), 2);
+        assert_eq!(saved[0].cur(), &[3, 5]);
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_yes_without_modification() {
+        let mut app = make_app();
+        app.controls[1].reset();
+        app.save_before_exit(KEY_YES).await.unwrap();
+        assert!(matches!(app.state(), State::Exit));
+        assert!(Configuration::new(DEVICE).get_savelist().is_empty());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_no_discards() {
+        let mut app = make_app();
+        app.save_before_exit(KEY_NO).await.unwrap();
+        assert!(matches!(app.state(), State::Exit));
+        assert!(Configuration::new(DEVICE).get_savelist().is_empty());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_before_exit_other_key_goes_back() {
+        let mut app = make_app();
+        app.save_before_exit(KeyCode::Char('x')).await.unwrap();
+        assert!(matches!(app.state(), State::Waiting));
+        assert!(Configuration::new(DEVICE).get_savelist().is_empty());
+    }
+}

@@ -1,6 +1,6 @@
 use super::helper::*;
 use crate::configure::ui::ir_enabler::{IrEnablerCtx, View, ui};
-use crate::configure::ui::keys::*;
+use crate::configure::ui::{DeviceSettingsCtx, SearchSettingsCtx};
 use crate::video::ir::analyzer::{
     self, IsIrWorking as AnalyzerResponse, Message as AnalyzerRequest, StreamAnalyzer,
 };
@@ -23,6 +23,14 @@ use tokio::{
     sync::mpsc::{Receiver, Sender},
     task,
 };
+
+const KEY_YES: KeyCode = KeyCode::Char('y');
+const KEY_NO: KeyCode = KeyCode::Char('n');
+const KEY_EXIT: KeyCode = KeyCode::Esc;
+const KEY_NAVIGATE_UP: KeyCode = KeyCode::Up;
+const KEY_NAVIGATE_DOWN: KeyCode = KeyCode::Down;
+const KEY_CONTINUE: KeyCode = KeyCode::Enter;
+const KEY_DELETE: KeyCode = KeyCode::Backspace;
 
 #[derive(Debug)]
 pub struct Config {
@@ -86,14 +94,16 @@ pub enum State {
     Failure,
     /// Exit the application and abort the configuration
     Abort,
+    /// Exit the application from the settings menu, before starting the configuration
+    Quit,
 }
 
 /// "Enabler" application.
 pub struct App {
     /// Receiver for captured images from the video stream task.
-    image_rx: Receiver<Image>,
+    image_rx: Receiver<Result<Image>>,
     /// Sender used by the video stream task for captured images.
-    image_tx: Option<Sender<Image>>,
+    image_tx: Option<Sender<Result<Image>>>,
     /// Receiver for state and requests from the configurator task.
     search_msg_rx: Receiver<IREnablerRequest>,
     /// Sender used by the configurator task to share its state and requests.
@@ -120,6 +130,8 @@ pub struct App {
     grey_devices: Vec<PathBuf>,
     /// List of all the device controls that can be modified.
     controls: Vec<XuControl>,
+    /// Whether the list of controls has been received from the configurator task.
+    controls_received: bool,
     /// State of the list of device controls.
     controls_list_state: ListState,
     /// Settings for the whole application.
@@ -162,6 +174,7 @@ impl App {
             analyzer_response_tx: Some(analyzer_response_tx),
             analyzer_response_rx,
             controls: Vec::new(),
+            controls_received: false,
             controls_list_state: ListState::default(),
             grey_devices: Vec::new(),
         }
@@ -220,6 +233,8 @@ impl App {
                 Ok(s) => s,
                 Err(err) => {
                     log::error!("Error opening video stream: {err:?}");
+                    let _ =
+                        image_tx.blocking_send(Err(err.context("failed to open the video stream")));
                     return;
                 }
             };
@@ -228,13 +243,15 @@ impl App {
             loop {
                 match stream.capture() {
                     Ok(img) => {
-                        if image_tx.blocking_send(img).is_err() {
+                        if image_tx.blocking_send(Ok(img)).is_err() {
                             log::debug!("Exiting video stream task.");
                             return;
                         }
                     }
                     Err(err) => {
                         log::error!("Error while capturing image: {err:?}");
+                        let _ =
+                            image_tx.blocking_send(Err(err.context("failed to capture an image")));
                         return;
                     }
                 }
@@ -261,19 +278,22 @@ impl App {
             .take()
             .context("configurator task already started")?;
 
+        // kept to report the error if the configurator fails, since it owns the other sender
+        let error_tx = search_msg_tx.clone();
+
         task::spawn(async move {
-            let mut configurator = match Enabler::new(config, search_msg_tx, response_rx) {
-                Ok(cfg) => cfg,
-                Err(err) => {
-                    log::error!("{err:?}");
-                    return;
-                }
+            let result = match Enabler::new(config, search_msg_tx, response_rx) {
+                Ok(mut configurator) => configurator.configure().await,
+                Err(err) => Err(err.context("failed to start the configuration")),
             };
 
-            if let Err(err) = configurator.configure().await {
-                log::error!("Error while configuring: {err:?}",);
+            if let Err(err) = result {
+                log::error!("Error while configuring: {err:?}");
+                let _ = error_tx
+                    .send(IREnablerRequest::Error(format!("{err:#}")))
+                    .await;
             } else {
-                log::debug!("Exiting configurator task exited.");
+                log::debug!("Configurator task exited.");
             }
         });
 
@@ -299,7 +319,7 @@ impl App {
             {
                 log::error!("Error in analyzer task: {err:?}");
             } else {
-                log::debug!("Exiting analyzer task exited.");
+                log::debug!("Analyzer task exited.");
             }
         });
         Ok(())
@@ -326,6 +346,8 @@ impl App {
                 return Ok("The infrared emitter has been successfully enabled!");
             } else if self.state() == State::Abort {
                 bail!("configuration aborted by the user");
+            } else if self.state() == State::Quit {
+                return Ok("");
             }
         }
     }
@@ -334,7 +356,7 @@ impl App {
     async fn handle_term_event(&mut self, event: Event) -> Result<()> {
         match event {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                self.handle_key_press(key_event.code.into()).await?;
+                self.handle_key_press(key_event.code).await?;
             }
             _ => {}
         };
@@ -343,13 +365,17 @@ impl App {
 
     /// Handles a new captured image.
     ///
-    /// Returns an error if the image is None.
-    fn handle_image(&mut self, image: Option<Image>) -> Result<()> {
+    /// Returns the stream error if capturing failed, or an error if the stream is closed.
+    fn handle_image(&mut self, image: Option<Result<Image>>) -> Result<()> {
         if let Some(image) = image {
-            // ignore if too many images are buffered
-            let _ = self
-                .analyzer_request_tx
-                .try_send(AnalyzerRequest::Image(image.clone()));
+            let image = image?;
+            // the analyzer task only runs in automatic validation
+            if !self.config.manual {
+                // ignore if too many images are buffered
+                let _ = self
+                    .analyzer_request_tx
+                    .try_send(AnalyzerRequest::Image(image.clone()));
+            }
             self.image = Some(image);
             Ok(())
         } else {
@@ -363,7 +389,10 @@ impl App {
     async fn handle_search_msg(&mut self, msg: Option<IREnablerRequest>) -> Result<()> {
         if let Some(msg) = msg {
             match msg {
-                IREnablerRequest::Controls(controls) => self.controls = controls,
+                IREnablerRequest::Controls(controls) => {
+                    self.controls = controls;
+                    self.controls_received = true;
+                }
                 IREnablerRequest::UpdateControl(control) => {
                     let (idx, updated_control) = self
                         .controls
@@ -389,6 +418,7 @@ impl App {
                 IREnablerRequest::AlreadyWorking => bail!("the IR emitter is already working"),
                 IREnablerRequest::Success => self.set_state(State::Success),
                 IREnablerRequest::Failure => self.set_state(State::Failure),
+                IREnablerRequest::Error(err) => bail!(err),
             }
             Ok(())
         } else {
@@ -422,13 +452,14 @@ impl App {
     }
 
     /// Handles a key event based on the current application state.
-    async fn handle_key_press(&mut self, key: Key) -> Result<()> {
+    async fn handle_key_press(&mut self, key: KeyCode) -> Result<()> {
         match self.state() {
             State::Menu => match key {
-                KEY_EXIT => self.set_state(State::Failure),
-                KEY_NAVIGATE => self.next_setting(),
+                KEY_EXIT => self.set_state(State::Quit),
+                KEY_NAVIGATE_UP => self.prev_setting(),
+                KEY_NAVIGATE_DOWN => self.next_setting(),
                 KEY_DELETE => self.edit_setting(None),
-                Key(KeyCode::Char(c)) => self.edit_setting(Some(c)),
+                KeyCode::Char(c) => self.edit_setting(Some(c)),
                 KEY_CONTINUE => self.set_state(State::ConfirmStart),
                 _ => {}
             },
@@ -443,11 +474,7 @@ impl App {
                 KEY_EXIT => self.set_state(State::ConfirmAbort),
                 key => self.confirm_working(key).await?,
             },
-            State::ConfirmWorking => {
-                if key == KEY_EXIT {
-                    self.set_state(State::ConfirmAbort)
-                }
-            }
+            State::ConfirmWorking if key == KEY_EXIT => self.set_state(State::ConfirmAbort),
             _ => {}
         }
         Ok(())
@@ -458,7 +485,7 @@ impl App {
     /// In both of the two case, also changes the state to [`State::Running`].
     ///
     /// Otherwise, does nothing.
-    async fn confirm_working(&mut self, k: Key) -> Result<()> {
+    async fn confirm_working(&mut self, k: KeyCode) -> Result<()> {
         let mut response = IREnablerResponse::No;
         if k == KEY_YES {
             response = IREnablerResponse::Yes;
@@ -477,7 +504,7 @@ impl App {
     /// and sends [`IREnablerResponse::Abort`] to the configurator task.
     ///
     /// If the key is [`KEY_NO`], change the state back to [`State::Running`].
-    async fn abort_or_continue(&mut self, k: Key) -> Result<()> {
+    async fn abort_or_continue(&mut self, k: KeyCode) -> Result<()> {
         match k {
             KEY_NO | KEY_EXIT => self.set_state(self.prev_state()),
             KEY_YES => {
@@ -498,9 +525,9 @@ impl App {
     /// If the key is [`KEY_NO`], change the state back to the previous state.
     ///
     /// Returns directly an error if the video stream is already started.
-    fn start_or_back(&mut self, k: Key) -> Result<()> {
-        // check that the path exists
-        if !self.is_device_valid() {
+    fn start_or_back(&mut self, k: KeyCode) -> Result<()> {
+        // check that the path exists and that the settings are valid
+        if !self.is_device_valid() || !self.are_settings_valid() {
             self.set_state(State::Menu);
             return Ok(());
         }
@@ -525,6 +552,11 @@ impl App {
         self.grey_devices.contains(&self.config.device)
     }
 
+    /// Check that the number of emitters and the increment step are at least 1.
+    fn are_settings_valid(&self) -> bool {
+        self.config.emitters > 0 && self.config.inc_step > 0
+    }
+
     /// Moves the selection to the next setting in the settings lists.
     fn next_setting(&mut self) {
         if let Some(i) = self.device_settings_list_state.selected() {
@@ -534,15 +566,22 @@ impl App {
                 self.device_settings_list_state.select(None);
                 self.search_settings_list_state.select_first();
             }
-        } else if let Some(i) = self.search_settings_list_state.selected() {
-            if i < 3 {
-                self.search_settings_list_state.select_next();
+        } else {
+            self.search_settings_list_state.select_next();
+        }
+    }
+
+    /// Moves the selection to the previous setting in the settings lists.
+    fn prev_setting(&mut self) {
+        if let Some(i) = self.search_settings_list_state.selected() {
+            if i > 0 {
+                self.search_settings_list_state.select_previous();
             } else {
                 self.search_settings_list_state.select(None);
-                self.device_settings_list_state.select_first();
+                self.device_settings_list_state.select_last();
             }
         } else {
-            self.device_settings_list_state.select_first();
+            self.device_settings_list_state.select_previous();
         }
     }
 
@@ -583,6 +622,7 @@ impl IrEnablerCtx for App {
             State::Success => View::Main,
             State::Failure => View::Main,
             State::Abort => View::Main,
+            State::Quit => View::Menu,
         }
     }
     fn show_working_question(&self) -> bool {
@@ -594,6 +634,21 @@ impl IrEnablerCtx for App {
     fn show_menu_start_prompt(&self) -> bool {
         self.state() == State::ConfirmStart
     }
+    fn controls_list_state(&mut self) -> &mut ListState {
+        &mut self.controls_list_state
+    }
+    fn controls(&self) -> &[XuControl] {
+        &self.controls
+    }
+    fn controls_loading(&self) -> bool {
+        !self.controls_received
+    }
+    fn image(&self) -> Option<&Image> {
+        self.image.as_ref()
+    }
+}
+
+impl DeviceSettingsCtx for App {
     fn device_settings_list_state(&mut self) -> &mut ListState {
         &mut self.device_settings_list_state
     }
@@ -609,12 +664,15 @@ impl IrEnablerCtx for App {
     fn width(&self) -> Option<u32> {
         self.config.width
     }
-    fn emitters(&self) -> usize {
-        self.config.emitters
+    fn emitters(&self) -> Option<usize> {
+        Some(self.config.emitters)
     }
     fn fps(&self) -> Option<u32> {
         self.config.fps
     }
+}
+
+impl SearchSettingsCtx for App {
     fn search_settings_list_state(&mut self) -> &mut ListState {
         &mut self.search_settings_list_state
     }
@@ -633,15 +691,6 @@ impl IrEnablerCtx for App {
     fn inc_step(&self) -> u8 {
         self.config.inc_step
     }
-    fn controls_list_state(&mut self) -> &mut ListState {
-        &mut self.controls_list_state
-    }
-    fn controls(&self) -> &[XuControl] {
-        &self.controls
-    }
-    fn image(&self) -> Option<&Image> {
-        self.image.as_ref()
-    }
 }
 
 #[cfg(test)]
@@ -655,16 +704,16 @@ mod tests {
         App::new()
     }
 
-    fn make_key_event(keycode: Key) -> KeyEvent {
+    fn make_key_event(keycode: KeyCode) -> KeyEvent {
         KeyEvent {
-            code: keycode.into(),
+            code: keycode,
             modifiers: KeyModifiers::NONE,
             kind: KeyEventKind::Press,
             state: crossterm::event::KeyEventState::NONE,
         }
     }
 
-    fn make_term_key_event(keycode: Key) -> Event {
+    fn make_term_key_event(keycode: KeyCode) -> Event {
         Event::Key(make_key_event(keycode))
     }
 
@@ -702,7 +751,7 @@ mod tests {
     fn test_handle_image_sets_image() {
         let mut app = make_app();
         let img = Image::new_rgba8(1, 1);
-        assert!(app.handle_image(Some(img.clone())).is_ok());
+        assert!(app.handle_image(Some(Ok(img.clone()))).is_ok());
         assert_eq!(app.image, Some(img));
     }
 
@@ -713,7 +762,17 @@ mod tests {
     }
 
     #[test]
-    fn test_next_setting_device_to_search_and_back() {
+    fn test_handle_image_stream_error() {
+        let mut app = make_app();
+        let err = app
+            .handle_image(Some(Err(anyhow!("unsupported pixel format"))))
+            .unwrap_err();
+        assert_eq!(err.to_string(), "unsupported pixel format");
+        assert!(app.image.is_none());
+    }
+
+    #[test]
+    fn test_next_setting_device_to_search() {
         let mut app = make_app();
         // Move through device settings (0..4)
         for i in 0..4 {
@@ -724,14 +783,47 @@ mod tests {
         app.next_setting();
         assert!(app.device_settings_list_state.selected().is_none());
         assert_eq!(app.search_settings_list_state.selected(), Some(0));
-        // Move through search settings (0..2)
+        // Move through search settings (0..3)
         for i in 0..3 {
             app.next_setting();
             assert_eq!(app.search_settings_list_state.selected(), Some(i + 1));
         }
-        // After 2, should wrap to device settings first
+        // After 3 we should stay at the last search setting
         app.next_setting();
+        assert_eq!(app.search_settings_list_state.selected(), Some(4));
+    }
+
+    #[test]
+    fn test_prev_setting_device_to_search() {
+        let mut app = make_app();
+        // Start at the end of search settings
+        app.device_settings_list_state.select(None);
+        app.search_settings_list_state.select(Some(4));
+
+        // Move through search settings (4..0)
+        for i in (1..=4).rev() {
+            assert_eq!(app.search_settings_list_state.selected(), Some(i));
+            app.prev_setting();
+        }
+
+        // At index 0 of search settings, prev_setting should move to device settings last
+        assert_eq!(app.search_settings_list_state.selected(), Some(0));
+        app.prev_setting();
         assert!(app.search_settings_list_state.selected().is_none());
+
+        // NOTE: select_last() sets to usize::MAX until screen is rendered to know that it is actually 4
+        assert_eq!(app.device_settings_list_state.selected(), Some(usize::MAX));
+        // so let's cheat
+        app.device_settings_list_state.select(Some(4));
+
+        // Move through device settings (4..0)
+        for i in (1..=4).rev() {
+            app.prev_setting();
+            assert_eq!(app.device_settings_list_state.selected(), Some(i - 1));
+        }
+
+        // At the first device setting, we should stay there
+        app.prev_setting();
         assert_eq!(app.device_settings_list_state.selected(), Some(0));
     }
 
@@ -857,7 +949,7 @@ mod tests {
         let key_event = make_term_key_event(KEY_EXIT);
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
-        assert_eq!(app.state(), State::Failure);
+        assert_eq!(app.state(), State::Quit);
     }
 
     #[tokio::test]
@@ -880,7 +972,7 @@ mod tests {
         let mut app = make_app();
         app.set_state(State::Menu);
         app.device_settings_list_state.select(Some(0));
-        let key_event = make_term_key_event(KEY_NAVIGATE);
+        let key_event = make_term_key_event(KEY_NAVIGATE_DOWN);
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.device_settings_list_state.selected(), Some(1));
@@ -957,6 +1049,22 @@ mod tests {
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.state(), State::Running);
+    }
+
+    #[tokio::test]
+    async fn test_handle_key_event_start_or_back_invalid_settings() {
+        for (emitters, inc_step) in [(0, 1), (1, 0)] {
+            let mut app = make_app();
+            app.set_state(State::ConfirmStart);
+            app.config.device = "/dev/video0".into();
+            app.grey_devices.push("/dev/video0".into());
+            app.config.emitters = emitters;
+            app.config.inc_step = inc_step;
+            let key_event = make_term_key_event(KEY_YES);
+            let res = app.handle_term_event(key_event).await;
+            assert!(res.is_ok(), "{:?}", res.err());
+            assert_eq!(app.state(), State::Menu);
+        }
     }
 
     #[tokio::test]
@@ -1238,6 +1346,30 @@ mod tests {
         let res = app.handle_search_msg(msg).await;
         assert!(res.is_ok(), "{:?}", res.err());
         assert_eq!(app.state(), State::Failure);
+    }
+
+    #[tokio::test]
+    async fn test_handle_search_msg_error() {
+        let mut app = make_app();
+        let msg = Some(IREnablerRequest::Error("cannot open device".to_string()));
+        let err = app.handle_search_msg(msg).await.unwrap_err();
+        assert_eq!(err.to_string(), "cannot open device");
+    }
+
+    #[tokio::test]
+    async fn test_spawn_search_task_reports_start_error() {
+        let mut app = make_app();
+        app.config.device = "/dev/video_does_not_exist".into();
+        app.spawn_search_task().unwrap();
+        match app.search_msg_rx.recv().await {
+            Some(IREnablerRequest::Error(err)) => {
+                assert!(
+                    err.starts_with("failed to start the configuration"),
+                    "{err}"
+                )
+            }
+            other => panic!("unexpected message: {other:?}"),
+        }
     }
 
     #[tokio::test]

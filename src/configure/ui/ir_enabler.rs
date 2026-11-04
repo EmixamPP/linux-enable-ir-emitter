@@ -1,12 +1,13 @@
 use super::{
-    keys::{KEY_CONTINUE, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, keys_to_line},
-    popup_area, render_main_window, render_video_preview,
+    DeviceSettingsCtx, SearchSettingsCtx,
+    keys::{KEY_CONTINUE, KEY_EXIT, KEY_NO, KEY_YES, KEYS_NAVIGATE, keys_to_line},
+    popup_area, render_full_menu, render_main_window, render_video_preview,
 };
 use crate::video::stream::Image;
 
 use ratatui::{
     Frame,
-    layout::{Constraint, Flex, Layout, Rect},
+    layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Text, ToLine},
     widgets::{Block, BorderType, Clear, HighlightSpacing, List, ListItem, ListState, Paragraph},
@@ -25,22 +26,9 @@ pub trait IrEnablerCtx {
     fn show_main_abort_prompt(&self) -> bool;
     fn show_menu_start_prompt(&self) -> bool;
 
-    fn device_settings_list_state(&mut self) -> &mut ListState;
-    fn device_valid(&self) -> (String, bool);
-    fn height(&self) -> Option<u32>;
-    fn width(&self) -> Option<u32>;
-    fn emitters(&self) -> usize;
-    fn fps(&self) -> Option<u32>;
-
-    fn search_settings_list_state(&mut self) -> &mut ListState;
-    fn limit(&self) -> Option<u16>;
-    fn manual(&self) -> bool;
-    fn analyzer_img_count(&self) -> u64;
-    fn ref_intensity_var_coef(&self) -> u64;
-    fn inc_step(&self) -> u8;
-
     fn controls_list_state(&mut self) -> &mut ListState;
     fn controls(&self) -> &[crate::video::uvc::XuControl];
+    fn controls_loading(&self) -> bool;
     fn image(&self) -> Option<&Image>;
 }
 
@@ -86,119 +74,8 @@ fn render_confirm_abort_popup(frame: &mut Frame, area: Rect) {
     frame.render_widget(command_paragraph, command_area);
 }
 
-/// Renders the main menu with device and search settings.
-fn render_menu<A>(frame: &mut Frame, area: Rect, app: &mut A)
-where
-    A: IrEnablerCtx,
-{
-    let [top_info_area, device_area, search_area, bot_info_area] = Layout::vertical([
-        Constraint::Length(1),
-        Constraint::Length(7),
-        Constraint::Length(7),
-        Constraint::Length(1),
-    ])
-    .flex(Flex::Center)
-    .areas(area);
-
-    let top_info_line =
-        Line::from("The tool will iterate through the UVC camera controls and modify them.")
-            .blue()
-            .centered();
-    frame.render_widget(top_info_line, top_info_area);
-
-    let bot_info_line = Line::from(vec![
-        "For more explanation, visit ".into(),
-        "https://github.com/EmixamPP/linux-enable-ir-emitter".underlined(),
-    ])
-    .blue()
-    .centered();
-    frame.render_widget(bot_info_line, bot_info_area);
-
-    let device_block =
-        Block::bordered().title(Line::from(" Device settings ".bold()).left_aligned());
-    let device_settings_list = List::new(vec![
-        ListItem::new(Line::from(vec!["Path: ".into(), {
-            let (device, valid_device) = app.device_valid();
-            if valid_device {
-                device.green()
-            } else {
-                format!("{device} (not a grey camera device)").red()
-            }
-        }])),
-        ListItem::new(Line::from(vec![
-            "Number of emitters: ".into(),
-            app.emitters().to_string().green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "Resolution height: ".into(),
-            app.height()
-                .map_or("auto".to_string(), |h| h.to_string())
-                .green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "Resolution width: ".into(),
-            app.width()
-                .map_or("auto".to_string(), |w| w.to_string())
-                .green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "FPS: ".into(),
-            app.fps()
-                .map_or("auto".to_string(), |f| f.to_string())
-                .green(),
-        ])),
-    ])
-    .highlight_style(Style::default().fg(Color::Yellow))
-    .highlight_symbol(">")
-    .highlight_spacing(HighlightSpacing::Always)
-    .block(device_block);
-    frame.render_stateful_widget(
-        device_settings_list,
-        device_area,
-        app.device_settings_list_state(),
-    );
-
-    let search_block = Block::bordered()
-        .title(Line::from(vec![" Search settings".bold(), " (advanced) ".dim()]).left_aligned());
-    let search_settings_list = List::new(vec![
-        ListItem::new(Line::from(vec![
-            "Manual validation: ".into(),
-            app.manual().to_string().green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "Images to analyze in auto validation: ".into(),
-            app.analyzer_img_count().to_string().green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "Light difference significance factor: ".into(),
-            app.ref_intensity_var_coef().to_string().green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "Rejection threshold per control: ".into(),
-            app.limit()
-                .map_or("none".to_string(), |w| w.to_string())
-                .green(),
-        ])),
-        ListItem::new(Line::from(vec![
-            "Increment step: ".into(),
-            app.inc_step().to_string().green(),
-        ])),
-    ])
-    .highlight_style(Style::default().fg(Color::Yellow))
-    .highlight_symbol(">")
-    .highlight_spacing(HighlightSpacing::Always)
-    .block(search_block);
-    frame.render_stateful_widget(
-        search_settings_list,
-        search_area,
-        app.search_settings_list_state(),
-    );
-}
-
 /// Renders the main application interface showing the camera preview and the list of controls,
 /// as well as extra information for the current control.
-///
-/// Returns the area used for the list of controls.
 fn render_main<A>(frame: &mut Frame, area: Rect, app: &mut A)
 where
     A: IrEnablerCtx,
@@ -227,6 +104,14 @@ where
     frame.render_widget(question_paragraph, question_area);
 
     let list_block = Block::bordered().title(" Modifiable UVC Controls ".bold());
+
+    if app.controls_loading() {
+        let loading = Paragraph::new("Loading the UVC controls...").block(list_block);
+        frame.render_widget(loading, list_area);
+        render_video_preview(frame, video_area, app.image());
+        return;
+    }
+
     let items: Vec<ListItem> = app
         .controls()
         .iter()
@@ -259,12 +144,17 @@ where
 /// Renders the application UI based on the current application state.
 pub fn ui<A>(frame: &mut Frame, app: &mut A)
 where
-    A: IrEnablerCtx,
+    A: IrEnablerCtx + DeviceSettingsCtx + SearchSettingsCtx,
 {
     match app.view() {
         View::Menu => {
-            let main_area = render_main_window(frame, &[KEY_NAVIGATE, KEY_CONTINUE, KEY_EXIT]);
-            render_menu(frame, main_area, app);
+            let main_area = render_main_window(frame, &[KEYS_NAVIGATE, KEY_CONTINUE, KEY_EXIT]);
+            render_full_menu(
+                frame,
+                main_area,
+                app,
+                "The tool will iterate through the UVC camera controls and modify them.",
+            );
             if app.show_menu_start_prompt() {
                 render_confirm_start_popup(frame, main_area);
             }
@@ -304,6 +194,7 @@ mod tests {
         ref_intensity_var_coef: u64,
         inc_step: u8,
         controls: Vec<crate::video::uvc::XuControl>,
+        controls_loading: bool,
         image: Option<Image>,
     }
 
@@ -320,6 +211,21 @@ mod tests {
         fn show_menu_start_prompt(&self) -> bool {
             self.show_menu_start_prompt
         }
+        fn controls_list_state(&mut self) -> &mut ListState {
+            &mut self.controls_list_state
+        }
+        fn controls(&self) -> &[crate::video::uvc::XuControl] {
+            &self.controls
+        }
+        fn controls_loading(&self) -> bool {
+            self.controls_loading
+        }
+        fn image(&self) -> Option<&Image> {
+            self.image.as_ref()
+        }
+    }
+
+    impl DeviceSettingsCtx for App {
         fn device_settings_list_state(&mut self) -> &mut ListState {
             &mut self.device_settings_list_state
         }
@@ -332,12 +238,15 @@ mod tests {
         fn width(&self) -> Option<u32> {
             self.width
         }
-        fn emitters(&self) -> usize {
-            self.emitters
+        fn emitters(&self) -> Option<usize> {
+            Some(self.emitters)
         }
         fn fps(&self) -> Option<u32> {
             self.fps
         }
+    }
+
+    impl SearchSettingsCtx for App {
         fn search_settings_list_state(&mut self) -> &mut ListState {
             &mut self.search_settings_list_state
         }
@@ -355,15 +264,6 @@ mod tests {
         }
         fn inc_step(&self) -> u8 {
             self.inc_step
-        }
-        fn controls_list_state(&mut self) -> &mut ListState {
-            &mut self.controls_list_state
-        }
-        fn controls(&self) -> &[crate::video::uvc::XuControl] {
-            &self.controls
-        }
-        fn image(&self) -> Option<&Image> {
-            self.image.as_ref()
         }
     }
 
@@ -394,7 +294,7 @@ mod tests {
     }
 
     #[test]
-    fn test_menu_strart() {
+    fn test_menu_start() {
         assert_ui_snapshot!(|frame| {
             let mut app = App::default();
             app.show_menu_start_prompt = true;
@@ -417,6 +317,16 @@ mod tests {
             let mut app = App::default();
             app.view = View::Main;
             app.show_working_question = true;
+            ui(frame, &mut app);
+        });
+    }
+
+    #[test]
+    fn test_main_loading_controls() {
+        assert_ui_snapshot!(|frame| {
+            let mut app = App::default();
+            app.view = View::Main;
+            app.controls_loading = true;
             ui(frame, &mut app);
         });
     }

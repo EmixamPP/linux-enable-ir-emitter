@@ -1,4 +1,4 @@
-/// `XUControlDescription` represents a XU control.
+/// `XuControl` represents a UVC extension unit (XU) control.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XuControl {
     /// Unit used on the device to identify the control
@@ -109,7 +109,7 @@ impl XuControl {
         &self.cur
     }
 
-    /// Returns a mutable reference to he value of the control.
+    /// Returns a mutable reference to the value of the control.
     pub fn cur_mut(&mut self) -> &mut [u8] {
         &mut self.cur
     }

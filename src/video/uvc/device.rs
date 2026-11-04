@@ -111,6 +111,12 @@ impl Device {
     fn find_control(&self, unit: u8, selector: u8) -> Result<XuControl> {
         // Try to get the len of the control
         let len = self.uvc_len_query(unit, selector)?;
+        if len == 0 {
+            return Err(Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("control unit {unit} selector {selector} has a zero length"),
+            ));
+        }
         // Try to get the current value of the control
         let mut cur = self.uvc_get_cur_query(unit, selector, len)?;
 

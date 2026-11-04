@@ -23,6 +23,8 @@ pub enum Message {
     Success,
     /// The configuration ended and failed. Does not expect a response.
     Failure,
+    /// The configuration stopped because of an error. Does not expect a response.
+    Error(String),
 }
 
 /// Responses to a [`Message::IsIrWorking`] from the [`Enabler`].
@@ -68,6 +70,12 @@ impl Enabler {
         request_tx: Sender<Message>,
         response_rx: Receiver<IsIrWorking>,
     ) -> Result<Self> {
+        if config.emitters == 0 {
+            bail!("the number of emitters must be at least 1");
+        }
+        if config.inc_step == 0 {
+            bail!("the increment step must be at least 1");
+        }
         Ok(Self {
             configuration: Configuration::new(&config.device),
             device: Device::open(config.device)?,
@@ -86,17 +94,23 @@ impl Enabler {
             .controls()
             .into_iter()
             .filter(|c| {
-                if c.writable() && !self.configuration.is_blacklisted(c) {
-                    true
-                } else {
-                    log::info!("Ignoring read-only control: {}", c);
+                if !c.writable() {
+                    log::info!("Ignoring read-only control: {c}");
                     false
+                } else if self.configuration.is_blacklisted(c) {
+                    log::info!("Ignoring blacklisted control: {c}");
+                    false
+                } else {
+                    true
                 }
             })
             .collect()
     }
 
     /// Tries to find a configuration for the controls that enables the IR emitter(s).
+    ///
+    /// # Panics
+    /// Must be called within a multi-threaded tokio runtime.
     pub async fn configure(&mut self) -> Result<()> {
         // check if not already working
         self.ask_isworking().await?;
@@ -105,7 +119,8 @@ impl Enabler {
             bail!("the IR emitter is already working");
         }
 
-        let mut controls = self.controls();
+        // listing the controls is slow and blocking, do not block the other tasks of the runtime meanwhile
+        let mut controls = tokio::task::block_in_place(|| self.controls());
         self.send(Message::Controls(controls.clone())).await?;
 
         for ctrl in &mut controls {
@@ -238,7 +253,7 @@ impl Enabler {
         }
 
         // check if neg answer is above the limit
-        // or the the maximum value for the byte has been reached
+        // or the maximum value for the byte has been reached
         if *neg_answer > self.neg_answer_limit
             || ctrl.cur_mut()[*cur_byte] == {
                 ctrl.max()
