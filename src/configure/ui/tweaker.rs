@@ -1,7 +1,7 @@
 use super::{
     keys::{
-        KEY_CONTINUE, KEY_EDIT, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_YES, KEYS_EDITING_NAVIGATE,
-        keys_to_line,
+        KEY_CONTINUE, KEY_EDIT, KEY_EXIT, KEY_NAVIGATE, KEY_NO, KEY_SAVE, KEY_YES,
+        KEYS_EDITING_NAVIGATE, keys_to_line,
     },
     popup_area, render_device_menu, render_main_window, render_video_preview,
 };
@@ -174,7 +174,7 @@ where
         View::Main | View::Edition(_, _) => {
             let keys = match app.view() {
                 View::Main => vec![KEY_NAVIGATE, KEY_EDIT, KEY_EXIT],
-                View::Edition(_, _) => vec![KEYS_EDITING_NAVIGATE, KEY_EXIT],
+                View::Edition(_, _) => vec![KEYS_EDITING_NAVIGATE, KEY_SAVE, KEY_EXIT],
                 _ => vec![KEY_EXIT],
             };
             let main_area = render_main_window(frame, &keys);

@@ -74,6 +74,7 @@ mod keys {
     pub const KEY_YES: Key = Key::new(KeyCode::Char('y'), "Yes", Color::Green);
     pub const KEY_NO: Key = Key::new(KeyCode::Char('n'), "No", Color::Red);
     pub const KEY_EDIT: Key = Key::new(KeyCode::Enter, "Edit", Color::Green);
+    pub const KEY_SAVE: Key = Key::new(KeyCode::Enter, "Save", Color::Green);
 }
 
 #[cfg(test)]
