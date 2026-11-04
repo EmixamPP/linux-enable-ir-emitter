@@ -210,6 +210,16 @@ impl Configuration {
         self.blacklist.insert(control.into());
     }
 
+    /// Returns true if no control is saved nor blacklisted.
+    pub fn is_empty(&self) -> bool {
+        self.savelist.is_empty() && self.blacklist.is_empty()
+    }
+
+    /// Returns the persistent path of the device of this configuration.
+    pub fn device(&self) -> &Path {
+        self.device.as_ref()
+    }
+
     /// Returns true if the control is blacklisted.
     pub fn is_blacklisted(&self, control: &XuControl) -> bool {
         self.blacklist

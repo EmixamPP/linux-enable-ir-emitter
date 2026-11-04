@@ -1,6 +1,7 @@
 mod configuration;
 mod configure;
 mod logger;
+mod migrate;
 mod run;
 mod video;
 
@@ -33,6 +34,7 @@ async fn main() -> Result<()> {
             logger::init_term()?;
             run::run(device.as_deref(), fd, config.as_deref())
         }
+        Some(Commands::Migrate { from }) => migrate::migrate(&from),
         None => Ok(Cli::command().print_help()?),
     }
 }
@@ -89,6 +91,18 @@ enum Commands {
         )]
         config: Option<std::path::PathBuf>,
     },
+    #[command(
+        about = "Migrate the v6 configurations to the v7 format. The configured devices must be connected."
+    )]
+    Migrate {
+        #[arg(
+            short,
+            long,
+            help = "Directory of the v6 configurations.",
+            default_value = migrate::V6_CONFIG_DIR
+        )]
+        from: std::path::PathBuf,
+    },
 }
 
 #[cfg(test)]
@@ -111,6 +125,23 @@ mod tests {
     fn test_cli_print_options_conflict_with_commands() {
         assert!(Cli::try_parse_from(["prog", "--config", "run"]).is_err());
         assert!(Cli::try_parse_from(["prog", "--log", "configure"]).is_err());
+    }
+
+    #[test]
+    fn test_cli_migrate() {
+        match Cli::try_parse_from(["prog", "migrate"]).unwrap().command {
+            Some(Commands::Migrate { from }) => {
+                assert_eq!(from, std::path::Path::new(migrate::V6_CONFIG_DIR))
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        match Cli::try_parse_from(["prog", "migrate", "--from", "/opt/v6"])
+            .unwrap()
+            .command
+        {
+            Some(Commands::Migrate { from }) => assert_eq!(from, std::path::Path::new("/opt/v6")),
+            other => panic!("unexpected command: {other:?}"),
+        }
     }
 
     #[test]
