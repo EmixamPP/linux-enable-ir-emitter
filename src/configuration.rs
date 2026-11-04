@@ -130,15 +130,24 @@ impl Configurations {
         std::fs::write(config_file, config_str).context("failed to write configuration file")
     }
 
-    /// Load an existing configurations at the default location or create an empty one.
+    /// Load an existing configurations at the default location or create an empty one if there is none.
+    ///
+    /// Returns an error if the configuration file exists but cannot be read or parsed,
+    /// so that it is never overwritten by mistake.
     pub fn load() -> Result<Self> {
-        Ok(Self::load_from(&config_file_path()?).unwrap_or_default())
+        let config_file = config_file_path()?;
+        if !config_file.exists() {
+            log::debug!("No configuration file at {}.", config_file.display());
+            return Ok(Self::default());
+        }
+        Self::load_from(&config_file)
     }
 
     /// Load an existing configurations at a specified path.
     pub fn load_from(config: &Path) -> Result<Self> {
         log::info!("Loading configuration from {}.", config.display());
-        let config_str = std::fs::read_to_string(config)?;
+        let config_str = std::fs::read_to_string(config)
+            .with_context(|| format!("failed to read configuration file {}", config.display()))?;
         Ok(Self {
             devices: toml::from_str(&config_str).context("failed to parse configuration file")?,
         })
@@ -179,7 +188,7 @@ impl Configuration {
         match Self::load(&device) {
             Ok(config) => config,
             Err(err) => {
-                log::debug!("No existing configuration found: {err:?}.");
+                log::debug!("No existing configuration loaded: {err:?}.");
                 Self {
                     savelist: Set::new(),
                     blacklist: Set::new(),
@@ -243,8 +252,13 @@ impl Configuration {
         }
     }
 
+    /// Saves this configuration, keeping the configurations of the other devices.
+    ///
+    /// Returns an error, without writing anything, if the existing configuration file cannot be read.
     pub fn save(&self) -> Result<()> {
-        let mut configs = Configurations::load().unwrap_or_default();
+        let mut configs = Configurations::load().context(
+            "the existing configuration file cannot be read, please fix or remove it before saving",
+        )?;
 
         // do not serialize empty configuration
         if self.savelist.is_empty() && self.blacklist.is_empty() {
@@ -344,6 +358,30 @@ mod tests {
         let list = config.get_savelist();
         assert_eq!(list.len(), 1);
         assert_eq!(list[0].cur(), xu.cur());
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_save_keeps_unreadable_file() {
+        clean_config_dir();
+        let config_file = config_file_path().unwrap();
+        std::fs::create_dir_all(config_file.parent().unwrap()).unwrap();
+        let garbage = "this is [ not toml";
+        std::fs::write(&config_file, garbage).unwrap();
+
+        assert!(Configurations::load().is_err());
+
+        let mut config = Configuration::new("/dev/video0");
+        config.add_to_savelist(&make_xu(&mut make_rng()));
+        assert!(config.save().is_err());
+        assert_eq!(std::fs::read_to_string(&config_file).unwrap(), garbage);
+    }
+
+    #[test]
+    #[serial]
+    fn test_configurations_load_missing_file_is_empty() {
+        clean_config_dir();
+        assert!(Configurations::load().unwrap().devices().is_empty());
     }
 
     #[test]
