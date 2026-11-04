@@ -130,6 +130,8 @@ pub struct App {
     grey_devices: Vec<PathBuf>,
     /// List of all the device controls that can be modified.
     controls: Vec<XuControl>,
+    /// Whether the list of controls has been received from the configurator task.
+    controls_received: bool,
     /// State of the list of device controls.
     controls_list_state: ListState,
     /// Settings for the whole application.
@@ -172,6 +174,7 @@ impl App {
             analyzer_response_tx: Some(analyzer_response_tx),
             analyzer_response_rx,
             controls: Vec::new(),
+            controls_received: false,
             controls_list_state: ListState::default(),
             grey_devices: Vec::new(),
         }
@@ -386,7 +389,10 @@ impl App {
     async fn handle_search_msg(&mut self, msg: Option<IREnablerRequest>) -> Result<()> {
         if let Some(msg) = msg {
             match msg {
-                IREnablerRequest::Controls(controls) => self.controls = controls,
+                IREnablerRequest::Controls(controls) => {
+                    self.controls = controls;
+                    self.controls_received = true;
+                }
                 IREnablerRequest::UpdateControl(control) => {
                     let (idx, updated_control) = self
                         .controls
@@ -633,6 +639,9 @@ impl IrEnablerCtx for App {
     }
     fn controls(&self) -> &[XuControl] {
         &self.controls
+    }
+    fn controls_loading(&self) -> bool {
+        !self.controls_received
     }
     fn image(&self) -> Option<&Image> {
         self.image.as_ref()

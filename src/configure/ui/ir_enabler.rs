@@ -28,6 +28,7 @@ pub trait IrEnablerCtx {
 
     fn controls_list_state(&mut self) -> &mut ListState;
     fn controls(&self) -> &[crate::video::uvc::XuControl];
+    fn controls_loading(&self) -> bool;
     fn image(&self) -> Option<&Image>;
 }
 
@@ -105,6 +106,14 @@ where
     frame.render_widget(question_paragraph, question_area);
 
     let list_block = Block::bordered().title(" Modifiable UVC Controls ".bold());
+
+    if app.controls_loading() {
+        let loading = Paragraph::new("Loading the UVC controls...").block(list_block);
+        frame.render_widget(loading, list_area);
+        render_video_preview(frame, video_area, app.image());
+        return;
+    }
+
     let items: Vec<ListItem> = app
         .controls()
         .iter()
@@ -187,6 +196,7 @@ mod tests {
         ref_intensity_var_coef: u64,
         inc_step: u8,
         controls: Vec<crate::video::uvc::XuControl>,
+        controls_loading: bool,
         image: Option<Image>,
     }
 
@@ -208,6 +218,9 @@ mod tests {
         }
         fn controls(&self) -> &[crate::video::uvc::XuControl] {
             &self.controls
+        }
+        fn controls_loading(&self) -> bool {
+            self.controls_loading
         }
         fn image(&self) -> Option<&Image> {
             self.image.as_ref()
@@ -306,6 +319,16 @@ mod tests {
             let mut app = App::default();
             app.view = View::Main;
             app.show_working_question = true;
+            ui(frame, &mut app);
+        });
+    }
+
+    #[test]
+    fn test_main_loading_controls() {
+        assert_ui_snapshot!(|frame| {
+            let mut app = App::default();
+            app.view = View::Main;
+            app.controls_loading = true;
             ui(frame, &mut app);
         });
     }

@@ -108,6 +108,9 @@ impl Enabler {
     }
 
     /// Tries to find a configuration for the controls that enables the IR emitter(s).
+    ///
+    /// # Panics
+    /// Must be called within a multi-threaded tokio runtime.
     pub async fn configure(&mut self) -> Result<()> {
         // check if not already working
         self.ask_isworking().await?;
@@ -116,7 +119,8 @@ impl Enabler {
             bail!("the IR emitter is already working");
         }
 
-        let mut controls = self.controls();
+        // listing the controls is slow and blocking, do not block the other tasks of the runtime meanwhile
+        let mut controls = tokio::task::block_in_place(|| self.controls());
         self.send(Message::Controls(controls.clone())).await?;
 
         for ctrl in &mut controls {
