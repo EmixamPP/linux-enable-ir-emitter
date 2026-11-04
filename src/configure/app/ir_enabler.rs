@@ -94,6 +94,8 @@ pub enum State {
     Failure,
     /// Exit the application and abort the configuration
     Abort,
+    /// Exit the application from the settings menu, before starting the configuration
+    Quit,
 }
 
 /// "Enabler" application.
@@ -338,6 +340,8 @@ impl App {
                 return Ok("The infrared emitter has been successfully enabled!");
             } else if self.state() == State::Abort {
                 bail!("configuration aborted by the user");
+            } else if self.state() == State::Quit {
+                return Ok("");
             }
         }
     }
@@ -438,7 +442,7 @@ impl App {
     async fn handle_key_press(&mut self, key: KeyCode) -> Result<()> {
         match self.state() {
             State::Menu => match key {
-                KEY_EXIT => self.set_state(State::Failure),
+                KEY_EXIT => self.set_state(State::Quit),
                 KEY_NAVIGATE_UP => self.prev_setting(),
                 KEY_NAVIGATE_DOWN => self.next_setting(),
                 KEY_DELETE => self.edit_setting(None),
@@ -605,6 +609,7 @@ impl IrEnablerCtx for App {
             State::Success => View::Main,
             State::Failure => View::Main,
             State::Abort => View::Main,
+            State::Quit => View::Menu,
         }
     }
     fn show_working_question(&self) -> bool {
@@ -928,7 +933,7 @@ mod tests {
         let key_event = make_term_key_event(KEY_EXIT);
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
-        assert_eq!(app.state(), State::Failure);
+        assert_eq!(app.state(), State::Quit);
     }
 
     #[tokio::test]
