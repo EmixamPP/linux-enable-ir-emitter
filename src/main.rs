@@ -5,7 +5,7 @@ mod run;
 mod video;
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
             logger::init_term()?;
             run::run(device.as_deref(), fd, config.as_deref())
         }
-        None => Ok(()),
+        None => Ok(Cli::command().print_help()?),
     }
 }
 
