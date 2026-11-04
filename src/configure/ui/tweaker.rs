@@ -33,6 +33,7 @@ pub trait TweakerCtx {
 
     fn controls_list_state(&mut self) -> &mut ListState;
     fn controls(&self) -> &[crate::video::uvc::XuControl];
+    fn controls_loading(&self) -> bool;
 
     fn image(&self) -> Option<&Image>;
     fn error_message(&self) -> Option<&String>;
@@ -70,6 +71,14 @@ where
         Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).areas(area);
 
     let list_block = Block::bordered().title(" UVC Controls ".bold());
+
+    if app.controls_loading() {
+        let loading = Paragraph::new("Loading the UVC controls...").block(list_block);
+        frame.render_widget(loading, list_area);
+        render_video_preview(frame, video_area, app.image());
+        return;
+    }
+
     let selected_index = app.controls_list_state().selected();
     let current_view = app.view();
 
@@ -218,6 +227,7 @@ mod tests {
         controls: Vec<crate::video::uvc::XuControl>,
         image: Option<Image>,
         error_message: Option<String>,
+        controls_loading: bool,
     }
 
     impl<'a> TweakerCtx for App<'a> {
@@ -232,6 +242,9 @@ mod tests {
         }
         fn controls(&self) -> &[crate::video::uvc::XuControl] {
             &self.controls
+        }
+        fn controls_loading(&self) -> bool {
+            self.controls_loading
         }
         fn image(&self) -> Option<&Image> {
             self.image.as_ref()
@@ -358,6 +371,16 @@ mod tests {
             app.view = View::Main;
             let img = image::open("tests/data/ferris.png").unwrap();
             app.image = Some(img);
+            ui(frame, &mut app);
+        });
+    }
+
+    #[test]
+    fn test_main_loading_controls() {
+        assert_ui_snapshot!(|frame| {
+            let mut app = App::default();
+            app.view = View::Main;
+            app.controls_loading = true;
             ui(frame, &mut app);
         });
     }

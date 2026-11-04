@@ -9,12 +9,13 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result, anyhow, bail};
 use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind};
-use futures::{FutureExt, StreamExt};
+use futures::{FutureExt, StreamExt, future::OptionFuture};
 use ratatui::{DefaultTerminal, widgets::ListState};
 use tokio::{
     select,
     sync::mpsc,
     sync::mpsc::{Receiver, Sender},
+    sync::oneshot,
     task,
 };
 
@@ -96,6 +97,8 @@ pub struct App {
     _device: OnceCell<Device>,
     /// The optional error that occurred during last control configuration.
     error: Option<String>,
+    /// Receiver for the device and its controls, while they are being loaded in the background.
+    controls_rx: Option<oneshot::Receiver<Result<(Device, Vec<XuControl>)>>>,
 }
 
 impl App {
@@ -119,6 +122,7 @@ impl App {
             controls_list_state,
             grey_devices: Vec::new(),
             _device: OnceCell::new(),
+            controls_rx: None,
         }
     }
 
@@ -150,21 +154,50 @@ impl App {
 
     /// Gets the video device specified in the config.
     ///
-    /// If this is the first time, open it and load the list of controls.
-    ///
-    /// # Note
-    /// This operation is blocking.
+    /// If this is the first time, open it.
     fn get_device(&mut self) -> Result<&Device> {
         match self._device.get() {
             Some(device) => Ok(device),
             None => {
                 let device = Device::open(&self.config.device)
                     .with_context(|| format!("failed to open device {:?}", self.config.device))?;
-                self.controls = device.controls();
                 self._device.set(device).unwrap(); // safe because we checked that it was None
                 Ok(self._device.get().unwrap())
             }
         }
+    }
+
+    /// Spawns a new blocking task that opens the device and loads its list of controls,
+    /// which can take a while, then sends them through [`Self::controls_rx`].
+    fn spawn_controls_task(&mut self) {
+        let path = self.config.device.clone();
+        let (controls_tx, controls_rx) = oneshot::channel();
+        self.controls_rx = Some(controls_rx);
+
+        task::spawn_blocking(move || {
+            let result = Device::open(&path)
+                .with_context(|| format!("failed to open device {path:?}"))
+                .map(|device| {
+                    let controls = device.controls();
+                    (device, controls)
+                });
+            let _ = controls_tx.send(result);
+        });
+    }
+
+    /// Handles the device and its controls once loaded.
+    ///
+    /// Returns an error if the device could not be opened.
+    fn handle_controls(
+        &mut self,
+        result: Result<Result<(Device, Vec<XuControl>)>, oneshot::error::RecvError>,
+    ) -> Result<()> {
+        self.controls_rx = None;
+        let (device, controls) =
+            result.context("the controls loading has stopped unexpectedly")??;
+        self.controls = controls;
+        let _ = self._device.set(device);
+        Ok(())
     }
 
     /// Applies a specific control to the active device.
@@ -235,6 +268,7 @@ impl App {
             select! {
                 Some(event) = term_event_stream.next().fuse() => self.handle_term_event(event?).await?,
                 image = self.image_rx.recv() => self.handle_image(image)?,
+                Some(controls) = OptionFuture::from(self.controls_rx.as_mut()) => self.handle_controls(controls)?,
             }
 
             if matches!(self.state(), State::Exit) {
@@ -368,7 +402,7 @@ impl App {
             return Ok(());
         }
         self.spawn_video_stream_task()?;
-        self.get_device()?.controls();
+        self.spawn_controls_task();
         self.set_state(State::Waiting);
         Ok(())
     }
@@ -419,6 +453,9 @@ impl TweakerCtx for App {
     }
     fn controls(&self) -> &[XuControl] {
         &self.controls
+    }
+    fn controls_loading(&self) -> bool {
+        self.controls_rx.is_some()
     }
     fn image(&self) -> Option<&Image> {
         self.image.as_ref()
