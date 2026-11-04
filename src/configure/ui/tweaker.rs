@@ -105,7 +105,7 @@ where
                 View::Edition(c, byte_index)
                     if c.unit() == ctrl.unit() && c.selector() == ctrl.selector() =>
                 {
-                    let mut cur_spans = vec![Span::raw("[")];
+                    let mut cur_spans = vec![Span::raw("      current: [")];
                     for (j, v) in ctrl.cur().iter().enumerate() {
                         if j == byte_index {
                             cur_spans.push(Span::styled(
@@ -217,6 +217,7 @@ mod tests {
         fps: Option<u32>,
         controls: Vec<crate::video::uvc::XuControl>,
         image: Option<Image>,
+        error_message: Option<String>,
     }
 
     impl<'a> TweakerCtx for App<'a> {
@@ -236,7 +237,7 @@ mod tests {
             self.image.as_ref()
         }
         fn error_message(&self) -> Option<&String> {
-            None // TODO test
+            self.error_message.as_ref()
         }
     }
 
@@ -259,6 +260,44 @@ mod tests {
         fn fps(&self) -> Option<u32> {
             self.fps
         }
+    }
+
+    fn sample_controls() -> Vec<crate::video::uvc::XuControl> {
+        vec![
+            crate::video::uvc::XuControl::new(
+                1,
+                1,
+                vec![1],
+                Some(vec![1]),
+                Some(vec![1]),
+                Some(vec![1]),
+                Some(vec![1]),
+                true,
+            )
+            .unwrap(),
+            crate::video::uvc::XuControl::new(
+                2,
+                2,
+                vec![2, 2],
+                Some(vec![2, 2]),
+                Some(vec![2, 2]),
+                Some(vec![2, 2]),
+                Some(vec![2, 2]),
+                true,
+            )
+            .unwrap(),
+            crate::video::uvc::XuControl::new(
+                3,
+                3,
+                vec![3, 3, 3],
+                Some(vec![3, 3, 3]),
+                Some(vec![3, 3, 3]),
+                Some(vec![3, 3, 3]),
+                Some(vec![3, 3, 3]),
+                true,
+            )
+            .unwrap(),
+        ]
     }
 
     #[test]
@@ -306,41 +345,7 @@ mod tests {
         assert_ui_snapshot!(|frame| {
             let mut app = App::default();
             app.view = View::Main;
-            app.controls = vec![
-                crate::video::uvc::XuControl::new(
-                    1,
-                    1,
-                    vec![1],
-                    Some(vec![1]),
-                    Some(vec![1]),
-                    Some(vec![1]),
-                    Some(vec![1]),
-                    true,
-                )
-                .unwrap(),
-                crate::video::uvc::XuControl::new(
-                    2,
-                    2,
-                    vec![2, 2],
-                    Some(vec![2, 2]),
-                    Some(vec![2, 2]),
-                    Some(vec![2, 2]),
-                    Some(vec![2, 2]),
-                    true,
-                )
-                .unwrap(),
-                crate::video::uvc::XuControl::new(
-                    3,
-                    3,
-                    vec![3, 3, 3],
-                    Some(vec![3, 3, 3]),
-                    Some(vec![3, 3, 3]),
-                    Some(vec![3, 3, 3]),
-                    Some(vec![3, 3, 3]),
-                    true,
-                )
-                .unwrap(),
-            ];
+            app.controls = sample_controls();
 
             ui(frame, &mut app);
         });
@@ -353,6 +358,29 @@ mod tests {
             app.view = View::Main;
             let img = image::open("tests/data/ferris.png").unwrap();
             app.image = Some(img);
+            ui(frame, &mut app);
+        });
+    }
+
+    #[test]
+    fn test_main_with_error() {
+        assert_ui_snapshot!(|frame| {
+            let mut app = App::default();
+            app.view = View::Main;
+            app.controls = sample_controls();
+            app.error_message = Some("failed to apply the control".to_string());
+            ui(frame, &mut app);
+        });
+    }
+
+    #[test]
+    fn test_edition_with_controls() {
+        let controls = sample_controls();
+        assert_ui_snapshot!(|frame| {
+            let mut app = App::default();
+            app.controls = sample_controls();
+            app.controls_list_state.select(Some(1));
+            app.view = View::Edition(&controls[1], 1);
             ui(frame, &mut app);
         });
     }
