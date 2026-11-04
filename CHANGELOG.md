@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - More debug commands to help users to report issues: `--config`, `--log`, `--grey-devices`.
 - `migrate` command to migrate the configurations from the v6 to the v7 format.
+- `setup-howdy` command to integrate with howdy in PAM, and to allow the polkit password prompts, sandboxed since polkit 126.
+- When executed by PAM, the `run` command uses the configuration of the user being authenticated, so the PAM line does not need `--config` anymore.
 - Prebuilt binary for ARM 64-bit (aarch64) processors.
 - The help is displayed when no command or option is given.
 - The *UVC Tweaker* saves the modified controls when exiting, they are applied by the `run` command.
