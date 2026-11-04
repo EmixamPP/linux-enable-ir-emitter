@@ -30,7 +30,6 @@ const KEY_NAVIGATE_LEFT: KeyCode = KeyCode::Left;
 const KEY_NAVIGATE_RIGHT: KeyCode = KeyCode::Right;
 const KEY_CONTINUE: KeyCode = KeyCode::Enter;
 const KEY_DELETE: KeyCode = KeyCode::Backspace;
-// TODO add key to delete from the config
 
 #[derive(Debug)]
 pub struct Config {
