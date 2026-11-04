@@ -222,7 +222,6 @@ mod tests {
         device_valid: (String, bool),
         height: Option<u32>,
         width: Option<u32>,
-        emitters: usize,
         fps: Option<u32>,
         controls: Vec<crate::video::uvc::XuControl>,
         image: Option<Image>,
@@ -267,8 +266,8 @@ mod tests {
         fn width(&self) -> Option<u32> {
             self.width
         }
-        fn emitters(&self) -> usize {
-            self.emitters
+        fn emitters(&self) -> Option<usize> {
+            None
         }
         fn fps(&self) -> Option<u32> {
             self.fps
@@ -328,7 +327,6 @@ mod tests {
             app.device_valid = ("/dev/video2".to_string(), true);
             app.height = Some(720);
             app.width = Some(1280);
-            app.emitters = 1;
             app.fps = Some(30);
             ui(frame, &mut app);
         });

@@ -638,8 +638,8 @@ impl DeviceSettingsCtx for App {
     fn width(&self) -> Option<u32> {
         self.config.width
     }
-    fn emitters(&self) -> usize {
-        self.config.emitters
+    fn emitters(&self) -> Option<usize> {
+        Some(self.config.emitters)
     }
     fn fps(&self) -> Option<u32> {
         self.config.fps

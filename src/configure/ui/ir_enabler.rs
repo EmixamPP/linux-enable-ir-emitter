@@ -227,8 +227,8 @@ mod tests {
         fn width(&self) -> Option<u32> {
             self.width
         }
-        fn emitters(&self) -> usize {
-            self.emitters
+        fn emitters(&self) -> Option<usize> {
+            Some(self.emitters)
         }
         fn fps(&self) -> Option<u32> {
             self.fps

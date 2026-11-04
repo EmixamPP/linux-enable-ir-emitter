@@ -49,7 +49,8 @@ pub trait DeviceSettingsCtx {
     fn device_valid(&self) -> (String, bool);
     fn height(&self) -> Option<u32>;
     fn width(&self) -> Option<u32>;
-    fn emitters(&self) -> usize;
+    /// Number of emitters to configure, or `None` if the setting does not apply to the tool.
+    fn emitters(&self) -> Option<usize>;
     fn fps(&self) -> Option<u32>;
 }
 
@@ -69,19 +70,21 @@ where
 {
     let device_block =
         Block::bordered().title(Line::from(" Device settings ".bold()).left_aligned());
-    let device_settings_list = List::new(vec![
-        ListItem::new(Line::from(vec!["Path: ".into(), {
-            let (device, valid_device) = app.device_valid();
-            if valid_device {
-                device.green()
-            } else {
-                format!("{device} (not a grey camera device)").red()
-            }
-        }])),
-        ListItem::new(Line::from(vec![
+    let mut items = vec![ListItem::new(Line::from(vec!["Path: ".into(), {
+        let (device, valid_device) = app.device_valid();
+        if valid_device {
+            device.green()
+        } else {
+            format!("{device} (not a grey camera device)").red()
+        }
+    }]))];
+    if let Some(emitters) = app.emitters() {
+        items.push(ListItem::new(Line::from(vec![
             "Number of emitters: ".into(),
-            app.emitters().to_string().green(),
-        ])),
+            emitters.to_string().green(),
+        ])));
+    }
+    items.extend([
         ListItem::new(Line::from(vec![
             "Resolution height: ".into(),
             app.height()
@@ -100,11 +103,12 @@ where
                 .map_or("auto".to_string(), |f| f.to_string())
                 .green(),
         ])),
-    ])
-    .highlight_style(Style::default().fg(Color::Yellow))
-    .highlight_symbol(">")
-    .highlight_spacing(HighlightSpacing::Always)
-    .block(device_block);
+    ]);
+    let device_settings_list = List::new(items)
+        .highlight_style(Style::default().fg(Color::Yellow))
+        .highlight_symbol(">")
+        .highlight_spacing(HighlightSpacing::Always)
+        .block(device_block);
     frame.render_stateful_widget(device_settings_list, area, app.device_settings_list_state());
 }
 
@@ -184,9 +188,11 @@ pub fn render_device_menu<A>(frame: &mut Frame, area: Rect, app: &mut A, top_inf
 where
     A: DeviceSettingsCtx,
 {
+    // one line per setting, plus the borders
+    let device_settings_height = if app.emitters().is_some() { 7 } else { 6 };
     let [top_info_area, device_area, bot_info_area] = Layout::vertical([
         Constraint::Length(1),
-        Constraint::Length(7),
+        Constraint::Length(device_settings_height),
         Constraint::Length(1),
     ])
     .flex(Flex::Center)

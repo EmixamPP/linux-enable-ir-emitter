@@ -39,8 +39,6 @@ pub struct Config {
     pub height: Option<u32>,
     /// Width of the video stream.
     pub width: Option<u32>,
-    /// Number of emitters to configure.
-    pub emitters: usize,
     /// Frames per second of the video stream.
     pub fps: Option<u32>,
 }
@@ -51,7 +49,6 @@ impl Default for Config {
             device: PathBuf::from("/dev/video"),
             height: None,
             width: None,
-            emitters: 1,
             fps: None,
         }
     }
@@ -461,10 +458,9 @@ impl App {
     fn edit_setting(&mut self, ch: Option<char>) {
         match self.device_settings_list_state.selected() {
             Some(0) => add_or_remove_char_from_path(&mut self.config.device, ch, 10),
-            Some(1) => add_or_remove_char_from_numeric(&mut self.config.emitters, ch),
-            Some(2) => add_or_remove_char_from_opt_numeric(&mut self.config.height, ch),
-            Some(3) => add_or_remove_char_from_opt_numeric(&mut self.config.width, ch),
-            Some(4) => add_or_remove_char_from_opt_numeric(&mut self.config.fps, ch),
+            Some(1) => add_or_remove_char_from_opt_numeric(&mut self.config.height, ch),
+            Some(2) => add_or_remove_char_from_opt_numeric(&mut self.config.width, ch),
+            Some(3) => add_or_remove_char_from_opt_numeric(&mut self.config.fps, ch),
             _ => {}
         }
     }
@@ -516,8 +512,8 @@ impl DeviceSettingsCtx for App {
     fn width(&self) -> Option<u32> {
         self.config.width
     }
-    fn emitters(&self) -> usize {
-        self.config.emitters
+    fn emitters(&self) -> Option<usize> {
+        None
     }
     fn fps(&self) -> Option<u32> {
         self.config.fps
