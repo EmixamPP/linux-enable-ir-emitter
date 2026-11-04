@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(not(test))]
 static _CONFIG: &str = env!("CONFIG");
 #[cfg(test)]
-pub const _CONFIG: &str = "target/tmp/linux-enable-ir-emitter.toml";
+pub const _CONFIG: &str = "target/tmp/config/linux-enable-ir-emitter.toml";
 
 fn config_file_path() -> Result<PathBuf> {
     Ok(shellexpand::env(_CONFIG)

@@ -1043,8 +1043,10 @@ mod tests {
     async fn test_handle_key_event_start_or_back_yes() {
         let mut app = make_app();
         app.set_state(State::ConfirmStart);
-        app.config.device = "/dev/video0".into();
-        app.grey_devices.push("/dev/video0".into());
+        // a device that does not exist, so the started tasks do not use a real camera nor save a configuration
+        app.config.device = "/dev/video_test_does_not_exist".into();
+        app.grey_devices
+            .push("/dev/video_test_does_not_exist".into());
         let key_event = make_term_key_event(KEY_YES);
         let res = app.handle_term_event(key_event).await;
         assert!(res.is_ok(), "{:?}", res.err());
