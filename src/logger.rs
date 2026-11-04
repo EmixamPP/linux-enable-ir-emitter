@@ -14,7 +14,7 @@ pub const _LOG: &str = "target/test/linux-enable-ir-emitter.log";
 
 fn log_file_path() -> Result<String> {
     Ok(shellexpand::env(_LOG)
-        .context("failed to expend shell variable in log file path")?
+        .context("failed to expand shell variables in log file path")?
         .to_string())
 }
 

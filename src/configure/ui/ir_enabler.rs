@@ -76,8 +76,6 @@ fn render_confirm_abort_popup(frame: &mut Frame, area: Rect) {
 
 /// Renders the main application interface showing the camera preview and the list of controls,
 /// as well as extra information for the current control.
-///
-/// Returns the area used for the list of controls.
 fn render_main<A>(frame: &mut Frame, area: Rect, app: &mut A)
 where
     A: IrEnablerCtx,
@@ -296,7 +294,7 @@ mod tests {
     }
 
     #[test]
-    fn test_menu_strart() {
+    fn test_menu_start() {
         assert_ui_snapshot!(|frame| {
             let mut app = App::default();
             app.show_menu_start_prompt = true;

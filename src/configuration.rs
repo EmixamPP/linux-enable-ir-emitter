@@ -15,7 +15,7 @@ pub const _CONFIG: &str = "target/tmp/linux-enable-ir-emitter.toml";
 
 fn config_file_path() -> Result<PathBuf> {
     Ok(shellexpand::env(_CONFIG)
-        .context("failed to expend shell variable in log file path")?
+        .context("failed to expand shell variables in configuration file path")?
         .to_string()
         .into())
 }

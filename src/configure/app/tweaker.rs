@@ -72,7 +72,7 @@ pub enum State {
     Exit,
 }
 
-/// "Enabler" application.
+/// "Tweaker" application.
 pub struct App {
     /// Receiver for captured images from the video stream task.
     image_rx: Receiver<Result<Image>>,

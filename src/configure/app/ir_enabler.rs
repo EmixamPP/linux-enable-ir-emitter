@@ -319,7 +319,7 @@ impl App {
             {
                 log::error!("Error in analyzer task: {err:?}");
             } else {
-                log::debug!("Exiting analyzer task exited.");
+                log::debug!("Analyzer task exited.");
             }
         });
         Ok(())

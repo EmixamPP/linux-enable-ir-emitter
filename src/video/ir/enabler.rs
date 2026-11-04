@@ -253,7 +253,7 @@ impl Enabler {
         }
 
         // check if neg answer is above the limit
-        // or the the maximum value for the byte has been reached
+        // or the maximum value for the byte has been reached
         if *neg_answer > self.neg_answer_limit
             || ctrl.cur_mut()[*cur_byte] == {
                 ctrl.max()
