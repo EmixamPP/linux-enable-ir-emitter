@@ -286,12 +286,12 @@ fn strip_comment(line: &str) -> &str {
 enum Outcome {
     /// Migrated, with the number of saved and blacklisted controls.
     Migrated {
-        device: PathBuf,
+        device: String,
         saved: usize,
         blacklisted: usize,
     },
     /// The device already has a v7 configuration, which is kept.
-    AlreadyConfigured(PathBuf),
+    AlreadyConfigured(String),
     /// No instruction was applied by v6.
     NothingToMigrate,
 }
@@ -327,12 +327,12 @@ fn migrate_from(from: &Path, device_dir: &Path) -> Result<()> {
             }) => println!(
                 "Migrated {}: {saved} saved and {blacklisted} blacklisted control(s) for {}.",
                 file.display(),
-                device.display()
+                device
             ),
             Ok(Outcome::AlreadyConfigured(device)) => println!(
                 "Skipped {}: {} already has a v7 configuration.",
                 file.display(),
-                device.display()
+                device
             ),
             Ok(Outcome::NothingToMigrate) => {
                 println!("Skipped {}: nothing to migrate.", file.display())
@@ -366,7 +366,7 @@ fn migrate_file(file: &Path, device_dir: &Path) -> Result<Outcome> {
     let mut configuration = Configuration::new(&device);
     if !configuration.is_empty() {
         return Ok(Outcome::AlreadyConfigured(
-            configuration.device().to_path_buf(),
+            configuration.device().to_string(),
         ));
     }
 
@@ -396,7 +396,7 @@ fn migrate_file(file: &Path, device_dir: &Path) -> Result<Outcome> {
     }
     configuration.save()?;
     Ok(Outcome::Migrated {
-        device: configuration.device().to_path_buf(),
+        device: configuration.device().to_string(),
         saved,
         blacklisted,
     })
@@ -589,7 +589,7 @@ mod tests {
                 &devices
             )
             .unwrap(),
-            Outcome::AlreadyConfigured(device.clone())
+            Outcome::AlreadyConfigured(device.display().to_string())
         );
     }
 

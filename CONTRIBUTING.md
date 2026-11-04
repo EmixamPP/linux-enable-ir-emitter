@@ -26,6 +26,11 @@ When building a package for distribution, please ensure the following:
    * The command must be executed by each user, since the v7 configuration is saved by default in the home directory, and the cameras must be connected. So it is better to inform the users (e.g. with a post-install message) than to execute it in a post-install script running as root.
    * If your v6 package used another `config_dir` than `/etc`, the users have to pass `--from <config_dir>/linux-enable-ir-emitter`.
    * The v6 configurations are only read, so you can keep `/etc/linux-enable-ir-emitter/` until your users have migrated.
+5. For the integration with howdy, your users can execute `sudo linux-enable-ir-emitter setup-howdy` (see the [README](README.md#integration-with-howdy)). If you prefer to ship the integration in your package (e.g. in the howdy package):
+   * `linux-enable-ir-emitter setup-howdy --dry-run` shows the exact PAM line and polkit drop-in to ship, without modifying anything nor requiring root. The PAM line contains the absolute path of the executed binary, so execute it from its installed location.
+   * When executed by `pam_exec`, the `run` command uses the configuration of the user being authenticated, from the `PAM_USER` and `PAM_TYPE` environment variables: the configuration path (see 1.) is expanded with the home directory of that user, found with `getent passwd`, so `getent` must be available. Since it is executed as root, the file must be a regular file owned by that user or root. If you configured a system-wide configuration path, without `$HOME`, it is used for all the users.
+   * If your distribution generates the PAM files (e.g. `authselect`, `pam-auth-update`), prefer shipping the line through its mechanism, since the direct modifications of the PAM files can be overwritten.
+   * The polkit drop-in is only needed with polkit 126 or newer, which executes the password prompts in the sandboxed `polkit-agent-helper@.service`. It disables `PrivateDevices`, allows the video devices with `DeviceAllow=char-video4linux rw`, and sets `ProtectHome=read-only`.
 
 ## Contributing Code
 This project is using the usual Rust conventions. Here are some additional explanations:

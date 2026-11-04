@@ -58,13 +58,27 @@ The configuration format of the v7 is not compatible with the v6 one. If you use
 4. Uninstall the v6 by following its [uninstallation instructions](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/6.1.2/docs/uninstallation.md). The v7 does not use a boot service anymore, see the integrations below.
 
 ### Integration with Howdy
-In all files returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy", replacing `<USER>` with your actual username:
+Once howdy is installed and configured, execute:
 ```
-auth optional pam_exec.so /usr/local/bin/linux-enable-ir-emitter run --config /home/<USER>/.config/linux-enable-ir-emitter.toml
+sudo linux-enable-ir-emitter setup-howdy
 ```
+It will:
+* Add the following line before howdy, in all the files of `/etc/pam.d/` using howdy. A backup of each modified file is kept next to it, as `<file>.linux-enable-ir-emitter.bak`.
+  ```
+  auth optional pam_exec.so quiet /usr/local/bin/linux-enable-ir-emitter run
+  ```
+  No configuration path is needed: when executed by PAM, the configuration of the user who is authenticating is used.
+* Since polkit 126 (e.g. Ubuntu 26.04, Arch Linux), the graphical password prompts (e.g. when installing an application, or with `run0`) are executed in a sandbox without access to the camera nor to the home directories, so neither howdy nor linux-enable-ir-emitter can work there. If that is the case on your system, it adds a systemd drop-in allowing the video devices, and the home directories in read-only: `/etc/systemd/system/polkit-agent-helper@.service.d/linux-enable-ir-emitter.conf`.
 
-> [!TIP]
-> The installation path may vary depending on your installation method. You can determine the correct binary absolute path by running `which linux-enable-ir-emitter` and use it instead. For the configuration path, it will be written when you execute `linux-enable-ir-emitter --config`.
+You can first see the changes without applying them with `--dry-run`, and remove them with `--undo`.
+
+> [!WARNING]
+> A wrong PAM configuration can prevent you from authenticating. After executing the command, keep your terminal open and check in another terminal that you can still authenticate, e.g. with `sudo true`. The added line is `optional`, so it never blocks an authentication by itself.
+
+> [!NOTE]
+> Some distributions regenerate the PAM files (e.g. `authselect` on Fedora, `pam-auth-update` on Debian/Ubuntu), which can remove the line, as for howdy. Simply execute the command again.
+
+If you prefer to do it manually, add the line above before the one mentioning "howdy" in all the files returned by `grep -rl howdy /etc/pam.d`. The installation path may vary depending on your installation method, you can find it with `which linux-enable-ir-emitter`. If you already added a line manually, `setup-howdy` keeps it as is, and you can remove its `--config <CONFIG_PATH>` part.
 
 ### Integration with other program
 You will need to execute the `linux-enable-ir-emitter run` command before the program that uses the infrared camera.
@@ -72,7 +86,7 @@ You will need to execute the `linux-enable-ir-emitter run` command before the pr
 Alternatively, if you can and/or want to integrate better with the program that uses the camera, you can pass an opened file descriptor for the camera to the command: `linux-enable-ir-emitter run --device <DEVICE> --fd <FD>`.
 
 > [!IMPORTANT]
-> You will need to pass the config path as argument to `linux-enable-ir-emitter run --config <CONFIG_PATH>` **when executed as root**, if `linux-enable-ir-emitter configure` was executed as a normal user.
+> You will need to pass the config path as argument to `linux-enable-ir-emitter run --config <CONFIG_PATH>` **when executed as root outside PAM**, if `linux-enable-ir-emitter configure` was executed as a normal user. When executed by PAM (e.g. `pam_exec`), the configuration of the user who is authenticating is used automatically.
 
 ## How do I enable my infrared emitter?
 0. For a better experience, use a large terminal window.

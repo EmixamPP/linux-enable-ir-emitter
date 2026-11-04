@@ -1,8 +1,10 @@
 mod configuration;
 mod configure;
+mod device_id;
 mod logger;
 mod migrate;
 mod run;
+mod setup_howdy;
 mod video;
 
 use anyhow::Result;
@@ -35,6 +37,7 @@ async fn main() -> Result<()> {
             run::run(device.as_deref(), fd, config.as_deref())
         }
         Some(Commands::Migrate { from }) => migrate::migrate(&from),
+        Some(Commands::SetupHowdy { undo, dry_run }) => setup_howdy::setup_howdy(undo, dry_run),
         None => Ok(Cli::command().print_help()?),
     }
 }
@@ -92,6 +95,15 @@ enum Commands {
         config: Option<std::path::PathBuf>,
     },
     #[command(
+        about = "Execute the tool before howdy in PAM, and allow it in the polkit password prompts. Must be executed as root."
+    )]
+    SetupHowdy {
+        #[arg(long, help = "Remove the changes made by this command.")]
+        undo: bool,
+        #[arg(long, help = "Only show the changes, without applying them.")]
+        dry_run: bool,
+    },
+    #[command(
         about = "Migrate the v6 configurations to the v7 format. The configured devices must be connected."
     )]
     Migrate {
@@ -140,6 +152,17 @@ mod tests {
             .command
         {
             Some(Commands::Migrate { from }) => assert_eq!(from, std::path::Path::new("/opt/v6")),
+            other => panic!("unexpected command: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_cli_setup_howdy() {
+        match Cli::try_parse_from(["prog", "setup-howdy", "--undo", "--dry-run"])
+            .unwrap()
+            .command
+        {
+            Some(Commands::SetupHowdy { undo, dry_run }) => assert!(undo && dry_run),
             other => panic!("unexpected command: {other:?}"),
         }
     }

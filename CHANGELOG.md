@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - More debug commands to help users to report issues: `--config`, `--log`, `--grey-devices`.
 - `migrate` command to migrate the configurations from the v6 to the v7 format.
+- `setup-howdy` command to integrate with howdy in PAM, and to allow the polkit password prompts, sandboxed since polkit 126.
+- When executed by PAM, the `run` command uses the configuration of the user being authenticated, so the PAM line does not need `--config` anymore.
 - Prebuilt binary for ARM 64-bit (aarch64) processors.
 - The help is displayed when no command or option is given.
 - The *UVC Tweaker* saves the modified controls when exiting, they are applied by the `run` command.
@@ -24,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The log file is moved to `<log>.old` once bigger than 1 MiB.
 
 ### Fixed
-- Use `/dev/v4l/by-id/` device path instead of `/dev/v4l/by-path/` under the hood for better persistence on some system/hardware.
+- The devices are identified by their USB vendor, product, serial number, interface and index, instead of their `/dev/v4l/by-path/` path, for better persistence. The configurations saved with a `/dev/...` path by the beta versions are still applied, and are replaced when configuring the device again. This fixes the IR camera not enabled after a reboot when it shares its USB device with the RGB camera.
 - `run --device /dev/videoX` now matches the configuration saved for that device.
 - The `run` command applies the other devices and controls if one cannot be applied.
 - An unreadable configuration file is not overwritten anymore when saving.
