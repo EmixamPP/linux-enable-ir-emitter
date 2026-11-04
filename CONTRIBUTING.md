@@ -7,11 +7,21 @@ When building a package for distribution, please ensure the following:
 2. The only external *compile time* dependency needed are
    * `gcc`
    * `libclang`
+   * the Linux kernel headers (`linux/videodev2.h`), used to generate the V4L bindings. They are usually already installed with the C toolchain (e.g. `linux-libc-dev` on Debian/Ubuntu, `linux-api-headers` on Arch, `kernel-headers` on Fedora).
 3. Build the project using:
     ```
    cargo build --release
     ```
    The resulting binary will be located at `target/release/linux-enable-ir-emitter`. You can also use `cargo install --path <...>` to your convenience.
+
+   To cross-compile for ARM 64-bit (aarch64) from x86-64, you additionally need the aarch64 cross toolchain and its headers, and to point the bindings generator to these headers (this is only needed for cross-compiling, not when building natively on an ARM computer). For example on Debian/Ubuntu:
+    ```
+   sudo apt-get install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+   rustup target add aarch64-unknown-linux-gnu
+   BINDGEN_EXTRA_CLANG_ARGS_aarch64_unknown_linux_gnu=-I/usr/aarch64-linux-gnu/include \
+       cargo build --release --target aarch64-unknown-linux-gnu
+    ```
+   The linker is already configured in [.cargo/config.toml](.cargo/config.toml), and the resulting binary will be located at `target/aarch64-unknown-linux-gnu/release/linux-enable-ir-emitter`.
 4. The v7 is incompatible with the v6. If applicable, please make sure to use the provided [migration script]() on the saved configuration.
    > [!IMPORTANT]
    > This script is not yet available. It will be provided when the v7 will be officially released (currently in beta).
@@ -32,12 +42,12 @@ This project is using the usual Rust conventions. Here are some additional expla
     ```
 3. Add the pre-commit hooks to make sure the linting checks and tests are passing before each commit:
    ```
+   cargo install cargo-insta cargo-shear --locked
    git config core.hooksPath .githooks
    ```
    Additionally, it will automatically format/fix the issues for you when possible.
-4. If you modified the UI intentionally, you will need to re-generate the UI test snapshots:
+4. The UI is tested with snapshots. Run the tests with `cargo insta test --unreferenced=reject`, which also fails if a snapshot is not used by any test anymore (e.g. after renaming a test), like the CI does. If you modified the UI intentionally, you will need to review and accept the new snapshots:
    ```
-   cargo install cargo-insta --locked
    cargo insta review
    ```
 5. Please make sure to write tests for your code changes where applicable.
