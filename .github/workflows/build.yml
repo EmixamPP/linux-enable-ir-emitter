@@ -52,7 +52,7 @@ jobs:
       # v4l2-sys-mit generates its bindings with bindgen, which needs the aarch64 kernel headers
       BINDGEN_EXTRA_CLANG_ARGS_aarch64_unknown_linux_gnu: -I/usr/aarch64-linux-gnu/include
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Restore cached cargo dependencies
         id: deps-cache

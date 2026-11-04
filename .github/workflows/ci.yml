@@ -15,7 +15,7 @@ jobs:
     env:
       MESSAGE_FILE: ./message.md
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Check if in PR
         id: pr-number
