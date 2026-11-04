@@ -18,7 +18,7 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 >
 > ```bash
 > ls /sys/bus/usb/drivers/uvcvideo/       # your camera listed -> this tool applies
-> v4l2-ctl --list-devices | grep -A2 ipu  # an IPU device shown -> it does not
+> v4l2-ctl --list-devices | grep -A2 ipu  # an IPU device shown -> it does not (v4l2-ctl is provided by the v4l-utils package)
 > linux-enable-ir-emitter --grey-devices  # your IR camera listed with UVC controls -> this tool applies
 > ```
 >
@@ -33,17 +33,18 @@ Provides support for infrared cameras that are not directly enabled out-of-the b
 > If you plan to package this software for a Linux distribution, or to contribute code, please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Installation
-Download the latest asset [linux-enable-ir-emitter-x.x.x-release-x86-64.tar.gz](https://github.com/EmixamPP/linux-enable-ir-emitter/releases). Then execute:
-> [!NOTE]
-> Please try the 7.0.0-beta! Furthermore, this README has been updated for this version.
+Download the latest asset from the [releases](https://github.com/EmixamPP/linux-enable-ir-emitter/releases), depending on your processor architecture:
+* `linux-enable-ir-emitter-x.x.x-release-x86-64.tar.gz` for Intel and AMD processors (most computers)
+* `linux-enable-ir-emitter-x.x.x-release-aarch64.tar.gz` for ARM 64-bit processors
 
+You can check your architecture with `uname -m`. Then execute:
 ```
 tar -C /usr/local/bin/ --no-same-owner -m -vxzf linux-enable-ir-emitter*.tar.gz
 ```
 
 The installation consists of 3 files:
 * The executable: `/usr/local/bin/linux-enable-ir-emitter`
-* The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`, you can print them with `linux-enable-ir-emitter --log`
+* The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`, you can print them with `linux-enable-ir-emitter --log`. Once bigger than 1 MiB, they are moved to `linux-enable-ir-emitter.log.old`.
 * The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`, you can print it with `linux-enable-ir-emitter --config`
 
 ### Integration with Howdy
@@ -69,15 +70,15 @@ Alternatively, if you can and/or want to integrate better with the program that 
 2. Select the *IR Enabler* tool. It will iterate through the UVC camera controls and modify them to try to find the one that enables the IR emitter.
 3. (Optional) Configure your *Device settings*:
    * *Path*: by default, a grey camera will be selected (if any). If you have multiple cameras, you can change the path. To know which ones are grey cameras, execute `linux-enable-ir-emitter --grey-devices`.
-   * *Number of emitters*: if your camera has multiple IR emitters, specify it here.
+   * *Number of emitters*: if your camera has multiple IR emitters, specify it here (at least 1).
    * *Resolution height/width*: by default, the camera driver will select a resolution for you. You can change it if needed.
    * *FPS*: by default, the camera driver will select a frame rate for you. You can change it if needed.
 4. (Optional) Configure the *Search settings*:
-   * *Manual mode*: if enabled, our stream analyzer will not be used to detect if the IR emitter is working. Instead, you will have to confirm manually using the camera preview or the IR emitter itself. **Enable this mode if the configuration failed the first time.**
+   * *Manual validation*: if enabled, our stream analyzer will not be used to detect if the IR emitter is working. Instead, you will have to confirm manually using the camera preview or the IR emitter itself. **Enable this mode if the configuration failed the first time.**
    * *Images to analyze in auto validation*: number of images used by the stream analyzer to decide if the IR emitter is working. A larger value can lead to more reliable results, but will take more time. Increase this value if the lighting condition is variable. **It is best not to change this value if you are not sure.**
    * *Light difference significance factor*: factor used by the stream analyzer to decide if the IR emitter is working. A larger value can lead to fewer false positives if the light condition is variable. **It is best not to change this value if you are not sure.**
-   * *Rejection threshold*: after how many failed attempts the byte control under test is considered not the one that enables the IR emitter. A larger value can lead to more reliable results, but will take more time. **Increase this value a bit if the configuration is failing.**
-   * *Increment step*: increment step used to explore the control space. A larger value will make the search faster, but can miss some possibilities. **Increase this value a bit if the configuration is taking too long.**
+   * *Rejection threshold per control*: after how many failed attempts the byte control under test is considered not the one that enables the IR emitter. A larger value can lead to more reliable results, but will take more time. **Increase this value a bit if the configuration is failing.**
+   * *Increment step*: increment step used to explore the control space (at least 1). A larger value will make the search faster, but can miss some possibilities. **Increase this value a bit if the configuration is taking too long.**
 5. *Continue* and read carefully the popup message.
    > [!WARNING]
    > The camera firmware may get corrupted during the process. You acknowledge that you understand the risks and that you are the only responsible if something goes wrong.
@@ -101,7 +102,7 @@ A control is identified by a *unit* and a *selector*, and consists of one or sev
 0. For a better experience, use a large terminal window.
 1. Execute the command: `linux-enable-ir-emitter configure`
 2. Select the *UVC Tweaker* tool.
-3. (Optional) Configure your *Device settings*, they are the same as for the *IR Enabler* (read the section above).
+3. (Optional) Configure your *Device settings*, they are the same as for the *IR Enabler* (read the section above), except the *Number of emitters* which is not needed here.
 4. *Continue*. The camera preview starts directly, but listing the UVC controls can take a few seconds (*Loading the UVC controls...*), the tool has to ask the camera for every possible control.
 5. For each control, the list shows:
    * *initial*: the value when the tool started.
