@@ -1,5 +1,6 @@
 mod configuration;
 mod configure;
+mod device_id;
 mod logger;
 mod migrate;
 mod run;

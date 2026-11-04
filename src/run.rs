@@ -1,4 +1,5 @@
-use crate::configuration::{Configuration, Configurations, V4LPath};
+use crate::configuration::{Configuration, Configurations};
+use crate::device_id::DeviceId;
 use crate::video::uvc::Device;
 
 use anyhow::{Context, Result, bail};
@@ -46,46 +47,44 @@ pub fn run(device: Option<&Path>, fd: Option<i32>, config: Option<&Path>) -> Res
 
 /// Returns the configurations of the given device, or all of them if no device is specified.
 ///
-/// The device is matched on its persistent path, so `/dev/videoX` matches a configuration saved under `/dev/v4l/by-id/...`.
+/// The device is matched on its persistent identifier, so any path to it matches (e.g. `/dev/videoX` or a symlink).
 fn select_configurations<'a>(
     configs: &'a Configurations,
     device: Option<&Path>,
-) -> Vec<(&'a V4LPath, &'a Configuration)> {
-    let device = device.map(V4LPath::new);
+) -> Vec<(&'a DeviceId, &'a Configuration)> {
     configs
         .devices()
         .iter()
-        .filter(|(path, _)| device.as_ref().is_none_or(|d| d == *path))
+        .filter(|(id, _)| device.is_none_or(|d| id.matches(d)))
         .collect()
 }
 
 /// Applies all the saved controls of a configuration on its device.
 ///
 /// If a control cannot be applied, the remaining ones are still tried.
-fn apply_configuration(path: &V4LPath, fd: Option<i32>, conf: &Configuration) -> Result<()> {
-    let path = path.as_ref();
+fn apply_configuration(id: &DeviceId, fd: Option<i32>, conf: &Configuration) -> Result<()> {
     let device = if let Some(fd) = fd {
         Device::from_fd(fd)?
     } else {
-        Device::open(path).with_context(|| format!("failed to open device {}", path.display()))?
+        let path = id
+            .resolve()
+            .with_context(|| format!("the device {id} is not connected"))?;
+        if matches!(id, DeviceId::Usb(_)) {
+            log::debug!("Device {id} is {}.", path.display());
+        }
+        Device::open(&path).with_context(|| format!("failed to open device {}", path.display()))?
     };
 
     let mut failures = 0;
     for mut control in conf.get_savelist() {
         if let Err(err) = device.apply_control(&mut control) {
-            log::error!(
-                "Failed to apply control {control} on device {}: {err}.",
-                path.display()
-            );
+            log::error!("Failed to apply control {control} on device {id}: {err}.");
             failures += 1;
         }
     }
 
     if failures > 0 {
-        bail!(
-            "failed to apply {failures} control(s) on device {}",
-            path.display()
-        );
+        bail!("failed to apply {failures} control(s) on device {id}");
     }
     Ok(())
 }
@@ -129,7 +128,7 @@ control = [2]
         let (_, configs) = make_configs("select_one.toml");
         let selected = select_configurations(&configs, Some(Path::new("/dev/video_run_test_b")));
         assert_eq!(selected.len(), 1);
-        assert_eq!(selected[0].0.as_ref(), Path::new("/dev/video_run_test_b"));
+        assert_eq!(selected[0].0.to_string(), "/dev/video_run_test_b");
     }
 
     #[test]

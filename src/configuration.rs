@@ -1,13 +1,12 @@
+use crate::device_id::DeviceId;
 use crate::video::uvc::XuControl;
 
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result, anyhow};
-use derive_more::AsRef;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-const V4L_DEV_DIR: &str = "/dev/v4l/by-id";
 #[cfg(not(test))]
 static _CONFIG: &str = env!("CONFIG");
 #[cfg(test)]
@@ -26,56 +25,6 @@ pub fn print_config() -> Result<()> {
         std::fs::read_to_string(&config_file).context("failed to read configuration file")?;
     print!("# {}\n\n{}", config_file.display(), content_str);
     Ok(())
-}
-
-pub use path::V4LPath;
-
-mod path {
-    use super::*;
-
-    #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Clone, AsRef)]
-    pub struct V4LPath(PathBuf);
-
-    impl V4LPath {
-        /// Create a new V4LPath, attempting to find a persistent path in /dev/v4l/by-id
-        /// If not found, use the provided path as is.
-        pub fn new<P: AsRef<Path>>(device: P) -> Self {
-            Self(Self::find_v4l_path(device.as_ref()).unwrap_or(device.as_ref().to_path_buf()))
-        }
-
-        fn find_v4l_path(device: &Path) -> Option<PathBuf> {
-            // resolve symlinks, so that a persistent path is also matched
-            let device = device.canonicalize().ok()?;
-            if let Ok(entries) = std::fs::read_dir(Path::new(V4L_DEV_DIR)) {
-                for entry in entries.filter_map(Result::ok) {
-                    if let Ok(target) = entry.path().canonicalize()
-                        && target == device
-                    {
-                        return Some(entry.path());
-                    }
-                }
-            }
-            None
-        }
-    }
-
-    impl Serialize for V4LPath {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
-        {
-            serializer.serialize_str(&self.0.to_string_lossy())
-        }
-    }
-
-    impl<'de> Deserialize<'de> for V4LPath {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de>,
-        {
-            Ok(Self(Deserialize::deserialize(deserializer)?))
-        }
-    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -112,7 +61,7 @@ impl From<&XuControl> for BlackControl {
 
 #[derive(Default, Debug)]
 pub struct Configurations {
-    devices: Map<path::V4LPath, Configuration>,
+    devices: Map<DeviceId, Configuration>,
 }
 
 impl Configurations {
@@ -153,7 +102,7 @@ impl Configurations {
         })
     }
 
-    pub fn devices(&self) -> &Map<path::V4LPath, Configuration> {
+    pub fn devices(&self) -> &Map<DeviceId, Configuration> {
         &self.devices
     }
 
@@ -176,25 +125,74 @@ pub struct Configuration {
     #[serde(skip_serializing_if = "Set::is_empty", default)]
     blacklist: Set<BlackControl>,
     #[serde(skip)]
-    device: path::V4LPath,
+    device: DeviceId,
+    /// Configurations of the same device saved under a legacy path, replaced by this one when saving.
+    #[serde(skip)]
+    replaces: Vec<DeviceId>,
 }
 
 impl Configuration {
     /// Creates a new configuration for the specified device.
     /// If a configuration was saved previously, it is loaded.
+    ///
+    /// The configurations of the same USB device saved under a legacy path (e.g. `/dev/v4l/by-id/...`)
+    /// are merged into it, and replaced by it when saving.
     pub fn new<P: AsRef<Path>>(device: P) -> Self {
-        let device = path::V4LPath::new(device);
-
-        match Self::load(&device) {
-            Ok(config) => config,
+        let device = DeviceId::new(device.as_ref());
+        let configs = match Configurations::load() {
+            Ok(configs) => configs,
             Err(err) => {
                 log::debug!("No existing configuration loaded: {err:?}.");
-                Self {
-                    savelist: Set::new(),
-                    blacklist: Set::new(),
-                    device,
+                return Self::empty(device);
+            }
+        };
+
+        let mut config = match configs.devices().get(&device) {
+            Some(config) => Self {
+                device: device.clone(),
+                ..config.clone()
+            },
+            None => Self::empty(device.clone()),
+        };
+        let current = config.device.clone();
+        config.adopt_legacy(&configs, |legacy| current.same_usb_device(legacy));
+        config
+    }
+
+    fn empty(device: DeviceId) -> Self {
+        Self {
+            savelist: Set::new(),
+            blacklist: Set::new(),
+            device,
+            replaces: Vec::new(),
+        }
+    }
+
+    /// Merges the configurations saved under a legacy path for the same USB device,
+    /// as told by `same_device`. The controls already in this configuration are kept.
+    fn adopt_legacy(&mut self, configs: &Configurations, same_device: impl Fn(&DeviceId) -> bool) {
+        if !matches!(self.device, DeviceId::Usb(_)) {
+            return;
+        }
+        for (id, legacy) in configs.devices() {
+            if !matches!(id, DeviceId::Path(_)) || !same_device(id) {
+                continue;
+            }
+            log::info!(
+                "Replacing the legacy configuration of {id} by {}.",
+                self.device
+            );
+            for saved in &legacy.savelist {
+                if !self
+                    .savelist
+                    .iter()
+                    .any(|s| s.unit == saved.unit && s.selector == saved.selector)
+                {
+                    self.savelist.insert(saved.clone());
                 }
             }
+            self.blacklist.extend(legacy.blacklist.iter().cloned());
+            self.replaces.push(id.clone());
         }
     }
 
@@ -215,9 +213,9 @@ impl Configuration {
         self.savelist.is_empty() && self.blacklist.is_empty()
     }
 
-    /// Returns the persistent path of the device of this configuration.
-    pub fn device(&self) -> &Path {
-        self.device.as_ref()
+    /// Returns the persistent identifier of the device of this configuration.
+    pub fn device(&self) -> &DeviceId {
+        &self.device
     }
 
     /// Returns true if the control is blacklisted.
@@ -248,16 +246,16 @@ impl Configuration {
             .collect()
     }
 
-    fn load(device: &path::V4LPath) -> Result<Self> {
+    #[cfg(test)]
+    fn load(device: &DeviceId) -> Result<Self> {
         let configs = Configurations::load()?;
         if let Some(config) = configs.devices().get(device) {
             let mut config = config.clone();
             config.device = device.clone();
             Ok(config)
         } else {
-            Err(anyhow!(
-                "no configuration found for device {}",
-                device.as_ref().display()
+            Err(anyhow::anyhow!(
+                "no configuration found for device {device}"
             ))
         }
     }
@@ -269,6 +267,10 @@ impl Configuration {
         let mut configs = Configurations::load().context(
             "the existing configuration file cannot be read, please fix or remove it before saving",
         )?;
+
+        for legacy in &self.replaces {
+            let _ = configs.devices.remove(legacy);
+        }
 
         // do not serialize empty configuration
         if self.savelist.is_empty() && self.blacklist.is_empty() {
@@ -308,10 +310,56 @@ mod tests {
     }
 
     #[test]
-    fn test_v4lpath_new_returns_given_path_if_not_found() {
-        let path = PathBuf::from("/dev/video10");
-        let v4l_path = path::V4LPath::new("/dev/video10");
-        assert_eq!(v4l_path.as_ref(), &path);
+    #[serial]
+    fn test_configuration_adopt_legacy() {
+        clean_config_dir();
+        let mut rng = make_rng();
+        let (xu1, xu2, xu3) = (make_xu(&mut rng), make_xu(&mut rng), make_xu(&mut rng));
+
+        // a legacy by-id configuration of the camera, and one of another camera
+        let mut legacy = Configuration::new("/dev/v4l/by-id/usb-Camera-video-index0");
+        legacy.add_to_savelist(&xu1);
+        legacy.add_to_blacklist(&xu2);
+        legacy.save().unwrap();
+        let mut other = Configuration::new("/dev/v4l/by-id/usb-Other-video-index0");
+        other.add_to_savelist(&xu3);
+        other.save().unwrap();
+
+        let configs = Configurations::load().unwrap();
+        let id: DeviceId = "usb-04f2:b6d9-0001-if02-index0".parse().unwrap();
+        let mut config = Configuration::empty(id.clone());
+        config.add_to_savelist(&xu3); // already in the new configuration, kept
+        config.adopt_legacy(&configs, |legacy| legacy.to_string().contains("usb-Camera"));
+
+        assert_eq!(config.get_savelist().len(), 2);
+        assert!(config.is_blacklisted(&xu2));
+        config.save().unwrap();
+
+        // the legacy configuration is replaced, the other one is kept
+        let keys: Vec<String> = Configurations::load()
+            .unwrap()
+            .devices()
+            .keys()
+            .map(|k| k.to_string())
+            .collect();
+        assert_eq!(
+            keys,
+            [
+                "usb-04f2:b6d9-0001-if02-index0",
+                "/dev/v4l/by-id/usb-Other-video-index0"
+            ]
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_device_not_found_is_identified_by_path() {
+        clean_config_dir();
+        let config = Configuration::new("/dev/video10");
+        assert_eq!(
+            config.device(),
+            &DeviceId::Path(PathBuf::from("/dev/video10"))
+        );
     }
 
     #[test]
@@ -428,7 +476,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu1.unit());
@@ -449,7 +497,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.blacklist.len(), 1);
         let black = loaded.blacklist.iter().next().unwrap();
         assert_eq!(black.unit, xu1.unit());
@@ -475,7 +523,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 2);
         let saved1 = loaded
             .savelist
@@ -521,7 +569,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu1.unit());
@@ -549,7 +597,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu1.unit());
@@ -585,7 +633,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu3.unit());
