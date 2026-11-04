@@ -28,6 +28,8 @@ pub fn print_config() -> Result<()> {
     Ok(())
 }
 
+pub use path::V4LPath;
+
 mod path {
     use super::*;
 
@@ -42,6 +44,8 @@ mod path {
         }
 
         fn find_v4l_path(device: &Path) -> Option<PathBuf> {
+            // resolve symlinks, so that a persistent path is also matched
+            let device = device.canonicalize().ok()?;
             if let Ok(entries) = std::fs::read_dir(Path::new(V4L_DEV_DIR)) {
                 for entry in entries.filter_map(Result::ok) {
                     if let Ok(target) = entry.path().canonicalize()
