@@ -11,9 +11,11 @@ fi
 # Enable debug output and exit on error
 set -exo pipefail
 
-cargo test
+# runs the tests, and fails on snapshots not used by any test
+cargo insta test --unreferenced=reject
 cargo fmt $fmt_args
 cargo clippy $clippy_args -- --deny warnings
 CARGO_BUILD_RUSTDOCFLAGS="--deny warnings" cargo doc --document-private-items --no-deps
+cargo shear
 
 set +x

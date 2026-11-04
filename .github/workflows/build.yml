@@ -62,7 +62,8 @@ jobs:
           path: |
             ~/.cargo/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          # the workflow is part of the key, so that the cache is rebuilt when the installed tools change
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '.github/workflows/build.yml') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
@@ -75,8 +76,9 @@ jobs:
       - name: Install dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
         run: |
-          # Linting tools
+          # Linting and testing tools
           cargo install cargo-shear --locked
+          cargo install cargo-insta --locked
           cargo fetch
 
       - name: Build
@@ -92,7 +94,8 @@ jobs:
       - name: Tests
         id: tests
         if: always()
-        run: cargo test --profile ${{ env.build-type }}
+        # runs the tests, and fails on snapshots not used by any test
+        run: cargo insta test --profile ${{ env.build-type }} --check --unreferenced=reject
 
       - name: Clippy
         id: clippy
