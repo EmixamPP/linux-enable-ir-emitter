@@ -366,10 +366,13 @@ impl App {
     fn handle_image(&mut self, image: Option<Result<Image>>) -> Result<()> {
         if let Some(image) = image {
             let image = image?;
-            // ignore if too many images are buffered
-            let _ = self
-                .analyzer_request_tx
-                .try_send(AnalyzerRequest::Image(image.clone()));
+            // the analyzer task only runs in automatic validation
+            if !self.config.manual {
+                // ignore if too many images are buffered
+                let _ = self
+                    .analyzer_request_tx
+                    .try_send(AnalyzerRequest::Image(image.clone()));
+            }
             self.image = Some(image);
             Ok(())
         } else {
