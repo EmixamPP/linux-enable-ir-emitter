@@ -22,9 +22,10 @@ When building a package for distribution, please ensure the following:
        cargo build --release --target aarch64-unknown-linux-gnu
     ```
    The linker is already configured in [.cargo/config.toml](.cargo/config.toml), and the resulting binary will be located at `target/aarch64-unknown-linux-gnu/release/linux-enable-ir-emitter`.
-4. The v7 is incompatible with the v6. If applicable, please make sure to use the provided [migration script]() on the saved configuration.
-   > [!IMPORTANT]
-   > This script is not yet available. It will be provided when the v7 will be officially released (currently in beta).
+4. The v7 is incompatible with the v6. If applicable, please make sure that your users migrate their saved configuration with the `linux-enable-ir-emitter migrate` command (see the [README](README.md#migration-from-v6)).
+   * The command must be executed by each user, since the v7 configuration is saved by default in the home directory, and the cameras must be connected. So it is better to inform the users (e.g. with a post-install message) than to execute it in a post-install script running as root.
+   * If your v6 package used another `config_dir` than `/etc`, the users have to pass `--from <config_dir>/linux-enable-ir-emitter`.
+   * The v6 configurations are only read, so you can keep `/etc/linux-enable-ir-emitter/` until your users have migrated.
 
 ## Contributing Code
 This project is using the usual Rust conventions. Here are some additional explanations:

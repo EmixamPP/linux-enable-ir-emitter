@@ -47,6 +47,16 @@ The installation consists of 3 files:
 * The logs (for receiving help): `$HOME/.local/state/linux-enable-ir-emitter.log`, you can print them with `linux-enable-ir-emitter --log`. Once bigger than 1 MiB, they are moved to `linux-enable-ir-emitter.log.old`.
 * The camera configuration (can be backed up): `$HOME/.config/linux-enable-ir-emitter.toml`, you can print it with `linux-enable-ir-emitter --config`
 
+### Migration from v6
+The configuration format of the v7 is not compatible with the v6 one. If you used the v6, you can migrate your configuration:
+1. Install the v7 (see above), but keep the v6 configuration directory `/etc/linux-enable-ir-emitter/`.
+2. Make sure your camera is connected (always the case for a built-in camera), then execute as your normal user, **not with sudo**, since the v7 configuration is saved in your home directory: `linux-enable-ir-emitter migrate`
+   * Only the controls applied by the v6 are migrated. The controls disabled in the v6 are blacklisted, so the *IR Enabler* will not modify them.
+   * If the v6 configurations are located elsewhere (e.g. installed by a distro package), add `--from <DIRECTORY>`.
+   * You can safely run it again: a camera that already has a v7 configuration is skipped.
+3. Check the result with `linux-enable-ir-emitter --config`.
+4. Uninstall the v6 by following its [uninstallation instructions](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/6.1.2/docs/uninstallation.md). The v7 does not use a boot service anymore, see the integrations below.
+
 ### Integration with Howdy
 In all files returned by `grep -rl howdy /etc/pam.d`, add the following line before the one mentioning "howdy", replacing `<USER>` with your actual username:
 ```
