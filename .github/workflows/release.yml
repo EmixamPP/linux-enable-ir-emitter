@@ -18,6 +18,9 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          merge-multiple: true
 
       - name: Create tag
         uses: rickstaa/action-create-tag@v1
@@ -61,7 +64,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          files: linux-enable-ir-emitter-*.tar.gz
+          files: artifacts/linux-enable-ir-emitter-*.tar.gz
           tag_name: ${{ needs.build.outputs.version }}
           fail_on_unmatched_files: true
           draft: true
