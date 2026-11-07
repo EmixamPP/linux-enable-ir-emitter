@@ -21,23 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More debug commands to help users to report issues: `--config`, `--log`, `--grey-devices`.
 - `migrate` command to migrate the configurations from the v6 to the v7 format.
 - `setup-howdy` command to integrate with howdy in PAM, and to allow the polkit password prompts, sandboxed since polkit 126.
-- When executed by PAM, the `run` command uses the configuration of the user being authenticated, so the PAM line does not need `--config` anymore.
+- When executed by PAM, the `run` command uses the configuration of the user being authenticated, so the PAM line does not need `--config`.
 - Prebuilt binary for ARM 64-bit (aarch64) processors.
-- The help is displayed when no command or option is given.
-- The *UVC Tweaker* saves the modified controls when exiting, they are applied by the `run` command.
-- A loading message is displayed while the UVC controls are listed, which can take a few seconds.
 
 ### Fixed
 
 - The devices are identified by their USB vendor, product, serial number, interface and index, instead of their `/dev/v4l/by-path/` path, for better persistence. The configurations saved with a `/dev/...` path by the beta versions are still applied, and are replaced when configuring the device again. This fixes the IR camera not enabled after a reboot when it shares its USB device with the RGB camera.
-- `run --device /dev/videoX` now matches the configuration saved for that device.
-- The `run` command applies the other devices and controls if one cannot be applied.
-- An unreadable configuration file is not overwritten anymore when saving.
-- Saving a control replaces its previously saved value instead of adding a duplicate.
-- A resolution supported by the camera could be reported as not supported.
-- The number of emitters and the increment step must be at least 1.
-- Quitting the *IR Enabler* menu does not report a failure anymore.
-- The real error is displayed instead of a generic "closed unexpectedly" message when the video stream or the search fails.
 
 ### Removed
 

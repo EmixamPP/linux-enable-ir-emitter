@@ -24,6 +24,40 @@ jobs:
         with:
           tag: ${{ needs.build.outputs.version }}
 
+      - name: Write release notes
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GitHub accounts of the commit authors since the latest release, without the bots
+          previous=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || true)
+          if [ -n "$previous" ]; then
+            logins=$(gh api --paginate "repos/$GITHUB_REPOSITORY/compare/$previous...$GITHUB_SHA" --jq '.commits[].author.login // empty')
+          else
+            logins=$(gh api --paginate "repos/$GITHUB_REPOSITORY/contributors" --jq '.[].login')
+          fi
+          contributors=$(echo "$logins" | grep -v '\[bot\]$' | sort -fu | sed 's/^/@/')
+
+          # section of this version in the changelog, without its heading, until the next version
+          changes=$(awk -v heading="## [$VERSION]" '
+            index($0, heading) == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md)
+          if [ -z "$(echo "$changes" | tr -d '[:space:]')" ]; then
+            echo "::error::no section for version $VERSION in CHANGELOG.md"
+            exit 1
+          fi
+          {
+            echo "## What's Changed"
+            echo "$changes"
+            echo
+            echo "Packagers, please read the [packaging guidelines](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/CONTRIBUTING.md#packaging-guidelines)."
+            echo
+            echo "## Contributors"
+            echo "$contributors"
+          } > release-notes.md
+
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
@@ -32,9 +66,4 @@ jobs:
           fail_on_unmatched_files: true
           draft: true
           make_latest: true
-          body: |
-            ## What's Changed
-            See [CHANGELOG.md](https://github.com/EmixamPP/linux-enable-ir-emitter/blob/master/CHANGELOG.md)
-
-            ## Contributors
-            @EmixamPP
+          body_path: release-notes.md
