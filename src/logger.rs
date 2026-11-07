@@ -4,7 +4,7 @@ use simplelog::*;
 use std::fs::{File, create_dir_all};
 use std::path::{Path, PathBuf};
 
-/// Size above which the log file is rotated when the file logger is initialized.
+/// Size above which the log file is emptied when the file logger is initialized.
 const MAX_LOG_SIZE: u64 = 1024 * 1024;
 
 #[cfg(not(test))]
@@ -31,28 +31,23 @@ pub fn init_file() -> Result<()> {
     {
         create_dir_all(parent).context("failed to create log directory")?;
     }
-    rotate_if_too_big(&path)?;
-    let file = File::options()
-        .create(true)
-        .append(true)
-        .open(path)
-        .context("failed to open or create log file")?;
+    let file = open_log_file(&path)?;
 
     let config = Config::default();
     WriteLogger::init(Debug, config, file).context("failed to initialize file logger")
 }
 
-/// Renames the log file to `<name>.old`, replacing the previous one, if it is bigger than [`MAX_LOG_SIZE`].
-/// So the log file does not grow indefinitely, while keeping the logs of the previous sessions.
-fn rotate_if_too_big(path: &Path) -> Result<()> {
-    if let Ok(metadata) = std::fs::metadata(path)
-        && metadata.len() > MAX_LOG_SIZE
-    {
-        let mut old_path = path.as_os_str().to_owned();
-        old_path.push(".old");
-        std::fs::rename(path, old_path).context("failed to rotate the log file")?;
-    }
-    Ok(())
+/// Opens the log file in append mode, or empties it if it is bigger than [`MAX_LOG_SIZE`],
+/// so it does not grow indefinitely.
+fn open_log_file(path: &Path) -> Result<File> {
+    let too_big = std::fs::metadata(path).is_ok_and(|m| m.len() > MAX_LOG_SIZE);
+    File::options()
+        .create(true)
+        .write(true)
+        .append(!too_big)
+        .truncate(too_big)
+        .open(path)
+        .context("failed to open or create log file")
 }
 
 pub fn print_log() -> Result<()> {
@@ -65,29 +60,28 @@ pub fn print_log() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
 
     #[test]
-    fn test_rotate_if_too_big() {
-        let dir = Path::new("target/test/rotate");
+    fn test_open_log_file() {
+        let dir = Path::new("target/test/open_log");
         std::fs::create_dir_all(dir).unwrap();
         let path = dir.join("test.log");
-        let old_path = dir.join("test.log.old");
-        let _ = std::fs::remove_file(&old_path);
+        let _ = std::fs::remove_file(&path);
 
-        // small file: kept
+        // missing file: created
+        drop(open_log_file(&path).unwrap());
+        assert_eq!(std::fs::metadata(&path).unwrap().len(), 0);
+
+        // small file: appended
         std::fs::write(&path, "small").unwrap();
-        rotate_if_too_big(&path).unwrap();
-        assert!(path.exists());
-        assert!(!old_path.exists());
+        write!(open_log_file(&path).unwrap(), "+").unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "small+");
 
-        // big file: rotated
+        // big file: emptied
         std::fs::write(&path, vec![b'a'; MAX_LOG_SIZE as usize + 1]).unwrap();
-        rotate_if_too_big(&path).unwrap();
-        assert!(!path.exists());
-        assert!(old_path.exists());
-
-        // missing file: nothing to do
-        rotate_if_too_big(&path).unwrap();
+        write!(open_log_file(&path).unwrap(), "+").unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "+");
     }
 
     #[test]

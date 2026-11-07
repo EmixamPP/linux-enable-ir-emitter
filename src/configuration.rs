@@ -1,17 +1,16 @@
+use crate::device_id::DeviceId;
 use crate::video::uvc::XuControl;
 
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result, anyhow};
-use derive_more::AsRef;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-const V4L_DEV_DIR: &str = "/dev/v4l/by-id";
 #[cfg(not(test))]
 static _CONFIG: &str = env!("CONFIG");
 #[cfg(test)]
-pub const _CONFIG: &str = "target/tmp/linux-enable-ir-emitter.toml";
+pub const _CONFIG: &str = "target/tmp/config/linux-enable-ir-emitter.toml";
 
 fn config_file_path() -> Result<PathBuf> {
     Ok(shellexpand::env(_CONFIG)
@@ -20,62 +19,67 @@ fn config_file_path() -> Result<PathBuf> {
         .into())
 }
 
+/// A user for whom the tool is executed by PAM, e.g. through `pam_exec`.
+#[derive(Debug, PartialEq, Eq)]
+pub struct PamUser {
+    name: String,
+    uid: u32,
+    home: PathBuf,
+}
+
+impl PamUser {
+    /// Returns the user being authenticated if the tool is executed by PAM,
+    /// i.e. if the `PAM_USER` and `PAM_TYPE` environment variables are set by `pam_exec`.
+    pub fn from_env() -> Result<Option<Self>> {
+        let (Ok(name), Ok(_)) = (std::env::var("PAM_USER"), std::env::var("PAM_TYPE")) else {
+            return Ok(None);
+        };
+        let output = std::process::Command::new("getent")
+            .args(["passwd", &name])
+            .output()
+            .context("failed to execute getent to find the user home directory")?;
+        if !output.status.success() {
+            anyhow::bail!("unknown user {name:?}");
+        }
+        Self::from_passwd(&String::from_utf8_lossy(&output.stdout)).map(Some)
+    }
+
+    /// Parses a passwd entry, e.g. `name:x:1000:1000:Full Name:/home/name:/bin/bash`.
+    fn from_passwd(entry: &str) -> Result<Self> {
+        let fields: Vec<&str> = entry.trim_end().split(':').collect();
+        if fields.len() < 7 {
+            anyhow::bail!("invalid passwd entry {entry:?}");
+        }
+        Ok(Self {
+            name: fields[0].to_string(),
+            uid: fields[2].parse().context("invalid uid in passwd entry")?,
+            home: PathBuf::from(fields[5]),
+        })
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Returns the configuration file path of the user, i.e. the default path expanded with their home directory.
+    fn config_file_path(&self) -> PathBuf {
+        let home = self.home.to_string_lossy();
+        shellexpand::env_with_context_no_errors(_CONFIG, |var| match var {
+            "HOME" => Some(home.to_string()),
+            "USER" => Some(self.name.clone()),
+            _ => std::env::var(var).ok(),
+        })
+        .to_string()
+        .into()
+    }
+}
+
 pub fn print_config() -> Result<()> {
     let config_file = config_file_path()?;
     let content_str =
         std::fs::read_to_string(&config_file).context("failed to read configuration file")?;
     print!("# {}\n\n{}", config_file.display(), content_str);
     Ok(())
-}
-
-pub use path::V4LPath;
-
-mod path {
-    use super::*;
-
-    #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Clone, AsRef)]
-    pub struct V4LPath(PathBuf);
-
-    impl V4LPath {
-        /// Create a new V4LPath, attempting to find a persistent path in /dev/v4l/by-id
-        /// If not found, use the provided path as is.
-        pub fn new<P: AsRef<Path>>(device: P) -> Self {
-            Self(Self::find_v4l_path(device.as_ref()).unwrap_or(device.as_ref().to_path_buf()))
-        }
-
-        fn find_v4l_path(device: &Path) -> Option<PathBuf> {
-            // resolve symlinks, so that a persistent path is also matched
-            let device = device.canonicalize().ok()?;
-            if let Ok(entries) = std::fs::read_dir(Path::new(V4L_DEV_DIR)) {
-                for entry in entries.filter_map(Result::ok) {
-                    if let Ok(target) = entry.path().canonicalize()
-                        && target == device
-                    {
-                        return Some(entry.path());
-                    }
-                }
-            }
-            None
-        }
-    }
-
-    impl Serialize for V4LPath {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
-        {
-            serializer.serialize_str(&self.0.to_string_lossy())
-        }
-    }
-
-    impl<'de> Deserialize<'de> for V4LPath {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de>,
-        {
-            Ok(Self(Deserialize::deserialize(deserializer)?))
-        }
-    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -112,7 +116,7 @@ impl From<&XuControl> for BlackControl {
 
 #[derive(Default, Debug)]
 pub struct Configurations {
-    devices: Map<path::V4LPath, Configuration>,
+    devices: Map<DeviceId, Configuration>,
 }
 
 impl Configurations {
@@ -143,6 +147,38 @@ impl Configurations {
         Self::load_from(&config_file)
     }
 
+    /// Load the configurations of a user for whom the tool is executed by PAM, or an empty one if there is none.
+    ///
+    /// Since PAM executes the tool as root, the file must be a regular file owned by the user or root,
+    /// so a user cannot make root read another file.
+    pub fn load_for(user: &PamUser) -> Result<Self> {
+        let config_file = user.config_file_path();
+        let metadata = match std::fs::symlink_metadata(&config_file) {
+            Ok(metadata) => metadata,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                log::debug!("No configuration file at {}.", config_file.display());
+                return Ok(Self::default());
+            }
+            Err(err) => {
+                return Err(err).with_context(|| {
+                    format!(
+                        "failed to read configuration file {}",
+                        config_file.display()
+                    )
+                });
+            }
+        };
+        use std::os::unix::fs::MetadataExt as _;
+        if !metadata.is_file() || (metadata.uid() != user.uid && metadata.uid() != 0) {
+            anyhow::bail!(
+                "refusing to read {}: it must be a regular file owned by {} or root",
+                config_file.display(),
+                user.name
+            );
+        }
+        Self::load_from(&config_file)
+    }
+
     /// Load an existing configurations at a specified path.
     pub fn load_from(config: &Path) -> Result<Self> {
         log::info!("Loading configuration from {}.", config.display());
@@ -153,7 +189,7 @@ impl Configurations {
         })
     }
 
-    pub fn devices(&self) -> &Map<path::V4LPath, Configuration> {
+    pub fn devices(&self) -> &Map<DeviceId, Configuration> {
         &self.devices
     }
 
@@ -176,25 +212,74 @@ pub struct Configuration {
     #[serde(skip_serializing_if = "Set::is_empty", default)]
     blacklist: Set<BlackControl>,
     #[serde(skip)]
-    device: path::V4LPath,
+    device: DeviceId,
+    /// Configurations of the same device saved under a legacy path, replaced by this one when saving.
+    #[serde(skip)]
+    replaces: Vec<DeviceId>,
 }
 
 impl Configuration {
     /// Creates a new configuration for the specified device.
     /// If a configuration was saved previously, it is loaded.
+    ///
+    /// The configurations of the same USB device saved under a legacy path (e.g. `/dev/v4l/by-id/...`)
+    /// are merged into it, and replaced by it when saving.
     pub fn new<P: AsRef<Path>>(device: P) -> Self {
-        let device = path::V4LPath::new(device);
-
-        match Self::load(&device) {
-            Ok(config) => config,
+        let device = DeviceId::new(device.as_ref());
+        let configs = match Configurations::load() {
+            Ok(configs) => configs,
             Err(err) => {
                 log::debug!("No existing configuration loaded: {err:?}.");
-                Self {
-                    savelist: Set::new(),
-                    blacklist: Set::new(),
-                    device,
+                return Self::empty(device);
+            }
+        };
+
+        let mut config = match configs.devices().get(&device) {
+            Some(config) => Self {
+                device: device.clone(),
+                ..config.clone()
+            },
+            None => Self::empty(device.clone()),
+        };
+        let current = config.device.clone();
+        config.adopt_legacy(&configs, |legacy| current.same_usb_device(legacy));
+        config
+    }
+
+    fn empty(device: DeviceId) -> Self {
+        Self {
+            savelist: Set::new(),
+            blacklist: Set::new(),
+            device,
+            replaces: Vec::new(),
+        }
+    }
+
+    /// Merges the configurations saved under a legacy path for the same USB device,
+    /// as told by `same_device`. The controls already in this configuration are kept.
+    fn adopt_legacy(&mut self, configs: &Configurations, same_device: impl Fn(&DeviceId) -> bool) {
+        if !matches!(self.device, DeviceId::Usb(_)) {
+            return;
+        }
+        for (id, legacy) in configs.devices() {
+            if !matches!(id, DeviceId::Path(_)) || !same_device(id) {
+                continue;
+            }
+            log::info!(
+                "Replacing the legacy configuration of {id} by {}.",
+                self.device
+            );
+            for saved in &legacy.savelist {
+                if !self
+                    .savelist
+                    .iter()
+                    .any(|s| s.unit == saved.unit && s.selector == saved.selector)
+                {
+                    self.savelist.insert(saved.clone());
                 }
             }
+            self.blacklist.extend(legacy.blacklist.iter().cloned());
+            self.replaces.push(id.clone());
         }
     }
 
@@ -215,9 +300,9 @@ impl Configuration {
         self.savelist.is_empty() && self.blacklist.is_empty()
     }
 
-    /// Returns the persistent path of the device of this configuration.
-    pub fn device(&self) -> &Path {
-        self.device.as_ref()
+    /// Returns the persistent identifier of the device of this configuration.
+    pub fn device(&self) -> &DeviceId {
+        &self.device
     }
 
     /// Returns true if the control is blacklisted.
@@ -248,16 +333,16 @@ impl Configuration {
             .collect()
     }
 
-    fn load(device: &path::V4LPath) -> Result<Self> {
+    #[cfg(test)]
+    fn load(device: &DeviceId) -> Result<Self> {
         let configs = Configurations::load()?;
         if let Some(config) = configs.devices().get(device) {
             let mut config = config.clone();
             config.device = device.clone();
             Ok(config)
         } else {
-            Err(anyhow!(
-                "no configuration found for device {}",
-                device.as_ref().display()
+            Err(anyhow::anyhow!(
+                "no configuration found for device {device}"
             ))
         }
     }
@@ -269,6 +354,10 @@ impl Configuration {
         let mut configs = Configurations::load().context(
             "the existing configuration file cannot be read, please fix or remove it before saving",
         )?;
+
+        for legacy in &self.replaces {
+            let _ = configs.devices.remove(legacy);
+        }
 
         // do not serialize empty configuration
         if self.savelist.is_empty() && self.blacklist.is_empty() {
@@ -308,10 +397,125 @@ mod tests {
     }
 
     #[test]
-    fn test_v4lpath_new_returns_given_path_if_not_found() {
-        let path = PathBuf::from("/dev/video10");
-        let v4l_path = path::V4LPath::new("/dev/video10");
-        assert_eq!(v4l_path.as_ref(), &path);
+    fn test_pam_user_from_passwd() {
+        let user =
+            PamUser::from_passwd("alice:x:1001:1001:Alice,,,:/home/alice:/bin/bash\n").unwrap();
+        assert_eq!(
+            user,
+            PamUser {
+                name: "alice".into(),
+                uid: 1001,
+                home: "/home/alice".into()
+            }
+        );
+        assert!(PamUser::from_passwd("alice:x:notanumber:1001::/home/alice:/bin/bash").is_err());
+        assert!(PamUser::from_passwd("garbage").is_err());
+    }
+
+    #[test]
+    fn test_pam_user_config_file_path() {
+        let user = PamUser {
+            name: "alice".into(),
+            uid: 1001,
+            home: "/home/alice".into(),
+        };
+        // in tests, the configuration path does not depend on the home directory
+        assert_eq!(user.config_file_path(), PathBuf::from(_CONFIG));
+    }
+
+    #[test]
+    #[serial]
+    fn test_configurations_load_for_pam_user() {
+        use std::os::unix::fs::MetadataExt as _;
+        clean_config_dir();
+        let me = std::fs::metadata(".").unwrap().uid();
+        let owner = PamUser {
+            name: "owner".into(),
+            uid: me,
+            home: "/nonexistent".into(),
+        };
+        let other = PamUser {
+            name: "other".into(),
+            uid: me + 1,
+            home: "/nonexistent".into(),
+        };
+
+        // no file: empty configuration
+        assert!(
+            Configurations::load_for(&owner)
+                .unwrap()
+                .devices()
+                .is_empty()
+        );
+
+        let mut config = Configuration::new("/dev/video0");
+        config.add_to_savelist(&make_xu(&mut make_rng()));
+        config.save().unwrap();
+        assert_eq!(Configurations::load_for(&owner).unwrap().devices().len(), 1);
+        // the file is not owned by this user (nor root, unless the tests run as root)
+        if me != 0 {
+            assert!(Configurations::load_for(&other).is_err());
+        }
+
+        // a symlink is refused, even to a file owned by the user
+        let config_file = config_file_path().unwrap();
+        let target = config_file.with_extension("target");
+        std::fs::rename(&config_file, &target).unwrap();
+        std::os::unix::fs::symlink(std::fs::canonicalize(&target).unwrap(), &config_file).unwrap();
+        assert!(Configurations::load_for(&owner).is_err());
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_adopt_legacy() {
+        clean_config_dir();
+        let mut rng = make_rng();
+        let (xu1, xu2, xu3) = (make_xu(&mut rng), make_xu(&mut rng), make_xu(&mut rng));
+
+        // a legacy by-id configuration of the camera, and one of another camera
+        let mut legacy = Configuration::new("/dev/v4l/by-id/usb-Camera-video-index0");
+        legacy.add_to_savelist(&xu1);
+        legacy.add_to_blacklist(&xu2);
+        legacy.save().unwrap();
+        let mut other = Configuration::new("/dev/v4l/by-id/usb-Other-video-index0");
+        other.add_to_savelist(&xu3);
+        other.save().unwrap();
+
+        let configs = Configurations::load().unwrap();
+        let id: DeviceId = "usb-04f2:b6d9-0001-if02-index0".parse().unwrap();
+        let mut config = Configuration::empty(id.clone());
+        config.add_to_savelist(&xu3); // already in the new configuration, kept
+        config.adopt_legacy(&configs, |legacy| legacy.to_string().contains("usb-Camera"));
+
+        assert_eq!(config.get_savelist().len(), 2);
+        assert!(config.is_blacklisted(&xu2));
+        config.save().unwrap();
+
+        // the legacy configuration is replaced, the other one is kept
+        let keys: Vec<String> = Configurations::load()
+            .unwrap()
+            .devices()
+            .keys()
+            .map(|k| k.to_string())
+            .collect();
+        assert_eq!(
+            keys,
+            [
+                "usb-04f2:b6d9-0001-if02-index0",
+                "/dev/v4l/by-id/usb-Other-video-index0"
+            ]
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn test_configuration_device_not_found_is_identified_by_path() {
+        clean_config_dir();
+        let config = Configuration::new("/dev/video10");
+        assert_eq!(
+            config.device(),
+            &DeviceId::Path(PathBuf::from("/dev/video10"))
+        );
     }
 
     #[test]
@@ -428,7 +632,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu1.unit());
@@ -449,7 +653,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.blacklist.len(), 1);
         let black = loaded.blacklist.iter().next().unwrap();
         assert_eq!(black.unit, xu1.unit());
@@ -475,7 +679,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 2);
         let saved1 = loaded
             .savelist
@@ -521,7 +725,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu1.unit());
@@ -549,7 +753,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu1.unit());
@@ -585,7 +789,7 @@ mod tests {
         config.save().unwrap();
 
         let loaded = Configuration::load(&config.device).unwrap();
-        assert_eq!(loaded.device.as_ref(), config.device.as_ref());
+        assert_eq!(loaded.device, config.device);
         assert_eq!(loaded.savelist.len(), 1);
         let saved = loaded.savelist.iter().next().unwrap();
         assert_eq!(saved.unit, xu3.unit());

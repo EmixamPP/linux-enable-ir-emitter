@@ -167,8 +167,10 @@ impl App {
         }
     }
 
-    /// Spawns a new blocking task that opens the device and loads its list of controls,
+    /// Spawns a new blocking task that opens the device, applies its saved configuration, and loads its list of controls,
     /// which can take a while, then sends them through [`Self::controls_rx`].
+    ///
+    /// The saved configuration is applied first, so the controls start from the values that `run` would apply.
     fn spawn_controls_task(&mut self) {
         let path = self.config.device.clone();
         let (controls_tx, controls_rx) = oneshot::channel();
@@ -178,6 +180,8 @@ impl App {
             let result = Device::open(&path)
                 .with_context(|| format!("failed to open device {path:?}"))
                 .map(|device| {
+                    let saved = Configuration::new(&path).get_savelist();
+                    apply_saved_controls(saved, |ctrl| device.apply_control(ctrl));
                     let controls = device.controls();
                     (device, controls)
                 });
@@ -520,6 +524,23 @@ impl DeviceSettingsCtx for App {
     }
 }
 
+/// Applies each saved control with `apply`, logging the failures without stopping.
+///
+/// Returns the number of controls that could not be applied.
+fn apply_saved_controls(
+    saved: Vec<XuControl>,
+    mut apply: impl FnMut(&mut XuControl) -> std::io::Result<()>,
+) -> usize {
+    let mut failures = 0;
+    for mut ctrl in saved {
+        if let Err(err) = apply(&mut ctrl) {
+            log::warn!("Failed to apply the saved control {ctrl}: {err}.");
+            failures += 1;
+        }
+    }
+    failures
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -581,5 +602,25 @@ mod tests {
         app.save_before_exit(KeyCode::Char('x')).await.unwrap();
         assert!(matches!(app.state(), State::Waiting));
         assert!(Configuration::new(DEVICE).get_savelist().is_empty());
+    }
+
+    #[test]
+    fn test_apply_saved_controls_continues_after_a_failure() {
+        let saved = vec![
+            XuControl::new(1, 1, vec![1], None, None, None, None, true).unwrap(),
+            XuControl::new(2, 2, vec![2], None, None, None, None, true).unwrap(),
+            XuControl::new(3, 3, vec![3], None, None, None, None, true).unwrap(),
+        ];
+        let mut applied = Vec::new();
+        let failures = apply_saved_controls(saved, |ctrl| {
+            applied.push(ctrl.unit());
+            if ctrl.unit() == 2 {
+                Err(std::io::Error::other("test"))
+            } else {
+                Ok(())
+            }
+        });
+        assert_eq!(failures, 1);
+        assert_eq!(applied, vec![1, 2, 3]);
     }
 }
